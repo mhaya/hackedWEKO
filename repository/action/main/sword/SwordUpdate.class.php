@@ -642,7 +642,7 @@ class SwordUpdate extends RepositoryAction
             // responce body
             $response = "<?xml version=\"1.0\" encoding=\"utf-8\"?>" . "\n";
             $response.= "<sword:error xmlns=\"". htmlspecialchars_self("http://www.w3.org/2005/Atom").
-                        "\" xmlns:sword=\""    . htmlspecialchars_self("http://purl.org/net/sword/") .
+                        "\" xmlns:sword=\""    . htmlspecialchars_self("http://purl.org/net/sword/terms/") .
                         "\" xmlns:arxiv=\""    . htmlspecialchars_self("http://arxiv.org/schemas/atom") .
                         "\" href=\""           . htmlspecialchars_self("http://example.org/errors/BadManifest"). "\">" . "\n";
             // title
