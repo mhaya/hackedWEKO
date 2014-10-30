@@ -1,0 +1,250 @@
+<!--// ---------------------------------------------------------------------->
+<!--//                                                                     -->
+<!--// $Id: repository_import_select.html 562 2014-04-14 01:03:17Z ivis $          -->
+<!--//                                                                     -->
+<!--// Copyright (c) 2007 - 2008, National Institute of Informatics,        -->
+<!--// Research and Development Center for Scientific Information Resources -->
+<!--//                                                                     -->
+<!--// This program is licensed under a Creative Commons BSD Licence       -->
+<!--// http://creativecommons.org/licenses/BSD/                            -->
+<!--//                                                                     -->
+<!--// ---------------------------------------------------------------------->
+
+<{*Import*}>
+
+<{if strlen($action.error_msg) > 0}>
+	<p class="mtb10 error_msg">
+		<{$action.error_msg}>
+	</p>
+<{/if}>
+
+<{strip}>
+	<{if $smarty.session._lang=="japanese" && $action.help_icon_display == "1"}>
+		<div align="right" class="pt10 pr10">
+
+			<a href="#" style="cursor: help;" onclick="
+				if($('import_active_tab_id').value==0)
+				{
+					repositoryCls['<{$id}>'].repositoryHelp(event,'import');
+				}
+				else
+				{
+					repositoryCls['<{$id}>'].repositoryHelp(event,'import_authority');
+				}
+				return false;"
+			>
+				<img src="<{$smarty.const.CORE_BASE_URL}>/images/repository/default/help.png" alt="help">
+			</a>
+
+		</div>
+	<{/if}>
+<form id="attachment_form<{$id}>" target="attachment_form<{$id}>" enctype="multipart/form-data">
+<div class="mt10">
+	<div class="comp_tabset"></div>
+	<div class="comp_tabset_content" style="height: 360px">
+		<{* タブ1：コンテンツ tab1:contents *}>
+		<div class="th_classic_content content text_color" id="import_tab_1" align="center" >
+
+			<div id="repo_side_navi" class="fl">
+				<{* make index tree 2008/12/03 Y.Nakao --start-- *}>
+				<div>
+					<h3 class="th_repos_title_bar nc_block_title c">
+						<span class="pl05">
+							<{$lang.repository_index_tree}>
+						</span>
+					</h3>
+					<div class="th_classic_content content" id="repository_import_tree" align="left" style="width: <{$smarty.const._SNIPPET_WIDTH}>px; overflow:auto;"></div>
+					<{include file="repository_item_search_tree.html"}>
+					<{* make index tree 2008/12/03 Y.Nakao --end-- *}>
+				</div>
+			</div>
+			<div class="repository_right_header plr20" style="position: relative; top: 70px">
+
+				<table class="tb01 full" style="position: relative; right: 10px">
+					<tr>
+						<th class="item_edit_list"><{$lang.repository_import_select_item}></th>
+						<td class="item_edit_list al">
+							<div class="nobr"><input type="file" name="upload[]" size="30"/></div><!-- old w15em -->
+						</td>
+					</tr>
+					<tr>
+						<th class="item_edit_list"><{$lang.repository_import_index}></th>
+						<td class="item_edit_list al">
+							<{$lang.repository_import_select_index}><br />
+							<form name="import_select" method="post" enctype="multipart/form-data">
+								<{* Add specialized support for open.repo "auto affiliation in private tree" Y.Nakao 2013/06/26 --start-- *}>
+								<{strip}>
+								<label class="pl10" id="selected_index">
+									<{foreach from=$action.selectedIndexName item=indexName name=loopIndexName}>
+										<{assign var="loopIndexName" value=$smarty.foreach.loopIndexName.iteration-1}>
+										<{if $loopIndexName>0}><br><{/if}><{$indexName}>
+									<{/foreach}>
+								</label>
+								<{/strip}>
+								<br/>
+								<input type="hidden" id="check_insert_idx" value="<{$action.selectedIndexIds}>" readonly />
+								<{* Add specialized support for open.repo "auto affiliation in private tree" Y.Nakao 2013/06/26 --end-- *}>
+							</form>
+						</td>
+					</tr>
+				</table>
+
+				<center class="pt20">
+					<{* import button 2012/1/26 --start-- A.jin --start-- *}>
+					<input type="button" class="btn_blue ac" value="<{$lang.repository_import}>" onclick="repositoryCls['<{$id}>'].repositoryImportFileUpload();return false;" />
+				</center>
+				<{* import button 2012/1/26 --start-- A.jin --end-- *}>
+			</div>
+		</div>
+
+		<{* タブ2：WEKO著者名典拠 tab2:author *}>
+		<div class="th_classic_content content text_color" id="import_tab_2" align="center">
+			<div align="right" class="pt10 pr10">
+				<span id="repositoryExportTemplate<{$id}>">
+					<a href="#" onclick="javascript: templateDownload(); return false;" ><{$lang.repository_importauthority_result_template}></a>
+				</span>
+				<span id="repository<{$id}>_exportBtn" style="position: relative; right: 110px " >
+					<img border="0" id="repositoryNowLoading<{$id}>" style="display:none" src="<{$smarty.const.BASE_URL}>/images/common/indicator.gif" />
+				</span>
+			</div>
+			<table class="tb01 w70" style="position: relative; top: 70px">
+				<tr>
+					<th class="item_edit_list"><{$lang.repository_import_select_item}></th>
+					<td class="item_edit_list al">
+						<div class="nobr"><input type="file" name="upload[]" size="30"/></div><!-- old w15em -->
+					</td>
+				</tr>
+			</table>
+			<center class="pt20" style="position: relative; top: 70px">
+				<input type="button" class="btn_blue ac" value="<{$lang.repository_import}>" onclick="repositoryCls['<{$id}>'].repositoryImportauthorityFileUpload();return false;" />
+			</center>
+		</div>
+	</div>
+</div>
+</form>
+<span style="display:none;height=0px;width=0px;" id="repositoryListDownload<{$id}>"></span>
+<{/strip}>
+<{* 2008/05/20 S.Kawasaki nc_script文字数制限の暫定対応でツリー生成-描画コードを分割して記述するように修正*}>
+<{* make index tree 2008/12/03 Y.Nakao --start-- *}>
+<script class="nc_script" type="text/javascript">
+    repositoryInitTree<{$id}>('repository_import_tree','<{$id}>', 'check');
+	$('repository_import_tree').style.height = <{$smarty.const._SNIPPET_HEIGHT}>+"px";
+	$('repository_import_tree').style.width = <{$smarty.const._SNIPPET_WIDTH}>+"px";
+</script>
+<script class="nc_script" type="text/javascript">
+    repositoryClickTreeCheck<{$id}> = function(id, idx_name){
+		if( $('selected_index') != null ) {
+			var elm_name = 'tree_check' + id;
+			if($(elm_name).checked){
+				// check true
+				if($('selected_index').innerHTML != ""){
+					//IE判定
+					var userAgent = window.navigator.userAgent.toLowerCase();
+					var appVersion = window.navigator.appVersion.toLowerCase();
+					if((userAgent.indexOf("msie") > -1) && (appVersion.indexOf("msie 8.") != -1)){
+						$('selected_index').innerHTML += '<BR>' + idx_name;
+					}
+					else{
+						$('selected_index').innerHTML += '<br>' + idx_name;
+					}
+					$('check_insert_idx').value += '|' + id;
+				} else {
+					$('selected_index').innerHTML = idx_name;
+					$('check_insert_idx').value = id;
+				}
+			} else {
+				// check false
+				// view index name
+				//IE判定
+				var userAgent = window.navigator.userAgent.toLowerCase();
+				var appVersion = window.navigator.appVersion.toLowerCase();
+
+				var str = '';
+				if((userAgent.indexOf("msie") > -1)&&(appVersion.indexOf("msie 8.") != -1)){
+					//IE8か
+					str = "<BR>"+$('selected_index').innerHTML+"<BR>";
+					var tempStr = "<BR>"+idx_name+"<BR>";
+					str = str.replace(tempStr, "<BR>");
+					str = str.substr(4,str.length-8);
+				}
+				else{
+					str = "<br>"+$('selected_index').innerHTML+"<br>";
+					var tempStr = "<br>"+idx_name+"<br>";
+					str = str.replace(tempStr, "<br>");
+					str = str.substr(4,str.length-8);
+				}
+
+				$('selected_index').innerHTML = str;
+				// hidden index id
+				str = "|"+$('check_insert_idx').value+"|";
+				str = str.replace("|"+id+"|", "|");
+				str = str.substr(1,str.length-2);
+				$('check_insert_idx').value = str;
+			}
+		}
+	}
+</script>
+<{* make index tree 2008/12/03 Y.Nakao --end-- *}>
+
+<{* import name_authority 2013/11/25 R.Matsuura --start-- *}>
+<{* display tab number *}>
+<input type="hidden" id="import_active_tab_id" name="import_active_tab" value="0" />
+<script class="nc_script" type="text/javascript">
+	changeActiveTab1 = function(){
+		$('import_active_tab_id').value = 0;
+	}
+	changeActiveTab2 = function(){
+		$('import_active_tab_id').value = 1;
+	}
+
+</script>
+
+<script class="nc_script" type="text/javascript">
+	var tabset = new compTabset('<{$id}>');
+	tabset.setActiveIndex( valueParseInt('0') );
+	tabset.addTabset('<{$lang.repository_import_tab_contents}>', changeActiveTab1);
+	tabset.addTabset('<{$lang.repository_import_tab_authority}>', changeActiveTab2);
+	tabset.render();
+</script>
+<script class="nc_script" type="text/javascript">
+	templateDownload = function() {
+		var url = _nc_base_url + "/index.php"+
+					"?action=repository_action_edit_importauthority_download" + "&page_is=" + <{$page_id}> + "&block_id=" + <{$block_id}>;
+
+		// brauzaCheck
+		var userAgent = window.navigator.userAgent.toLowerCase();
+		var appVersion = window.navigator.appVersion.toLowerCase();
+		//IE
+		if (userAgent.indexOf("msie") > -1 || userAgent.indexOf("trident") > -1) {
+			loadingIcon(true);
+			$('repositoryListDownload<{$id}>').innerHTML = '<iframe boder="0" name="exportFrame<{$id}>" id="exportFrame<{$id}>" src="'+url+'"></iframe>';
+		}
+		//Firefox…OK
+		else if (userAgent.indexOf("firefox") > -1) {
+			loadingIcon(true);
+			$('repositoryListDownload<{$id}>').innerHTML = '<iframe boder="0" name="exportFrame<{$id}>" id="exportFrame<{$id}>" src="'+url+'" onload="javascript: loadingIcon(false);"></iframe>';
+		}
+		else
+		{
+			$('repositoryListDownload<{$id}>').innerHTML = '<iframe boder="0" name="exportFrame<{$id}>" id="exportFrame<{$id}>" src="'+url+'"></iframe>';
+		}
+		return false;
+	}
+</script>
+<script class="nc_script" type="text/javascript">
+	loadingIcon = function(onFlg) {
+		if(onFlg)
+		{
+			$('repositoryExportTemplate<{$id}>').style.display='none';
+			$('repositoryNowLoading<{$id}>').style.display='';
+		}
+		else
+		{
+			$('repositoryExportTemplate<{$id}>').style.display='';
+			$('repositoryNowLoading<{$id}>').style.display='none';
+		}
+	}
+</script>
+<{* import name_authority 2013/11/25 R.Matsuura --end-- *}>
+<{include file="repository_script.html"}>
+

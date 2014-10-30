@@ -1,0 +1,58 @@
+<!--// ---------------------------------------------------------------------->
+<!--//                                                                     -->
+<!--// $Id: repository_sitemap_confirm.html 387 2010-01-27 09:55:06Z ivis $  -->
+<!--//                                                                     -->
+<!--// Copyright (c) 2007 - 2008, National Institute of Informatics,        -->
+<!--// Research and Development Center for Scientific Information Resources -->
+<!--//                                                                     -->
+<!--// This program is licensed under a Creative Commons BSD Licence       -->
+<!--// http://creativecommons.org/licenses/BSD/                            -->
+<!--//                                                                     -->
+<!--// ---------------------------------------------------------------------->
+<form name="sitemap_login_form" id="sitemap_login_form">
+<table>
+	<tr>
+		<td colspan="2"><{$lang.repository_admin_sitemap_login_comment}>
+		<br/>
+		<div class="text_color" id="error_msg" name="error_msg">
+		<{if $action.is_create_sitemap == "false"}> <span style="color: red;"><{$lang.repository_admin_sitemap_errorMsg}></span><br />
+		<{/if}></div>
+		</td>
+	</tr>
+	<tr>
+		<td>
+		<{$lang.repository_admin_sitemap_login_id}>
+		</td>
+		<td>
+		<input type="text" maxlength="100" name="sitemap_login_id"
+			id="sitemap_login_id" value="" /></td>
+	</tr>
+	<tr>
+		<td>
+		<{$lang.repository_admin_sitemap_password}>
+		</td>
+		<td>
+		<input type="password" maxlength="100" name="sitemap_password"
+			id="sitemap_password" value=""></td>
+	</tr>
+</table>
+<div align=center><input type="button" id="return_admin" value="<{$lang.repository_return}>"
+onclick="javascript:commonCls.sendView('<{$id}>',
+'repository_view_edit_admin'); return false;" /> <input type="button"
+ id="create_sitemap"	value="<{$lang.repository_execute}>"
+onclick="javascript:SendSitemap(); return false;"/>
+</div>
+</form>
+
+
+<script class="nc_script" type="text/javascript">
+SendSitemap = function()
+{
+	document.getElementById('error_msg').innerHTML = '<{$lang.repository_admin_sitemap_info_comment}>';
+	document.getElementById('return_admin').disabled = true;
+	document.getElementById('create_sitemap').disabled = true;
+	repositoryCls['<{$id}>'].repositoryCreateSitemap('<{$page_id}>','<{$block_id}>');
+}
+</script>
+<{include file="repository_script.html"}>
+
