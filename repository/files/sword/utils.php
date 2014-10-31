@@ -360,6 +360,7 @@ function process_headers($request)
         $filename = "deposit";
         $token = split('[;]', $deposition);
         foreach($token as $value) {
+            $value = trim($value);
             $filename = split('[=]', $value);
             if(!strcmp($filename[0],'filename')) {
                 $filename = $filename[1];
