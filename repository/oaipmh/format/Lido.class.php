@@ -171,6 +171,20 @@ $obj_rel_wrap = $descmeta->getElementsByTagName(RepositoryConst::LIDO_TAG_NAMESP
             $obj_ident_wrap->appendChild($obj_desc_wrap);
             $obj_ident_wrap->appendChild($obj_mesure_wrap);
         }
+
+        // sequence暫定対応(lido:objectWorkType)
+        $obj_work_type = $this->domDocument->getElementsByTagName(RepositoryConst::LIDO_TAG_NAMESPACE.RepositoryConst::LIDO_TAG_OBJECT_WORK_TYPE);
+        foreach($obj_work_type as $node){
+            //$id = $node->getElementsByTagName(RepositoryConst::LIDO_TAG_NAMESPACE.RepositoryConst::LIDO_TAG_CONCEPT_ID);
+            $term = $node->getElementsByTagName(RepositoryConst::LIDO_TAG_NAMESPACE.RepositoryConst::LIDO_TAG_TERM);
+            if($term->length >0 ){
+                foreach($term as $node2){
+                    $node->removeChild($node2);
+                    $node->appendChild($node2);
+                }
+            }
+        }
+
         // convert DOMDocument to XML string
         $xml = $this->domDocument->saveXML();
         
