@@ -160,12 +160,12 @@ $obj_rel_wrap = $descmeta->getElementsByTagName(RepositoryConst::LIDO_TAG_NAMESP
             $repo_wrap = $obj_ident_wrap->getElementsByTagName(RepositoryConst::LIDO_TAG_NAMESPACE.RepositoryConst::LIDO_TAG_REPOSITORY_WRAP)->item(0);
             $obj_desc_wrap =  $obj_ident_wrap->getElementsByTagName(RepositoryConst::LIDO_TAG_NAMESPACE.RepositoryConst::LIDO_TAG_OBJECT_DESCRIPTION_WRAP)->item(0);
             $obj_mesure_wrap = $obj_ident_wrap->getElementsByTagName(RepositoryConst::LIDO_TAG_NAMESPACE.RepositoryConst::LIDO_TAG_OBJECT_MEASUREMENTS_WRAP)->item(0);
-
+            /*
             $obj_ident_wrap->removeChild($title_wrap);
             $obj_ident_wrap->removeChild($repo_wrap);
             $obj_ident_wrap->removeChild($obj_desc_wrap);
             $obj_ident_wrap->removeChild($obj_mesure_wrap);
-
+            */
             $obj_ident_wrap->appendChild($title_wrap);
             $obj_ident_wrap->appendChild($repo_wrap);
             $obj_ident_wrap->appendChild($obj_desc_wrap);
@@ -179,11 +179,64 @@ $obj_rel_wrap = $descmeta->getElementsByTagName(RepositoryConst::LIDO_TAG_NAMESP
             $term = $node->getElementsByTagName(RepositoryConst::LIDO_TAG_NAMESPACE.RepositoryConst::LIDO_TAG_TERM);
             if($term->length >0 ){
                 foreach($term as $node2){
-                    $node->removeChild($node2);
+                    //       $node->removeChild($node2);
                     $node->appendChild($node2);
                 }
             }
         }
+
+
+        //eventID 0..*
+        //eventType 
+        //roleInEvent 0..*
+        //eventName 0..*
+        //eventActor 0..*
+        //culture 0..*
+        //eventDate 0..*
+        //periodName 0..*
+        //eventPlace 0..*
+        //eventMethod 0..*
+        //eventMaterialsTech 0..*
+        //thingPresent 0..*
+        //relatedEventSet 0..*
+        //eventDescriptionSet 0..*
+        $eventTag = $this->domDocument->getElementsByTagName(RepositoryConst::LIDO_TAG_NAMESPACE.RepositoryConst::LIDO_TAG_EVENT);
+        if($eventTag->length === 1){
+            $tmp = $eventTag->item(0);
+            //            $event_id = $tmp->getElementsByTagName(RepositoryConst::LIDO_TAG_NAMESPACE.RepositoryConst::LIDO_TAG_EVENT_ID);
+            $event_type = $tmp->getElementsByTagName(RepositoryConst::LIDO_TAG_NAMESPACE.RepositoryConst::LIDO_TAG_EVENT_TYPE);
+            $event_actorTag = $tmp->getElementsByTagName(RepositoryConst::LIDO_TAG_NAMESPACE.RepositoryConst::LIDO_TAG_EVENT_ACTOR);
+            $event_date = $tmp->getElementsByTagName(RepositoryConst::LIDO_TAG_NAMESPACE.RepositoryConst::LIDO_TAG_EVENT_DATE);
+            $event_place = $tmp->getElementsByTagName(RepositoryConst::LIDO_TAG_NAMESPACE.RepositoryConst::LIDO_TAG_EVENT_PLACE); 
+            $event_materialstech = $tmp->getElementsByTagName(RepositoryConst::LIDO_TAG_NAMESPACE.RepositoryConst::LIDO_TAG_EVENT_MATERIALS_TECH);
+            
+            /*
+            foreach($event_id as $node) {
+                $tmp->appendChild($node);
+            }
+            */
+            // lido:event_type は lido:eventでは必須
+            if($event_type->length === 0 ){
+                $node = $this->domDocument->createElement(RepositoryConst::LIDO_TAG_NAMESPACE.RepositoryConst::LIDO_TAG_EVENT_TYPE);
+                $tmp->appendChild($node);
+            }
+            foreach($event_type as $node) {
+                $tmp->appendChild($node);
+            }           
+            foreach($event_actorTag as $node) {
+                $tmp->appendChild($node);
+            }
+            foreach($event_date as $node) {
+                $tmp->appendChild($node);
+            }
+            foreach($event_place as $node) {
+                $tmp->appendChild($node);
+            }
+            foreach($event_materialstech as $node) {
+                $tmp->appendChild($node);
+            }
+        }
+
 
         // convert DOMDocument to XML string
         $xml = $this->domDocument->saveXML();
