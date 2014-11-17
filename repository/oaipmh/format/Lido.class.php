@@ -130,12 +130,47 @@ class Repository_Oaipmh_Lido extends Repository_Oaipmh_FormatAbstract
             return '';
         }
         
-        // lido:descriptiveMetadata sequence対応
-        $desc = $this->domDocument->getElementsByTagName(RepositoryConst::LIDO_TAG_NAMESPACE.RepositoryConst::LIDO_TAG_DESCRIPTIVE_METADATA)->item(0);    
-        $a = $desc->getElementsByTagName(RepositoryConst::LIDO_TAG_NAMESPACE.RepositoryConst::LIDO_TAG_OBJECT_CLASSIFICATION_WRAP)->item(0);
-        $b = $desc->getElementsByTagName(RepositoryConst::LIDO_TAG_NAMESPACE.RepositoryConst::LIDO_TAG_OBJECT_IDENTIFICATION_WRAP)->item(0);
-        $desc->insertBefore($a,$b);
+        // sequence暫定対応(lido:descriptiveMetadata)
+        $descmeta = $this->domDocument->getElementsByTagName(RepositoryConst::LIDO_TAG_NAMESPACE.RepositoryConst::LIDO_TAG_DESCRIPTIVE_METADATA);
+        if($descmeta->length===1){
+            $descmeta = $descmeta->item(0);
 
+            $obj_cls_wrap = $descmeta->getElementsByTagName(RepositoryConst::LIDO_TAG_NAMESPACE.RepositoryConst::LIDO_TAG_OBJECT_CLASSIFICATION_WRAP)->item(0);
+            $obj_ident_wrap = $descmeta->getElementsByTagName(RepositoryConst::LIDO_TAG_NAMESPACE.RepositoryConst::LIDO_TAG_OBJECT_IDENTIFICATION_WRAP)->item(0);
+            $event_wrap = $descmeta->getElementsByTagName(RepositoryConst::LIDO_TAG_NAMESPACE.RepositoryConst::LIDO_TAG_EVENT_WRAP)->item(0);
+$obj_rel_wrap = $descmeta->getElementsByTagName(RepositoryConst::LIDO_TAG_NAMESPACE.RepositoryConst::LIDO_TAG_OBJECT_RELATION_WRAP)->item(0);
+
+            $descmeta->removeChild($obj_cls_wrap);
+            $descmeta->removeChild($obj_ident_wrap);
+            $descmeta->removeChild($event_wrap);
+            $descmeta->removeChild($obj_rel_wrap);
+
+            $descmeta->appendChild($obj_cls_wrap);
+            $descmeta->appendChild($obj_ident_wrap);
+            $descmeta->appendChild($event_wrap);
+            $descmeta->appendChild($obj_rel_wrap);
+        }
+
+        // sequence暫定対応(lido:objectIdentificationWrap)
+        $obj_ident_wrap = $this->domDocument->getElementsByTagName(RepositoryConst::LIDO_TAG_NAMESPACE.RepositoryConst::LIDO_TAG_OBJECT_IDENTIFICATION_WRAP);
+        if($obj_ident_wrap->length ===1 ){
+            $obj_ident_wrap = $obj_ident_wrap->item(0);
+
+            $title_wrap = $obj_ident_wrap->getElementsByTagName(RepositoryConst::LIDO_TAG_NAMESPACE.RepositoryConst::LIDO_TAG_TITLE_WRAP)->item(0);
+            $repo_wrap = $obj_ident_wrap->getElementsByTagName(RepositoryConst::LIDO_TAG_NAMESPACE.RepositoryConst::LIDO_TAG_REPOSITORY_WRAP)->item(0);
+            $obj_desc_wrap =  $obj_ident_wrap->getElementsByTagName(RepositoryConst::LIDO_TAG_NAMESPACE.RepositoryConst::LIDO_TAG_OBJECT_DESCRIPTION_WRAP)->item(0);
+            $obj_mesure_wrap = $obj_ident_wrap->getElementsByTagName(RepositoryConst::LIDO_TAG_NAMESPACE.RepositoryConst::LIDO_TAG_OBJECT_MEASUREMENTS_WRAP)->item(0);
+
+            $obj_ident_wrap->removeChild($title_wrap);
+            $obj_ident_wrap->removeChild($repo_wrap);
+            $obj_ident_wrap->removeChild($obj_desc_wrap);
+            $obj_ident_wrap->removeChild($obj_mesure_wrap);
+
+            $obj_ident_wrap->appendChild($title_wrap);
+            $obj_ident_wrap->appendChild($repo_wrap);
+            $obj_ident_wrap->appendChild($obj_desc_wrap);
+            $obj_ident_wrap->appendChild($obj_mesure_wrap);
+        }
         // convert DOMDocument to XML string
         $xml = $this->domDocument->saveXML();
         
