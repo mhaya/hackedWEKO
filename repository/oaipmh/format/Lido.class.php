@@ -130,6 +130,12 @@ class Repository_Oaipmh_Lido extends Repository_Oaipmh_FormatAbstract
             return '';
         }
         
+        // lido:descriptiveMetadata sequence対応
+        $desc = $this->domDocument->getElementsByTagName(RepositoryConst::LIDO_TAG_NAMESPACE.RepositoryConst::LIDO_TAG_DESCRIPTIVE_METADATA)->item(0);    
+        $a = $desc->getElementsByTagName(RepositoryConst::LIDO_TAG_NAMESPACE.RepositoryConst::LIDO_TAG_OBJECT_CLASSIFICATION_WRAP)->item(0);
+        $b = $desc->getElementsByTagName(RepositoryConst::LIDO_TAG_NAMESPACE.RepositoryConst::LIDO_TAG_OBJECT_IDENTIFICATION_WRAP)->item(0);
+        $desc->insertBefore($a,$b);
+
         // convert DOMDocument to XML string
         $xml = $this->domDocument->saveXML();
         
