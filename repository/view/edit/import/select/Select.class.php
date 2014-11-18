@@ -1,7 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-// $Id: Select.class.php 599 2014-07-14 09:06:17Z ivis $
+// $Id: Select.class.php 651 2014-11-13 10:14:11Z ivis $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -41,6 +41,8 @@ class Repository_View_Edit_Import_Select extends RepositoryAction
     public $import_active_tab = null;
     // Add e-person R.Matsuura 2013/11/25 --end--
     
+    public $error_info = array();
+    
     /**
      * [[機能説明]]
      *
@@ -64,6 +66,12 @@ class Repository_View_Edit_Import_Select extends RepositoryAction
             $this->error_msg = $this->Session->getParameter("error_msg");
             $this->Session->removeParameter("error_msg");
             $this->Session->removeParameter("Error_Msg");
+                        
+            // Add for import error list 2014/11/04 T.Koyasu --start--
+            // get error info
+            $this->error_info = $this->Session->getParameter("error_info");
+            $this->Session->removeParameter("error_info");
+            // Add for import error list 2014/11/04 T.Koyasu --end--
             
             // タブ切替時にセッションの初期化
             $this->Session->removeParameter("indice");

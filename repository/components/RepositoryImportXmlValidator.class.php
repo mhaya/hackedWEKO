@@ -1,7 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-// $Id: RepositoryImportXmlValidator.class.php 43297 2014-10-28 11:08:56Z tomohiro_ichikawa $
+// $Id: RepositoryImportXmlValidator.class.php 43911 2014-11-13 04:28:03Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -37,6 +37,32 @@ class RepositoryImportXmlValidator
     const ERROR_EDIT_ITEM_URL = "Domain name is not match";
     const ERROR_EDIT_ITEM_NUM = "Edit tags there are more than 1";
     
+    // Add for import error list 2014/11/04 T.Koyasu --start--
+    const ERROR_ATTR_NAME_TITLE = "title";
+    const ERROR_ATTR_NAME_SHOWN_DATE = "shown_date";
+    
+    // language resorce id for show error message in import select
+    const ERROR_NUM_NO_XML = 1;
+    const ERROR_NUM_PARSE_XML = 2;
+    const ERROR_NUM_TAG_NUM = 3;
+    const ERROR_NUM_ITEM_TITLE = 4;
+    const ERROR_NUM_ITEM_SHOWN_DATE = 5;
+    const ERROR_NUM_ITEM_NO_SHOWN_DATE = 6;
+    const ERROR_NUM_ITEM_ATTR_IS_REQUIRED = 7;
+    const ERROR_NUM_ITEM_ATTR_TYPE = 8;
+    const ERROR_NUM_ITEM_ATTR_LINK = 9;
+    const ERROR_NUM_ITEM_ATTR_DATE = 10;
+    const ERROR_NUM_ITEM_ATTR_CANDIDATE = 11;
+    const ERROR_NUM_BIBLIO_PUB_DATE = 12;
+    const ERROR_NUM_THUMBNAIL_NOT_EXIST = 13;
+    const ERROR_NUM_FILE_NOT_EXIST = 14;
+    const ERROR_NUM_FILE_PUB_DATE = 15;
+    const ERROR_NUM_FILE_FLASH_PUB_DATE = 16;
+    const ERROR_NUM_ITEM_TYPE = 17;
+    const ERROR_NUM_EDIT_ITEM_URL = 18;
+    const ERROR_NUM_EDIT_ITEM_NUM = 19;
+    // Add for import error list 2014/11/04 T.Koyasu --end--
+    
     /**
      * execute check XML
      *
@@ -49,7 +75,7 @@ class RepositoryImportXmlValidator
         $result = file_exists($tmp_dir."/import.xml");
         if($result === false) {
             // エラー「import.xmlが存在しない」
-            $error_list[] = new DetailErrorInfo(0, "", self::ERROR_NO_XML);
+                        $error_list[] = new DetailErrorInfo(0, "", self::ERROR_NO_XML, "", "", "", self::ERROR_NUM_NO_XML);
             return;
         }
         
@@ -58,7 +84,7 @@ class RepositoryImportXmlValidator
         $result = $dom->load($tmp_dir."/import.xml");
         if($result === false) {
             // エラー「xmlの構文不正」
-            $error_list[] = new DetailErrorInfo(0, "", self::ERROR_PARSE_XML);
+            $error_list[] = new DetailErrorInfo(0, "", self::ERROR_PARSE_XML, "", "", "", self::ERROR_NUM_PARSE_XML);
             return;
         }
         // XPath
@@ -86,7 +112,9 @@ class RepositoryImportXmlValidator
     private function compareNodeNum($item_nodes, $item_type_nodes, &$error_list) {
         // アイテムタブとアイテムタイプタグの長さが一致しない場合、エラー
         if($item_nodes->length != $item_type_nodes->length) {
-            $error_list[] = new DetailErrorInfo(0, "", self::ERROR_TAG_NUM);
+            // Add for import error list 2014/11/04 T.Koyasu --start--
+            $error_list[] = new DetailErrorInfo(0, "", self::ERROR_TAG_NUM, "", "", "", self::ERROR_NUM_TAG_NUM);
+            // Add for import error list 2014/11/04 T.Koyasu --end--
         }
     }
     
@@ -106,12 +134,19 @@ class RepositoryImportXmlValidator
         // 英語タイトル
         $title_english = $item->getAttribute("title_english");
         // "タイトル / 英語タイトル"の形式
-        $title = $title_japanese." / ".$title_english;
+        $title = "";
+        if(strlen($title_japanese) > 0){
+            $title = $title_japanese;
+        } else {
+            $title = $title_english;
+        }
         
         // タイトルの入力チェック
         $result = $this->checkItemTitle($title_japanese, $title_english);
         if($result === false) {
-            $error_list[] = new DetailErrorInfo($item_id, "", self::ERROR_ITEM_TITLE);
+            // Add for import error list 2014/11/04 T.Koyasu --start--
+            $error_list[] = new DetailErrorInfo($item_id, "", self::ERROR_ITEM_TITLE, self::ERROR_ATTR_NAME_TITLE, "", "", self::ERROR_NUM_ITEM_TITLE);
+            // Add for import error list 2014/11/04 T.Koyasu --end--
         }
         
         // 公開日の入力チェック
@@ -119,27 +154,35 @@ class RepositoryImportXmlValidator
             if(strlen($item->getAttribute("shown_date")) > 0) {
                 $result = $this->checkShownDate($item->getAttribute("shown_date"));
                 if($result === false) {
-                    $error_list[] = new DetailErrorInfo($item_id, $title, self::ERROR_ITEM_SHOWN_DATE);
+                    // Add for import error list 2014/11/04 T.Koyasu --start--
+                    $error_list[] = new DetailErrorInfo($item_id, $title, self::ERROR_ITEM_SHOWN_DATE, self::ERROR_ATTR_NAME_SHOWN_DATE, $item->getAttribute("shown_date"), "", self::ERROR_NUM_ITEM_SHOWN_DATE);
+                    // Add for import error list 2014/11/04 T.Koyasu --end--
                 }
             }
         } else {
+            // Add for import error list 2014/11/04 T.Koyasu --start--
             // shown_dateの項目が存在しない
-            $error_list[] = new DetailErrorInfo($item_id, $title, self::ERROR_ITEM_NO_SHOWN_DATE);
+            $error_list[] = new DetailErrorInfo($item_id, $title, self::ERROR_ITEM_NO_SHOWN_DATE, self::ERROR_ATTR_NAME_SHOWN_DATE, "", "", self::ERROR_NUM_ITEM_NO_SHOWN_DATE);
+            // Add for import error list 2014/11/04 T.Koyasu --end--
         }
         
         // アイテムタイプIDのチェック
         $item_type_id = $item->getAttribute("item_type_id");
         $result = $this->checkItemType($xpath, $item_type_id);
         if($result === false) {
-            $error_list[] = new DetailErrorInfo($item_id, $title, self::ERROR_ITEM_TYPE);
+            // Add for import error list 2014/11/04 T.Koyasu --start--
+            $error_list[] = new DetailErrorInfo($item_id, $title, self::ERROR_ITEM_TYPE, "", "", "", self::ERROR_NUM_ITEM_TYPE);
+            // Add for import error list 2014/11/04 T.Koyasu --end--
         }
         
         // 必須属性のチェック
         $item_attr_type_list = $xpath->query("/export/repository_item_attr_type[@item_type_id = ".$item_type_id
             ." and @is_required = '1']");
         foreach($item_attr_type_list as $item_attr_type) {
+            // Add for import error list 2014/11/04 T.Koyasu --start--
             $this->checkItemAttrTypeIsRequired($xpath, $item_id, $item_type_id, 
-                $item_attr_type->getAttribute("attribute_id"), $title, $error_list);
+                $item_attr_type->getAttribute("attribute_id"), $title, $error_list, $item_attr_type->getAttribute('attribute_name'));
+            // Add for import error list 2014/11/04 T.Koyasu --end--
         }
         
         // アイテム属性のチェック
@@ -151,19 +194,23 @@ class RepositoryImportXmlValidator
         // 書誌情報のチェック
         $biblio_info_list = $xpath->query("/export/repository_biblio_info[@item_id = ".$item_id."]");
         foreach($biblio_info_list as $biblio_info) {
-            $this->checkBiblioInfo($xpath, $item_id, $title, $biblio_info, $error_list);
+            // Add for import error list 2014/11/04 T.Koyasu --start--
+            $this->checkBiblioInfo($xpath, $item_id, $title, $biblio_info, $error_list, $item_type_id);
+            // Add for import error list 2014/11/04 T.Koyasu --end--
         }
         
         // サムネイルのチェック
         $thumbnail_list = $xpath->query("/export/repository_thumbnail[@item_id = ".$item_id."]");
         foreach($thumbnail_list as $thumbnail) {
-            $this->checkThumbnail($xpath, $item_id, $title, $thumbnail, $xml_file_path, $error_list);
+            // Add for import error list 2014/11/04 T.Koyasu --start--
+            $this->checkThumbnail($xpath, $item_id, $title, $thumbnail, $xml_file_path, $error_list, $item_type_id);
+            // Add for import error list 2014/11/04 T.Koyasu --end--
         }
         
         // ファイルのチェック
         $file_list = $xpath->query("/export/repository_file[@item_id = ".$item_id."]");
         foreach($file_list as $file) {
-            $this->checkFile($xpath, $item_id, $title, $file, $xml_file_path, $error_list);
+            $this->checkFile($xpath, $item_id, $title, $file, $xml_file_path, $error_list, $item_type_id);
         }
         
         // サーバドメインのチェック（更新時のみ）
@@ -171,7 +218,9 @@ class RepositoryImportXmlValidator
         if($edit_item->length == 1) {
             $this->checkEditItemUrl($edit_item->item(0)->nodeValue, $item_id, $title, $error_list);
         } else if($edit_item->length > 1) {
-            $error_list[] = new DetailErrorInfo($item_id, $title, self::ERROR_EDIT_ITEM_NUM);
+            // Add for import error list 2014/11/04 T.Koyasu --start--
+            $error_list[] = new DetailErrorInfo($item_id, $title, self::ERROR_EDIT_ITEM_NUM, "", "", "", self::ERROR_NUM_EDIT_ITEM_NUM);
+            // Add for import error list 2014/11/04 T.Koyasu --end--
         }
     }
     
@@ -184,8 +233,9 @@ class RepositoryImportXmlValidator
      * @param string $attribute_id  attribute_id
      * @param string $title         title
      * @param Array  &$error_list   class array
+     * @param string $attr_name     attribute_name
      */
-    private function checkItemAttrTypeIsRequired($xpath, $item_id, $item_type_id, $attribute_id, $title, &$error_list) {
+    private function checkItemAttrTypeIsRequired($xpath, $item_id, $item_type_id, $attribute_id, $title, &$error_list, $attr_name) {
         // 必須属性のチェック
         // 通常属性
         $result1 = $xpath->query("/export/repository_item_attr[@item_id = ".$item_id
@@ -199,11 +249,17 @@ class RepositoryImportXmlValidator
         // ファイル
         $result4 = $xpath->query("/export/repository_file[@item_id = ".$item_id
             ." and @item_type_id = ".$item_type_id." and @attribute_id = ".$attribute_id."]");
+        // 著者
+        $result5 = $xpath->query("/export/repository_personal_name[@item_id = ".$item_id
+            ." and @item_type_id = ".$item_type_id." and @attribute_id = ".$attribute_id."]");
         if($result1->length == 0 &&
            $result2->length == 0 &&
            $result3->length == 0 &&
-           $result4->length == 0) {
-            $error_list[] = new DetailErrorInfo($item_id, $title, self::ERROR_ITEM_ATTR_IS_REQUIRED);
+           $result4->length == 0 &&
+           $result5->length == 0) {
+            // Add for import error list 2014/11/04 T.Koyasu --start--
+            $error_list[] = new DetailErrorInfo($item_id, $title, self::ERROR_ITEM_ATTR_IS_REQUIRED, $attr_name, "", "", self::ERROR_NUM_ITEM_ATTR_IS_REQUIRED);
+            // Add for import error list 2014/11/04 T.Koyasu --end--
         }
     }
     
@@ -222,7 +278,9 @@ class RepositoryImportXmlValidator
             "/export/repository_item_attr_type[@item_type_id = ".$item_attr->getAttribute("item_type_id")
             ." and @attribute_id = ".$item_attr->getAttribute("attribute_id")."]");
         if($attr_type_path->length == 0) {
-            $error_list[] = new DetailErrorInfo($item_id, $title, self::ERROR_ITEM_ATTR_TYPE);
+            // Add for import error list 2014/11/04 T.Koyasu --start--
+            $error_list[] = new DetailErrorInfo($item_id, $title, self::ERROR_ITEM_ATTR_TYPE, "", "", "", self::ERROR_NUM_ITEM_ATTR_TYPE);
+            // Add for import error list 2014/11/04 T.Koyasu --end--
             return;
         }
         
@@ -233,7 +291,9 @@ class RepositoryImportXmlValidator
             case "link":
                 $result = $this->checkItemAttrLink($item_attr->getAttribute("attribute_value"));
                 if($result === false) {
-                    $error_list[] = new DetailErrorInfo($item_id, $title, self::ERROR_ITEM_ATTR_LINK);
+                    // Add for import error list 2014/11/04 T.Koyasu --start--
+                    $error_list[] = new DetailErrorInfo($item_id, $title, self::ERROR_ITEM_ATTR_LINK, $attr_type_path->item(0)->getAttribute('attribute_name'), $item_attr->getAttribute("attribute_value"), "", self::ERROR_NUM_ITEM_ATTR_LINK);
+                    // Add for import error list 2014/11/04 T.Koyasu --end--
                 }
                 break;
             
@@ -241,7 +301,9 @@ class RepositoryImportXmlValidator
             case "date":
                 $result = $this->checkItemAttrDate($item_attr->getAttribute("attribute_value"));
                 if($result === false) {
-                    $error_list[] = new DetailErrorInfo($item_id, $title, self::ERROR_ITEM_ATTR_DATE);
+                    // Add for import error list 2014/11/04 T.Koyasu --start--
+                    $error_list[] = new DetailErrorInfo($item_id, $title, self::ERROR_ITEM_ATTR_DATE, $attr_type_path->item(0)->getAttribute('attribute_name'), $item_attr->getAttribute("attribute_value"), "", self::ERROR_NUM_ITEM_ATTR_DATE);
+                    // Add for import error list 2014/11/04 T.Koyasu --end--
                 }
                 break;
             
@@ -249,7 +311,9 @@ class RepositoryImportXmlValidator
             case "checkbox":
             case "radio":
             case "select":
-                $this->checkItemAttrCandidate($xpath, $item_id, $title, $item_attr, $error_list);
+                // Add for import error list 2014/11/04 T.Koyasu --start--
+                $this->checkItemAttrCandidate($xpath, $item_id, $title, $item_attr, $error_list, $attr_type_path->item(0)->getAttribute('attribute_name'));
+                // Add for import error list 2014/11/04 T.Koyasu --end--
                 break;
             
             // それ以外は何もしない
@@ -266,12 +330,17 @@ class RepositoryImportXmlValidator
      * @param string $title         title
      * @param Object $biblio_info   biblio information node
      * @param Array  &$error_list   class array
+     * @param string $item_type_id  item_type_id
      */
-    private function checkBiblioInfo($xpath, $item_id, $title, $biblio_info, &$error_list) {
+    private function checkBiblioInfo($xpath, $item_id, $title, $biblio_info, &$error_list, $item_type_id) {
         // 書誌情報の発行年月日フォーマットチェック(YYYY-MM-DD, YYYY-MM, YYYY)
         $result = $this->checkItemAttrDate($biblio_info->getAttribute("date_of_issued"));
         if($result === false) {
-            $error_list[] = new DetailErrorInfo($item_id, $title, self::ERROR_BIBLIO_PUB_DATE);
+            // Add for import error list 2014/11/04 T.Koyasu --start--
+            $attr_name = $this->getAttributeName($xpath, $biblio_info, $item_type_id);
+            
+            $error_list[] = new DetailErrorInfo($item_id, $title, self::ERROR_BIBLIO_PUB_DATE, $attr_name, $biblio_info->getAttribute("date_of_issued"), "", self::ERROR_NUM_BIBLIO_PUB_DATE);
+            // Add for import error list 2014/11/04 T.Koyasu --end--
         }
     }
     
@@ -284,12 +353,17 @@ class RepositoryImportXmlValidator
      * @param Object $thumbnail         thumbnail node
      * @param string $xml_file_path     xml path
      * @param Array  &$error_list       class array
+     * @param string $item_type_id      item_type_id
      */
-    private function checkThumbnail($xpath, $item_id, $title, $thumbnail, $xml_file_path, &$error_list) {
+    private function checkThumbnail($xpath, $item_id, $title, $thumbnail, $xml_file_path, &$error_list, $item_type_id) {
         // サムネイル存在チェック
         $result = $this->checkExistFile($thumbnail->getAttribute("file_name"), $xml_file_path);
         if($result === false) {
-            $error_list[] = new DetailErrorInfo($item_id, $title, self::ERROR_THUMBNAIL_NOT_EXIST);
+            // Add for import error list 2014/11/04 T.Koyasu --start--
+            $attr_name = $this->getAttributeName($xpath, $thumbnail, $item_type_id);
+            
+            $error_list[] = new DetailErrorInfo($item_id, $title, self::ERROR_THUMBNAIL_NOT_EXIST, $attr_name, $thumbnail->getAttribute("file_name"), "", self::ERROR_NUM_THUMBNAIL_NOT_EXIST);
+            // Add for import error list 2014/11/04 T.Koyasu --end--
         }
     }
     
@@ -302,19 +376,29 @@ class RepositoryImportXmlValidator
      * @param Object $file              file node
      * @param string $xml_file_path     xml path
      * @param Array  &$error_list       class array
+     * @param string $item_type_id      item_type_id
      */
-    private function checkFile($xpath, $item_id, $title, $file, $xml_file_path, &$error_list) {
+    private function checkFile($xpath, $item_id, $title, $file, $xml_file_path, &$error_list, $item_type_id) {
+        // Add for import error list 2014/11/04 T.Koyasu --start--
+        // get attribute_name
+        $attr_name = $this->getAttributeName($xpath, $file, $item_type_id);
+        // Add for import error list 2014/11/04 T.Koyasu --end--
+        
         // ファイル存在チェック
         $result = $this->checkExistFile($file->getAttribute("file_name"), $xml_file_path);
         if($result === false) {
-            $error_list[] = new DetailErrorInfo($item_id, $title, self::ERROR_FILE_NOT_EXIST);
+            // Add for import error list 2014/11/04 T.Koyasu --start--
+            $error_list[] = new DetailErrorInfo($item_id, $title, self::ERROR_FILE_NOT_EXIST, $attr_name, $file->getAttribute("file_name"), "", self::ERROR_NUM_FILE_NOT_EXIST);
+            // Add for import error list 2014/11/04 T.Koyasu --end--
         }
         
         // ファイル公開日フォーマットチェック(YYYY-MM-DD HH:ii:ss.mmm, YYYY-MM-DD)
         if(strlen($file->getAttribute("pub_date")) > 0) {
             $result = $this->checkShownDate($file->getAttribute("pub_date"));
             if($result === false) {
-                $error_list[] = new DetailErrorInfo($item_id, $title, self::ERROR_FILE_PUB_DATE);
+                // Add for import error list 2014/11/04 T.Koyasu --start--
+                $error_list[] = new DetailErrorInfo($item_id, $title, self::ERROR_FILE_PUB_DATE, $attr_name, $file->getAttribute("pub_date"), "", self::ERROR_NUM_FILE_PUB_DATE);
+                // Add for import error list 2014/11/04 T.Koyasu --end--
             }
         }
         
@@ -322,7 +406,9 @@ class RepositoryImportXmlValidator
         if(strlen($file->getAttribute("flash_pub_date")) > 0) {
             $result = $this->checkShownDate($file->getAttribute("flash_pub_date"));
             if($result === false) {
-                $error_list[] = new DetailErrorInfo($item_id, $title, self::ERROR_FILE_FLASH_PUB_DATE);
+                // Add for import error list 2014/11/04 T.Koyasu --start--
+                $error_list[] = new DetailErrorInfo($item_id, $title, self::ERROR_FILE_FLASH_PUB_DATE, $attr_name, $file->getAttribute("flash_pub_date"), "", self::ERROR_NUM_FILE_FLASH_PUB_DATE);
+                // Add for import error list 2014/11/04 T.Koyasu --end--
             }
         }
     }
@@ -412,20 +498,30 @@ class RepositoryImportXmlValidator
      * @param string $title         title
      * @param Object $item_attr     item attribute node
      * @param Array  &$error_list   class array
+     * @param string $attr_name      attribute name
      */
-    private function checkItemAttrCandidate($xpath, $item_id, $title, $item_attr, &$error_list) {
+    private function checkItemAttrCandidate($xpath, $item_id, $title, $item_attr, &$error_list, $attr_name) {
         // アイテム属性選択候補タグを検索
         // PHPのXPathはエスケープの仕組みが用意されていないらしいので、IDから選択肢一覧を取得した後に比較を行う
         $result = $xpath->query("/export/repository_item_attr_candidate[@item_type_id = ".$item_attr->getAttribute("item_type_id")
                                ." and @attribute_id = ".$item_attr->getAttribute("attribute_id")."]");
         $exist_flag = false;
+        $candidate_list = "";
         for($ii = 0; $ii < $result->length; $ii++) {
             if($result->item($ii)->getAttribute("candidate_value") == $item_attr->getAttribute("attribute_value")) {
                 $exist_flag = true;
             }
+            // Add for import error list 2014/11/04 T.Koyasu --start--
+            if(strlen($candidate_list) > 0){
+                $candidate_list .= "|";
+            }
+            $candidate_list .= $result->item($ii)->getAttribute("candidate_value");
+            // Add for import error list 2014/11/04 T.Koyasu --end--
         }
         if(!$exist_flag) {
-            $error_list[] = new DetailErrorInfo($item_id, $title, self::ERROR_ITEM_ATTR_CANDIDATE);
+            // Add for import error list 2014/11/04 T.Koyasu --start--
+            $error_list[] = new DetailErrorInfo($item_id, $title, self::ERROR_ITEM_ATTR_CANDIDATE, $attr_name, $item_attr->getAttribute("attribute_value"), $candidate_list, self::ERROR_NUM_ITEM_ATTR_CANDIDATE);
+            // Add for import error list 2014/11/04 T.Koyasu --end--
         }
     }
     
@@ -509,7 +605,10 @@ class RepositoryImportXmlValidator
         // 文字列からドメイン部分を取得
         $domain_name = parse_url($url);
         if($server_domain != $domain_name["host"]) {
-            $error_list[] = new DetailErrorInfo($item_id, $title, self::ERROR_EDIT_ITEM_URL);
+            // Add for import error list 2014/11/04 T.Koyasu --start--
+            $base_url = 0;
+            $error_list[] = new DetailErrorInfo($item_id, $title, self::ERROR_EDIT_ITEM_URL, $domain_name["host"], "", "", self::ERROR_NUM_EDIT_ITEM_URL);
+            // Add for import error list 2014/11/04 T.Koyasu --end--
         }
     }
     
@@ -528,6 +627,29 @@ class RepositoryImportXmlValidator
         
         return true;
     }
+    
+    // Add for import error list 2014/11/04 T.Koyasu --start--
+    /**
+     * get attibute_name by node_list(thumbnail, biblio, file, etc.)
+     *
+     * @param Object $xpath         xml element
+     * @param Object $xml_node_list DomNode(thumbnail, biblio, file, etc.)
+     * @param string $item_type_id  item_type_id
+     * @return unknown
+     */
+    private function getAttributeName($xpath, $xml_node_list, $item_type_id)
+    {
+        $attr_name = "";
+        
+        $attr_id = $xml_node_list->getAttribute("attribute_id");
+        $item_attr_list = $xpath->query("/export/repository_item_attr_type[@attribute_id = ". $attr_id. " and @item_type_id = ". $item_type_id. "]");
+        foreach($item_attr_list as $item_attr){
+            $attr_name = $item_attr->getAttribute("attribute_name");
+        }
+        
+        return $attr_name;
+    }
+    // Add for import error list 2014/11/04 T.Koyasu --end--
 }
 
 class DetailErrorInfo
@@ -535,11 +657,34 @@ class DetailErrorInfo
     public $item_id = null;
     public $title = null;
     public $error = null;
+    // Add for import error list 2014/11/04 T.Koyasu --start--
+    public $attr_name = null;
+    public $input_value = null;
+    public $regist_value = null;
+    public $error_no = 0;
+    // Add for import error list 2014/11/04 T.Koyasu --end--
     
-    function __construct($item_id, $title, $error) {
+    /**
+     * construct
+     *
+     * @param int $item_id
+     * @param string $title
+     * @param string $error
+     * @param string $attr_name
+     * @param string $input_value
+     * @param string $regist_value
+     * @param int    $error_no
+     */
+    function __construct($item_id, $title, $error, $attr_name, $input_value, $regist_value, $error_no) {
         $this->item_id = $item_id;
         $this->title = $title;
         $this->error = $error;
+        // Add for import error list 2014/11/04 T.Koyasu --start--
+        $this->attr_name = $attr_name;
+        $this->input_value = $input_value;
+        $this->regist_value = $regist_value;
+        $this->error_no = $error_no;
+        // Add for import error list 2014/11/04 T.Koyasu --end--
     }
 }
 ?>

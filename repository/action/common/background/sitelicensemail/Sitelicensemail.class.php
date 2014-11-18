@@ -1,7 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-// $Id: Sitelicensemail.class.php 41601 2014-09-16 11:53:55Z tomohiro_ichikawa $
+// $Id: Sitelicensemail.class.php 43734 2014-11-07 03:59:44Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -397,7 +397,8 @@ class Repository_Action_Common_Background_Sitelicensemail extends BackgroundProc
                  Repository_Components_Loganalyzor::dateformatMonthlyQuery("LOG").
                  " FROM (". Repository_Components_Loganalyzor::execlusiveDoubleAccessSubQuery(RepositoryConst::LOG_OPERATION_DOWNLOAD_FILE, "", $start_date, $finish_date, RepositoryConst::LOG_OPERATION_DOWNLOAD_FILE). ") AS LOG, ".
                         DATABASE_PREFIX. "repository_index AS IDX, ".
-                        DATABASE_PREFIX. "repository_position_index AS POS ".
+                        DATABASE_PREFIX. "repository_position_index AS POS, ".
+                        DATABASE_PREFIX. "repository_item AS ITEM ".
                  " WHERE LOG.record_date >= ? ".
                  " AND LOG.record_date <= ? ".
                  " ". Repository_Components_Loganalyzor::execlusiveIpAddressQuery("LOG").
@@ -407,7 +408,9 @@ class Repository_Action_Common_Background_Sitelicensemail extends BackgroundProc
                  " AND IDX.online_issn IN ( ". $online_issn. " ) ".
                  " AND IDX.index_id = POS.index_id ".
                  " AND POS.item_id = LOG.item_id ".
+                 " AND POS.item_id = ITEM.item_id ".
                  $this->getTargetIpAddressRangeQuery($start_ip, $finish_ip, "LOG").
+                 $this->getExclusiveSitelicenseItemtype("ITEM").
                  " ". Repository_Components_Loganalyzor::perMonthlyQuery(). ", IDX.online_issn ;";
         $params = array();
         $params[] = $start_date;
@@ -441,7 +444,8 @@ class Repository_Action_Common_Background_Sitelicensemail extends BackgroundProc
                  Repository_Components_Loganalyzor::dateformatMonthlyQuery("LOG").
                  " FROM ". Repository_Components_Loganalyzor::execlusiveDoubleAccessSubQuery(RepositoryConst::LOG_OPERATION_DETAIL_VIEW, "", $start_date, $finish_date, RepositoryConst::LOG_OPERATION_DETAIL_VIEW). " AS LOG, ".
                         DATABASE_PREFIX. "repository_index AS IDX, ".
-                        DATABASE_PREFIX. "repository_position_index AS POS ".
+                        DATABASE_PREFIX. "repository_position_index AS POS, ".
+                        DATABASE_PREFIX. "repository_item AS ITEM ".
                  " WHERE LOG.record_date >= ? ".
                  " AND LOG.record_date <= ? ".
                  " ". Repository_Components_Loganalyzor::execlusiveIpAddressQuery("LOG").
@@ -451,7 +455,9 @@ class Repository_Action_Common_Background_Sitelicensemail extends BackgroundProc
                  " AND IDX.online_issn IN ( ". $online_issn. " ) ".
                  " AND IDX.index_id = POS.index_id ".
                  " AND POS.item_id = LOG.item_id ".
+                 " AND POS.item_id = ITEM.item_id ".
                  $this->getTargetIpAddressRangeQuery($start_ip, $finish_ip, "LOG").
+                 $this->getExclusiveSitelicenseItemtype("ITEM").
                  " ". Repository_Components_Loganalyzor::perMonthlyQuery(). ", IDX.online_issn ;";
         $params = array();
         $params[] = $start_date;
@@ -533,8 +539,22 @@ class Repository_Action_Common_Background_Sitelicensemail extends BackgroundProc
         $this->mailMain->setSubject($sub);
         // 本文
         $body = sprintf($this->smartyAssign->getLang("repository_sitelicense_mail_body_dear"), $organization_name)."\n\n".
+                sprintf($this->smartyAssign->getLang("repository_sitelicense_mail_body_thank"), $result[0]["conf_value"])."\n".
                 date("Y-m", mktime(0, 0, 0, date("m") - 1, 1, date("Y"))).$this->smartyAssign->getLang("repository_sitelicense_mail_body_announcement")."\n\n".
-                sprintf($this->smartyAssign->getLang("repository_sitelicense_mail_body_unnecessary"), $result[1]["conf_value"]);
+                sprintf($this->smartyAssign->getLang("repository_sitelicense_mail_body_unnecessary"), $result[1]["conf_value"])."\n\n\n".
+                $this->smartyAssign->getLang("repository_sitelicense_mail_body_explain_rule_1")."\n".
+                $this->smartyAssign->getLang("repository_sitelicense_mail_body_explain_rule_2")."\n\n".
+                $this->smartyAssign->getLang("repository_sitelicense_mail_body_explain_format")."\n\n".
+                $this->smartyAssign->getLang("repository_sitelicense_mail_body_explain_all_file")."\n\n".
+                $this->smartyAssign->getLang("repository_sitelicense_mail_body_explain_search_report_1")."\n".
+                $this->smartyAssign->getLang("repository_sitelicense_mail_body_explain_search_report_2")."\n\n".
+                $this->smartyAssign->getLang("repository_sitelicense_mail_body_explain_download_report_1")."\n".
+                $this->smartyAssign->getLang("repository_sitelicense_mail_body_explain_download_report_2")."\n\n".
+                $this->smartyAssign->getLang("repository_sitelicense_mail_body_explain_usagestatistics_1")."\n".
+                $this->smartyAssign->getLang("repository_sitelicense_mail_body_explain_usagestatistics_2")."\n\n\n".
+                "------------------------------------------------"."\n".
+                sprintf($this->smartyAssign->getLang("repository_sitelicense_mail_footer_contact"), $result[0]["conf_value"])."\n".
+                $result[1]["conf_value"];
         $this->mailMain->setBody($body);
         // 送り先
         $users = array();
@@ -590,6 +610,29 @@ class Repository_Action_Common_Background_Sitelicensemail extends BackgroundProc
         $this->dbAccess->executeQuery($query, $params);
         
         $this->exitAction();
+    }
+    
+    /** 
+     * get exclusive sitelicense itemtype
+     * 
+     * @param string $abbreviation
+     */
+    private function getExclusiveSitelicenseItemtype($abbreviation) {
+        $query = "SELECT param_value FROM ".DATABASE_PREFIX ."repository_parameter ".
+                 "WHERE param_name = ? ;";
+        $params = array();
+        $params = "site_license_item_type_id";
+        $result = $this->dbAccess->executeQuery($query, $params);
+        $item_type_id_query = "";
+        if(strlen($result[0]["param_value"]) > 0) {
+            if($abbreviation == "") {
+                $item_type_id_query = " AND item_type_id NOT IN (". $result[0]["param_value"]. ") ";
+            } else {
+                $item_type_id_query = " AND ". $abbreviation.".item_type_id NOT IN (". $result[0]["param_value"]. ") ";
+            }
+        }
+        
+        return $item_type_id_query;
     }
 }
 ?>

@@ -1,7 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-// $Id: RepositoryAction.class.php 645 2014-10-29 12:39:52Z ivis $
+// $Id: RepositoryAction.class.php 651 2014-11-13 10:14:11Z ivis $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics,
 // Research and Development Center for Scientific Information Resources
@@ -1347,6 +1347,7 @@ class RepositoryAction extends Action
         if($result === false){
             return false;
         }
+        return true;
     }
 
     /**

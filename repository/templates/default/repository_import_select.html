@@ -1,6 +1,6 @@
 <!--// ---------------------------------------------------------------------->
 <!--//                                                                     -->
-<!--// $Id: repository_import_select.html 562 2014-04-14 01:03:17Z ivis $          -->
+<!--// $Id: repository_import_select.html 651 2014-11-13 10:14:11Z ivis $          -->
 <!--//                                                                     -->
 <!--// Copyright (c) 2007 - 2008, National Institute of Informatics,        -->
 <!--// Research and Development Center for Scientific Information Resources -->
@@ -41,10 +41,86 @@
 <form id="attachment_form<{$id}>" target="attachment_form<{$id}>" enctype="multipart/form-data">
 <div class="mt10">
 	<div class="comp_tabset"></div>
-	<div class="comp_tabset_content" style="height: 360px">
+	<div class="comp_tabset_content" style="border-bottom: none; border-left: none; border-right: none;">
 		<{* タブ1：コンテンツ tab1:contents *}>
 		<div class="th_classic_content content text_color" id="import_tab_1" align="center" >
-
+       <{* show error massage list 2014/11/04 T.Koyasu --start-- *}>
+            <{if $action.error_info != null && count($action.error_info) > 0}>
+                <div class="error_msg mt05">
+                    <table class="full tb01" align="center">
+                        <tr>
+                            <th class="th_col_repos ac"><{$lang.repository_import_error_header_item_title}></th>
+                            <th class="th_col_repos ac"><{$lang.repository_import_error_header_error}></th>
+                            <th class="th_col_repos ac"><{$lang.repository_import_error_header_attr_name}></th>
+                            <th class="th_col_repos ac"><{$lang.repository_import_error_header_input_value}></th>
+                            <th class="th_col_repos ac"><{$lang.repository_import_error_header_regist_value}></th>
+                        </tr>
+                        <{foreach from=$action.error_info item=error_list name=cnt}>
+                            <{assign var="iCnt" value=$smarty.foreach.cnt.iteration-1}>
+                            <{if $iCnt % 2 == 0}> 
+                                <tr class="list_line_repos1">
+                            <{else}>
+                                <tr class="list_line_repos2">
+                            <{/if}>
+                                <td class="w300px" style="white-space:normal; ">
+                                    <{$error_list.title}>
+                                </td>
+                                <td class="w300px" style="white-space:normal; ">
+                                    <{if $error_list.error_no == 1}>
+                                        <{$lang.repository_import_error_msg_no_xml}>
+                                    <{elseif $error_list.error_no == 2}>
+                                        <{$lang.repository_import_error_msg_parse_xml}>
+                                    <{elseif $error_list.error_no == 3}>
+                                        <{$lang.repository_import_error_msg_tag_num}>
+                                    <{elseif $error_list.error_no == 4}>
+                                        <{$lang.repository_import_error_msg_item_title}>
+                                    <{elseif $error_list.error_no == 5}>
+                                        <{$lang.repository_import_error_msg_item_shown_date}>
+                                    <{elseif $error_list.error_no == 6}>
+                                        <{$lang.repository_import_error_msg_item_no_shown_date}>
+                                    <{elseif $error_list.error_no == 7}>
+                                        <{$lang.repository_import_error_msg_item_attr_is_required}>
+                                    <{elseif $error_list.error_no == 8}>
+                                        <{$lang.repository_import_error_msg_item_attr_type}>
+                                    <{elseif $error_list.error_no == 9}>
+                                        <{$lang.repository_import_error_msg_item_attr_link}>
+                                    <{elseif $error_list.error_no == 10}>
+                                        <{$lang.repository_import_error_msg_item_attr_date}>
+                                    <{elseif $error_list.error_no == 11}>
+                                        <{$lang.repository_import_error_msg_item_attr_candidate}>
+                                    <{elseif $error_list.error_no == 12}>
+                                        <{$lang.repository_import_error_msg_biblio_issue_date}>
+                                    <{elseif $error_list.error_no == 13}>
+                                        <{$lang.repository_import_error_msg_thumbnail_not_exist}>
+                                    <{elseif $error_list.error_no == 14}>
+                                        <{$lang.repository_import_error_msg_file_not_exist}>
+                                    <{elseif $error_list.error_no == 15}>
+                                        <{$lang.repository_import_error_msg_file_pub_date}>
+                                    <{elseif $error_list.error_no == 16}>
+                                        <{$lang.repository_import_error_msg_flash_pub_date}>
+                                    <{elseif $error_list.error_no == 17}>
+                                        <{$lang.repository_import_error_msg_item_type}>
+                                    <{elseif $error_list.error_no == 18}>
+                                        <{$lang.repository_import_error_msg_edit_item_url}>
+                                    <{elseif $error_list.error_no == 19}>
+                                        <{$lang.repository_import_error_msg_edit_item_num}>
+                                    <{/if}>
+                                </td>
+                                <td>
+                                    <{$error_list.attr_name}>
+                                </td>
+                                <td>
+                                    <{$error_list.input_value}>
+                                </td>
+                                <td>
+                                    <{$error_list.regist_value}>
+                                </td>
+                            </tr>
+                        <{/foreach}>
+                    </table>
+                </div>
+            <{/if}>
+            <{* show error massage list 2014/11/04 T.Koyasu --end-- *}>
 			<div id="repo_side_navi" class="fl">
 				<{* make index tree 2008/12/03 Y.Nakao --start-- *}>
 				<div>
@@ -59,8 +135,7 @@
 				</div>
 			</div>
 			<div class="repository_right_header plr20" style="position: relative; top: 70px">
-
-				<table class="tb01 full" style="position: relative; right: 10px">
+                <table class="tb01 full" style="position: relative; right:10px">
 					<tr>
 						<th class="item_edit_list"><{$lang.repository_import_select_item}></th>
 						<td class="item_edit_list al">
@@ -98,7 +173,7 @@
 		</div>
 
 		<{* タブ2：WEKO著者名典拠 tab2:author *}>
-		<div class="th_classic_content content text_color" id="import_tab_2" align="center">
+		<div class="th_classic_content content text_color" id="import_tab_2" align="center" style="height: 360px;">
 			<div align="right" class="pt10 pr10">
 				<span id="repositoryExportTemplate<{$id}>">
 					<a href="#" onclick="javascript: templateDownload(); return false;" ><{$lang.repository_importauthority_result_template}></a>

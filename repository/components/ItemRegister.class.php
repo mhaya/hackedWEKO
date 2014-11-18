@@ -1,7 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-// $Id: ItemRegister.class.php 640 2014-10-24 08:07:50Z ivis $
+// $Id: ItemRegister.class.php 651 2014-11-13 10:14:11Z ivis $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -1850,6 +1850,7 @@ class ItemRegister extends RepositoryAction
             $result = $this->addPrivateContents($index[$ii]['index_id']);
             // Add private_contents count K.Matsuo 2013/05/07 --end--
         }
+        return true;
         // Fix check index_id Y.Nakao 2013/06/07 --end--
     }
     

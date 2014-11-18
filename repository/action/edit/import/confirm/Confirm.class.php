@@ -1,7 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-// $Id: Confirm.class.php 640 2014-10-24 08:07:50Z ivis $
+// $Id: Confirm.class.php 651 2014-11-13 10:14:11Z ivis $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -153,11 +153,25 @@ class Repository_Action_Edit_Import_Confirm extends RepositoryAction
             $result = $import_common->XMLAnalysis($tmp_dir, $array_item_data, $error_list);
             if($result === false){
                 if(count($error_list) > 0) {
-                    $error_msg = "";
+                    // Add for import error list 2014/11/04 T.Koyasu --start--
+                    // remove error message in ImportCommon
+                    $this->Session->removeParameter("error_msg");
+                    
+                    $error_info = array();
+                    
                     for($ii = 0; $ii < count($error_list); $ii++) {
-                        $error_msg .= $error_list[$ii]->error."\n";
+                        $error_info[$ii] = array();
+                        $error_info[$ii]["error"] = $error_list[$ii]->error; 
+                        $error_info[$ii]["title"] = $error_list[$ii]->title; 
+                        $error_info[$ii]["item_id"] = $error_list[$ii]->item_id; 
+                        $error_info[$ii]["attr_name"] = $error_list[$ii]->attr_name; 
+                        $error_info[$ii]["input_value"] = $error_list[$ii]->input_value; 
+                        $error_info[$ii]["regist_value"] = $error_list[$ii]->regist_value;
+                        $error_info[$ii]["error_no"] = $error_list[$ii]->error_no;
                     }
-                    $this->Session->setParameter("error_msg", $error_msg);
+                    
+                    $this->Session->setParameter("error_info", $error_info);
+                    // Add for import error list 2014/11/04 T.Koyasu --end--
                 }
                 // error action
                 $exception = new RepositoryException( "ERR_MSG_xxx-xxx1", 001 );
