@@ -1279,6 +1279,7 @@ $obj_rel_wrap = $descmeta->getElementsByTagName(RepositoryConst::LIDO_TAG_NAMESP
             }
         }
         
+        // RecordWrap
         $record_wrap = $this->domDocument->getElementsByTagName(RepositoryConst::LIDO_TAG_NAMESPACE.RepositoryConst::LIDO_TAG_RECORD_WRAP);
         if($record_wrap->length === 1 ){
             $tmp = $record_wrap->item(0);
@@ -1331,6 +1332,40 @@ $obj_rel_wrap = $descmeta->getElementsByTagName(RepositoryConst::LIDO_TAG_NAMESP
             
             
         }
+
+        //resourceSet
+        //resourceID 0..1
+        //resourceRepresentation 0..*
+        //resourceType 0..1
+        //resourceRelType 0..*
+        //resourcePerspective 0..*
+        //resourceDescription 0..*
+        //resourceDateTaken 0..1
+        //resourceSource 0..*
+        //rightsResource 0..*
+        $resourceSet = $this->domDocument->getElementsByTagName(RepositoryConst::LIDO_TAG_NAMESPACE.RepositoryConst::LIDO_TAG_RESOURCE_SET);
+        foreach($resourceSet as $node){
+            $res_rep = $node->getElementsByTagName(RepositoryConst::LIDO_TAG_NAMESPACE.RepositoryConst::LIDO_TAG_RESOURCE_REPRESENTATION);
+            $res_desc = $node->getElementsByTagName(RepositoryConst::LIDO_TAG_NAMESPACE.RepositoryConst::LIDO_TAG_RESOURCE_DESCRIPTION);
+            $res_src = $node->getElementsByTagName(RepositoryConst::LIDO_TAG_NAMESPACE.RepositoryConst::LIDO_TAG_RESOURCE_SOURCE);
+            $res_right = $node->getElementsByTagName(RepositoryConst::LIDO_TAG_NAMESPACE.RepositoryConst::LIDO_TAG_RIGHT_RESOURCE);
+            
+            foreach($res_rep as $n) {
+                $node->appendChild($n);
+            }
+            foreach($res_desc as $n){
+                $node->appendChild($n);
+            }
+            foreach($res_src as $n){
+                $node->appendChild($n);
+            }
+            foreach($res_right as $n){
+                $node->appendChild($n);
+            }
+        }
+        
+        
+        
     }
 
     private function deleteNode($node) { 
