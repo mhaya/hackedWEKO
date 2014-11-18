@@ -1,0 +1,15 @@
+[HeaderMenu]
+1,_item_setting = "define:auto"
+
+;[Convert]
+;*.trim =
+
+[Action]
+Session = "ref:Session"
+Db = "ref:DbObject"
+
+[View]
+define:theme = 1
+
+success = "repository_item_embargo.html"
+

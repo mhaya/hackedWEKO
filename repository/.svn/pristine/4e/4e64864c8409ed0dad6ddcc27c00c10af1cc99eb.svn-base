@@ -1,0 +1,13 @@
+;[Convert]
+;*.trim =
+
+[ValidateDef]
+item_id
+
+[Action]
+session = "ref:Session"
+db = "ref:DbObject"
+
+[View]
+;success = "repository/view/edit/item/detailsetting.html"
+success = "action:repository_view_edit_item_detail"
