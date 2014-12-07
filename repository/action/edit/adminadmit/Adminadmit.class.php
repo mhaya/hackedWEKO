@@ -1709,7 +1709,7 @@ class Repository_Action_Edit_Adminadmit extends RepositoryAction
                 }
             }
 			// Add external author ID prefix 2010/11/11 A.Suzuki --end--
-			
+
             // Add URL rewrite 2011/11/15 T.Koyasu -start-
             $use_url_rewrite = $this->Session->getParameter('use_url_rewrite');
             // chage url rewrite radio button -> resetting .htaccess
@@ -2115,7 +2115,7 @@ class Repository_Action_Edit_Adminadmit extends RepositoryAction
                 // make pattern for preg_match
                 $replaced_path = preg_quote($path, "/");
                 $pattern = "/RewriteBase +" .$replaced_path ."/";
-                
+
                 // file change or not
                 $url_rewrite_flg = false;
                 $flg_pattern = "/RewriteEngine +On/";

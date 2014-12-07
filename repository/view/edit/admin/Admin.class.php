@@ -570,7 +570,7 @@ class Repository_View_Edit_Admin extends RepositoryAction
             }
             // search string 'OAI-PMH'
             $search_result = strpos($resBody, "OAI-PMH");
-            
+
             if(is_numeric($search_result) && $search_result > 0) {
                 // url rewrite is used
                 $show_base_url = BASE_URL ."/oai";
