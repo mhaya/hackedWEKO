@@ -1,7 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-// $Id: Oaipmh.class.php 640 2014-10-24 08:07:50Z ivis $
+// $Id: Oaipmh.class.php 657 2014-11-28 10:40:35Z ivis $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics,
 // Research and Development Center for Scientific Information Resources
@@ -1125,10 +1125,13 @@ class Repository_Oaipmh extends RepositoryAction
     private function getLocalTime($time)
     {
         // care verb=ListIdentifiers
-        if(!isset($time))
+        // Bug Fix WEKO-2014-106 2014/11/26 T.Ichikawa --start--
+        // care verb=ListRecords if until=MAX_DATE
+        if(!isset($time) || strlen($time) == 0)
         {
             return '';
         }
+        // Bug Fix WEKO-2014-106 2014/11/26 T.Ichikawa --end--
 
         // get difference from Greenwich Mean Time to Local time
         $param = array();

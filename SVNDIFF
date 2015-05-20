@@ -1,6 +1,28 @@
+Index: action/edit/adminadmit/Adminadmit.class.php
+===================================================================
+--- action/edit/adminadmit/Adminadmit.class.php	(revision 664)
++++ action/edit/adminadmit/Adminadmit.class.php	(working copy)
+@@ -1709,7 +1709,7 @@
+                 }
+             }
+ 			// Add external author ID prefix 2010/11/11 A.Suzuki --end--
+-			
++
+             // Add URL rewrite 2011/11/15 T.Koyasu -start-
+             $use_url_rewrite = $this->Session->getParameter('use_url_rewrite');
+             // chage url rewrite radio button -> resetting .htaccess
+@@ -2115,7 +2115,7 @@
+                 // make pattern for preg_match
+                 $replaced_path = preg_quote($path, "/");
+                 $pattern = "/RewriteBase +" .$replaced_path ."/";
+-                
++
+                 // file change or not
+                 $url_rewrite_flg = false;
+                 $flg_pattern = "/RewriteEngine +On/";
 Index: action/main/sword/SwordUpdate.class.php
 ===================================================================
---- action/main/sword/SwordUpdate.class.php	(revision 652)
+--- action/main/sword/SwordUpdate.class.php	(revision 664)
 +++ action/main/sword/SwordUpdate.class.php	(working copy)
 @@ -642,7 +642,7 @@
              // responce body
@@ -13,7 +35,7 @@ Index: action/main/sword/SwordUpdate.class.php
              // title
 Index: action/main/sword/SwordUtility.class.php
 ===================================================================
---- action/main/sword/SwordUtility.class.php	(revision 652)
+--- action/main/sword/SwordUtility.class.php	(revision 664)
 +++ action/main/sword/SwordUtility.class.php	(working copy)
 @@ -127,7 +127,8 @@
  		// V1.2 => V1.3 : <sword:level> removed...
@@ -27,7 +49,7 @@ Index: action/main/sword/SwordUtility.class.php
  		
 Index: action/main/sword/servicedocument/Servicedocument.class.php
 ===================================================================
---- action/main/sword/servicedocument/Servicedocument.class.php	(revision 652)
+--- action/main/sword/servicedocument/Servicedocument.class.php	(revision 664)
 +++ action/main/sword/servicedocument/Servicedocument.class.php	(working copy)
 @@ -124,7 +124,7 @@
          //   Full level 1 compliance REQUIRES implementation of the full set of extension elements and compliance with APP [ATOMPUB] as indicated by the SWORD profile of APP specified in this document.
@@ -40,7 +62,7 @@ Index: action/main/sword/servicedocument/Servicedocument.class.php
          // V1.2 => V1.3 : <sword:version> added.
 Index: files/sword/utils.php
 ===================================================================
---- files/sword/utils.php	(revision 652)
+--- files/sword/utils.php	(revision 664)
 +++ files/sword/utils.php	(working copy)
 @@ -360,6 +360,7 @@
          $filename = "deposit";
@@ -52,7 +74,7 @@ Index: files/sword/utils.php
                  $filename = $filename[1];
 Index: oaipmh/format/Lido.class.php
 ===================================================================
---- oaipmh/format/Lido.class.php	(revision 652)
+--- oaipmh/format/Lido.class.php	(revision 664)
 +++ oaipmh/format/Lido.class.php	(working copy)
 @@ -129,7 +129,10 @@
          {
@@ -296,3 +318,142 @@ Index: oaipmh/format/Lido.class.php
  }
  ?>
 \ No newline at end of file
+Index: templates/default/repository_item_detail.html
+===================================================================
+--- templates/default/repository_item_detail.html	(revision 664)
++++ templates/default/repository_item_detail.html	(working copy)
+@@ -1150,13 +1150,32 @@
+ 												<th class="th_detail_line_repos vt al w20 ws"><{$attr_type[i].attribute_name}></th>
+ 												<td class="td_detail_line_repos w80">
+ 													<{section name=j loop=$item_attr[i]}>
+-														<a target="_blank" href="<{$item_attr[i][j].attribute_value[0]}>">
++<!--														<a target="_blank" href="<{$item_attr[i][j].attribute_value[0]}>">
+ 															<{if $item_attr[i][j].attribute_value[1] != ""}>
+ 																<{$item_attr[i][j].attribute_value[1]}>
+ 															<{else}>
+ 																<{$item_attr[i][j].attribute_value[0]}>
+ 															<{/if}>
+ 														</a><br>
++-->
++<!-- using iframe/img tag 2012/09/20 by mhaya start -->
++<{if $item_attr[i][j].attribute_value[1] != "" && (strstr(strtolower($item_attr[i][0].attribute_value[1]),"iframe"))==true}>
++	<iframe src="<{$item_attr[i][j].attribute_value[0]}>" height="700" width="100%" scrolling="auto">Sorry. This content use IFrame</iframe>
++<{elseif strstr(strtolower($item_attr[i][j].attribute_value[0]),".jpg")==true||strstr(strtolower($item_attr[i][j].attribute_value[0]),".jpg")==true}>
++<!-- 
++	<img src="<{$item_attr[i][j].attribute_value[0]}>" alt="<{$item_attr[i][j].attribute_value[1]}>" width=200px height=200px />
++-->
++	<img src="<{$item_attr[i][j].attribute_value[0]}>" alt="<{$item_attr[i][j].attribute_value[1]}>" width=200px /><br/>
++<{else}>
++	<a target="_blank" href="<{$item_attr[i][j].attribute_value[0]}>">
++	<{if $item_attr[i][j].attribute_value[1] != ""}>
++		<{$item_attr[i][j].attribute_value[1]}>
++	<{else}>
++		<{$item_attr[i][j].attribute_value[0]}>
++	<{/if}>
++        </a><br/>
++<{/if}>
++<!-- using iframe/img tag 2012/09/20 by mhaya end -->
+ 													<{/section}>
+ 												</td>
+ 											</tr>
+Index: templates/default/repository_mobile_item_detail.html
+===================================================================
+--- templates/default/repository_mobile_item_detail.html	(revision 664)
++++ templates/default/repository_mobile_item_detail.html	(working copy)
+@@ -627,6 +627,14 @@
+                     </div>
+                     <div style="text-align:left; padding-left:20px;">
+                         <{if count($item_attr[i])==1}>
++<!-- using iframe/img tag 2012/09/20 by mhaya start -->
++<{if $item_attr[i][j].attribute_value[1] != "" && (strstr(strtolower($item_attr[i][0].attribute_value[1]),"iframe"))==true}>
++	<iframe src="<{$item_attr[i][j].attribute_value[0]}>" height="700" width="100%" scrolling="auto">Sorry. This content use IFrame</iframe>
++
++<{elseif strstr(strtolower($item_attr[i][j].attribute_value[0]),".jpg")==true||strstr(strtolower($item_attr[i][j].attribute_value[0]),".jpg")==true}>
++	<img src="<{$item_attr[i][j].attribute_value[0]}>" alt="<{$item_attr[i][j].attribute_value[1]}>" width=200px height=200px />
++<{else}>
++
+                              <a target="_blank" href="<{$item_attr[i][0].attribute_value[0]}>">
+                                  <{if $item_attr[i][0].attribute_value[1] != ""}>
+                                      <{$item_attr[i][0].attribute_value[1]}>
+@@ -634,6 +642,8 @@
+                                      <{$item_attr[i][0].attribute_value[0]}>
+                                  <{/if}>
+                              </a>
++<{/if}>
++<!-- using iframe/img tag 2012/09/20 by mhaya end -->
+                         <{else}>
+                             <table width="100%">
+                                 <{section name=j loop=$item_attr[i]}>
+@@ -642,6 +652,14 @@
+                                             <{$smarty.section.j.index_next}>.
+                                         </td>
+                                         <td style="width:100%; padding-top: 5px;">
++<!-- using iframe/img tag 2012/09/20 by mhaya start -->
++<{if $item_attr[i][j].attribute_value[1] != "" && (strstr(strtolower($item_attr[i][0].attribute_value[1]),"iframe"))==true}>
++	<iframe src="<{$item_attr[i][j].attribute_value[0]}>" height="700" width="100%" scrolling="auto">Sorry. This content use IFrame</iframe>
++<{elseif strstr(strtolower($item_attr[i][j].attribute_value[0]),".jpg")==true||strstr(strtolower($item_attr[i][j].attribute_value[0]),".jpg")==true}>
++	<img src="<{$item_attr[i][j].attribute_value[0]}>" alt="<{$item_attr[i][j].attribute_value[1]}>" width=200px height=200px />
++<{else}>
++
++
+                                             <a target="_blank" href="<{$item_attr[i][j].attribute_value[0]}>">
+                                                 <{if $item_attr[i][j].attribute_value[1] != ""}>
+                                                     <{$item_attr[i][j].attribute_value[1]}>
+@@ -649,6 +667,9 @@
+                                                     <{$item_attr[i][j].attribute_value[0]}>
+                                                 <{/if}>
+                                             </a>
++
++<{/if}>
++<!-- using iframe/img tag 2012/09/20 by mhaya end -->
+                                         </td>
+                                     </tr>
+                                 <{/section}>
+Index: templates/default/smartphone/repository_item_detail.html
+===================================================================
+--- templates/default/smartphone/repository_item_detail.html	(revision 664)
++++ templates/default/smartphone/repository_item_detail.html	(working copy)
+@@ -895,6 +895,8 @@
+                                                 <th class="th_detail_line_repos vt al w20 ws"><{$attr_type[i].attribute_name}></th>
+                                                 <td class="td_detail_line_repos w80">
+                                                     <{section name=j loop=$item_attr[i]}>
++<!-- using iframe/img tag 2012/09/20 by mhaya start -->
++<!-- 
+                                                         <a target="_blank" href="<{$item_attr[i][j].attribute_value[0]}>">
+                                                             <{if $item_attr[i][j].attribute_value[1] != ""}>
+                                                                 <{$item_attr[i][j].attribute_value[1]}>
+@@ -902,6 +904,21 @@
+                                                                 <{$item_attr[i][j].attribute_value[0]}>
+                                                             <{/if}>
+                                                         </a><br>
++-->
++<{if $item_attr[i][j].attribute_value[1] != "" && (strstr(strtolower($item_attr[i][0].attribute_value[1]),"iframe"))==true}>
++	<iframe src="<{$item_attr[i][j].attribute_value[0]}>" height="700" width="100%" scrolling="auto">Sorry. This content use IFrame</iframe>
++<{elseif strstr(strtolower($item_attr[i][j].attribute_value[0]),".jpg")==true||strstr(strtolower($item_attr[i][j].attribute_value[0]),".jpg")==true}>
++	<img src="<{$item_attr[i][j].attribute_value[0]}>" alt="<{$item_attr[i][j].attribute_value[1]}>" width=200px height=200px />
++<{else}>
++	<a target="_blank" href="<{$item_attr[i][j].attribute_value[0]}>">
++	<{if $item_attr[i][j].attribute_value[1] != ""}>
++		<{$item_attr[i][j].attribute_value[1]}>
++	<{else}>
++		<{$item_attr[i][j].attribute_value[0]}>
++	<{/if}>
++	</a><br>
++<{/if}>
++<!-- using iframe/img tag 2012/09/20 by mhaya end -->
+                                                     <{/section}>
+                                                 </td>
+                                             </tr>
+Index: view/edit/admin/Admin.class.php
+===================================================================
+--- view/edit/admin/Admin.class.php	(revision 664)
++++ view/edit/admin/Admin.class.php	(working copy)
+@@ -570,7 +570,7 @@
+             }
+             // search string 'OAI-PMH'
+             $search_result = strpos($resBody, "OAI-PMH");
+-            
++
+             if(is_numeric($search_result) && $search_result > 0) {
+                 // url rewrite is used
+                 $show_base_url = BASE_URL ."/oai";

@@ -1,7 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-// $Id: Tree.class.php 640 2014-10-24 08:07:50Z ivis $
+// $Id: Tree.class.php 663 2014-12-18 02:25:06Z ivis $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics,
 // Research and Development Center for Scientific Information Resources
@@ -400,15 +400,15 @@ class Repository_Action_Main_Tree extends RepositoryAction
                     $tree_html .= "</div>";
                 }
             }
-            if($this->sel_mode == ""){
-                // get root open tree data
-                $view_tree_html = "";
-                if(isset($tmpArray[0]["session_html"]))
-                {
-                    $view_tree_html = str_replace("'", "\'", $tmpArray[0]["session_html"]);
-                }
-                $this->Session->setParameter("view_tree_html", $view_tree_html);
-            }
+//            if($this->sel_mode == ""){
+//                // get root open tree data
+//                $view_tree_html = "";
+//                if(isset($tmpArray[0]["session_html"]))
+//                {
+//                    $view_tree_html = str_replace("'", "\'", $tmpArray[0]["session_html"]);
+//                }
+//                $this->Session->setParameter("view_tree_html", $view_tree_html);
+//            }
 
         }
         ///////////////////////////////

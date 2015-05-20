@@ -1,6 +1,6 @@
 <!--// ---------------------------------------------------------------------->
 <!--//                                                                     -->
-<!--// $Id: repository_item_search_tree.html 567 2014-05-21 08:30:29Z ivis $          -->
+<!--// $Id: repository_item_search_tree.html 663 2014-12-18 02:25:06Z ivis $          -->
 <!--//                                                                     -->
 <!--// Copyright (c) 2007 - 2008, National Institute of Informatics,        -->
 <!--// Research and Development Center for Scientific Information Resources -->
@@ -54,7 +54,8 @@
 						}
 					);
 		if(sel_mode=="" || sel_mode==null){
-			var str_tree = '<{$smarty.session.view_tree_html|smarty:nodefaults}>';
+			//var str_tree = '<{$smarty.session.view_tree_html|smarty:nodefaults}>';
+			var str_tree = '';
 			$(elm_name).innerHTML="";
 			var tree_node = document.createElement("span");
 			tree_node.innerHTML = str_tree;

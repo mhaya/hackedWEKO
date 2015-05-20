@@ -1,7 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-// $Id: Ranking.class.php 651 2014-11-13 10:14:11Z ivis $
+// $Id: Ranking.class.php 663 2014-12-18 02:25:06Z ivis $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -646,7 +646,7 @@ class Repository_View_Main_Ranking extends RepositoryAction
         $public_index_query = $repositoryIndexAuthorityManager->getPublicIndexQuery(false, $this->repository_admin_base, $this->repository_admin_room);
         // Make TmpTable 2014/11/07 T.Ichikawa --start--
         $now = date("YmdHis", strtotime($this->TransStartDate));
-        $public_index_query = $this->replaceQueryForTemporaryTable($public_index_query, $now);
+        $public_index_query = $this->replaceQueryForTemporaryTable($public_index_query, $now, $cntGroupNum);
         
         $sqlCmd=" 
             SELECT item.item_id, item.item_no, item.title, item.title_english,count(*)
@@ -663,7 +663,8 @@ class Repository_View_Main_Ranking extends RepositoryAction
               "  GROUP BY ". DATABASE_PREFIX ."repository_log.item_id 
               ORDER BY count(*) desc; ";
         $result = $this->Db->execute($sqlCmd);
-        $this->dropTemporaryTable($now);
+        
+        $this->dropTemporaryTable($now, $cntGroupNum);
         // Make TmpTable 2014/11/07 T.Ichikawa --end--
         return $result;
             }
@@ -726,7 +727,7 @@ class Repository_View_Main_Ranking extends RepositoryAction
         $public_index_query = $repositoryIndexAuthorityManager->getPublicIndexQuery(false, $this->repository_admin_base, $this->repository_admin_room);
         // Make TmpTable 2014/11/07 T.Ichikawa --start--
         $now = date("YmdHis", strtotime($this->TransStartDate));
-        $public_index_query = $this->replaceQueryForTemporaryTable($public_index_query, $now);
+        $public_index_query = $this->replaceQueryForTemporaryTable($public_index_query, $now, $cntGroupNum);
         // Modify for remove IE Continuation log K.Matsuo 2011/11/17 --start-- 
         $sqlCmd=" 
             SELECT item.item_id,item.item_no,item.title,item.title_english,". DATABASE_PREFIX ."repository_file.file_name,". DATABASE_PREFIX ."repository_file.file_no,count(*)
@@ -752,7 +753,7 @@ class Repository_View_Main_Ranking extends RepositoryAction
               " GROUP BY ". DATABASE_PREFIX ."repository_log.item_id, ". DATABASE_PREFIX ."repository_log.attribute_id, ". DATABASE_PREFIX ."repository_log.file_no 
             ORDER BY count(*) desc;     ";
         $result = $this->Db->execute($sqlCmd);
-        $this->dropTemporaryTable($now);
+        $this->dropTemporaryTable($now, $cntGroupNum);
         // Make TmpTable 2014/11/07 T.Ichikawa --end--
         return $result;
         // Mod OpenDepo 2014/01/31 S.Arata --end--
@@ -916,7 +917,7 @@ class Repository_View_Main_Ranking extends RepositoryAction
         $public_index_query = $repositoryIndexAuthorityManager->getPublicIndexQuery(false, $this->repository_admin_base, $this->repository_admin_room);
         // Make TmpTable 2014/11/07 T.Ichikawa --start--
         $now = date("YmdHis", strtotime($this->TransStartDate));
-        $public_index_query = $this->replaceQueryForTemporaryTable($public_index_query, $now);
+        $public_index_query = $this->replaceQueryForTemporaryTable($public_index_query, $now, $cntGroupNum);
         
         $sqlCmd=" 
             SELECT DISTINCT item.item_id,item.item_no,item.title,item.title_english,item.shown_date
@@ -932,7 +933,7 @@ class Repository_View_Main_Ranking extends RepositoryAction
              " ORDER BY item.shown_date desc, item.item_id desc;
         ";
         $result = $this->Db->execute($sqlCmd);
-        $this->dropTemporaryTable($now);
+        $this->dropTemporaryTable($now, $cntGroupNum);
         // Make TmpTable 2014/11/07 T.Ichikawa --end--
         return $result;
         // Mod OpenDepo 2014/01/31 S.Arata --end--
@@ -1009,7 +1010,7 @@ class Repository_View_Main_Ranking extends RepositoryAction
      * @param string $query
      * @param string $date
      */
-     private function replaceQueryForTemporaryTable($mod_query, $date) {
+     private function replaceQueryForTemporaryTable($mod_query, $date, &$cntGroupNum=0) {
         // 一時テーブル作成
         $query = "CREATE TEMPORARY TABLE ". DATABASE_PREFIX. "repository_index_browsing_authority_".$date." ".
                  "( PRIMARY KEY (`index_id`), ".
@@ -1017,10 +1018,24 @@ class Repository_View_Main_Ranking extends RepositoryAction
                    "KEY `index_public_state` (`public_state`,`pub_date`,`is_delete`) ) ".
                  "SELECT * FROM ". DATABASE_PREFIX. "repository_index_browsing_authority ;";
         $result = $this->Db->execute($query);
-        $query = "CREATE TEMPORARY TABLE ". DATABASE_PREFIX. "repository_index_browsing_groups_".$date." ".
-                 "( PRIMARY KEY (`index_id`,`exclusive_acl_group_id`) ) ".
-                 "SELECT * FROM ". DATABASE_PREFIX. "repository_index_browsing_authority ;";
-        $result = $this->Db->execute($query);
+        
+        // Bug Fix temporary table can read only once 2014/11/20 T.Koyasu --start--
+        // repository_index_browsing_groups is multiple exist in $mod_query
+        // temporary table can read only once in query
+        // therefore, create temporary table more than once
+        // 一時テーブルを一つのクエリ内で複数回参照するとエラーとなる
+        // $mod_query内にはrepository_index_browsing_groupsの記述が複数回(1~2)含まれているため、
+        // $mod_query内の出現回数を調べ、その分ユニークな一時テーブルを作成している
+        $word_num = mb_substr_count($mod_query, DATABASE_PREFIX. "repository_index_browsing_groups");
+        for($temp_table_num = 0; $temp_table_num < $word_num; $temp_table_num++){
+            $query = "CREATE TEMPORARY TABLE ". DATABASE_PREFIX. "repository_index_browsing_groups_".$date."_". $temp_table_num. " ".
+                     "( PRIMARY KEY (`index_id`,`exclusive_acl_group_id`) ) ".
+                     "SELECT * FROM ". DATABASE_PREFIX. "repository_index_browsing_groups ;";
+            $result = $this->Db->execute($query);
+            $cntGroupNum++;
+        }
+        // Bug Fix temporary table can read only once 2014/11/20 T.Koyasu --end--
+        
         $query = "CREATE TEMPORARY TABLE ". DATABASE_PREFIX. "pages_users_link_".$date." ".
                  "( PRIMARY KEY (`room_id`,`user_id`), ".
                    "KEY `user_id` (`user_id`) ) ".
@@ -1030,9 +1045,17 @@ class Repository_View_Main_Ranking extends RepositoryAction
         $mod_query = str_replace(DATABASE_PREFIX."repository_index_browsing_authority", 
                                  DATABASE_PREFIX."repository_index_browsing_authority_".$date, 
                                  $mod_query);
-        $mod_query = str_replace(DATABASE_PREFIX."repository_index_browsing_groups", 
-                                 DATABASE_PREFIX."repository_index_browsing_groups_".$date, 
-                                 $mod_query);
+        
+        // Bug Fix temporary table can read only once 2014/11/20 T.Koyasu --start--
+        // replace repository_index_browsing_groups to repository_index_browsing_groups
+        $pattern = "/". DATABASE_PREFIX. "repository_index_browsing_groups[^_]/";
+        $limit = 1;
+        for($temp_table_num = 0; $temp_table_num < $word_num; $temp_table_num++){
+            $replacement = DATABASE_PREFIX."repository_index_browsing_groups_".$date. "_". $temp_table_num. " ";
+            $mod_query = preg_replace($pattern, $replacement, $mod_query, $limit);
+        }
+        // Bug Fix temporary table can read only once 2014/11/20 T.Koyasu --end--
+        
         $mod_query = str_replace(DATABASE_PREFIX."pages_users_link", 
                                  DATABASE_PREFIX."pages_users_link_".$date, 
                                  $mod_query);
@@ -1044,11 +1067,17 @@ class Repository_View_Main_Ranking extends RepositoryAction
      * ランキング処理用の一時テーブルを削除する
      * 
      * @param string $date
+     * @param int    $cntGroupNum
      */
-     private function dropTemporaryTable($date) {
-        $this->Db->execute("DROP TABLE IF EXISTS ".DATABASE_PREFIX ."repository_index_browsing_authority_".$date.";");
-        $this->Db->execute("DROP TABLE IF EXISTS ".DATABASE_PREFIX ."repository_index_browsing_groups_".$date.";");
-        $this->Db->execute("DROP TABLE IF EXISTS ".DATABASE_PREFIX ."pages_users_link_".$date.";");
+     private function dropTemporaryTable($date, $cntGroupNum) {
+        $this->Db->execute("DROP TEMPORARY TABLE IF EXISTS ".DATABASE_PREFIX ."repository_index_browsing_authority_".$date.";");
+        // Bug Fix temporary table can read only once 2014/11/20 T.Koyasu --start--
+        // drop table to all temporary table "repository_index_browsing_groups_YYYYMMDD_?" by wild card
+        for($ii = 0; $ii < $cntGroupNum; $ii++){
+            $this->Db->execute("DROP TEMPORARY TABLE IF EXISTS ".DATABASE_PREFIX ."repository_index_browsing_groups_".$date."_".$ii.";");
+        }
+        // Bug Fix temporary table can read only once 2014/11/20 T.Koyasu --end--
+        $this->Db->execute("DROP TEMPORARY TABLE IF EXISTS ".DATABASE_PREFIX ."pages_users_link_".$date.";");
      }
 }
 ?>

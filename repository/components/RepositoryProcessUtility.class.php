@@ -1,7 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-// $Id: RepositoryProcessUtility.class.php 564 2014-04-14 01:06:48Z ivis $
+// $Id: RepositoryProcessUtility.class.php 657 2014-11-28 10:40:35Z ivis $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -23,6 +23,9 @@ class RepositoryProcessUtility
      */
     public static function callAsyncProcess($nextRequest)
     {
+        $url = parse_url($nextRequest);
+        $nextRequest = str_replace($url["scheme"]."://".$url["host"], "",  $nextRequest);
+        
         // Call oneself by async
         $host = array();
         preg_match("/^https?:\/\/(([^\/]+)).*$/", BASE_URL, $host);
@@ -30,17 +33,20 @@ class RepositoryProcessUtility
         if($hostName == "localhost"){
             $hostName = gethostbyname($_SERVER['SERVER_NAME']);
         }
+        $hostSock = $hostName;
         if($_SERVER["SERVER_PORT"] == 443)
         {
-            $hostName = "ssl://".$hostName;
+            $hostSock = "ssl://".$hostName;
         }
-        $handle = fsockopen($hostName, $_SERVER["SERVER_PORT"], $errNo, $errMsg, 10);
+        
+        $handle = fsockopen($hostSock, $_SERVER["SERVER_PORT"]);
         if (!$handle)
         {
             return false;
         }
+        
         stream_set_blocking($handle, false);
-        fwrite($handle, "GET ".$nextRequest." HTTP/1.0\r\n\r\n");
+        fwrite($handle, "GET ".$nextRequest." HTTP/1.1\r\nHost: ". $hostName."\r\n\r\n");
         fclose ($handle);
         
         return true;
