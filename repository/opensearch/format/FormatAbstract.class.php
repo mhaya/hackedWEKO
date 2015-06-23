@@ -31,6 +31,7 @@ class Repository_Opensearch_FormatAbstract
     const DATA_ITEM_TYPE_NAME = "item_type_name";
     const DATA_MIME_TYPE = "mime_type";
     const DATA_FILE_URI = "file_uri";
+    const DATA_FILE_NAME = "file_name";
     const DATA_CREATOR = "creator";
     const DATA_PUBLISHER = "publisher";
     const DATA_INDEX_PATH = "index_path";
@@ -241,6 +242,7 @@ class Repository_Opensearch_FormatAbstract
                         self::DATA_ITEM_TYPE_NAME => "",
                         self::DATA_MIME_TYPE => array(),
                         self::DATA_FILE_URI => array(),
+                        self::DATA_FILE_NAME => array(),
                         self::DATA_CREATOR => array(),
                         self::DATA_CREATOR_LANG => array(),
                         self::DATA_PUBLISHER => array(),
@@ -364,11 +366,14 @@ class Repository_Opensearch_FormatAbstract
             
             for($jj=0; $jj<count($itemAttr[$ii]); $jj++)
             {
+               
                 /// set file information
                 if($inputType == RepositoryConst::ITEM_ATTR_TYPE_FILE)
                 {
+                   
                     // set file info
-                    if(strlen($itemData[self::DATA_MIME_TYPE]) > 0)
+                    //if(strlen($itemData[self::DATA_MIME_TYPE]) > 0)
+                    if(is_array($itemData[self::DATA_MIME_TYPE]))
                     {
                         array_push($itemData[self::DATA_MIME_TYPE], $itemAttr[$ii][$jj][RepositoryConst::DBCOL_REPOSITORY_FILE_MIME_TYPE]);
                         $fileUri = BASE_URL."/?action=repository_uri".
@@ -376,7 +381,11 @@ class Repository_Opensearch_FormatAbstract
                                    "&file_id=".$itemAttr[$ii][$jj][RepositoryConst::DBCOL_REPOSITORY_FILE_ATTRIBUTE_ID].
                                    "&file_no=".$itemAttr[$ii][$jj][RepositoryConst::DBCOL_REPOSITORY_FILE_FILE_NO];
                         array_push($itemData[self::DATA_FILE_URI], $fileUri);
+                        
+                        array_push($itemData[self::DATA_FILE_NAME],$itemAttr[$ii][$jj][RepositoryConst::DBCOL_REPOSITORY_FILE_FILE_NAME]);
+
                     }
+
                 }
                 
                 /// check value

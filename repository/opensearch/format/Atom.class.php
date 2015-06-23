@@ -183,6 +183,7 @@ class Repository_OpenSearch_Atom extends Repository_Opensearch_FormatAbstract
         {
             $itemData = array();
             $itemData = $this->getOutputData($request, $searchResult[$ii]["item_id"], $searchResult[$ii]["item_no"]);
+
             if(strlen($request[self::REQUEST_LOG_TERM]) > 0)
             {
                 // set log result
@@ -228,7 +229,7 @@ class Repository_OpenSearch_Atom extends Repository_Opensearch_FormatAbstract
             
             // mapping info
             $xml .= '       <prism:aggregationType>'.$this->RepositoryAction->forXmlChange($itemData[self::DATA_MAPPING_INFO]).'</prism:aggregationType>'.self::LF;
-            
+
             // item type name
             $xml .= '       <dc:type>'.$this->RepositoryAction->forXmlChange($itemData[self::DATA_ITEM_TYPE_NAME]).'</dc:type>'.self::LF;
             
@@ -242,6 +243,10 @@ class Repository_OpenSearch_Atom extends Repository_Opensearch_FormatAbstract
             for($jj=0; $jj<count($itemData[self::DATA_FILE_URI]); $jj++)
             {
                 $xml .= '       <dc:identifier>'.$this->RepositoryAction->forXmlChange("file_id:".$itemData[self::DATA_FILE_URI][$jj]).'</dc:identifier>'.self::LF;
+                //enclosure
+                //$xml .= '       <enclosure url="'.$this->RepositoryAction->forXmlChange($itemData[self::DATA_FILE_URI][$jj]).'" type="'.$this->RepositoryAction->forXmlChange($itemData[self::DATA_MIME_TYPE][$jj]).'" />'.self::LF;
+                $xml .= '       <link rel="enclosure" title="'.$this->RepositoryAction->forXmlChange($itemData[self::DATA_FILE_NAME][$jj]).'" type="'.$this->RepositoryAction->forXmlChange($itemData[self::DATA_MIME_TYPE][$jj]).'" href="'.$this->RepositoryAction->forXmlChange($itemData[self::DATA_FILE_URI][$jj]).'" />'.self::LF;
+                
             }
             
             // creator
