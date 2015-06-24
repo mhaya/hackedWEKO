@@ -23,13 +23,16 @@ class Repository_OpenSearch_Atom extends Repository_Opensearch_FormatAbstract
     const XMLNS_PRISM       = "http://prismstandard.org/namespaces/basic/2.0/";
     const XMLNS_OPEN_SEARCH = "http://a9.com/-/spec/opensearch/1.1/";
     const XMLNS_WEKO_LOG    = "/wekolog/";
-    
+
+
+    private $blockid = array();
     /**
      * コンストラクタ
      */
-    public function __construct($session, $db)
+    public function __construct($session, $db,$blockid)
     {
         parent::__construct($session, $db);
+        $this->blockid = $blockid;
     }
     
     /**
@@ -244,8 +247,15 @@ class Repository_OpenSearch_Atom extends Repository_Opensearch_FormatAbstract
             {
                 $xml .= '       <dc:identifier>'.$this->RepositoryAction->forXmlChange("file_id:".$itemData[self::DATA_FILE_URI][$jj]).'</dc:identifier>'.self::LF;
                 //enclosure file link
-                //$xml .= '       <enclosure url="'.$this->RepositoryAction->forXmlChange($itemData[self::DATA_FILE_URI][$jj]).'" type="'.$this->RepositoryAction->forXmlChange($itemData[self::DATA_MIME_TYPE][$jj]).'" />'.self::LF;
-                $xml .= '       <link rel="enclosure" title="'.$this->RepositoryAction->forXmlChange($itemData[self::DATA_FILE_NAME][$jj]).'" type="'.$this->RepositoryAction->forXmlChange($itemData[self::DATA_MIME_TYPE][$jj]).'" href="'.$this->RepositoryAction->forXmlChange($itemData[self::DATA_FILE_URI][$jj]).'" />'.self::LF;
+                //リダイレクト後のURLを作成する
+                $url = $itemData[self::DATA_FILE_URI][$jj];
+                $url = str_replace("/?","/index.php?",$url);
+                $url = str_replace("action=repository_uri","action=pages_view_main&active_action=repository_action_common_download",$url);
+                $url = str_replace("file_id","attribute_id",$url);
+                $url .= '&item_no='.$searchResult[0]['item_no'];
+                $url .= '&page_id='.$this->blockid['page_id'].'&block_id='.$this->blockid['block_id'];
+                
+                $xml .= '       <link rel="enclosure" title="'.$this->RepositoryAction->forXmlChange($itemData[self::DATA_FILE_NAME][$jj]).'" type="'.$this->RepositoryAction->forXmlChange($itemData[self::DATA_MIME_TYPE][$jj]).'" href="'.$this->RepositoryAction->forXmlChange($url).'" />'.self::LF;
                 
             }
             
