@@ -243,7 +243,7 @@ class Repository_OpenSearch_Atom extends Repository_Opensearch_FormatAbstract
             for($jj=0; $jj<count($itemData[self::DATA_FILE_URI]); $jj++)
             {
                 $xml .= '       <dc:identifier>'.$this->RepositoryAction->forXmlChange("file_id:".$itemData[self::DATA_FILE_URI][$jj]).'</dc:identifier>'.self::LF;
-                //enclosure
+                //enclosure file link
                 //$xml .= '       <enclosure url="'.$this->RepositoryAction->forXmlChange($itemData[self::DATA_FILE_URI][$jj]).'" type="'.$this->RepositoryAction->forXmlChange($itemData[self::DATA_MIME_TYPE][$jj]).'" />'.self::LF;
                 $xml .= '       <link rel="enclosure" title="'.$this->RepositoryAction->forXmlChange($itemData[self::DATA_FILE_NAME][$jj]).'" type="'.$this->RepositoryAction->forXmlChange($itemData[self::DATA_MIME_TYPE][$jj]).'" href="'.$this->RepositoryAction->forXmlChange($itemData[self::DATA_FILE_URI][$jj]).'" />'.self::LF;
                 
