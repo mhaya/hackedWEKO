@@ -372,7 +372,6 @@ class Repository_Opensearch_FormatAbstract
                 {
                    
                     // set file info
-                    //if(strlen($itemData[self::DATA_MIME_TYPE]) > 0)
                     if(is_array($itemData[self::DATA_MIME_TYPE]))
                     {
                         array_push($itemData[self::DATA_MIME_TYPE], $itemAttr[$ii][$jj][RepositoryConst::DBCOL_REPOSITORY_FILE_MIME_TYPE]);
