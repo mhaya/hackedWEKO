@@ -4,6 +4,11 @@ M       action/main/sword/SwordUtility.class.php
 M       action/main/sword/servicedocument/Servicedocument.class.php
 M       files/sword/utils.php
 M       oaipmh/format/Lido.class.php
+M       opensearch/Opensearch.class.php
+M       opensearch/format/Atom.class.php
+?       opensearch/format/Atom.class.php.org
+M       opensearch/format/FormatAbstract.class.php
+?       opensearch/format/FormatAbstract.class.php.org
 M       templates/default/repository_item_detail.html
 M       templates/default/repository_mobile_item_detail.html
 M       templates/default/smartphone/repository_item_detail.html

@@ -318,6 +318,133 @@ Index: oaipmh/format/Lido.class.php
  }
  ?>
 \ No newline at end of file
+Index: opensearch/Opensearch.class.php
+===================================================================
+--- opensearch/Opensearch.class.php	(revision 664)
++++ opensearch/Opensearch.class.php	(working copy)
+@@ -159,7 +159,8 @@
+             case RepositorySearchRequestParameter::FORMAT_ATOM:
+                 // output ATOM
+                 require_once WEBAPP_DIR.'/modules/repository/opensearch/format/Atom.class.php';
+-                $outputClass = new Repository_OpenSearch_Atom($this->Session, $this->Db);
++                $blockid = $this->RepositoryAction->getBlockPageId();
++                $outputClass = new Repository_OpenSearch_Atom($this->Session, $this->Db,$blockid);
+                 $searchResult = $this->search();
+                 $requestParam = $this->getRequestParameter();
+                 $requestParam[self::REQUEST_LOG_TERM] = $this->log_term;
+@@ -215,6 +216,7 @@
+                     $block_info = $this->RepositoryAction->getBlockPageId();
+                     $redirectUrl .= "&page_id=". $block_info["page_id"].
+                                     "&block_id=". $block_info["block_id"];
++
+                 }
+                 break;
+         }
+Index: opensearch/format/Atom.class.php
+===================================================================
+--- opensearch/format/Atom.class.php	(revision 664)
++++ opensearch/format/Atom.class.php	(working copy)
+@@ -23,13 +23,16 @@
+     const XMLNS_PRISM       = "http://prismstandard.org/namespaces/basic/2.0/";
+     const XMLNS_OPEN_SEARCH = "http://a9.com/-/spec/opensearch/1.1/";
+     const XMLNS_WEKO_LOG    = "/wekolog/";
+-    
++
++
++    private $blockid = array();
+     /**
+      * コンストラクタ
+      */
+-    public function __construct($session, $db)
++    public function __construct($session, $db,$blockid)
+     {
+         parent::__construct($session, $db);
++        $this->blockid = $blockid;
+     }
+     
+     /**
+@@ -183,6 +186,7 @@
+         {
+             $itemData = array();
+             $itemData = $this->getOutputData($request, $searchResult[$ii]["item_id"], $searchResult[$ii]["item_no"]);
++
+             if(strlen($request[self::REQUEST_LOG_TERM]) > 0)
+             {
+                 // set log result
+@@ -228,7 +232,7 @@
+             
+             // mapping info
+             $xml .= '       <prism:aggregationType>'.$this->RepositoryAction->forXmlChange($itemData[self::DATA_MAPPING_INFO]).'</prism:aggregationType>'.self::LF;
+-            
++
+             // item type name
+             $xml .= '       <dc:type>'.$this->RepositoryAction->forXmlChange($itemData[self::DATA_ITEM_TYPE_NAME]).'</dc:type>'.self::LF;
+             
+@@ -242,6 +246,17 @@
+             for($jj=0; $jj<count($itemData[self::DATA_FILE_URI]); $jj++)
+             {
+                 $xml .= '       <dc:identifier>'.$this->RepositoryAction->forXmlChange("file_id:".$itemData[self::DATA_FILE_URI][$jj]).'</dc:identifier>'.self::LF;
++                //enclosure file link
++                //リダイレクト後のURLを作成する
++                $url = $itemData[self::DATA_FILE_URI][$jj];
++                $url = str_replace("/?","/index.php?",$url);
++                $url = str_replace("action=repository_uri","action=pages_view_main&active_action=repository_action_common_download",$url);
++                $url = str_replace("file_id","attribute_id",$url);
++                $url .= '&item_no='.$searchResult[0]['item_no'];
++                $url .= '&page_id='.$this->blockid['page_id'].'&block_id='.$this->blockid['block_id'];
++                
++                $xml .= '       <link rel="enclosure" title="'.$this->RepositoryAction->forXmlChange($itemData[self::DATA_FILE_NAME][$jj]).'" type="'.$this->RepositoryAction->forXmlChange($itemData[self::DATA_MIME_TYPE][$jj]).'" href="'.$this->RepositoryAction->forXmlChange($url).'" />'.self::LF;
++                
+             }
+             
+             // creator
+Index: opensearch/format/FormatAbstract.class.php
+===================================================================
+--- opensearch/format/FormatAbstract.class.php	(revision 664)
++++ opensearch/format/FormatAbstract.class.php	(working copy)
+@@ -31,6 +31,7 @@
+     const DATA_ITEM_TYPE_NAME = "item_type_name";
+     const DATA_MIME_TYPE = "mime_type";
+     const DATA_FILE_URI = "file_uri";
++    const DATA_FILE_NAME = "file_name";
+     const DATA_CREATOR = "creator";
+     const DATA_PUBLISHER = "publisher";
+     const DATA_INDEX_PATH = "index_path";
+@@ -241,6 +242,7 @@
+                         self::DATA_ITEM_TYPE_NAME => "",
+                         self::DATA_MIME_TYPE => array(),
+                         self::DATA_FILE_URI => array(),
++                        self::DATA_FILE_NAME => array(),
+                         self::DATA_CREATOR => array(),
+                         self::DATA_CREATOR_LANG => array(),
+                         self::DATA_PUBLISHER => array(),
+@@ -364,11 +366,13 @@
+             
+             for($jj=0; $jj<count($itemAttr[$ii]); $jj++)
+             {
++               
+                 /// set file information
+                 if($inputType == RepositoryConst::ITEM_ATTR_TYPE_FILE)
+                 {
++                   
+                     // set file info
+-                    if(strlen($itemData[self::DATA_MIME_TYPE]) > 0)
++                    if(is_array($itemData[self::DATA_MIME_TYPE]))
+                     {
+                         array_push($itemData[self::DATA_MIME_TYPE], $itemAttr[$ii][$jj][RepositoryConst::DBCOL_REPOSITORY_FILE_MIME_TYPE]);
+                         $fileUri = BASE_URL."/?action=repository_uri".
+@@ -376,7 +380,11 @@
+                                    "&file_id=".$itemAttr[$ii][$jj][RepositoryConst::DBCOL_REPOSITORY_FILE_ATTRIBUTE_ID].
+                                    "&file_no=".$itemAttr[$ii][$jj][RepositoryConst::DBCOL_REPOSITORY_FILE_FILE_NO];
+                         array_push($itemData[self::DATA_FILE_URI], $fileUri);
++                        
++                        array_push($itemData[self::DATA_FILE_NAME],$itemAttr[$ii][$jj][RepositoryConst::DBCOL_REPOSITORY_FILE_FILE_NAME]);
++
+                     }
++
+                 }
+                 
+                 /// check value
 Index: templates/default/repository_item_detail.html
 ===================================================================
 --- templates/default/repository_item_detail.html	(revision 664)
