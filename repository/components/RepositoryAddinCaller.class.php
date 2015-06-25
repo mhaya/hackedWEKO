@@ -1,7 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-// $Id: RepositoryAddinCaller.class.php 535 2012-12-07 09:26:24Z ivis $
+// $Id: RepositoryAddinCaller.class.php 20287 2012-11-20 04:59:31Z yuko_nakao $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources

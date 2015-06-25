@@ -1,7 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-// $Id: Resetranking.class.php 599 2014-07-14 09:06:17Z ivis $
+// $Id: Resetranking.class.php 3131 2011-01-28 11:36:33Z haruka_goto $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources

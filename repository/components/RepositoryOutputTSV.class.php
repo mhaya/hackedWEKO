@@ -1,7 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-// $Id: RepositoryOutputTSV.class.php 640 2014-10-24 08:07:50Z ivis $
+// $Id: RepositoryDownload.class.php 24001 2013-07-10 01:33:59Z yuko_nakao $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -14,6 +14,7 @@
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
 require_once WEBAPP_DIR. '/modules/repository/action/main/export/ExportCommon.class.php';
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryItemAuthorityManager.class.php';
+require_once WEBAPP_DIR. '/modules/repository/components/RepositoryHandleManager.class.php';
 
 class RepositoryOutputTSV extends RepositoryAction
 {
@@ -1686,6 +1687,17 @@ class RepositoryOutputTSV extends RepositoryAction
                     $libraryJalcdoiPrefix = $handleManager->getLibraryJalcDoiPrefix();
                     $Result_List[self::SELF_DOI][0]["SELFDOI"] = $libraryJalcdoiPrefix."/".$libraryJalcdoiSuffix;
                 }
+        		// Add DataCite 2015/02/10 K.Sugimoto --start--
+                else
+                {
+	                $dataciteSuffix = $handleManager->getDataciteSuffix($Item_ID, $Item_No);
+	                if(isset($dataciteSuffix) && strlen($dataciteSuffix) > 0)
+	                {
+	                    $Result_List[self::SELF_DOI_RA][0]["RA"] = RepositoryConst::JUNII2_SELFDOI_RA_DATACITE;
+	                    $Result_List[self::SELF_DOI][0]["SELFDOI"] = "";
+	                }
+                }
+        		// Add DataCite 2015/02/10 K.Sugimoto --end--
             }
         }
         if($jalcdoiSuffix === false)

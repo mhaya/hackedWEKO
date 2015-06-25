@@ -1,7 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-// $Id: Linkact.class.php 562 2014-04-14 01:03:17Z ivis $
+// $Id: Linkact.class.php 45650 2014-12-24 09:40:34Z keiya_sugimoto $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -304,17 +304,22 @@ class Repository_Action_Main_Item_Linkact extends RepositoryAction
             return false;
         }
         
-        if($lang == "japanese"){
-            $index_name = $result[0]["index_name"];
-            if($index_name == ""){
-                $index_name = $result[0]["index_name_english"];
-            }
+        if(count($result) > 0){
+        	if($lang == "japanese"){
+            	$index_name = $result[0]["index_name"];
+            	if($index_name == ""){
+                	$index_name = $result[0]["index_name_english"];
+            	}
+        	} else {
+            	$index_name = $result[0]["index_name_english"];
+            	if($index_name == ""){
+                	$index_name = $result[0]["index_name"];
+            	}
+        	}
         } else {
-            $index_name = $result[0]["index_name_english"];
-            if($index_name == ""){
-                $index_name = $result[0]["index_name"];
-            }
+        	$index_name = null;
         }
+        
         return $index_name;
     }
     

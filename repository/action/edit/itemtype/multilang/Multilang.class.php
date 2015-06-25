@@ -1,7 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-// $Id: Multilang.class.php 564 2014-04-14 01:06:48Z ivis $
+// $Id: Multilang.class.php 15605 2012-02-20 09:30:55Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources

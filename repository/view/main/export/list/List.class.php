@@ -1,7 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-// $Id: List.class.php 554 2014-02-17 10:55:47Z ivis $
+// $Id: List.class.php 53594 2015-05-28 05:25:53Z kaede_matsushita $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -34,7 +34,7 @@ class Repository_View_Main_Export_List extends RepositoryAction
      *
      * @access  public
      */
-    function execute()
+    function executeApp()
     {
         //$this->setLangResource();
         $smartyAssign = $this->Session->getParameter("smartyAssign");

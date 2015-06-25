@@ -1,7 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-// $Id: Getpublicitem.class.php 640 2014-10-24 08:07:50Z ivis $
+// $Id: Getpublicitem.class.php 48455 2015-02-16 10:53:40Z atsushi_suzuki $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -54,7 +54,7 @@ class Repository_Action_Common_Getpublicitem extends RepositoryAction
      */
     public $authority_id = 0;
     
-    function executeForWeko() {
+    function executeApp() {
         // login check
         $result = null;
         $error_msg = null;

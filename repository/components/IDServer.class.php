@@ -1,7 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-// $Id: IDServer.class.php 562 2014-04-14 01:03:17Z ivis $
+// $Id: IDServer.class.php 53594 2015-05-28 05:25:53Z kaede_matsushita $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -851,11 +851,21 @@ class IDServer extends RepositoryAction
                 $flashDir = $this->makeFlashFolder($item_attr['item_id'],
                                                    $item_attr['attribute_id'],
                                                    $item_attr['file_no']);
-                // decompress flash data.
-                File_Archive::extract(
-                    File_Archive::read($tmp_tar.'/'),       // 末尾は'/'
-                    File_Archive::appender($flashDir.'/')   // 解凍先
-                );
+                
+                // バージョン違いで解凍できない場合の対応
+                if (version_compare(PHP_VERSION, '5.3.0', '>='))
+                {
+                    $phar = new PharData($tmp_tar);
+                    $phar->extractTo($flashDir);
+                }
+                else {
+                    // decompress flash data.
+                    File_Archive::extract(
+                        File_Archive::read($tmp_tar.'/'),       // 末尾は'/'
+                        File_Archive::appender($flashDir.'/')   // 解凍先
+                    );
+                }
+                
                 $swf_path = $flashDir.'/weko1.swf';
                 $this->removeDirectory($tmp_dir);
                 if( !(file_exists($swf_path)) ){

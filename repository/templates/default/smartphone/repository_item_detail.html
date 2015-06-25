@@ -1,6 +1,6 @@
 <!--// ---------------------------------------------------------------------->
 <!--//                                                                     -->
-<!--// $Id: repository_item_detail.html 645 2014-10-29 12:39:52Z ivis $          -->
+<!--// $Id: repository_item_detail.html 53594 2015-05-28 05:25:53Z kaede_matsushita $          -->
 <!--//                                                                     -->
 <!--// Copyright (c) 2007 - 2008, National Institute of Informatics,        -->
 <!--// Research and Development Center for Scientific Information Resources -->
@@ -895,8 +895,6 @@
                                                 <th class="th_detail_line_repos vt al w20 ws"><{$attr_type[i].attribute_name}></th>
                                                 <td class="td_detail_line_repos w80">
                                                     <{section name=j loop=$item_attr[i]}>
-<!-- using iframe/img tag 2012/09/20 by mhaya start -->
-<!-- 
                                                         <a target="_blank" href="<{$item_attr[i][j].attribute_value[0]}>">
                                                             <{if $item_attr[i][j].attribute_value[1] != ""}>
                                                                 <{$item_attr[i][j].attribute_value[1]}>
@@ -904,21 +902,6 @@
                                                                 <{$item_attr[i][j].attribute_value[0]}>
                                                             <{/if}>
                                                         </a><br>
--->
-<{if $item_attr[i][j].attribute_value[1] != "" && (strstr(strtolower($item_attr[i][0].attribute_value[1]),"iframe"))==true}>
-	<iframe src="<{$item_attr[i][j].attribute_value[0]}>" height="700" width="100%" scrolling="auto">Sorry. This content use IFrame</iframe>
-<{elseif strstr(strtolower($item_attr[i][j].attribute_value[0]),".jpg")==true||strstr(strtolower($item_attr[i][j].attribute_value[0]),".jpg")==true}>
-	<img src="<{$item_attr[i][j].attribute_value[0]}>" alt="<{$item_attr[i][j].attribute_value[1]}>" width=200px height=200px />
-<{else}>
-	<a target="_blank" href="<{$item_attr[i][j].attribute_value[0]}>">
-	<{if $item_attr[i][j].attribute_value[1] != ""}>
-		<{$item_attr[i][j].attribute_value[1]}>
-	<{else}>
-		<{$item_attr[i][j].attribute_value[0]}>
-	<{/if}>
-	</a><br>
-<{/if}>
-<!-- using iframe/img tag 2012/09/20 by mhaya end -->
                                                     <{/section}>
                                                 </td>
                                             </tr>
@@ -1362,7 +1345,7 @@
                 
                 <{*show pdf reference S.Suzuki 2013/11/27 --start--*}>
                     <{if count($action.fileName) > 0}>
-                        <{include file="repository_pdf_reference.html"}>
+                        <{include file=$smarty.const.WEBAPP_DIR|cat:'/modules/repository/templates/default/repository_pdf_reference.html'}>
                     <{/if}>
                 <{*show pdf reference S.Suzuki 2013/11/27 --end--*}>
                 
@@ -1420,7 +1403,7 @@
 
 </div>
 
-<{include file="repository_script.html"}>
+<{include file=$smarty.const.WEBAPP_DIR|cat:'/modules/repository/templates/default/repository_script.html'}>
 
 <script class="nc_script" type="text/javascript">
     redirctPrevPage = function() {

@@ -1,7 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-// $Id: Redirect.class.php 562 2014-04-14 01:03:17Z ivis $
+// $Id: Redirect.class.php 53594 2015-05-28 05:25:53Z kaede_matsushita $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -37,7 +37,7 @@ class Repository_View_Common_Redirect extends RepositoryAction
      *
      * @access  public
      */
-    function execute()
+    function executeApp()
     {
 		// check base_url with "/"
 		$this->redirect_url = BASE_URL."|";

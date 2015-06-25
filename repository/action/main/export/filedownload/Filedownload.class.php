@@ -1,7 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-// $Id: Filedownload.class.php 562 2014-04-14 01:03:17Z ivis $
+// $Id: Filedownload.class.php 53594 2015-05-28 05:25:53Z kaede_matsushita $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -215,11 +215,6 @@ class Repository_Action_Main_Export_Filedownload extends RepositoryAction
             
             // ワークディレクトリ削除
             $this->removeDirectory($tmp_dir);
-            
-            // insert file download log
-            // Add log common action Y.Nakao 2010/03/05 --start--
-            $this->entryLog(2, $ret[$ii]["item_id"], $ret[$ii]["item_no"], $ret[$ii]["attribute_id"], $ret[$ii]["file_no"], "");
-            // Add log common action Y.Nakao 2010/03/05 --end--
             
             // zipファイル損傷対応 2008/08/25 Y.Nakao --start--
             exit();

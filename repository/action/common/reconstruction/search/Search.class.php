@@ -1,7 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-// $Id: Search.class.php 564 2014-04-14 01:06:48Z ivis $
+// $Id: Search.class.php 48455 2015-02-16 10:53:40Z atsushi_suzuki $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -32,7 +32,7 @@ class Repository_Action_Common_Reconstruction_Search extends RepositoryAction
     public $user_authority_id = "";
     public $authority_id = '';
     
-    function executeForWeko()
+    function executeApp()
     {
         // check login
         $result = null;

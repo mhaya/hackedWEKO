@@ -1,7 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-// $Id: Atom.class.php 43084 2014-10-20 06:53:41Z yuko_nakao $
+// $Id: Atom.class.php 53594 2015-05-28 05:25:53Z kaede_matsushita $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -23,16 +23,13 @@ class Repository_OpenSearch_Atom extends Repository_Opensearch_FormatAbstract
     const XMLNS_PRISM       = "http://prismstandard.org/namespaces/basic/2.0/";
     const XMLNS_OPEN_SEARCH = "http://a9.com/-/spec/opensearch/1.1/";
     const XMLNS_WEKO_LOG    = "/wekolog/";
-
-
-    private $blockid = array();
+    
     /**
      * コンストラクタ
      */
-    public function __construct($session, $db,$blockid)
+    public function __construct($session, $db)
     {
         parent::__construct($session, $db);
-        $this->blockid = $blockid;
     }
     
     /**
@@ -100,7 +97,7 @@ class Repository_OpenSearch_Atom extends Repository_Opensearch_FormatAbstract
     private function outputParameter($request, $searchResult)
     {
         ///// request parameter string /////
-        $requesturl = BASE_URL;
+        $request_url = BASE_URL;
         if(substr($request_url, -1, 1)!="/"){
             $request_url .= "/";
         }
@@ -117,17 +114,20 @@ class Repository_OpenSearch_Atom extends Repository_Opensearch_FormatAbstract
         
         ///// feed title /////
         $feed_title = $repositoryName." OpenSearch";
-        if(strlen($request[self::REQUEST_WEKO_ID]) > 0)
-        {
-            $feed_title .= " - "."WEKOID : ".$request[self::REQUEST_WEKO_ID];
+        if(array_key_exists(parent::REQUEST_WEKO_ID, $request)) {
+            if(strlen($request[self::REQUEST_WEKO_ID]) > 0) {
+                $feed_title .= " - "."WEKOID : ".$request[parent::REQUEST_WEKO_ID];
+            }
         }
-        if(strlen($request[self::REQUEST_KEYWORD]) > 0)
-        {
-            $feed_title .= " : ".$request[self::REQUEST_KEYWORD];
+        if(array_key_exists(parent::REQUEST_KEYWORD, $request)) {
+            if(strlen($request[self::REQUEST_KEYWORD]) > 0) {
+                $feed_title .= " : ".$request[parent::REQUEST_KEYWORD];
+            }
         }
-        if(strlen($request[self::REQUEST_INDEX_ID]) > 0)
-        {
-            $feed_title .= " : ".$this->getIndexPath($request[self::REQUEST_INDEX_ID], ">");
+        if(array_key_exists(parent::REQUEST_INDEX_ID, $request)) {
+            if(strlen($request[self::REQUEST_INDEX_ID]) > 0) {
+                $feed_title .= " : ".$this->getIndexPath($request[parent::REQUEST_INDEX_ID], ">");
+            }
         }
         
         ///// search date /////
@@ -137,24 +137,24 @@ class Repository_OpenSearch_Atom extends Repository_Opensearch_FormatAbstract
         ///// output search request /////
         
         // feed title
-        $xml .= '   <title>'.$this->RepositoryAction->forXmlChange($feed_title).'</title>'.$LF;
+        $xml = '   <title>'.$this->RepositoryAction->forXmlChange($feed_title).'</title>'.parent::LF;
         
         // request url
-        $xml .= '   <link href="'.$this->RepositoryAction->forXmlChange($request_url).'" />'.$LF;
+        $xml .= '   <link href="'.$this->RepositoryAction->forXmlChange($request_url).'" />'.parent::LF;
         
         // request url
-        $xml .= '   <id>'.$this->RepositoryAction->forXmlChange($request_url).'</id>'.$LF;
+        $xml .= '   <id>'.$this->RepositoryAction->forXmlChange($request_url).'</id>'.parent::LF;
         
         // search date
-        $xml .= '   <updated>'.$this->RepositoryAction->forXmlChange($search_date).'</updated>'.$LF;
+        $xml .= '   <updated>'.$this->RepositoryAction->forXmlChange($search_date).'</updated>'.parent::LF;
         
         // search total
-        $xml .= '   <opensearch:totalResults>'.$this->total.'</opensearch:totalResults>'.$LF;
+        $xml .= '   <opensearch:totalResults>'.$this->total.'</opensearch:totalResults>'.parent::LF;
         if($this->total > 0){
             // start no
-            $xml .= '   <opensearch:startIndex>'.$this->startIndex.'</opensearch:startIndex>'.$LF;
+            $xml .= '   <opensearch:startIndex>'.$this->startIndex.'</opensearch:startIndex>'.parent::LF;
             // disp item num
-            $xml .= '   <opensearch:itemsPerPage>'.count($searchResult).'</opensearch:itemsPerPage>'.$LF.$LF;
+            $xml .= '   <opensearch:itemsPerPage>'.count($searchResult).'</opensearch:itemsPerPage>'.parent::LF.parent::LF;
         }
         
         return $xml;
@@ -186,7 +186,6 @@ class Repository_OpenSearch_Atom extends Repository_Opensearch_FormatAbstract
         {
             $itemData = array();
             $itemData = $this->getOutputData($request, $searchResult[$ii]["item_id"], $searchResult[$ii]["item_no"]);
-
             if(strlen($request[self::REQUEST_LOG_TERM]) > 0)
             {
                 // set log result
@@ -232,7 +231,7 @@ class Repository_OpenSearch_Atom extends Repository_Opensearch_FormatAbstract
             
             // mapping info
             $xml .= '       <prism:aggregationType>'.$this->RepositoryAction->forXmlChange($itemData[self::DATA_MAPPING_INFO]).'</prism:aggregationType>'.self::LF;
-
+            
             // item type name
             $xml .= '       <dc:type>'.$this->RepositoryAction->forXmlChange($itemData[self::DATA_ITEM_TYPE_NAME]).'</dc:type>'.self::LF;
             
@@ -246,17 +245,6 @@ class Repository_OpenSearch_Atom extends Repository_Opensearch_FormatAbstract
             for($jj=0; $jj<count($itemData[self::DATA_FILE_URI]); $jj++)
             {
                 $xml .= '       <dc:identifier>'.$this->RepositoryAction->forXmlChange("file_id:".$itemData[self::DATA_FILE_URI][$jj]).'</dc:identifier>'.self::LF;
-                //enclosure file link
-                //リダイレクト後のURLを作成する
-                $url = $itemData[self::DATA_FILE_URI][$jj];
-                $url = str_replace("/?","/index.php?",$url);
-                $url = str_replace("action=repository_uri","action=pages_view_main&active_action=repository_action_common_download",$url);
-                $url = str_replace("file_id","attribute_id",$url);
-                $url .= '&item_no='.$searchResult[0]['item_no'];
-                $url .= '&page_id='.$this->blockid['page_id'].'&block_id='.$this->blockid['block_id'];
-                
-                $xml .= '       <link rel="enclosure" title="'.$this->RepositoryAction->forXmlChange($itemData[self::DATA_FILE_NAME][$jj]).'" type="'.$this->RepositoryAction->forXmlChange($itemData[self::DATA_MIME_TYPE][$jj]).'" href="'.$this->RepositoryAction->forXmlChange($url).'" />'.self::LF;
-                
             }
             
             // creator
@@ -378,6 +366,19 @@ class Repository_OpenSearch_Atom extends Repository_Opensearch_FormatAbstract
             {
                 $mod_date = $this->RepositoryAction->changeDatetimeToW3C($itemData[self::DATA_MOD_DATE]);
                 $xml .= '       <prism:modificationDate>'.$this->RepositoryAction->forXmlChange($mod_date).'</prism:modificationDate>'.self::LF;
+            }
+            
+            // file pewview link
+            for ($jj = 0; $jj < count($itemData[self::DATA_URL]); $jj++)
+            {
+                $link = BASE_URL . "/index.php?action=repository_action_common_download&" . 
+                        RepositoryConst::DBCOL_REPOSITORY_FILE_ITEM_ID . "=" . $itemData[self::DATA_URL][$jj][RepositoryConst::DBCOL_REPOSITORY_FILE_ITEM_ID] . "&" .
+                        RepositoryConst::DBCOL_REPOSITORY_FILE_ITEM_NO . "=" . $itemData[self::DATA_URL][$jj][RepositoryConst::DBCOL_REPOSITORY_FILE_ITEM_NO] . "&" .
+                        RepositoryConst::DBCOL_REPOSITORY_FILE_ATTRIBUTE_ID . "=" . $itemData[self::DATA_URL][$jj][RepositoryConst::DBCOL_REPOSITORY_FILE_ATTRIBUTE_ID] . "&" .
+                        RepositoryConst::DBCOL_REPOSITORY_FILE_FILE_NO . "=" . $itemData[self::DATA_URL][$jj][RepositoryConst::DBCOL_REPOSITORY_FILE_FILE_NO] . "&" .
+                        RepositoryConst::DBCOL_REPOSITORY_FILE_FILE_PREV . "=true";
+                
+                $xml .= '       <prism:url>'.$this->RepositoryAction->forXmlChange($link).'</prism:url>'.self::LF;
             }
             
             $xml .= '   </entry>'.self::LF.self::LF;

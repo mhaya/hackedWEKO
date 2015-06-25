@@ -1,7 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-// $Id: Snippet.class.php 663 2014-12-18 02:25:06Z ivis $
+// $Id: Snippet.class.php 53594 2015-05-28 05:25:53Z kaede_matsushita $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics,
 // Research and Development Center for Scientific Information Resources
@@ -172,12 +172,16 @@ class Repository_View_Main_Item_Snippet extends RepositoryAction
 
     public $setSearchParameter = "";
 
+    // add file download after login T.Ichikawa 2015/02/03 --start--
+    var $fileIdx = "";                  // ログイン後のファイルダウンロード情報
+    // add file download after login T.Ichikawa 2015/02/03 --end--
+
     /**
      *
      *
      * @access  public
      */
-    function execute()
+    function executeApp()
     {
         try
         {
@@ -203,8 +207,12 @@ class Repository_View_Main_Item_Snippet extends RepositoryAction
 	                $this->RepositorySearch->weko_id = "";
 
 	                // Top page access log
-	                $this->entryLog(RepositoryConst::LOG_OPERATION_TOP);
-
+                    // Mod entryLog T.Koyasu 2015/03/06 --start--
+                    $this->infoLog("businessLogmanager", __FILE__, __CLASS__, __LINE__);
+                    $logManager = BusinessFactory::getFactory()->getBusiness("businessLogmanager");
+                    $logManager->entryLogForTopView();
+                    // Mod entryLog T.Koyasu 2015/03/06 --start--
+	                
 	                //インデックス指定及び最も新しいインデックスのとき、index_idを取得し、設定する。
 	                $this->RepositorySearch->setDefaultSearchParameter();
 	                $this->setSearchRequest();
@@ -225,11 +233,6 @@ class Repository_View_Main_Item_Snippet extends RepositoryAction
 	            $status = $this->decideScreenChanges();
 	            if($status != 'true')
 	            {
-	                if($status == "goRankingView")
-	                {
-	                    // Top page access log
-	                    $this->entryLog(RepositoryConst::LOG_OPERATION_TOP);
-	                }
 	                return $status;
 	            }
 
@@ -258,6 +261,12 @@ class Repository_View_Main_Item_Snippet extends RepositoryAction
 	                    //目次形式の場合は「デフォルトソート順(インデックス)」固定
 	                   $this->RepositorySearch->sort_order = $this->RepositorySearch->validateSortOrder(array(), $this->RepositorySearch->index_id, "");
 	                }
+	                // Improve Search Log 2015/03/27 K.Sugimoto --start--
+	                if(isset($this->index_id) && $this->index_id > 0)
+	                {
+		                $this->RepositorySearch->search_term["idx"] = $this->index_id;
+	                }
+	                // Improve Search Log 2015/03/27 K.Sugimoto --end--
 	            }
 
 	            //A.Jin Add 2013/7/2 --end--
@@ -341,6 +350,13 @@ class Repository_View_Main_Item_Snippet extends RepositoryAction
         $this->Session->removeParameter("error_msg");
 
         // file download key
+        // add file download after login T.Ichikawa 2015/02/03 --start-- 
+        if(strlen($this->fileIdx) == 0 && $this->Session->getParameter("_user_id") != "0" && strlen($this->Session->getParameter("_login_id")) != 0)
+        {
+            // file download login.
+            $this->fileIdx = $this->Session->getParameter('repository'.$this->block_id.'FileDownloadKey');
+        }
+        // add file download after login T.Ichikawa 2015/02/03 --end-- 
         $this->Session->removeParameter('repository'.$this->block_id.'FileDownloadKey');
         // TODO ### Add for Test Y.Nakao --start--
 
@@ -691,6 +707,12 @@ class Repository_View_Main_Item_Snippet extends RepositoryAction
             $this->Session->setParameter("ranking_flg", 1);
             $this->Session->removeParameter("searchIndexId");
             $this->Session->setParameter("uri_export", $this->uri_export);
+            // Fix download request url 2015/02/03 T.Ichikawa --start--
+            if(strlen($this->fileIdx) > 0)
+            {
+                $this->Session->setParameter('repository'.$this->block_id.'FileDownloadKey', $this->fileIdx);
+            }
+            // Fix download request url 2015/02/03 T.Ichikawa --end--
             return "goRankingView";
         }
         else
@@ -965,8 +987,9 @@ class Repository_View_Main_Item_Snippet extends RepositoryAction
                         // Fix contents page heading count --end--
                         // contents page must display heading
                         // BugFix undefined offset 2014/09/04 T.Ichikawa --start--
-                        if(count($resultItemAttr[$nCnt_attr_type]) > 0)
-                        {
+                        if(empty($resultItemAttr[$nCnt_attr_type])) {
+                            array_push($this->heading, array());
+                        } else {
                             array_push($this->heading, explode("|", $resultItemAttr[$nCnt_attr_type][0]['attribute_value'], 4));
                         }
                         // BugFix undefined offset 2014/09/04 T.Ichikawa --end--
@@ -1009,7 +1032,14 @@ class Repository_View_Main_Item_Snippet extends RepositoryAction
                                     $str .= $resultItemAttr[$nCnt_attr_type][$nCnt]['name'];
                                 }
                             }
-                            array_push($this->array_attr, array("last_flg"=>0, "attr_value" => $str));
+                            // Add author link url 2015/01/28 T.Ichikawa --start--
+                            $url = BASE_URL. "/?action=repository_opensearch&creator=". urlencode($str);
+                            array_push($this->array_attr, array("last_flg"=>0, "attr_value" => $str, "url" => $url));
+                            if($this->indexDispType == 1)
+                            {
+                                $this->contents[count($this->contents)-1]['item_attr'][$nCnt_attr_type][$nCnt]['url'] = $url;
+                            }
+                            // Add author link url 2015/01/28 T.Ichikawa --end--
                         }
                         // 改行指定があった場合、文末に " , "は表示しない
                         if($resultItemAttrType[$nCnt_attr_type]['line_feed_enable'] == 1){

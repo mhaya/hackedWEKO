@@ -1,7 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-// $Id: Oaipmh.class.php 657 2014-11-28 10:40:35Z ivis $
+// $Id: Oaipmh.class.php 53594 2015-05-28 05:25:53Z kaede_matsushita $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics,
 // Research and Development Center for Scientific Information Resources
@@ -13,6 +13,7 @@
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryConst.class.php';
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryItemAuthorityManager.class.php';
+require_once WEBAPP_DIR. '/modules/repository/components/RepositoryIndexManager.class.php';
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryIndexAuthorityManager.class.php';
 
 /**
@@ -133,6 +134,13 @@ class Repository_Oaipmh extends RepositoryAction
      * @var array
      */
     private $harvestPublicIndex = array();
+    
+    /**
+     * setSpec full string
+     *
+     * @var string
+     */
+    private $fullSet = "";
 
     /*******************************************************************/
     /**
@@ -174,7 +182,7 @@ class Repository_Oaipmh extends RepositoryAction
         $this->initAction();
 
         // init member variable
-        $this->initialize();
+        $this->initializeOaipmh();
         $xml = '';
 
         // header
@@ -237,9 +245,11 @@ class Repository_Oaipmh extends RepositoryAction
 
     /**
      * initialize
+     * 
+     * ActionBaseのメソッド名と被るため関数名変更
      *
      */
-    private function initialize()
+    private function initializeOaipmh()
     {
         // init output string
         $this->errorCode = '';
@@ -412,15 +422,11 @@ class Repository_Oaipmh extends RepositoryAction
      *
      * @param bool $required must
      */
-    private function checkSet($must=false)
-    {
-        if($must && strlen($this->set) == 0)
-        {
+    private function checkSet($must=false) {
+        if($must && strlen($this->set) == 0) {
             $this->errorCode = self::ERRORCODE_BAD_ARGUMENT;
             return;
-        }
-        else if(preg_match("/^[0-9]+$/", $this->set) == 1)
-        {
+        } else if(preg_match("/^[0-9]+$/", $this->set) == 1) {
             // 'set' is index_id
             $query = "SELECT index_id ".
                      "FROM ". DATABASE_PREFIX ."repository_index ".
@@ -428,14 +434,18 @@ class Repository_Oaipmh extends RepositoryAction
             $params = array();
             $params[] = intval($this->set);
             $ret = $this->Db->execute($query, $params);
-            if ($ret === false || count($ret) != 1)
-            {
+            if ($ret === false || count($ret) != 1) {
                 $this->errorCode = self::ERRORCODE_BAD_ARGUMENT;
             }
-        }
-        else
-        {
-            $this->set = '';
+        } else {
+            // setSpecが階層形式で来た場合最後の要素だけを使う
+            $set = explode(":", $this->set);
+            if(count($set) > 1 && preg_match("/^[0-9]+$/", $set[count($set)-1]) == 1) {
+                $this->fullSet = $this->set;
+                $this->set = $set[count($set)-1];
+            } else {
+                $this->set = '';
+            }
         }
     }
 
@@ -937,25 +947,29 @@ class Repository_Oaipmh extends RepositoryAction
     {
         $xml = '';
         if ($nextToken > 0) {
+            // from指定が無い場合
             if ($this->from == null || strlen($this->from) == 0) {
                 $this->from = '0001-01-01T00:00:00Z';
-            }
-            else
-            {
+            } else {
                 $this->from = $this->getStandardTime($this->from);
             }
+            // until指定が無い場合
             if ($this->until == null || strlen($this->until) == 0) {
                 $this->until = '9999-12-31T23:59:59Z';
-            }
-            else
-            {
+            } else {
                 $this->until = $this->getStandardTime($this->until);
             }
-
+            // setSpecが連結形式の場合
+            if(strlen($this->fullSet) > 0) {
+                $setSpec = $this->fullSet;
+            } else {
+                $setSpec = $this->set;
+            }
+            
             //$resumptionToken = "${request_from}/${request_until}/${request_set}/${request_metadataPrefix}/${next_resumptionToken}";
             $resumptionToken = $this->from.'/'.
                                $this->until.'/'.
-                               $this->set.'/'.
+                               $setSpec.'/'.
                                $this->metadataPrefix.'/'.
                                $nextToken;
             // 1時間後となるようにする
@@ -1001,11 +1015,11 @@ class Repository_Oaipmh extends RepositoryAction
         //検索速度特化対応
         if(!_REPOSITORY_HIGH_SPEED && $pubflg)
         {
-            $setSpec = $this->getSetSpec($itemId, $itemNo);
+            $setSpec = $this->getSetSpec($itemId, $itemNo, true);
             for($ii=0; $ii<count($setSpec); $ii++)
             {
                 $xml .= '<'.RepositoryConst::OAIPMH_TAG_SET_SPEC.'>';
-                $xml .= sprintf("%05d", $setSpec[$ii]);
+                $xml .= $setSpec[$ii];
                 $xml .= '</'.RepositoryConst::OAIPMH_TAG_SET_SPEC.'>';
             }
         }
@@ -1525,9 +1539,15 @@ class Repository_Oaipmh extends RepositoryAction
 	            $params[] = $until;
 	        }
         }
-
-        if(strlen($this->set) > 0)
-        {
+        
+        
+        
+        if(strlen($this->set) > 0) {
+            // setSpecの階層指定が間違っていた場合noRecordMarchを返す
+            if(!$this->checkSetspecPosition()) {
+                return array();
+            }
+            
             if(strlen($addFilter) == 0)
             {
                 $addFilter .= 'WHERE ';
@@ -1537,13 +1557,32 @@ class Repository_Oaipmh extends RepositoryAction
                 $addFilter .= ' AND ';
             }
             // Mod Bug fix No.56 2014/03/24 T.Koyasu --start--
-            $addFilter .= " item_id IN ( ".
-                          "     SELECT item_id ".
-                          "     FROM ". DATABASE_PREFIX. "repository_position_index ".
-                          "     WHERE index_id = ? ".
-                          " ) ";
-            // Mod Bug fix No.56 2014/03/24 T.Koyasu --end--
-            $params[] = preg_replace("/^0+/", "", $this->set);
+            $indexIds = preg_replace("/^0+/", "", $this->set);
+            $indexArray = array();
+            
+            // setで指定されたインデックスの子インデックスを再帰的にすべて取得する
+            $repositoryIndexManager = new RepositoryIndexManager($this->Session, $this->dbAccess, $this->TransStartDate);
+            $repositoryIndexManager->getDescendants(preg_replace("/^0+/", "", $this->set), $indexArray);
+            if(count($indexArray) > 0) {
+                for($indexNum = 0; $indexNum < count($indexArray); $indexNum++) {
+                    if(strlen($indexIds) > 0) {
+                        $indexIds .= ",";
+                    }
+                    $indexIds .= $indexArray[$indexNum];
+                }
+            }
+            $addFilter .= " item_id IN (".
+                                         "SELECT POS.item_id FROM ". DATABASE_PREFIX. "repository_position_index POS ".
+                                         "INNER JOIN ". DATABASE_PREFIX. "repository_index IDX ON POS.index_id = IDX.index_id ".
+                                         "INNER JOIN ". DATABASE_PREFIX. "repository_index_browsing_authority AUTH ON AUTH.index_id = IDX.index_id ".
+                                         "WHERE IDX.index_id IN (". $indexIds. ") ".
+                                         "AND AUTH.harvest_public_state = ? ".
+                                         "AND IDX.is_delete = ? ".
+                                         "AND POS.is_delete = ? ".
+                                      ") ";
+            $params[] = 1; // harvest_public_status
+            $params[] = 0; // is_delete
+            $params[] = 0; // is_delete
         }
 
         if(strlen($addFilter) > 0)
@@ -1590,35 +1629,94 @@ class Repository_Oaipmh extends RepositoryAction
      * @param int item_no
      * @return string setSpec
      */
-    private function getSetSpec($item_id, $item_no)
+    private function getSetSpec($item_id, $item_no, $recursiveFlag=false)
     {
         // set public index list
         // Mod OpenDepo 2014/01/31 S.Arata --start--
-        if(strlen($this->publicIndexQuery) == 0)
-        {
+        if(strlen($this->publicIndexQuery) == 0) {
             $this->setPublicIndexQuery();
         }
-        $query = "SELECT pos.`index_id` ".
-                 "FROM `". DATABASE_PREFIX ."repository_position_index` pos ".
-                 "INNER JOIN (".$this->publicIndexQuery.") pub ON pos.index_id = pub.index_id ".
-                 "WHERE pos.`is_delete` = ? AND pos.`item_id` = ? AND pos.`item_no` = ?";
+        $query = "SELECT POS.index_id ".
+                 "FROM ". DATABASE_PREFIX ."repository_position_index POS ".
+                 "INNER JOIN (".$this->publicIndexQuery.") PUB ON POS.index_id = PUB.index_id ".
+                 "WHERE POS.is_delete = ? ".
+                 "AND POS.item_id = ? ".
+                 "AND POS.item_no = ? ;";
         $params = array();
         $params[] = 0;  // 削除されていない
         $params[] = $item_id;
         $params[] = $item_no;
         $ret = $this->Db->execute($query, $params);
-        if ($ret === false)
-        {
+        if ($ret === false) {
             // not blong index
             return '';
         }
-
+        
+        $repositoryIndexManager = new RepositoryIndexManager($this->Session, $this->dbAccess, $this->TransStartDate);
         $belong_index = array();
         for ($nCnt=0; $nCnt<count($ret); $nCnt++) {
-                array_push($belong_index, $ret[$nCnt]['index_id']);
+            if($recursiveFlag) {
+                // 再帰的に親インデックスを辿り全てのインデックスIDを取得する
+                $specs = array();
+                $repositoryIndexManager->strictlySetSpec($ret[$nCnt]['index_id'], $specs);
+                // setSpecとしてコロンで繋げる
+                $setSpec = "";
+                for($jj = 0; $jj < count($specs); $jj++) {
+                    if($jj > 0) {
+                        $setSpec .= ":";
+                    }
+                    $setSpec .= $specs[$jj];
+                }
+                array_push($belong_index, $setSpec);
+            } else {
+                // 直接所属しているインデックスのみをsetSpecとして出力する
+                array_push($belong_index, sprintf("%05d", $ret[$nCnt]['index_id']));
             }
+        }
         return $belong_index;
     }
-
+    
+    /**
+     * check setSpec position index
+     *
+     * @return bool
+     */
+    private function checkSetspecPosition() {
+        // 指定されたsetの階層が全て正しいかチェックする
+        // setSpecが階層形式で無い場合はスルーする
+        if(strlen($this->fullSet) == 0) {
+            return true;
+        }
+        
+        $specs = array();
+        $specs = explode(":", $this->fullSet);
+        $specs = array_reverse($specs);
+        for($ii = 0; $ii < count($specs); $ii++) {
+            $query = "SELECT parent_index_id FROM ". DATABASE_PREFIX. "repository_index ".
+                     "WHERE index_id = ? ".
+                     "AND is_delete = ? ;";
+            $params = array();
+            $params[] = $specs[$ii];
+            $params[] = 0;
+            $result = $this->Db->execute($query, $params);
+            if($result === false || count($result) == 0) {
+                return false;
+            }
+            
+            // 一番上のインデックスまでチェックが通過したらtrueを返す
+            if($result[0]["parent_index_id"] == 0) {
+                return true;
+            }
+            // setSpecが1つ上の階層のインデックスIDと一致しているかチェックする
+            if(isset($specs[$ii+1])) {
+                if($result[0]["parent_index_id"] != $specs[$ii+1]) {
+                    return false;
+                }
+            }
+        }
+        
+        // 全て通過したという事は一番上の階層までループが辿り着いていないという事なので不正扱い
+        return false;
+    }
 }
 ?>

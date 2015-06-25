@@ -1,7 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-// $Id: SwordUtility.class.php 562 2014-04-14 01:03:17Z ivis $
+// $Id: SwordUtility.class.php 24783 2013-08-20 07:31:46Z yuko_nakao $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -127,8 +127,7 @@ class SwordUtility extends RepositoryAction
 		// V1.2 => V1.3 : <sword:level> removed...
 //	    $root['level']           = '1';								// Server Level	
 		// V1.2 => V1.3 : <sword:version> added.(mandately)
-		// V2.0 : The SWORD server MUST specify the sword:version element with a value of 2.0
-	    $root['version']         = '2.0';								// Server Version
+	    $root['version']         = 2.0;								// Server Version
 	    // V1.2 => V1.3 : <sword:maxUploadSize> added.(option)
 	    $root['maxUploadSize']   = intval($upload_max_capacity_group)/1024;	// maxUploadSize (KB)	
 		

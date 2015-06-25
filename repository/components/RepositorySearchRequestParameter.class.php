@@ -1,7 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-// $Id: RepositorySearchRequestParameter.class.php 40394 2014-08-25 09:36:51Z yuko_nakao $
+// $Id: RepositorySearchRequestParameter.class.php 53594 2015-05-28 05:25:53Z kaede_matsushita $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -87,6 +87,7 @@ class RepositorySearchRequestParameter
     const REQUEST_PAGE_ID = "page_id";
     const REQUEST_BLOCK_ID = "block_id";
     const REQUEST_WEKO_ID = "weko_id";
+    const REQUEST_ITEM_IDS = "item_ids";
     const REQUEST_DISPLAY_LANG = "lang";
     const REQUEST_SEARCH_TYPE = "st";
     const REQUEST_MODULE_ID = "module_id";
@@ -267,7 +268,14 @@ class RepositorySearchRequestParameter
         $this->search_type = null;
         $this->format = null;
         $this->index_id = null;
-        parse_str($_SERVER["HTTP_REFERER"],$refererRequest);
+        if(isset($_SERVER["HTTP_REFERER"]))
+        {
+        	parse_str($_SERVER["HTTP_REFERER"],$refererRequest);
+        }
+        else
+        {
+        	$refererRequest = array();
+        }
         $this->_request = $refererRequest;
         $this->setRequestParameter();
     }
@@ -326,6 +334,12 @@ class RepositorySearchRequestParameter
         {
             $this->search_term[self::REQUEST_WEKO_ID] = $this->_request[self::REQUEST_WEKO_ID];;
         }
+        // Add suppleContentsEntry Y.Yamazawa --start-- 2015/03/20 --start--
+        else if(isset($this->_request[self::REQUEST_ITEM_IDS]))
+        {
+            $this->search_term[self::REQUEST_ITEM_IDS] = $this->_request[self::REQUEST_ITEM_IDS];
+        }
+        // Add suppleContentsEntry Y.Yamazawa --end-- 2015/03/20 --end--
         else
         {
         foreach($this->_request as $requestParam => $requestValue){
@@ -377,11 +391,6 @@ class RepositorySearchRequestParameter
             $this->search_term[self::REQUEST_ID_LIST] = "";
             for($ii=1; $ii<12; $ii++)
             {
-                // idList==4 => selfDOI
-                if($ii==4)
-                {
-                    continue;
-                }
                 // set 1-11
                 if($ii>1)
                 {
@@ -458,7 +467,7 @@ class RepositorySearchRequestParameter
         
         foreach($this->search_term as $requestParam => $requestValue)
         {
-            array_push($req, $requestParam."=".$requestValue);
+            array_push($req, $requestParam."=".urlencode($requestValue));
         }
         return implode("&", $req);
     }
@@ -615,9 +624,11 @@ class RepositorySearchRequestParameter
                         $this->search_term[$requestParam] = 0;
                     }
                 }
-            } else if($requestParam == self::REQUEST_SUBJECT_LIST || $requestParam == self::REQUEST_ITEMTYPE_LIST
+            }
+            else if($requestParam == self::REQUEST_SUBJECT_LIST || $requestParam == self::REQUEST_ITEMTYPE_LIST
                        || $requestParam == self::REQUEST_TYPE_LIST || $requestParam == self::REQUEST_ID_LIST
-                       || $requestParam == self::REQUEST_IDX){
+                       || $requestParam == self::REQUEST_IDX
+                       || $requestParam == self::REQUEST_ITEM_IDS){// Add suppleContentsEntry Y.Yamazawa 2015/03/20
                 $tmpValue = RepositoryOutputFilter::string($requestValue);
                 $divideValue = explode(",", $tmpValue);
                 $tmpValue = "";
@@ -637,15 +648,15 @@ class RepositorySearchRequestParameter
                 $this->search_term[$requestParam] = $tmpValue;
             } else if($requestParam == self::REQUEST_TEXTVERSION || $requestParam == self::REQUEST_LANGUAGE
                    || $requestParam == self::REQUEST_RIGHT_LIST){
-                $tmpValue = urldecode($requestValue);
+                $tmpValue = $requestValue;
                 $tmpValue = trim(mb_convert_encoding($tmpValue, "UTF-8", "ASCII,JIS,UTF-8,EUC-JP,SJIS"));
                 $tmpValue = RepositoryOutputFilter::string($tmpValue);
                 $this->search_term[$requestParam] = preg_replace("/[\s,]+|　/", ",", $tmpValue);
             } else {
-                $tmpValue = urldecode($requestValue);
+                $tmpValue = $requestValue;
                 $tmpValue = trim(mb_convert_encoding($tmpValue, "UTF-8", "ASCII,JIS,UTF-8,EUC-JP,SJIS"));
                 $tmpValue = RepositoryOutputFilter::string($tmpValue);
-                $this->search_term[$requestParam] = preg_replace("/[\s,]+|　/", " ", $tmpValue);
+                $this->search_term[$requestParam] = preg_replace("/[\s]+|　|\+/", " ", $tmpValue);
             }
             
             // Bug fix WEKO-2014-012 T.Koyasu 2014/06/10 --start--
@@ -778,6 +789,18 @@ class RepositorySearchRequestParameter
                 $keyword = $this->search_term[self::REQUEST_ALL];
                 $this->all_search_type = "detail";
             } else {
+            	
+            	// Add Default Search Type 2014/12/03 K.Sugimoto --start--
+        		$result = $this->getDefaultSearchType();
+        		if(isset($result[0]['param_value'])){
+        			if($result[0]['param_value'] == 0){
+        				$this->all_search_type = "detail";
+        			} else if($result[0]['param_value'] == 1){
+        				$this->all_search_type = "simple";
+        			}
+        		}
+            	// Add Default Search Type 2014/12/03 K.Sugimoto --end--
+            	
                 $keyword = "";
             }
             $this->Session->setParameter("searchkeyword", $keyword);
@@ -813,6 +836,27 @@ class RepositorySearchRequestParameter
             $this->active_search_flag = 1;
         }
     }
+    
+    // Add Default Search Type 2014/12/09 K.Sugimoto --start--
+    /**
+     * get default_search_type
+     *
+     * @access public
+     */
+    public function getDefaultSearchType()
+    {
+        $query = "SELECT param_value ".
+                 "FROM ".DATABASE_PREFIX."repository_parameter ".
+                 "WHERE param_name = ? ".
+                 "AND is_delete = ? ;";
+        $params = array();
+        $params[] = "default_search_type";
+        $params[] = 0;
+        $result = $this->dbAccess->executeQuery($query, $params);
+        
+        return $result;
+    }
+    // Add Default Search Type 2014/12/09 K.Sugimoto --end--
     
     /**
      * init session detail_search_select_item

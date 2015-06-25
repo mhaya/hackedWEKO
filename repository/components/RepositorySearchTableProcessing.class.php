@@ -1,7 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-// $Id: RepositorySearchTableProcessing.class.php 640 2014-10-24 08:07:50Z ivis $
+// $Id: RepositorySearchTableProcessing.class.php 54835 2015-06-25 04:10:46Z keiya_sugimoto $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics,
 // Research and Development Center for Scientific Information Resources
@@ -17,6 +17,7 @@ require_once WEBAPP_DIR. '/modules/repository/components/RepositoryProcessUtilit
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryHandleManager.class.php';
 require_once WEBAPP_DIR. '/modules/repository/components/QueryGenerator.class.php';
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryPluginManager.class.php';
+require_once WEBAPP_DIR. '/modules/repository/files/plugin/searchkeywordconverter/Twobytechartohalfsizechar.class.php';
 
 /**
  * class of input data to search table
@@ -236,6 +237,14 @@ class RepositorySearchTableProcessing extends RepositoryAction
      */
     private $pluginFlag = false;
     
+    // Extend Search Keyword 2015/02/26 K.Sugimoto --start--
+    /**
+     * Instance of SearchKeywordConverter
+     * 
+     * @var classObject
+     */
+    private $searchKeywordConverter = null;
+    // Extend Search Keyword 2015/02/26 K.Sugimoto --end--
     
     /**
      * constructer
@@ -478,20 +487,40 @@ class RepositorySearchTableProcessing extends RepositoryAction
     private function addBaseData($itemBaseInfo, &$searchItemInfo, &$sortItemInfo)
     {
         // set title data
-        $this->setTextData($searchItemInfo, self::TITLE, $itemBaseInfo["title"]);
-        $this->setTextData($searchItemInfo, self::TITLE, $itemBaseInfo["title_english"]);
-        $this->setTextData($searchItemInfo, self::ALLMETADATA, $itemBaseInfo["title"]);
-        $this->setTextData($searchItemInfo, self::ALLMETADATA, $itemBaseInfo["title_english"]);
+	    // Extend Search Keyword 2015/02/23 K.Sugimoto --start--
+        $toSearchKey = new ToSearchKey();
+        $titleConverted = $this->convertSearchTableKeyword($itemBaseInfo["title"], self::TITLE, $toSearchKey);
+        $titleEnglishConverted = $this->convertSearchTableKeyword($itemBaseInfo["title_english"], self::TITLE, $toSearchKey);
+	    // Extend Search Keyword 2015/02/23 K.Sugimoto --end--
+        $this->setTextData($searchItemInfo, self::TITLE, $titleConverted);
+        $this->setTextData($searchItemInfo, self::TITLE, $titleEnglishConverted);
+	    // Extend Search Keyword 2015/02/23 K.Sugimoto --start--
+        $titleAllMetadataConverted = $this->convertSearchTableKeyword($itemBaseInfo["title"], self::ALLMETADATA, $toSearchKey);
+        $titleEnglishAllMetadataConverted = $this->convertSearchTableKeyword($itemBaseInfo["title_english"], self::ALLMETADATA, $toSearchKey);
+	    // Extend Search Keyword 2015/02/23 K.Sugimoto --end--
+        $this->setTextData($searchItemInfo, self::ALLMETADATA, $titleAllMetadataConverted);
+        $this->setTextData($searchItemInfo, self::ALLMETADATA, $titleEnglishAllMetadataConverted);
         $sortItemInfo["title"] = $itemBaseInfo["title"];
         $sortItemInfo["title_en"] = $itemBaseInfo["title_english"];
         // set shown date data
-        $this->setTextData($searchItemInfo, self::DATE, $itemBaseInfo["shown_date"]);
-        $this->setTextData($searchItemInfo, self::DATAODISSUED_YMD, $itemBaseInfo["shown_date"]);
+	    // Extend Search Keyword 2015/02/23 K.Sugimoto --start--
+        $shownDateConverted = $this->convertSearchTableKeyword($itemBaseInfo["shown_date"], self::DATE, $toSearchKey);
+	    // Extend Search Keyword 2015/02/23 K.Sugimoto --end--
+        $this->setTextData($searchItemInfo, self::DATE, $shownDateConverted);
+        $this->setTextData($searchItemInfo, self::DATAODISSUED_YMD, $shownDateConverted);
         // set keyword data
-        $this->setTextData($searchItemInfo, self::KEYWORD, $itemBaseInfo["serch_key"]);
-        $this->setTextData($searchItemInfo, self::KEYWORD, $itemBaseInfo["serch_key_english"]);
-        $this->setTextData($searchItemInfo, self::ALLMETADATA, $itemBaseInfo["serch_key"]);
-        $this->setTextData($searchItemInfo, self::ALLMETADATA, $itemBaseInfo["serch_key_english"]);
+	    // Extend Search Keyword 2015/02/23 K.Sugimoto --start--
+        $searchKeyConverted = $this->convertSearchTableKeyword($itemBaseInfo["serch_key"], self::KEYWORD, $toSearchKey);
+        $searchKeyEnglishConverted = $this->convertSearchTableKeyword($itemBaseInfo["serch_key_english"], self::KEYWORD, $toSearchKey);
+	    // Extend Search Keyword 2015/02/23 K.Sugimoto --end--
+        $this->setTextData($searchItemInfo, self::KEYWORD, $searchKeyConverted);
+        $this->setTextData($searchItemInfo, self::KEYWORD, $searchKeyEnglishConverted);
+	    // Extend Search Keyword 2015/02/23 K.Sugimoto --start--
+        $searchKeyAllMetadataConverted = $this->convertSearchTableKeyword($itemBaseInfo["serch_key"], self::ALLMETADATA, $toSearchKey);
+        $searchKeyEnglishAllMetadataConverted = $this->convertSearchTableKeyword($itemBaseInfo["serch_key_english"], self::ALLMETADATA, $toSearchKey);
+	    // Extend Search Keyword 2015/02/23 K.Sugimoto --end--
+        $this->setTextData($searchItemInfo, self::ALLMETADATA, $searchKeyAllMetadataConverted);
+        $this->setTextData($searchItemInfo, self::ALLMETADATA, $searchKeyEnglishAllMetadataConverted);
         // set language data
         $this->setTextData($searchItemInfo, self::LANGUAGE, $itemBaseInfo["language"]);
         // set itemtype data
@@ -526,6 +555,7 @@ class RepositorySearchTableProcessing extends RepositoryAction
     {
         // set item metadata
         for($ii = 0; $ii < count($itemMetaData); $ii++){
+	        $toSearchKey = new ToSearchKey();
             switch($itemTypeMetaData["input_type"])
             {
                 case "name":
@@ -536,23 +566,48 @@ class RepositorySearchTableProcessing extends RepositoryAction
                     for($jj = 0; $jj < count($idList); $jj++){
                         $addText .= ",".$idList[$jj]["suffix"];
                     }
-                    if(isset($itemTypeMetaData["junii2_mapping"]) && strlen($itemTypeMetaData["junii2_mapping"]) != 0){
-                        $this->setTextData($searchItemInfo, $itemTypeMetaData["junii2_mapping"], $addText);
+                    if(isset($itemTypeMetaData["junii2_mapping"]) && strlen($itemTypeMetaData["junii2_mapping"]) > 0){
+                        $addTextJunii2Converted = $this->convertSearchTableKeyword($addText, $itemTypeMetaData["junii2_mapping"], $toSearchKey);
+                        $this->setTextData($searchItemInfo, $itemTypeMetaData["junii2_mapping"], $addTextJunii2Converted);
                     }
-                    $this->setTextData($searchItemInfo, self::ALLMETADATA, $addText);
+				    // Extend Search Keyword 2015/02/23 K.Sugimoto --start--
+                    if(isset($itemTypeMetaData["dublin_core_mapping"]) && strlen($itemTypeMetaData["dublin_core_mapping"]) > 0 && $itemTypeMetaData["dublin_core_mapping"] !== $itemTypeMetaData["junii2_mapping"]){
+                        $addTextDublinCoreConverted = $this->convertSearchTableKeyword($addText, $itemTypeMetaData["dublin_core_mapping"], $toSearchKey);
+                        $this->setTextData($searchItemInfo, $itemTypeMetaData["dublin_core_mapping"], $addTextDublinCoreConverted);
+                    }
+				    // Extend Search Keyword 2015/02/23 K.Sugimoto --end--
+                    $addTextAllMetadataConverted = $this->convertSearchTableKeyword($addText, self::ALLMETADATA, $toSearchKey);
+                    $this->setTextData($searchItemInfo, self::ALLMETADATA, $addTextAllMetadataConverted);
                     break;
                 case "thumbnail":
-                    if(isset($itemTypeMetaData["junii2_mapping"]) && strlen($itemTypeMetaData["junii2_mapping"]) != 0){
-                        $this->setTextData($searchItemInfo, $itemTypeMetaData["junii2_mapping"], $itemMetaData[$ii]["file_name"]);
+                    if(isset($itemTypeMetaData["junii2_mapping"]) && strlen($itemTypeMetaData["junii2_mapping"]) > 0){
+                        $fileNameJunii2Converted = $this->convertSearchTableKeyword($itemMetaData[$ii]["file_name"], $itemTypeMetaData["junii2_mapping"], $toSearchKey);
+                        $this->setTextData($searchItemInfo, $itemTypeMetaData["junii2_mapping"], $fileNameJunii2Converted);
                     }
-                    $this->setTextData($searchItemInfo, self::ALLMETADATA, $itemMetaData[$ii]["file_name"]);
+				    // Extend Search Keyword 2015/02/23 K.Sugimoto --start--
+                    if(isset($itemTypeMetaData["dublin_core_mapping"]) && strlen($itemTypeMetaData["dublin_core_mapping"]) > 0 && $itemTypeMetaData["dublin_core_mapping"] !== $itemTypeMetaData["junii2_mapping"]){
+                        $fileNameDublinCoreConverted = $this->convertSearchTableKeyword($itemMetaData[$ii]["file_name"], $itemTypeMetaData["dublin_core_mapping"], $toSearchKey);
+                        $this->setTextData($searchItemInfo, $itemTypeMetaData["dublin_core_mapping"], $fileNameDublinCoreConverted);
+                    }
+				    // Extend Search Keyword 2015/02/23 K.Sugimoto --end--
+                    $fileNameAllMetadataConverted = $this->convertSearchTableKeyword($itemMetaData[$ii]["file_name"], self::ALLMETADATA, $toSearchKey);
+                    $this->setTextData($searchItemInfo, self::ALLMETADATA, $fileNameAllMetadataConverted);
                     break;
                 case "file":
                 case "file_price":
-                    if(isset($itemTypeMetaData["junii2_mapping"]) && strlen($itemTypeMetaData["junii2_mapping"]) != 0){
-                        $this->setTextData($searchItemInfo, $itemTypeMetaData["junii2_mapping"], $itemMetaData[$ii]["file_name"]);
+                    $addText = $itemMetaData[$ii]["file_name"].",".$itemMetaData[$ii]["display_name"];
+                    if(isset($itemTypeMetaData["junii2_mapping"]) && strlen($itemTypeMetaData["junii2_mapping"]) > 0){
+                        $addTextJunii2Converted = $this->convertSearchTableKeyword($addText, $itemTypeMetaData["junii2_mapping"], $toSearchKey);
+                        $this->setTextData($searchItemInfo, $itemTypeMetaData["junii2_mapping"], $addTextJunii2Converted);
                     }
-                    $this->setTextData($searchItemInfo, self::ALLMETADATA, $itemMetaData[$ii]["file_name"]);
+				    // Extend Search Keyword 2015/02/23 K.Sugimoto --start--
+                    if(isset($itemTypeMetaData["dublin_core_mapping"]) && strlen($itemTypeMetaData["dublin_core_mapping"]) > 0 && $itemTypeMetaData["dublin_core_mapping"] !== $itemTypeMetaData["junii2_mapping"]){
+                        $addTextDublinCoreConverted = $this->convertSearchTableKeyword($addText, $itemTypeMetaData["dublin_core_mapping"], $toSearchKey);
+                        $this->setTextData($searchItemInfo, $itemTypeMetaData["dublin_core_mapping"], $addTextDublinCoreConverted);
+                    }
+				    // Extend Search Keyword 2015/02/23 K.Sugimoto --end--
+                    $addTextAllMetadataConverted = $this->convertSearchTableKeyword($addText, self::ALLMETADATA, $toSearchKey);
+                    $this->setTextData($searchItemInfo, self::ALLMETADATA, $addTextAllMetadataConverted);
                     $this->addFileData($itemMetaData[$ii], $searchItemInfo);
                     
                     // Add free style license to search_rights table T.Koyasu 2014/06/10 --start--
@@ -565,28 +620,53 @@ class RepositorySearchTableProcessing extends RepositoryAction
                     break;
                 case "biblio_info":
                     $addText = $itemMetaData[$ii]["biblio_name"].",".$itemMetaData[$ii]["biblio_name_english"].",".$itemMetaData[$ii]["date_of_issued"];
-                    $this->setTextData($searchItemInfo, self::JTITLE, $itemMetaData[$ii]["biblio_name"]);
-                    $this->setTextData($searchItemInfo, self::JTITLE, $itemMetaData[$ii]["biblio_name_english"]);
-                    $this->setTextData($searchItemInfo, self::DATAODISSUED, $itemMetaData[$ii]["date_of_issued"]);
+                    $biblioNameJunii2Converted = $this->convertSearchTableKeyword($itemMetaData[$ii]["biblio_name"], self::JTITLE, $toSearchKey);
+                    $biblioNameEnJunii2Converted = $this->convertSearchTableKeyword($itemMetaData[$ii]["biblio_name_english"], self::JTITLE, $toSearchKey);
+                    $dateOfIssuedJunii2Converted = $this->convertSearchTableKeyword($itemMetaData[$ii]["date_of_issued"], self::DATAODISSUED, $toSearchKey);
+                    $this->setTextData($searchItemInfo, self::JTITLE, $biblioNameJunii2Converted);
+                    $this->setTextData($searchItemInfo, self::JTITLE, $biblioNameEnJunii2Converted);
+                    $this->setTextData($searchItemInfo, self::DATAODISSUED, $dateOfIssuedJunii2Converted);
+				    // Extend Search Keyword 2015/02/23 K.Sugimoto --start--
+                    $biblioNameDublinCoreConverted = $this->convertSearchTableKeyword($itemMetaData[$ii]["biblio_name"], self::IDENTIFER, $toSearchKey);
+                    $biblioNameEnDublinCoreConverted = $this->convertSearchTableKeyword($itemMetaData[$ii]["biblio_name_english"], self::IDENTIFER, $toSearchKey);
+                    $dateOfIssuedDublinCoreConverted = $this->convertSearchTableKeyword($itemMetaData[$ii]["date_of_issued"], self::IDENTIFER, $toSearchKey);
+                    $this->setTextData($searchItemInfo, self::IDENTIFER, $biblioNameDublinCoreConverted);
+                    $this->setTextData($searchItemInfo, self::IDENTIFER, $biblioNameEnDublinCoreConverted);
+                    $this->setTextData($searchItemInfo, self::IDENTIFER, $dateOfIssuedDublinCoreConverted);
+				    // Extend Search Keyword 2015/02/23 K.Sugimoto --end--
                     // Fix Don't fill biblio_date at sort table. Y.Nakao 2014/03/26 --start--
                     if(!isset($sortItemInfo["biblio_date"]))
                     {
                         $this->setTextData($sortItemInfo, "biblio_date", $itemMetaData[$ii]["date_of_issued"]);
                     }
                     // Fix Don't fill biblio_date at sort table. Y.Nakao 2014/03/26 --end--
-                    $this->setTextData($searchItemInfo, self::ALLMETADATA, $addText);
+                    $addTextAllMetadataConverted = $this->convertSearchTableKeyword($addText, self::ALLMETADATA, $toSearchKey);
+                    $this->setTextData($searchItemInfo, self::ALLMETADATA, $addTextAllMetadataConverted);
                     break;
                 case "supple":
-                    if(isset($itemTypeMetaData["junii2_mapping"]) && strlen($itemTypeMetaData["junii2_mapping"]) != 0){
-                        $this->setTextData($searchItemInfo, $itemTypeMetaData["junii2_mapping"], $itemMetaData[$ii]["supple_title"]);
-                        $this->setTextData($searchItemInfo, $itemTypeMetaData["junii2_mapping"], $itemMetaData[$ii]["supple_title_en"]);
+                    if(isset($itemTypeMetaData["junii2_mapping"]) && strlen($itemTypeMetaData["junii2_mapping"]) > 0){
+                    	$suppleTitleJunii2Converted = $this->convertSearchTableKeyword($itemMetaData[$ii]["supple_title"], $itemTypeMetaData["junii2_mapping"], $toSearchKey);
+                    	$suppleTitleEnTextJunii2Converted = $this->convertSearchTableKeyword($itemMetaData[$ii]["supple_title_en"], $itemTypeMetaData["junii2_mapping"], $toSearchKey);
+                        $this->setTextData($searchItemInfo, $itemTypeMetaData["junii2_mapping"], $suppleTitleJunii2Converted);
+                        $this->setTextData($searchItemInfo, $itemTypeMetaData["junii2_mapping"], $suppleTitleEnTextJunii2Converted);
                     }
-                    $this->setTextData($searchItemInfo, self::ALLMETADATA, $itemMetaData[$ii]["supple_title"]);
-                    $this->setTextData($searchItemInfo, self::ALLMETADATA, $itemMetaData[$ii]["supple_title_en"]);
+				    // Extend Search Keyword 2015/02/23 K.Sugimoto --start--
+                    if(isset($itemTypeMetaData["dublin_core_mapping"]) && strlen($itemTypeMetaData["dublin_core_mapping"]) > 0 && $itemTypeMetaData["dublin_core_mapping"] !== $itemTypeMetaData["junii2_mapping"]){
+                    	$suppleTitleDublinCoreConverted = $this->convertSearchTableKeyword($itemMetaData[$ii]["supple_title"], $itemTypeMetaData["dublin_core_mapping"], $toSearchKey);
+                    	$suppleTitleEnTextDublinCoreConverted = $this->convertSearchTableKeyword($itemMetaData[$ii]["supple_title_en"], $itemTypeMetaData["dublin_core_mapping"], $toSearchKey);
+                        $this->setTextData($searchItemInfo, $itemTypeMetaData["dublin_core_mapping"], $suppleTitleDublinCoreConverted);
+                        $this->setTextData($searchItemInfo, $itemTypeMetaData["dublin_core_mapping"], $suppleTitleEnTextDublinCoreConverted);
+                    }
+				    // Extend Search Keyword 2015/02/23 K.Sugimoto --end--
+                    $suppleTitleAllMetadataConverted = $this->convertSearchTableKeyword($itemMetaData[$ii]["supple_title"], self::ALLMETADATA, $toSearchKey);
+                    $suppleTitleEnTextAllMetadataConverted = $this->convertSearchTableKeyword($itemMetaData[$ii]["supple_title_en"], self::ALLMETADATA, $toSearchKey);
+                    $this->setTextData($searchItemInfo, self::ALLMETADATA, $suppleTitleAllMetadataConverted);
+                    $this->setTextData($searchItemInfo, self::ALLMETADATA, $suppleTitleEnTextAllMetadataConverted);
                     break;
                 default:
-                    if(isset($itemTypeMetaData["junii2_mapping"]) && strlen($itemTypeMetaData["junii2_mapping"]) != 0){
-                        $this->setTextData($searchItemInfo, $itemTypeMetaData["junii2_mapping"], $itemMetaData[$ii]["attribute_value"]);
+                    if(isset($itemTypeMetaData["junii2_mapping"]) && strlen($itemTypeMetaData["junii2_mapping"]) > 0){
+                    	$attributeValueJunii2Converted = $this->convertSearchTableKeyword($itemMetaData[$ii]["attribute_value"], $itemTypeMetaData["junii2_mapping"], $toSearchKey);
+                        $this->setTextData($searchItemInfo, $itemTypeMetaData["junii2_mapping"], $attributeValueJunii2Converted);
                         // Fix Don't fill biblio_date at sort table. Y.Nakao 2014/03/26 --start--
                         if(!isset($sortItemInfo["biblio_date"]) && $itemTypeMetaData["junii2_mapping"] == self::DATAODISSUED)
                         {
@@ -594,7 +674,20 @@ class RepositorySearchTableProcessing extends RepositoryAction
                         }
                         // Fix Don't fill biblio_date at sort table. Y.Nakao 2014/03/26 --end--
                     }
-                    $this->setTextData($searchItemInfo, self::ALLMETADATA, $itemMetaData[$ii]["attribute_value"]);
+				    // Extend Search Keyword 2015/02/23 K.Sugimoto --start--
+                    if(isset($itemTypeMetaData["dublin_core_mapping"]) && strlen($itemTypeMetaData["dublin_core_mapping"]) > 0 && $itemTypeMetaData["dublin_core_mapping"] !== $itemTypeMetaData["junii2_mapping"]){
+                    	$attributeValueDublinCoreConverted = $this->convertSearchTableKeyword($itemMetaData[$ii]["attribute_value"], $itemTypeMetaData["dublin_core_mapping"], $toSearchKey);
+                        $this->setTextData($searchItemInfo, $itemTypeMetaData["dublin_core_mapping"], $attributeValueDublinCoreConverted);
+                        // Fix Don't fill biblio_date at sort table. Y.Nakao 2014/03/26 --start--
+                        if(!isset($sortItemInfo["biblio_date"]) && $itemTypeMetaData["dublin_core_mapping"] == self::DATAODISSUED)
+                        {
+                            $this->setTextData($sortItemInfo, "biblio_date", $itemMetaData[$ii]["attribute_value"]);
+                        }
+                        // Fix Don't fill biblio_date at sort table. Y.Nakao 2014/03/26 --end--
+                    }
+				    // Extend Search Keyword 2015/02/23 K.Sugimoto --end--
+                    $attributeValueAllMetadataConverted = $this->convertSearchTableKeyword($itemMetaData[$ii]["attribute_value"], self::ALLMETADATA, $toSearchKey);
+                    $this->setTextData($searchItemInfo, self::ALLMETADATA, $attributeValueAllMetadataConverted);
                     break;
             }
         }
@@ -813,7 +906,7 @@ class RepositorySearchTableProcessing extends RepositoryAction
                 foreach (glob($xml_path. DIRECTORY_SEPARATOR.'slide*.xml') as $sheet) {
                     $getTagResult = $this->getOfficeXMLText($xml_path, "slide".$noCnt.".xml");
                     if($getTagResult !== false){
-                        $strFullText = $getTagResult;
+                        $strFullText .= $getTagResult;
                         $noCnt++;
                     }
                 }
@@ -823,6 +916,11 @@ class RepositorySearchTableProcessing extends RepositoryAction
         // MySQLは4バイト文字に対応していないため4バイト文字を削除
         $strFullText = preg_replace("/[\xF0-\xF7][\x80-\xBF][\x80-\xBF][\x80-\xBF]/", "", $strFullText);
         
+	    // Extend Search Keyword 2015/02/23 K.Sugimoto --start--
+        $toSearchKey = new ToSearchKey();
+        $strFullText = $this->convertSearchTableKeyword($strFullText, self::FILEDATA, $toSearchKey);
+	    // Extend Search Keyword 2015/02/23 K.Sugimoto --end--
+
         $this->setTextData($searchItemInfo, self::FILEDATA, $strFullText);
         //一時dir削除
         $this->removeDirectory($dir_path);
@@ -1103,18 +1201,25 @@ class RepositorySearchTableProcessing extends RepositoryAction
         $uri_jalcdoi = $this->repositoryHandleManager->createSelfDoiUri($item_id, $item_no, RepositoryHandleManager::ID_JALC_DOI);
         $uri_crossref = $this->repositoryHandleManager->createSelfDoiUri($item_id, $item_no, RepositoryHandleManager::ID_CROSS_REF_DOI);
         $uri_library_jalcdoi = $this->repositoryHandleManager->createSelfDoiUri($item_id, $item_no, RepositoryHandleManager::ID_LIBRARY_JALC_DOI);
-        if(strlen($uri_jalcdoi) > 0 && strlen($uri_crossref) < 1 && strlen($uri_library_jalcdoi) < 1)
+        // Add DataCite 2015/02/10 K.Sugimoto --start--
+        $uri_datacite = $this->repositoryHandleManager->createSelfDoiUri($item_id, $item_no, RepositoryHandleManager::ID_DATACITE_DOI);
+        if(strlen($uri_jalcdoi) > 0 && strlen($uri_crossref) < 1 && strlen($uri_library_jalcdoi) < 1 && strlen($uri_datacite) < 1)
         {
             $uri = $uri_jalcdoi;
         }
-        else if(strlen($uri_crossref) > 0 && strlen($uri_jalcdoi) < 1 && strlen($uri_library_jalcdoi) < 1)
+        else if(strlen($uri_crossref) > 0 && strlen($uri_jalcdoi) < 1 && strlen($uri_library_jalcdoi) < 1 && strlen($uri_datacite) < 1)
         {
             $uri = $uri_crossref;
         }
-        else if(strlen($uri_library_jalcdoi) > 0 && strlen($uri_jalcdoi) < 1 && strlen($uri_crossref) < 1)
+        else if(strlen($uri_library_jalcdoi) > 0 && strlen($uri_jalcdoi) < 1 && strlen($uri_crossref) < 1 && strlen($uri_datacite) < 1)
         {
             $uri = $uri_library_jalcdoi;
         }
+        else if(strlen($uri_datacite) > 0 && strlen($uri_jalcdoi) < 1 && strlen($uri_crossref) < 1 && strlen($uri_library_jalcdoi) < 1)
+        {
+            $uri = $uri_datacite;
+        }
+        // Add DataCite 2015/02/10 K.Sugimoto --end--
         
         if(strlen($uri) > 0)
         {
@@ -1161,6 +1266,10 @@ class RepositorySearchTableProcessing extends RepositoryAction
      * @param string $search_word
      */
     public function addExternalSearchWord($item_id, $item_no, $search_word) {
+	    // Extend Search Keyword 2015/02/23 K.Sugimoto --start--
+        $toSearchKey = new ToSearchKey();
+        $search_word = $this->convertSearchTableKeyword($search_word, "externalsearchword", $toSearchKey);
+	    // Extend Search Keyword 2015/02/23 K.Sugimoto --end--
         $query = "INSERT INTO ". DATABASE_PREFIX. "repository_search_external_searchword ".
                  "(item_id, item_no, metadata) ".
                  "VALUES (?, ?, ?) ".
@@ -1174,6 +1283,27 @@ class RepositorySearchTableProcessing extends RepositoryAction
         $params[] = ",".$search_word;
         $this->dbAccess->executeQuery($query, $params);
     }
+    
+    // Extend Search Keyword 2015/02/26 K.Sugimoto --start--
+    /**
+     * convert search table keyword
+     * @param string $word
+     * @param string $mapping
+     * @param object $toSearchKey
+     */
+    public function convertSearchTableKeyword($word, $mapping, $toSearchKey=null) {
+        if(!isset($this->searchKeywordConverter)) {
+        	$this->searchKeywordConverter = new Repository_Files_Plugin_Searchkeywordconverter_Twobytechartohalfsizechar();
+        }
+        
+        if($mapping === self::LANGUAGE || $mapping === self::TEXTVERSION) {
+        	return $word;
+        }
+        
+        return $this->searchKeywordConverter->toSearchKey($word, $toSearchKey);
+    }
+    // Extend Search Keyword 2015/02/26 K.Sugimoto --end--
+    
 }
 
 ?>

@@ -1,7 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-// $Id: RepositoryConst.class.php 610 2014-08-29 07:24:55Z ivis $
+// $Id: RepositoryConst.class.php 49321 2015-03-03 12:15:32Z keiya_sugimoto $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -515,6 +515,9 @@ class RepositoryConst
     const JUNII2_SELFDOI = "selfDOI";
     const JUNII2_SELFDOI_JALC = "selfDOI(JaLC)";
     const JUNII2_SELFDOI_CROSSREF = "selfDOI(CrossRef)";
+    // Add DataCite 2015/02/10 K.Sugimoto --start--
+    const JUNII2_SELFDOI_DATACITE = "selfDOI(DataCite)";
+    // Add DataCite 2015/02/10 K.Sugimoto --end--
     const JUNII2_ISBN = "isbn";
     const JUNII2_NAID = "NAID";
     const JUNII2_ICHUSHI = "ichushi";
@@ -524,6 +527,9 @@ class RepositoryConst
     const JUNII2_GRANTOR = "grantor";
     const JUNII2_SELFDOI_RA_JALC = "JaLC";
     const JUNII2_SELFDOI_RA_CROSSREF = "CrossRef";
+    // Add DataCite 2015/02/10 K.Sugimoto --start--
+    const JUNII2_SELFDOI_RA_DATACITE = "DataCite";
+    // Add DataCite 2015/02/10 K.Sugimoto --end--
     // Add for JuNii2 Redaction 2013/09/16 R.Matsuura --end--
     // Add new prefix 2014/01/09 T.Ichikawa --start--
     const JUNII2_SELFDOI_ATTRIBUTE_JALC_DOI = "ra";
@@ -898,9 +904,8 @@ class RepositoryConst
     const GOOGLESCHOLAR_ISSN = "citation_issn";
     const GOOGLESCHOLAR_PUBLISHER = "citation_publisher";
     const GOOGLESCHOLAR_DC_CONTRIBUTOR = "dc.Contributor";
-    const GOOGLESCHOLAR_AUTHORS = "citation_authors";
-    const GOOGLESCHOLAR_DATE = "citation_date";
     const GOOGLESCHOLAR_KEYWORD = "citation_keywords";
+    const GOOGLESCHOLAR_DISSERTATION_INSTITUTION = "citation_dissertation_institution";
         
     // -------------------------------------------
     // Operation ID

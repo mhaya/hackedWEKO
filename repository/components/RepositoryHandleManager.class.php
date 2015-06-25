@@ -1,7 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-// $Id: RepositoryHandleManager.class.php 640 2014-10-24 08:07:50Z ivis $
+// $Id: RepositoryHandleManager.class.php 54835 2015-06-25 04:10:46Z keiya_sugimoto $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics,
 // Research and Development Center for Scientific Information Resources
@@ -22,6 +22,9 @@ class RepositoryHandleManager extends RepositoryLogicBase
     const ID_LIBRARY_JALC_DOI = 50;
     const ID_JALC_DOI = 40;
     const ID_CROSS_REF_DOI = 30;
+    // Add DataCite 2015/02/10 K.Sugimoto --start--
+    const ID_DATACITE_DOI = 25;
+    // Add DataCite 2015/02/10 K.Sugimoto --end--
     const ID_CNRI_HANDLE = 20;
     const ID_Y_HANDLE = 10;
     const PREFIX_DOI = "http://doi.org/";
@@ -33,6 +36,10 @@ class RepositoryHandleManager extends RepositoryLogicBase
     const PREFIX_LIBRARY_DOI_DOI = "doi:";
     const DOI_STATUS_GRANTED = 1;
     const DOI_STATUS_DROPED = 2;
+    
+    // Add DataCite 2015/02/26 K.Sugimoto --start--
+    public $err_msg = null;
+    // Add DataCite 2015/02/26 K.Sugimoto --end--
     
     /**
      * Constructor
@@ -132,6 +139,20 @@ class RepositoryHandleManager extends RepositoryLogicBase
         return $result;
     }
     
+    // Add DataCite 2015/02/10 K.Sugimoto --start--
+    /**
+     * Get DataCite prefix
+     * 
+     * @return string
+     */
+    public function getDataCitePrefix()
+    {
+        $result = $this->getPrefix(self::ID_DATACITE_DOI);
+        
+        return $result;
+    }
+    // Add DataCite 2015/02/10 K.Sugimoto --end--
+    
     /**
      * Get Cnri prefix
      * 
@@ -161,12 +182,16 @@ class RepositoryHandleManager extends RepositoryLogicBase
      * 
      * @param string $jalcDoiPrefix
      * @param string $crossRefDoiPrefix
+     * @param string $dataCiteDoiPrefix
      * @param string $cnriPrefix
      */
-    public function registerPrefix($jalcDoiPrefix, $crossRefDoiPrefix, $cnriPrefix)
+    public function registerPrefix($jalcDoiPrefix, $crossRefDoiPrefix, $dataCiteDoiPrefix, $cnriPrefix)
     {
         $this->registerPrefixById(self::ID_JALC_DOI, $jalcDoiPrefix);
         $this->registerPrefixById(self::ID_CROSS_REF_DOI, $crossRefDoiPrefix);
+        // Add DataCite 2015/02/10 K.Sugimoto --start--
+        $this->registerPrefixById(self::ID_DATACITE_DOI, $dataCiteDoiPrefix);
+        // Add DataCite 2015/02/10 K.Sugimoto --end--
         $this->registerPrefixById(self::ID_CNRI_HANDLE, $cnriPrefix);
     }
     
@@ -218,6 +243,49 @@ class RepositoryHandleManager extends RepositoryLogicBase
     }
     
     /**
+     * Register Y handle suffix stub
+     * 
+     * @param string $title
+     * @param int $item_id
+     * @param int $item_no
+     */
+/*    public function registerYhandleSuffix($title, $item_id, $item_no)
+    {
+        $pre = $this->getPrefix(self::ID_Y_HANDLE);
+        if(empty($pre)) {
+            return false;
+        }
+        
+        $suf = str_pad($item_id, 8, "0", STR_PAD_LEFT);
+        
+        $query = "INSERT INTO ".DATABASE_PREFIX."repository_suffix".
+                 " (item_id, item_no, id, suffix, ins_user_id, mod_user_id, del_user_id, ins_date, mod_date, del_date, is_delete)".
+                 " VALUES".
+                 " (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)".
+                 " ON DUPLICATE KEY ". 
+                 " UPDATE suffix = ?, mod_user_id = ?, mod_date = ? ". 
+                 " ;";
+        $params = array();
+        $params[] = $item_id;
+        $params[] = $item_no;
+        $params[] = self::ID_Y_HANDLE;
+        $params[] = $suf;
+        $params[] = $this->Session->getParameter("_user_id");
+        $params[] = $this->Session->getParameter("_user_id");
+        $params[] = "";
+        $params[] = $this->transStartDate;
+        $params[] = $this->transStartDate;
+        $params[] = "";
+        $params[] = 0;
+        $params[] = $suf;
+        $params[] = $this->Session->getParameter("_user_id");
+        $params[] = $this->transStartDate;
+                 
+        $this->dbAccess->executeQuery($query, $params);
+    }
+    */
+    
+    /**
      * Register prefix by id
      * 
      * @param int $prefix_id
@@ -225,15 +293,38 @@ class RepositoryHandleManager extends RepositoryLogicBase
      */
     private function registerPrefixById($prefix_id, $prefix)
     {
-        $query = "UPDATE ".DATABASE_PREFIX."repository_prefix".
-                 " SET prefix_id = ?".
-                 " WHERE id = ?".
-                 " ;";
-        $params = array();
-        $params[] = $prefix;
-        $params[] = $prefix_id;
-             
-        $this->dbAccess->executeQuery($query, $params);
+        if(isset($prefix))
+        {
+            if($prefix_id == self::ID_JALC_DOI || $prefix_id == self::ID_CROSS_REF_DOI || $prefix_id == self::ID_DATACITE_DOI)
+            {
+                $result = $this->checkDoiFormat($prefix);
+                
+                if($result === $prefix)
+                {
+                    $query = "UPDATE ".DATABASE_PREFIX."repository_prefix".
+                             " SET prefix_id = ?".
+                             " WHERE id = ?".
+                             " ;";
+                    $params = array();
+                    $params[] = $prefix;
+                    $params[] = $prefix_id;
+                         
+                    $this->dbAccess->executeQuery($query, $params);
+                }
+            }
+            else
+            {
+                $query = "UPDATE ".DATABASE_PREFIX."repository_prefix".
+                         " SET prefix_id = ?".
+                         " WHERE id = ?".
+                         " ;";
+                $params = array();
+                $params[] = $prefix;
+                $params[] = $prefix_id;
+                     
+                $this->dbAccess->executeQuery($query, $params);
+            }
+        }
     }
     
     /**
@@ -281,63 +372,53 @@ class RepositoryHandleManager extends RepositoryLogicBase
         $pre = "";
         $suf = "";
         
-        // 国会図書館JaLC DOIならば
-        if($prefix_id == self::ID_LIBRARY_JALC_DOI)
+        // Add DataCite 2015/02/10 K.Sugimoto --start--
+        $suf = $this->getHandleSuffix($item_id, $item_no, $prefix_id);
+        
+        switch($prefix_id)
         {
-            $pre = $this->getLibraryJalcDoiPrefix();
-            $suf = $this->getHandleSuffix($item_id, $item_no, $prefix_id);
-            if(strlen($pre) == 0) {
-                return "";
-            }
-            if(strlen($suf) == 0) {
-                return "";
-            }
+        	case self::ID_LIBRARY_JALC_DOI:
+            	$pre = $this->getLibraryJalcDoiPrefix();
+            	break;
+            	
+        	case self::ID_JALC_DOI:
+            	$pre = $this->getJalcDoiPrefix();
+            	break;
+            	
+        	case self::ID_CROSS_REF_DOI:
+            	$pre = $this->getCrossRefPrefix();
+            	break;
+            	
+        	case self::ID_DATACITE_DOI:
+            	$pre = $this->getDataCitePrefix();
+            	break;
+            	
+        	case self::ID_CNRI_HANDLE:
+            	$pre = $this->getCnriPrefix();
+            	break;
+            	
+        	case self::ID_Y_HANDLE:
+            	$pre = $this->getYHandlePrefix();
+            	break;
+            	
+        	default:
+            	break;
+            	
         }
-        // JaLC DOIまたはCross Refならば
-        if($prefix_id == self::ID_JALC_DOI || $prefix_id == self::ID_CROSS_REF_DOI)
-        {
-            $pre = $this->getJalcDoiPrefix();
-            $suf = $this->getHandleSuffix($item_id, $item_no, $prefix_id);
-            // プレフィックスまたはサフィックスのいずれかがなく、JaLCDOIである
-            if((strlen($pre) < 1 || strlen($suf) < 1) && $prefix_id == self::ID_JALC_DOI)
-            {
-                // Cross RefのDOIがあるか調べる
-                $prefix_id = self::ID_CROSS_REF_DOI;
-                $pre = $this->getPrefix($prefix_id);
-                $suf = $this->getHandleSuffix($item_id, $item_no, $prefix_id);
-            }
-            // JaLC DOI、Cross Refともになければ
-            if(strlen($pre) < 1 || strlen($suf) < 1)
-            {
-                $prefix_id = self::ID_CNRI_HANDLE;
-                $pre = $this->getPrefix($prefix_id);
-                if(strlen($pre) == 0) {
-                    return "";
-                }
-                $suf = $this->getSuffix($item_id, $item_no, $prefix_id);
-                if(strlen($suf) == 0) {
-                    return "";
-                }
-            }
+        
+        if(strlen($pre) == 0 || strlen($suf) == 0) {
+            return "";
         }
-        else
-        {
-            $pre = $this->getPrefix($prefix_id);
-            if(strlen($pre) == 0) {
-                return "";
-            }
-            $suf = $this->getSuffix($item_id, $item_no, $prefix_id);
-            if(strlen($suf) == 0) {
-                return "";
-            }
-        }
+        // Add DataCite 2015/02/10 K.Sugimoto --end--
         
         $uri = "";
         if($prefix_id == self::ID_LIBRARY_JALC_DOI) {
             $uri = self::PREFIX_LIBRARY_DOI_HTTP
                  . $pre
                  . "/". $suf;
-        } elseif($prefix_id == self::ID_JALC_DOI || $prefix_id == self::ID_CROSS_REF_DOI) {
+        // Add DataCite 2015/02/10 K.Sugimoto --start--
+        } elseif($prefix_id == self::ID_JALC_DOI || $prefix_id == self::ID_CROSS_REF_DOI || $prefix_id == self::ID_DATACITE_DOI) {
+        // Add DataCite 2015/02/10 K.Sugimoto --end--
             $uri = self::PREFIX_DOI
                  . $pre
                  . "/". $suf;
@@ -372,6 +453,11 @@ class RepositoryHandleManager extends RepositoryLogicBase
         if(strlen($uri) == 0) {
             $uri = $this->createUri($item_id, $item_no, self::ID_CROSS_REF_DOI);
         }
+        // Add DataCite 2015/02/10 K.Sugimoto --start--
+        if(strlen($uri) == 0) {
+            $uri = $this->createUri($item_id, $item_no, self::ID_DATACITE_DOI);
+        }
+        // Add DataCite 2015/02/10 K.Sugimoto --end--
         if(strlen($uri) == 0) {
             $uri = $this->createUri($item_id, $item_no, self::ID_CNRI_HANDLE);
         }
@@ -578,10 +664,27 @@ class RepositoryHandleManager extends RepositoryLogicBase
             if(strpos($uri, "/") === false)
             {
                 $suffix = $uri;
+                $suffix = $this->checkDoiFormat($suffix);
             }
         }
         
         if(strlen($suffix) > 0){
+	        // Add DataCite 2015/02/10 K.Sugimoto --start--
+	        $query = "SELECT param_value".
+	                 " FROM ".DATABASE_PREFIX."repository_parameter".
+	                 " WHERE param_name = ?".
+	                 " AND is_delete = ?;";
+	        $params = array();
+	        $params[] = "prefix_flag";
+	        $params[] = 0;
+	        $result = $this->dbAccess->executeQuery($query, $params);
+	        if(count($result) > 0 && $result[0]["param_value"] == 1)
+	        {
+	        	$yHandlePrefix = $this->getYHandlePrefix();
+	        	$suffix = $yHandlePrefix.".".$suffix;
+	        }
+	        // Add DataCite 2015/02/10 K.Sugimoto --end--
+	        
             $this->registSuffix($item_id, $item_no, self::ID_LIBRARY_JALC_DOI, $suffix);
             $this->registDoiStatus($item_id, $item_no, self::DOI_STATUS_GRANTED);
         }
@@ -596,6 +699,22 @@ class RepositoryHandleManager extends RepositoryLogicBase
      */
     public function registJalcdoiSuffix($item_id, $item_no, $suffix)
     {
+        // Add DataCite 2015/02/10 K.Sugimoto --start--
+        $query = "SELECT param_value".
+                 " FROM ".DATABASE_PREFIX."repository_parameter".
+                 " WHERE param_name = ?".
+                 " AND is_delete = ?;";
+        $params = array();
+        $params[] = "prefix_flag";
+        $params[] = 0;
+        $result = $this->dbAccess->executeQuery($query, $params);
+        if(count($result) > 0 && $result[0]["param_value"] == 1)
+        {
+        	$yHandlePrefix = $this->getYHandlePrefix();
+        	$suffix = $yHandlePrefix.".".$suffix;
+        }
+        // Add DataCite 2015/02/10 K.Sugimoto --end--
+        
         $this->registSuffix($item_id, $item_no, self::ID_JALC_DOI, $suffix);
         $this->registDoiStatus($item_id, $item_no, self::DOI_STATUS_GRANTED);
     }
@@ -609,9 +728,54 @@ class RepositoryHandleManager extends RepositoryLogicBase
      */
     public function registCrossrefSuffix($item_id, $item_no, $suffix)
     {
+        // Add DataCite 2015/02/10 K.Sugimoto --start--
+        $query = "SELECT param_value".
+                 " FROM ".DATABASE_PREFIX."repository_parameter".
+                 " WHERE param_name = ?".
+                 " AND is_delete = ?;";
+        $params = array();
+        $params[] = "prefix_flag";
+        $params[] = 0;
+        $result = $this->dbAccess->executeQuery($query, $params);
+        if(count($result) > 0 && $result[0]["param_value"] == 1)
+        {
+        	$yHandlePrefix = $this->getYHandlePrefix();
+        	$suffix = $yHandlePrefix.".".$suffix;
+        }
+        // Add DataCite 2015/02/10 K.Sugimoto --end--
+        
         $this->registSuffix($item_id, $item_no, self::ID_CROSS_REF_DOI, $suffix);
         $this->registDoiStatus($item_id, $item_no, self::DOI_STATUS_GRANTED);
     }
+    
+    // Add DataCite 2015/02/10 K.Sugimoto --start--
+    /**
+     * Regist DataCite suffix
+     * 
+     * @param int $item_id
+     * @param int $item_no
+     * @param string $suffix
+     */
+    public function registDataciteSuffix($item_id, $item_no, $suffix)
+    {
+        $query = "SELECT param_value".
+                 " FROM ".DATABASE_PREFIX."repository_parameter".
+                 " WHERE param_name = ?".
+                 " AND is_delete = ?;";
+        $params = array();
+        $params[] = "prefix_flag";
+        $params[] = 0;
+        $result = $this->dbAccess->executeQuery($query, $params);
+        if(count($result) > 0 && $result[0]["param_value"] == 1)
+        {
+        	$yHandlePrefix = $this->getYHandlePrefix();
+        	$suffix = $yHandlePrefix.".".$suffix;
+        }
+        
+        $this->registSuffix($item_id, $item_no, self::ID_DATACITE_DOI, $suffix);
+        $this->registDoiStatus($item_id, $item_no, self::DOI_STATUS_GRANTED);
+    }
+    // Add DataCite 2015/02/10 K.Sugimoto --end--
     
     /**
      * Get Y Handle suffix
@@ -660,6 +824,20 @@ class RepositoryHandleManager extends RepositoryLogicBase
     {
         return $this->getHandleSuffix($item_id, $item_no, self::ID_CROSS_REF_DOI);
     }
+    
+    // Add DataCite 2015/02/10 K.Sugimoto --start--
+    /**
+     * Get DataCite suffix
+     * 
+     * @param int $item_id
+     * @param int $item_no
+     * @return string
+     */
+    public function getDataciteSuffix($item_id, $item_no)
+    {
+        return $this->getHandleSuffix($item_id, $item_no, self::ID_DATACITE_DOI);
+    }
+    // Add DataCite 2015/02/10 K.Sugimoto --end--
     
     /**
      * Get suffix
@@ -712,6 +890,11 @@ class RepositoryHandleManager extends RepositoryLogicBase
         
         // JaLC DOIを削除する
         $this->deleteSuffix($item_id, $item_no, self::ID_JALC_DOI);
+        
+        // Add DataCite 2015/02/10 K.Sugimoto --start--
+        // DataCiteを削除する
+        $this->deleteSuffix($item_id, $item_no, self::ID_DATACITE_DOI);
+        // Add DataCite 2015/02/10 K.Sugimoto --end--
     }
     
     /**
@@ -786,17 +969,31 @@ class RepositoryHandleManager extends RepositoryLogicBase
         {
             $prefix = $this->getLibraryJalcDoiPrefix();
             $suffix = $this->getLibraryJalcdoiSuffix($item_id, $item_no);
+            $suffix = $this->checkDoiFormat($suffix);
         }        
         else if($id == self::ID_JALC_DOI)
         {
             $prefix = $this->getJalcDoiPrefix();
+            $prefix = $this->checkDoiFormat($prefix);
             $suffix = $this->getJalcdoiSuffix($item_id, $item_no);
+            $suffix = $this->checkDoiFormat($suffix);
         }
         else if($id == self::ID_CROSS_REF_DOI)
         {
             $prefix = $this->getCrossRefPrefix();
+            $prefix = $this->checkDoiFormat($prefix);
             $suffix = $this->getCrossrefSuffix($item_id, $item_no);
+            $suffix = $this->checkDoiFormat($suffix);
         }
+        // Add DataCite 2015/02/10 K.Sugimoto --start--
+        else if($id == self::ID_DATACITE_DOI)
+        {
+            $prefix = $this->getDataCitePrefix();
+            $prefix = $this->checkDoiFormat($prefix);
+            $suffix = $this->getDataciteSuffix($item_id, $item_no);
+            $suffix = $this->checkDoiFormat($suffix);
+        }
+        // Add DataCite 2015/02/10 K.Sugimoto --end--
         
         if(strlen($prefix) > 0 && strlen($suffix) > 0)
         {
@@ -829,5 +1026,59 @@ class RepositoryHandleManager extends RepositoryLogicBase
     {
         return $this->getHandleSuffix($item_id, $item_no, self::ID_CNRI_HANDLE);
     }
+    
+    // Bug Fix WEKO-2014-083 K.Sugimoto 2014/09/05 --start--
+    /**
+     * YハンドルのURIを作成する
+     * 
+     * @param int $item_id
+     * @param int $item_no
+     * @return string
+     */
+    public function createYHandleUri($item_id, $item_no)
+    {
+        $uri = "";
+        $prefix = "";
+        $suffix = "";
+        
+        // Yハンドルのプレフィックスを取得する
+        $prefix = $this->getYHandlePrefix();
+        // Yハンドルのサフィックスを取得する
+        $suffix = $this->getYHandleSuffix($item_id, $item_no);
+        
+        // YハンドルのURIを作成する
+        if(strlen($prefix) > 0 && strlen($suffix) > 0)
+        {
+            $uri = self::PREFIX_Y_HANDLE . $prefix . "/" . $suffix;
+        }
+        
+        return $uri;
+    }
+    // Bug Fix WEKO-2014-083 K.Sugimoto 2014/09/05 --end--
+    
+    // Add DataCite 2015/02/26 K.Sugimoto --start--
+    /**
+     * プレフィックスのフォーマットが正しいかチェックする
+     * 
+     * @param string $doi
+     * @return string
+     */
+    private function checkDoiFormat($doi)
+    {
+        $match = array();
+        
+        // 半角英数字、_、-、.、;、(、)、/のみ使用可
+        if(preg_match("/^(\w|\-|\.|\;|\(|\)|\/)*$/", $doi, $match)==1)
+        {
+        	return $doi;
+        }
+        else
+        {
+        	$this->err_msg = "DoiFormatIncorrect";
+        	return "";
+        }
+    }
+    // Add DataCite 2015/02/26 K.Sugimoto --end--
+
 }
 ?>

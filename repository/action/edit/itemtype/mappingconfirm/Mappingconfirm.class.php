@@ -1,7 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-// $Id: Mappingconfirm.class.php 599 2014-07-14 09:06:17Z ivis $
+// $Id: Mappingconfirm.class.php 53594 2015-05-28 05:25:53Z kaede_matsushita $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -12,6 +12,7 @@
 // --------------------------------------------------------------------
 
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
+require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
 
 /**
  * [[機能説明]]
@@ -19,10 +20,8 @@
  * @package     [[package名]]
  * @access      public
  */
-class Repository_Action_Edit_Itemtype_Mappingconfirm
+class Repository_Action_Edit_Itemtype_Mappingconfirm extends RepositoryAction
 {
-	// 使用コンポーネントを受け取るため
-	var $session = null;
 	// リクエストパラメタ
 	var $niitype = null;			// type選択値
 	var $dublin_core = null;		// Dublin Core選択値
@@ -38,10 +37,10 @@ class Repository_Action_Edit_Itemtype_Mappingconfirm
      *
      * @access  public
      */
-    function execute()
+    function executeApp()
     {
     	// セッションからアイテムタイプ情報を取得
-    	$itemtype = $this->session->getParameter("itemtype");
+    	$itemtype = $this->Session->getParameter("itemtype");
         // Mod insert 'undefine' to database in English 2012/02/14 T.Koyasu -start-
         // change condition of 'if' '未設定'->"0"
     	if($this->niitype != "0"){
@@ -51,9 +50,9 @@ class Repository_Action_Edit_Itemtype_Mappingconfirm
     		$itemtype['mapping_info'] = ""; 
     	}
         // Mod insert 'undefine' to database in English 2012/02/14 T.Koyasu -end-
-    	$this->session->setParameter("itemtype", $itemtype);
+    	$this->Session->setParameter("itemtype", $itemtype);
     	// リクエストパラメタ分を置き換え
-    	$arrays = $this->session->getParameter("metadata_table");
+    	$arrays = $this->Session->getParameter("metadata_table");
     	// 書誌情報追加 2008/08/22 Y.Nakao --start--
     	$cnt_biblio = 0; // 書誌情報の個数を数える
     	for($ii=0; $ii<count($arrays); $ii++ ) {
@@ -127,7 +126,7 @@ class Repository_Action_Edit_Itemtype_Mappingconfirm
     	}
     	// 書誌情報追加 2008/08/22 Y.Nakao --start--
     	// 再セット
-    	$this->session->setParameter("metadata_table", $arrays);
+    	$this->Session->setParameter("metadata_table", $arrays);
         return 'success';
     }
 }

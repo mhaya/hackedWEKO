@@ -1,7 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-// $Id: Treethumbnail.class.php 434 2010-09-14 06:25:25Z ivis $
+// $Id: Treethumbnail.class.php 1441 2010-09-14 06:19:56Z yuko_nakao $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources

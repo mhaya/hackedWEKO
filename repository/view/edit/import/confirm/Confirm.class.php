@@ -1,7 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-// $Id: Confirm.class.php 562 2014-04-14 01:03:17Z ivis $
+// $Id: Confirm.class.php 48455 2015-02-16 10:53:40Z atsushi_suzuki $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -44,7 +44,7 @@ class Repository_View_Edit_Import_Confirm extends RepositoryAction
     /**
      * @access  public
      */
-    function executeForWeko()
+    function executeApp()
     {
         $this->error_msg = $this->Session->getParameter("error_msg");
         $this->Session->removeParameter("error_msg");

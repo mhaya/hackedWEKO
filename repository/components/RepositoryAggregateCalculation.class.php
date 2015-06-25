@@ -1,7 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-// $Id: RepositoryAggregateCalculation.class.php 640 2014-10-24 08:07:50Z ivis $
+// $Id: RepositoryAggregateCalculation.class.php 43113 2014-10-21 04:02:44Z yuko_nakao $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources

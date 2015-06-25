@@ -1,7 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-// $Id: HarvestingOaipmh.class.php 42605 2014-10-03 01:02:01Z keiya_sugimoto $
+// $Id: HarvestingOaipmh.class.php 53594 2015-05-28 05:25:53Z kaede_matsushita $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -909,6 +909,7 @@ class HarvestingOaipmh extends RepositoryAction
             {
                 case RepositoryConst::HARVESTING_COL_SETSPEC:
                     $setSpec = $this->forXmlChangeDecode($val["value"]);
+                    $setSpec = $this->getSetspecValue($setSpec);
                     break;
                 case RepositoryConst::HARVESTING_COL_SETNAME:
                     $setName = $this->forXmlChangeDecode($val["value"]);
@@ -1512,6 +1513,11 @@ class HarvestingOaipmh extends RepositoryAction
                             return false;
                         }
                     }
+                    
+                    // BugFix when before and after update, assignment doi is failed T.Koyasu 2015/03/09 --start--
+                    // must check self_doi when after update item metadatas
+                    $this->itemRegister->updateSelfDoi($irBasic);
+                    // BugFix when before and after update, assignment doi is failed T.Koyasu 2015/03/09 --end--
                 }
                 catch (Exception $ex)
                 {
@@ -1985,8 +1991,8 @@ class HarvestingOaipmh extends RepositoryAction
      * @param string $uri
      * @param string $lastModDate
      */
-    public function entryHarvestingLog(   $oparationId, $update='', $listSets='', $setSpec='', 
-                                            $indexId='', $identifier='', $itemId='', $uri='', $lastModDate='')
+    public function entryHarvestingLog(   $oparationId, $update=0, $listSets='', $setSpec='', 
+                                            $indexId='', $identifier='', $itemId=0, $uri='', $lastModDate='')
     {
         $query = "INSERT INTO ".DATABASE_PREFIX. RepositoryConst::DBTABLE_REPOSITORY_HARVESTING_LOG. 
                 " ( ".
@@ -4311,6 +4317,30 @@ class HarvestingOaipmh extends RepositoryAction
         return true;
     }
     // Add for JuNii2 Redaction 2013/09/16 R.Matsuura --end--
+    
+    
+    /**
+     * get setSpec Value
+     * 
+     * @param string $setSpec
+     * @return string
+     */
+    private function getSetspecValue($setSpec) {
+        if(preg_match("/^[0-9]+$/", $setSpec) == 1) {
+            // 通常のsetSpecが来た場合そのまま返す
+            return $setSpec;
+        } else {
+            // setSpecが連結形式で来た場合は最後の要素を返す
+            $specs = explode(":", $setSpec);
+            if(count($specs) > 1 && preg_match("/^[0-9]+$/", $specs[count($set)-1]) == 1) {
+                // 照合に使うのは最後の1節部分なので配列の最後の値を返す
+                return $specs[count($set)-1];
+            }
+        }
+        
+        // どれにも一致しなかった場合はエラーとして空文字を返す
+        return "";
+    }
 }
 
 ?>

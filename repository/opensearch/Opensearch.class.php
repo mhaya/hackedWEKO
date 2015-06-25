@@ -1,7 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-// $Id: Opensearch.class.php 610 2014-08-29 07:24:55Z ivis $
+// $Id: Opensearch.class.php 53594 2015-05-28 05:25:53Z kaede_matsushita $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics,
 // Research and Development Center for Scientific Information Resources
@@ -131,6 +131,11 @@ class Repository_Opensearch extends RepositorySearch
         }
         // Add index recursive search. 2014/08/12 Y.Nakao --end--
         
+        if(isset($this->_request["affiliationid"]) && strlen($this->_request["affiliationid"]) > 0)
+        {
+        	$this->search_term['affiliationid'] = $this->_request["affiliationid"];
+        }
+        
         $this->validateRequestParameter();
         
         // switch format.
@@ -159,8 +164,7 @@ class Repository_Opensearch extends RepositorySearch
             case RepositorySearchRequestParameter::FORMAT_ATOM:
                 // output ATOM
                 require_once WEBAPP_DIR.'/modules/repository/opensearch/format/Atom.class.php';
-                $blockid = $this->RepositoryAction->getBlockPageId();
-                $outputClass = new Repository_OpenSearch_Atom($this->Session, $this->Db,$blockid);
+                $outputClass = new Repository_OpenSearch_Atom($this->Session, $this->Db);
                 $searchResult = $this->search();
                 $requestParam = $this->getRequestParameter();
                 $requestParam[self::REQUEST_LOG_TERM] = $this->log_term;
@@ -186,7 +190,10 @@ class Repository_Opensearch extends RepositorySearch
                                                         $searchResult);
                 break;
             default:
-                if(isset($this->search_term[self::REQUEST_WEKO_ID]) && strlen($this->search_term[self::REQUEST_WEKO_ID]) > 0)
+
+                // Update suppleContentsEntry Y.Yamazawa --start-- 2015/03/20 --start--
+                if((isset($this->search_term[self::REQUEST_WEKO_ID]) && strlen($this->search_term[self::REQUEST_WEKO_ID]) > 0)
+                    || (isset($this->search_term[self::REQUEST_ITEM_IDS]) && strlen($this->search_term[self::REQUEST_ITEM_IDS]) > 0))
                 {
                     // weko_idに該当するアイテムを検索
                     $result = $this->search();
@@ -196,7 +203,8 @@ class Repository_Opensearch extends RepositorySearch
                         break;
                     }
                 }
-                
+                // Update suppleContentsEntry Y.Yamazawa --end-- 2015/03/20 --end--
+
                 // redirect to snippet
                 if(strlen($redirectUrl) == 0)
                 {
@@ -216,7 +224,6 @@ class Repository_Opensearch extends RepositorySearch
                     $block_info = $this->RepositoryAction->getBlockPageId();
                     $redirectUrl .= "&page_id=". $block_info["page_id"].
                                     "&block_id=". $block_info["block_id"];
-
                 }
                 break;
         }

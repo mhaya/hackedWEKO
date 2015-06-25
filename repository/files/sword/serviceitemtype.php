@@ -1,7 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-// $Id: serviceitemtype.php 564 2014-04-14 01:06:48Z ivis $
+// $Id: serviceitemtype.php 32116 2014-02-27 07:50:53Z rei_matsuura $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources

@@ -1,7 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-// $Id: Update.class.php 645 2014-10-29 12:39:52Z ivis $
+// $Id: Update.class.php 54835 2015-06-25 04:10:46Z keiya_sugimoto $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics,
 // Research and Development Center for Scientific Information Resources
@@ -31,6 +31,9 @@ class Repository_Action_Main_Update extends RepositoryAction
     const KEY_REPOSITORY_SEARCH_TABLE_PROCESSING = "keyRepositorySearchTableProccessing";
     const KEY_REPOSITORY_INDEX_MANAGER = "KeyRepositoryIndexManager";
     const KEY_REPOSITORY_CLEANUP_DELETED_FILE = "KeyRepositoryCleanupDeletedFile";
+    const KEY_REPOSITORY_SEARCH_LOG = "KeyRepositorySearchLog";
+    const KEY_REPOSITORY_ELAPSEDTIME_LOG = "KeyRepositoryElapsedtimeLog";
+    const KEY_REPOSITORY_EXCLUDE_LOG = "KeyRepositoryExcludeLog";
     
     function execute()
     {
@@ -400,7 +403,7 @@ class Repository_Action_Main_Update extends RepositoryAction
                     // make file from BLOB
                     $query = "SELECT count(*) ".
                             " FROM ".DATABASE_PREFIX."repository_file; ";
-                    //      " WHERE is_delete = '0'; ";
+                    //      " WHERE is_delete = 0; ";
                     $retRef = $this->Db->execute($query);
                     if($retRef === false || count($retRef)!=1){
                         fclose($pointer);
@@ -421,7 +424,7 @@ class Repository_Action_Main_Update extends RepositoryAction
                         $pointer=fopen(WEBAPP_DIR.'/logs/weko/update_log.txt', "w");
                         $query = "SELECT item_id, attribute_id, file_no, extension, file ".
                                 " FROM ".DATABASE_PREFIX."repository_file ".
-                        //      " WHERE is_delete = '0' ".
+                        //      " WHERE is_delete = 0 ".
                                 " ORDER BY item_id ".
                                 " LIMIT ".$cnt_file.", 10; ";
                         fputs($pointer, 'query : '.$query."\n");
@@ -620,7 +623,7 @@ class Repository_Action_Main_Update extends RepositoryAction
                     // Add alternative language data 2009/07/17 A.Suzuki --start--
                     // repository_item : "title_english" 追加
                     $query = "ALTER TABLE ". DATABASE_PREFIX ."repository_item ".
-                             "ADD `title_english` TEXT default '' AFTER `title`;";
+                             "ADD `title_english` TEXT NOT NULL AFTER `title`;";
                     $retRef = $this->Db->execute($query);
                     if($retRef === false || count($retRef)!=1){
                         $errMsg = $this->Db->ErrorMsg();
@@ -630,7 +633,7 @@ class Repository_Action_Main_Update extends RepositoryAction
                     }
                     // repository_item : "title" 属性変更 [TEXT NOT NULL => TEXT default '']
                     $query = "ALTER TABLE ". DATABASE_PREFIX ."repository_item ".
-                             "MODIFY `title` TEXT default '';";
+                             "MODIFY `title` TEXT NOT NULL ;";
                     $retRef = $this->Db->execute($query);
                     if($retRef === false || count($retRef)!=1){
                         $errMsg = $this->Db->ErrorMsg();
@@ -640,7 +643,7 @@ class Repository_Action_Main_Update extends RepositoryAction
                     }
                     // repository_item : "serch_key_english" 追加
                     $query = "ALTER TABLE ". DATABASE_PREFIX ."repository_item ".
-                             "ADD `serch_key_english` TEXT default '' AFTER `serch_key`;";
+                             "ADD `serch_key_english` TEXT NOT NULL AFTER `serch_key`;";
                     $retRef = $this->Db->execute($query);
                     if($retRef === false || count($retRef)!=1){
                         $errMsg = $this->Db->ErrorMsg();
@@ -660,7 +663,7 @@ class Repository_Action_Main_Update extends RepositoryAction
                     }
                     // repository_biblio_info : "biblio_name_english" 追加
                     $query = "ALTER TABLE ". DATABASE_PREFIX ."repository_biblio_info ".
-                             "ADD `biblio_name_english` TEXT AFTER `biblio_name`;";
+                             "ADD `biblio_name_english` TEXT NOT NULL AFTER `biblio_name`;";
                     $retRef = $this->Db->execute($query);
                     if($retRef === false || count($retRef)!=1){
                         $errMsg = $this->Db->ErrorMsg();
@@ -670,7 +673,7 @@ class Repository_Action_Main_Update extends RepositoryAction
                     }
                     // repository_ranking : "disp_name_english" 追加
                     $query = "ALTER TABLE ". DATABASE_PREFIX ."repository_ranking ".
-                             "ADD `disp_name_english` TEXT AFTER `disp_name`;";
+                             "ADD `disp_name_english` TEXT NOT NULL AFTER `disp_name`;";
                     $retRef = $this->Db->execute($query);
                     if($retRef === false || count($retRef)!=1){
                         $errMsg = $this->Db->ErrorMsg();
@@ -751,7 +754,7 @@ class Repository_Action_Main_Update extends RepositoryAction
                              " `supple_weko_item_id` INT, ".
                              " `supple_title` TEXT, ".
                              " `supple_title_en` TEXT, ".
-                             " `uri` TEXT default '', ".
+                             " `uri` TEXT, ".
                              " `supple_item_type_name` TEXT, ".
                              " `mime_type` TEXT, ".
                              " `file_id` INT, ".
@@ -1247,7 +1250,7 @@ class Repository_Action_Main_Update extends RepositoryAction
                 case 141:
                     // Extend file type 2009/12/10 A.Suzuki --start--
                     $query = "ALTER TABLE ". DATABASE_PREFIX ."repository_file ".
-                             "ADD `display_name` TEXT default '' AFTER `file_name`;";
+                             "ADD `display_name` TEXT NOT NULL AFTER `file_name`;";
                     $retRef = $this->Db->execute($query);
                     if($retRef === false || count($retRef)!=1){
                         $errMsg = $this->Db->ErrorMsg();
@@ -1423,7 +1426,7 @@ class Repository_Action_Main_Update extends RepositoryAction
                 case 144:
                     // Add host in log table Y.Nakao 2010/03/05 --start--
                     $query = "ALTER TABLE ". DATABASE_PREFIX ."repository_log ".
-                            " ADD `host` TEXT default '' AFTER `ip_address`; ";
+                            " ADD `host` TEXT NOT NULL AFTER `ip_address`; ";
                     $retRef = $this->Db->execute($query);
                     if($retRef === false || count($retRef)!=1){
                         $errMsg = $this->Db->ErrorMsg();
@@ -1464,7 +1467,7 @@ class Repository_Action_Main_Update extends RepositoryAction
 
                     // Add simple keyword search 2010/04/12 A.Suzuki --start--
                     $query = "ALTER TABLE ". DATABASE_PREFIX ."repository_fulltext_data ".
-                            " ADD `metadata` LONGTEXT default '' AFTER `extracted_text`; ";
+                            " ADD `metadata` LONGTEXT NOT NULL AFTER `extracted_text`; ";
                     $retRef = $this->Db->execute($query);
                     if($retRef === false || count($retRef)!=1){
                         $errMsg = $this->Db->ErrorMsg();
@@ -1559,7 +1562,7 @@ class Repository_Action_Main_Update extends RepositoryAction
                         throw $exception;
                     }
                     $query = "ALTER TABLE ". DATABASE_PREFIX ."repository_log ".
-                            " ADD `user_agent` TEXT default '' AFTER `host`; ";
+                            " ADD `user_agent` TEXT NOT NULL AFTER `host`; ";
                     $ret = $this->Db->execute($query);
                     if($ret === false){
                         $errMsg = "Error case 145<br/>";
@@ -1648,7 +1651,7 @@ class Repository_Action_Main_Update extends RepositoryAction
                              " `name` VARCHAR(255), ".
                              " `family_ruby` VARCHAR(255), ".
                              " `name_ruby` VARCHAR(255), ".
-                             " `e_mail_address` TEXT default '', ".
+                             " `e_mail_address` TEXT NOT NULL, ".
                              " `ins_user_id` VARCHAR(40) NOT NULL default 0, ".
                              " `mod_user_id` VARCHAR(40) NOT NULL default 0, ".
                              " `del_user_id` VARCHAR(40) NOT NULL default 0, ".
@@ -1750,7 +1753,7 @@ class Repository_Action_Main_Update extends RepositoryAction
                         throw $exception;
                     }
                     $query = "INSERT INTO ". DATABASE_PREFIX. "repository_external_author_id_prefix_seq_id ".
-                             " (`id`) VALUES ('3'); ";
+                             " (`id`) VALUES (3); ";
                     $retRef = $this->Db->execute($query);
                     if($retRef === false || count($retRef)!=1){
                         $errMsg = $this->Db->ErrorMsg();
@@ -1915,7 +1918,7 @@ class Repository_Action_Main_Update extends RepositoryAction
                         throw $exception;
                     }
                     $query = "ALTER TABLE ".DATABASE_PREFIX."repository_index ".
-                             "ADD select_index_list_name_english text NOT NULL default '' ".
+                             "ADD select_index_list_name_english text NOT NULL ".
                              "AFTER rss_display;";
                     $refRef = $this->Db->execute($query);
                     if($retRef === false || count($retRef)!=1){
@@ -1925,7 +1928,7 @@ class Repository_Action_Main_Update extends RepositoryAction
                         throw $exception;
                     }
                     $query = "ALTER TABLE ".DATABASE_PREFIX."repository_index ".
-                             "ADD select_index_list_name text NOT NULL default '' ".
+                             "ADD select_index_list_name text NOT NULL ".
                              "AFTER rss_display;";
                     $refRef = $this->Db->execute($query);
                     if($retRef === false || count($retRef)!=1){
@@ -1992,7 +1995,7 @@ class Repository_Action_Main_Update extends RepositoryAction
                 case 164:
                     // Add tree access control list 2011/12/28 Y.Nakao --start--
                     $query = "ALTER TABLE ".DATABASE_PREFIX."repository_index ".
-                             "ADD `exclusive_acl_group` TEXT NOT NULL default '' ".
+                             "ADD `exclusive_acl_group` TEXT NOT NULL ".
                              "AFTER access_group;";
                     $refRef = $this->Db->execute($query);
                     if($retRef === false || count($retRef)!=1){
@@ -2002,7 +2005,7 @@ class Repository_Action_Main_Update extends RepositoryAction
                         throw $exception;
                     }
                     $query = "ALTER TABLE ".DATABASE_PREFIX."repository_index ".
-                             "ADD `exclusive_acl_role` TEXT NOT NULL default '' ".
+                             "ADD `exclusive_acl_role` TEXT NOT NULL ".
                              "AFTER access_group;";
                     $refRef = $this->Db->execute($query);
                     if($retRef === false || count($retRef)!=1){
@@ -2127,21 +2130,21 @@ class Repository_Action_Main_Update extends RepositoryAction
 
                     // itemtype for harvesting
                     $query = "INSERT INTO ".DATABASE_PREFIX."repository_item_type VALUE ".
-                             "('20001', 'DublinCore', 'DublinCore', 'harvesting item type', 'Journal Article', '', '', '', '', ?, ?, '0', ?, ?, '', '0'), ".
-                             "('20002', 'Journal Article', 'Journal Article', 'harvesting item type', 'Journal Article', '', '', '', '', ?, ?, '0', ?, ?, '', '0'), ".
-                             "('20003', 'Thesis or Dissertation', 'Thesis or Dissertation', 'harvesting item type', 'Thesis or Dissertation', '', '', '', '', ?, ?, '0', ?, ?, '', '0'), ".
-                             "('20004', 'Departmental Bulletin Paper', 'Departmental Bulletin Paper', 'harvesting item type', 'Departmental Bulletin Paper', '', '', '', '', ?, ?, '0', ?, ?, '', '0'), ".
-                             "('20005', 'Conference Paper', 'Conference Paper', 'harvesting item type', 'Conference Paper', '', '', '', '', ?, ?, '0', ?, ?, '', '0'), ".
-                             "('20006', 'Presentation', 'Presentation', 'harvesting item type', 'Presentation', '', '', '', '', ?, ?, '0', ?, ?, '', '0'), ".
-                             "('20007', 'Book', 'Book', 'harvesting item type', 'Book', '', '', '', '', ?, ?, '0', ?, ?, '', '0'), ".
-                             "('20008', 'Technical Report', 'Technical Report', 'harvesting item type', 'Technical Report', '', '', '', '', ?, ?, '0', ?, ?, '', '0'), ".
-                             "('20009', 'Research Paper', 'Research Paper', 'harvesting item type', 'Research Paper', '', '', '', '', ?, ?, '0', ?, ?, '', '0'), ".
-                             "('20010', 'Article', 'Article', 'harvesting item type', 'Article', '', '', '', '', ?, ?, '0', ?, ?, '', '0'), ".
-                             "('20011', 'Preprint', 'Preprint', 'harvesting item type', 'Preprint', '', '', '', '', ?, ?, '0', ?, ?, '', '0'), ".
-                             "('20012', 'Learning Material', 'Learning Material', 'harvesting item type', 'Learning Material', '', '', '', '', ?, ?, '0', ?, ?, '', '0'), ".
-                             "('20013', 'Data or Dataset', 'Data or Dataset', 'harvesting item type', 'Data or Dataset', '', '', '', '', ?, ?, '0', ?, ?, '', '0'), ".
-                             "('20014', 'Software', 'Software', 'harvesting item type', 'Software', '', '', '', '', ?, ?, '0', ?, ?, '', '0'), ".
-                             "('20015', 'Others', 'Others', 'harvesting item type', 'Others', '', '', '', '', ?, ?, '0', ?, ?, '', '0')";
+                             "(20001, 'DublinCore', 'DublinCore', 'harvesting item type', 'Journal Article', '', '', '', '', ?, ?, '0', ?, ?, '', 0), ".
+                             "(20002, 'Journal Article', 'Journal Article', 'harvesting item type', 'Journal Article', '', '', '', '', ?, ?, '0', ?, ?, '', 0), ".
+                             "(20003, 'Thesis or Dissertation', 'Thesis or Dissertation', 'harvesting item type', 'Thesis or Dissertation', '', '', '', '', ?, ?, '0', ?, ?, '', 0), ".
+                             "(20004, 'Departmental Bulletin Paper', 'Departmental Bulletin Paper', 'harvesting item type', 'Departmental Bulletin Paper', '', '', '', '', ?, ?, '0', ?, ?, '', 0), ".
+                             "(20005, 'Conference Paper', 'Conference Paper', 'harvesting item type', 'Conference Paper', '', '', '', '', ?, ?, '0', ?, ?, '', 0), ".
+                             "(20006, 'Presentation', 'Presentation', 'harvesting item type', 'Presentation', '', '', '', '', ?, ?, '0', ?, ?, '', 0), ".
+                             "(20007, 'Book', 'Book', 'harvesting item type', 'Book', '', '', '', '', ?, ?, '0', ?, ?, '', 0), ".
+                             "(20008, 'Technical Report', 'Technical Report', 'harvesting item type', 'Technical Report', '', '', '', '', ?, ?, '0', ?, ?, '', 0), ".
+                             "(20009, 'Research Paper', 'Research Paper', 'harvesting item type', 'Research Paper', '', '', '', '', ?, ?, '0', ?, ?, '', 0), ".
+                             "(20010, 'Article', 'Article', 'harvesting item type', 'Article', '', '', '', '', ?, ?, '0', ?, ?, '', 0), ".
+                             "(20011, 'Preprint', 'Preprint', 'harvesting item type', 'Preprint', '', '', '', '', ?, ?, '0', ?, ?, '', 0), ".
+                             "(20012, 'Learning Material', 'Learning Material', 'harvesting item type', 'Learning Material', '', '', '', '', ?, ?, '0', ?, ?, '', 0), ".
+                             "(20013, 'Data or Dataset', 'Data or Dataset', 'harvesting item type', 'Data or Dataset', '', '', '', '', ?, ?, '0', ?, ?, '', 0), ".
+                             "(20014, 'Software', 'Software', 'harvesting item type', 'Software', '', '', '', '', ?, ?, '0', ?, ?, '', 0), ".
+                             "(20015, 'Others', 'Others', 'harvesting item type', 'Others', '', '', '', '', ?, ?, '0', ?, ?, '', 0)";
                     $params = array();
                     for($ii=20001; $ii<=20015; $ii++)
                     {
@@ -2165,23 +2168,23 @@ class Repository_Action_Main_Update extends RepositoryAction
                              "`dublin_core_mapping`, `display_lang_type`, `ins_user_id`, `mod_user_id`, ".
                              "`del_user_id`, `ins_date`, `mod_date`, `del_date`, `is_delete`) VALUES ";
                     $params = array();
-                    $query .= "('20001', '1', '1', 'その他(別言語等)のタイトル', 'その他(別言語等)のタイトル', 'text', '0', '1', '0', '0', '0', 'alternative', 'title', '', ?, ?, '', ?, ?, '', '0'), ".
-                              "('20001', '2', '2', '著者名', '著者名', 'name', '0', '1', '0', '0', '0', 'creator', 'creator', '', ?, ?, '', ?, ?, '', '0'), ".
-                              "('20001', '3', '3', '抄録', '抄録', 'textarea', '0', '1', '0', '0', '0', 'description', 'description', '', ?, ?, '', ?, ?, '', '0'), ".
-                              "('20001', '4', '4', '公開者', '公開者', 'name', '0', '1', '0', '0', '0', 'publisher', 'publisher', '', ?, ?, '', ?, ?, '', '0'), ".
-                              "('20001', '5', '5', '寄与者', '寄与者', 'name', '0', '1', '0', '0', '0', 'contributor', 'contributor', '', ?, ?, '', ?, ?, '', '0'), ".
-                              "('20001', '6', '6', '日付', '日付', 'date', '0', '1', '0', '0', '0', 'date', 'date', '', ?, ?, '', ?, ?, '', '0'), ".
-                              "('20001', '7', '7', '資源タイプ', '資源タイプ', 'textarea', '0', '1', '0', '0', '0', 'type', 'type', '', ?, ?, '', ?, ?, '', '0'), ".
-                              "('20001', '8', '8', 'フォーマット', 'フォーマット', 'text', '0', '1', '0', '0', '0', 'format', 'format', '', ?, ?, '', ?, ?, '', '0'), ".
-                              "('20001', '9', '9', '資源識別子', '資源識別子', 'link', '0', '1', '0', '0', '0', 'URI', 'identifier', '', ?, ?, '', ?, ?, '', '0'), ".
-                              "('20001', '10', '10', 'その他の資源識別子', 'その他の資源識別子', 'text', '0', '1', '0', '0', '0', 'identifier', 'identifier', '', ?, ?, '', ?, ?, '', '0'), ".
-                              "('20001', '11', '11', '情報源', '情報源', 'text', '0', '1', '0', '0', '0', 'source', 'source', '', ?, ?, '', ?, ?, '', '0'), ".
-                              "('20001', '12', '12', '他の資源との関係', '他の資源との関係', 'text', '0', '1', '0', '0', '0', 'relation', 'relation', '', ?, ?, '', ?, ?, '', '0'), ".
-                              "('20001', '13', '13', '範囲', '範囲', 'text', '0', '1', '0', '0', '0', 'coverage', 'coverage', '', ?, ?, '', ?, ?, '', '0'), ".
-                              "('20001', '14', '14', '権利', '権利', 'text', '0', '1', '0', '0', '0', 'rights', 'rights', '', ?, ?, '', ?, ?, '', '0'), ".
-                              "('20001', '15', '15', '機関ID', '機関ID', 'text', '1', '0', '0', '0', '1', '', '', '', ?, ?, '', ?, ?, '', '0'), ".
-                              "('20001', '16', '16', 'コンテンツID', 'コンテンツID', 'text', '1', '0', '0', '0', '1', '', '', '', ?, ?, '', ?, ?, '', '0'), ".
-                              "('20001', '17', '17', 'コンテンツ更新日時', 'コンテンツ更新日時', 'date', '1', '0', '0', '0', '1', '', '', '', ?, ?, '', ?, ?, '', '0')";
+                    $query .= "(20001, 1, 1, 'その他(別言語等)のタイトル', 'その他(別言語等)のタイトル', 'text', 0, 1, 0, 0, 0, 'alternative', 'title', '', ?, ?, '', ?, ?, '', 0), ".
+                              "(20001, 2, 2, '著者名', '著者名', 'name', 0, 1, 0, 0, 0, 'creator', 'creator', '', ?, ?, '', ?, ?, '', 0), ".
+                              "(20001, 3, 3, '抄録', '抄録', 'textarea', 0, 1, 0, 0, 0, 'description', 'description', '', ?, ?, '', ?, ?, '', 0), ".
+                              "(20001, 4, 4, '公開者', '公開者', 'name', 0, 1, 0, 0, 0, 'publisher', 'publisher', '', ?, ?, '', ?, ?, '', 0), ".
+                              "(20001, 5, 5, '寄与者', '寄与者', 'name', 0, 1, 0, 0, 0, 'contributor', 'contributor', '', ?, ?, '', ?, ?, '', 0), ".
+                              "(20001, 6, 6, '日付', '日付', 'date', 0, 1, 0, 0, 0, 'date', 'date', '', ?, ?, '', ?, ?, '', 0), ".
+                              "(20001, 7, 7, '資源タイプ', '資源タイプ', 'textarea', 0, 1, 0, 0, 0, 'type', 'type', '', ?, ?, '', ?, ?, '', 0), ".
+                              "(20001, 8, 8, 'フォーマット', 'フォーマット', 'text', 0, 1, 0, 0, 0, 'format', 'format', '', ?, ?, '', ?, ?, '', 0), ".
+                              "(20001, 9, 9, '資源識別子', '資源識別子', 'link', 0, 1, 0, 0, 0, 'URI', 'identifier', '', ?, ?, '', ?, ?, '', 0), ".
+                              "(20001, 10, 10, 'その他の資源識別子', 'その他の資源識別子', 'text', 0, 1, 0, 0, 0, 'identifier', 'identifier', '', ?, ?, '', ?, ?, '', 0), ".
+                              "(20001, 11, 11, '情報源', '情報源', 'text', 0, 1, 0, 0, 0, 'source', 'source', '', ?, ?, '', ?, ?, '', 0), ".
+                              "(20001, 12, 12, '他の資源との関係', '他の資源との関係', 'text', 0, 1, 0, 0, 0, 'relation', 'relation', '', ?, ?, '', ?, ?, '', 0), ".
+                              "(20001, 13, 13, '範囲', '範囲', 'text', 0, 1, 0, 0, 0, 'coverage', 'coverage', '', ?, ?, '', ?, ?, '', 0), ".
+                              "(20001, 14, 14, '権利', '権利', 'text', 0, 1, 0, 0, 0, 'rights', 'rights', '', ?, ?, '', ?, ?, '', 0), ".
+                              "(20001, 15, 15, '機関ID', '機関ID', 'text', 1, 0, 0, 0, 1, '', '', '', ?, ?, '', ?, ?, '', 0), ".
+                              "(20001, 16, 16, 'コンテンツID', 'コンテンツID', 'text', 1, 0, 0, 0, 1, '', '', '', ?, ?, '', ?, ?, '', 0), ".
+                              "(20001, 17, 17, 'コンテンツ更新日時', 'コンテンツ更新日時', 'date', 1, 0, 0, 0, 1, '', '', '', ?, ?, '', ?, ?, '', 0)";
                     for($ii=1; $ii<=17; $ii++)
                     {
                         $params[] = $user_id;   // ins_user_id
@@ -2192,60 +2195,60 @@ class Repository_Action_Main_Update extends RepositoryAction
                     for($ii=20002; $ii<=20015; $ii++)
                     {
                         $query .= ", ";
-                        $query .= "(?, '1', '1', 'その他(別言語等)のタイトル', 'その他(別言語等)のタイトル', 'text', '0', '1', '0', '0', '0', 'alternative', 'title', '', ?, ?, '', ?, ?, '', '0'), ".
-                                  "(?, '2', '2', '作成者', '作成者', 'name', '0', '1', '0', '0', '0', 'creator', 'creator', 'japanese', ?, ?, '', ?, ?, '', '0'), ".
-                                  "(?, '3', '3', '作成者(その他言語)', '作成者(その他言語)', 'name', '0', '1', '0', '0', '0', 'creator', 'creator', '', ?, ?, '', ?, ?, '', '0'), ".
-                                  "(?, '4', '4', '国立情報学研究所 メタデータ主題語彙集', '国立情報学研究所 メタデータ主題語彙集', 'text', '0', '1', '0', '0', '0', 'NIIsubject', 'subject', '', ?, ?, '', ?, ?, '', '0'), ".
-                                  "(?, '5', '5', '日本十進分類法', '日本十進分類法', 'text', '0', '1', '0', '0', '0', 'NDC', 'subject', '', ?, ?, '', ?, ?, '', '0'), ".
-                                  "(?, '6', '6', '国立国会図書館分類表', '国立国会図書館分類表', 'text', '0', '1', '0', '0', '0', 'NDLC', 'subject', '', ?, ?, '', ?, ?, '', '0'), ".
-                                  "(?, '7', '7', '日本件名標目', '日本件名標目', 'text', '0', '1', '0', '0', '0', 'BSH', 'subject', '', ?, ?, '', ?, ?, '', '0'), ".
-                                  "(?, '8', '8', '国立国会図書館件名標目表', '国立国会図書館件名標目表', 'text', '0', '1', '0', '0', '0', 'NDLSH', 'subject', '', ?, ?, '', ?, ?, '', '0'), ".
-                                  "(?, '9', '9', '医学件名標目表', '医学件名標目表', 'text', '0', '1', '0', '0', '0', 'MeSH', 'subject', '', ?, ?, '', ?, ?, '', '0'), ".
-                                  "(?, '10', '10', 'デューイ十進分類法', 'デューイ十進分類法', 'text', '0', '1', '0', '0', '0', 'DDC', 'subject', '', ?, ?, '', ?, ?, '', '0'), ".
-                                  "(?, '11', '11', '米国議会図書館分類法', '米国議会図書館分類法', 'text', '0', '1', '0', '0', '0', 'LCC', 'subject', '', ?, ?, '', ?, ?, '', '0'), ".
-                                  "(?, '12', '12', '国際十進分類法', '国際十進分類法', 'text', '0', '1', '0', '0', '0', 'UDC', 'subject', '', ?, ?, '', ?, ?, '', '0'), ".
-                                  "(?, '13', '13', '米国議会図書館件名標目表', '米国議会図書館件名標目表', 'text', '0', '1', '0', '0', '0', 'LCSH', 'subject', '', ?, ?, '', ?, ?, '', '0'), ".
-                                  "(?, '14', '14', '内容記述', '内容記述', 'textarea', '0', '1', '0', '0', '0', 'description', 'description', '', ?, ?, '', ?, ?, '', '0'), ".
-                                  "(?, '15', '15', '公開者', '公開者', 'name', '0', '1', '0', '0', '0', 'publisher', 'publisher', 'japanese', ?, ?, '', ?, ?, '', '0'), ".
-                                  "(?, '16', '16', '公開者(その他言語)', '公開者(その他言語)', 'name', '0', '1', '0', '0', '0', 'publisher', 'publisher', '', ?, ?, '', ?, ?, '', '0'), ".
-                                  "(?, '17', '17', '寄与者', '寄与者', 'name', '0', '1', '0', '0', '0', 'contributor', 'contributor', 'japanese', ?, ?, '', ?, ?, '', '0'), ".
-                                  "(?, '18', '18', '寄与者(その他言語)', '寄与者(その他言語)', 'name', '0', '1', '0', '0', '0', 'contributor', 'contributor', '', ?, ?, '', ?, ?, '', '0'), ".
-                                  "(?, '19', '19', '日付', '日付', 'date', '0', '1', '0', '0', '0', 'date', 'date', '', ?, ?, '', ?, ?, '', '0'), ".
-                                  "(?, '20', '20', '資源タイプ', '資源タイプ', 'textarea', '0', '1', '0', '0', '0', 'type', 'type', '', ?, ?, '', ?, ?, '', '0'), ".
-                                  "(?, '21', '21', 'フォーマット', 'フォーマット', 'text', '0', '1', '0', '0', '0', 'format', 'format', '', ?, ?, '', ?, ?, '', '0'), ".
-                                  "(?, '22', '22', 'その他の資源識別子', 'その他の資源識別子', 'text', '0', '1', '0', '0', '0', 'identifier', 'identifier', '', ?, ?, '', ?, ?, '', '0'), ".
-                                  "(?, '23', '23', '資源識別子URI', '資源識別子URI', 'link', '1', '0', '0', '0', '0', 'URI', 'identifier', '', ?, ?, '', ?, ?, '', '0'), ".
-                                  "(?, '24', '24', '本文フルテキストへのリンク', '本文フルテキストへのリンク', 'link', '0', '1', '0', '0', '0', 'fullTextURL', 'identifier', '', ?, ?, '', ?, ?, '', '0'), ".
-                                  "(?, '25', '25', 'ISSN', 'ISSN', 'text', '0', '1', '0', '0', '0', 'issn', 'identifier', '', ?, ?, '', ?, ?, '', '0'), ".
-                                  "(?, '26', '26', '処理レコードID(総合目録DB)', '処理レコードID(総合目録DB)', 'text', '0', '1', '0', '0', '0', 'NCID', 'identifier', '', ?, ?, '', ?, ?, '', '0'), ".
-                                  "(?, '27', '27', '書誌情報', '書誌情報', 'biblio_info', '0', '0', '0', '0', '0', 'jtitle,volume,issue,spage,epage,dateofissued', 'identifier', '', ?, ?, '', ?, ?, '', '0'), ".
-                                  "(?, '28', '28', '情報源', '情報源', 'text', '0', '1', '0', '0', '0', 'source', 'source', '', ?, ?, '', ?, ?, '', '0'), ".
-                                  "(?, '29', '29', '言語', '言語', 'text', '0', '1', '0', '0', '0', 'language', 'language', '', ?, ?, '', ?, ?, '', '0'), ".
-                                  "(?, '30', '30', '他の資源との関係', '他の資源との関係', 'text', '0', '1', '0', '0', '0', 'relation', 'relation', '', ?, ?, '', ?, ?, '', '0'), ".
-                                  "(?, '31', '31', 'PubMed番号', 'PubMed番号', 'text', '0', '0', '0', '0', '0', 'pmid', 'relation', '', ?, ?, '', ?, ?, '', '0'), ".
-                                  "(?, '32', '32', 'DOI', 'DOI', 'text', '0', '0', '0', '0', '0', 'doi', 'relation', '', ?, ?, '', ?, ?, '', '0'), ".
-                                  "(?, '33', '33', '異版である', '異版である', 'link', '0', '1', '0', '0', '0', 'isVersionOf', 'relation', '', ?, ?, '', ?, ?, '', '0'), ".
-                                  "(?, '34', '34', '異版あり', '異版あり', 'link', '0', '1', '0', '0', '0', 'hasVersion', 'relation', '', ?, ?, '', ?, ?, '', '0'), ".
-                                  "(?, '35', '35', '置換される', '置換される', 'link', '0', '1', '0', '0', '0', 'isReplacedBy', 'relation', '', ?, ?, '', ?, ?, '', '0'), ".
-                                  "(?, '36', '36', '置換する', '置換する', 'link', '0', '1', '0', '0', '0', 'replaces', 'relation', '', ?, ?, '', ?, ?, '', '0'), ".
-                                  "(?, '37', '37', '要件とされる', '要件とされる', 'link', '0', '1', '0', '0', '0', 'isRequiredBy', 'relation', '', ?, ?, '', ?, ?, '', '0'), ".
-                                  "(?, '38', '38', '要件とする', '要件とする', 'link', '0', '1', '0', '0', '0', 'requires', 'relation', '', ?, ?, '', ?, ?, '', '0'), ".
-                                  "(?, '39', '39', '部分である', '部分である', 'link', '0', '1', '0', '0', '0', 'isPartOf', 'relation', '', ?, ?, '', ?, ?, '', '0'), ".
-                                  "(?, '40', '40', '部分を持つ', '部分を持つ', 'link', '0', '1', '0', '0', '0', 'hasPart', 'relation', '', ?, ?, '', ?, ?, '', '0'), ".
-                                  "(?, '41', '41', '参照される', '参照される', 'link', '0', '1', '0', '0', '0', 'isReferencedBy', 'relation', '', ?, ?, '', ?, ?, '', '0'), ".
-                                  "(?, '42', '42', '参照する', '参照する', 'link', '0', '1', '0', '0', '0', 'references', 'relation', '', ?, ?, '', ?, ?, '', '0'), ".
-                                  "(?, '43', '43', '別フォーマットである', '別フォーマットである', 'link', '0', '1', '0', '0', '0', 'isFormatOf', 'relation', '', ?, ?, '', ?, ?, '', '0'), ".
-                                  "(?, '44', '44', '別フォーマットあり', '別フォーマットあり', 'link', '0', '1', '0', '0', '0', 'hasFormat', 'relation', '', ?, ?, '', ?, ?, '', '0'), ".
-                                  "(?, '45', '45', '範囲', '範囲', 'text', '0', '1', '0', '0', '0', 'coverage', 'coverage', '', ?, ?, '', ?, ?, '', '0'), ".
-                                  "(?, '46', '46', '空間的', '空間的', 'text', '0', '1', '0', '0', '0', 'spatial', 'coverage', '', ?, ?, '', ?, ?, '', '0'), ".
-                                  "(?, '47', '47', '国立情報学研究所 メタデータ主題語彙集(地域)', '国立情報学研究所 メタデータ主題語彙集(地域)', 'text', '0', '1', '0', '0', '0', 'NIIspatial', 'coverage', '', ?, ?, '', ?, ?, '', '0'), ".
-                                  "(?, '48', '48', '時間的', '時間的', 'text', '0', '1', '0', '0', '0', 'temporal', 'coverage', '', ?, ?, '', ?, ?, '', '0'), ".
-                                  "(?, '49', '49', '国立情報学研究所 メタデータ主題語彙集(時代)', '国立情報学研究所 メタデータ主題語彙集(時代)', 'text', '0', '1', '0', '0', '0', 'NIItemporal', 'coverage', '', ?, ?, '', ?, ?, '', '0'), ".
-                                  "(?, '50', '50', '権利', '権利', 'text', '0', '1', '0', '0', '0', 'rights', 'rights', '', ?, ?, '', ?, ?, '', '0'), ".
-                                  "(?, '51', '51', '著者版フラグ', '著者版フラグ', 'select', '0', '0', '0', '0', '0', 'textversion', '', '', ?, ?, '', ?, ?, '', '0'), ".
-                                  "(?, '52', '52', '機関ID', '機関ID', 'text', '1', '0', '0', '0', '1', '', '', '', ?, ?, '', ?, ?, '', '0'), ".
-                                  "(?, '53', '53', 'コンテンツID', 'コンテンツID', 'text', '1', '0', '0', '0', '1', '', '', '', ?, ?, '', ?, ?, '', '0'), ".
-                                  "(?, '54', '54', 'コンテンツ更新日時', 'コンテンツ更新日時', 'date', '1', '0', '0', '0', '1', '', '', '', ?, ?, '', ?, ?, '', '0')";
+                        $query .= "(?, 1, 1, 'その他(別言語等)のタイトル', 'その他(別言語等)のタイトル', 'text', 0, 1, 0, 0, 0, 'alternative', 'title', '', ?, ?, '', ?, ?, '', 0), ".
+                                  "(?, 2, 2, '作成者', '作成者', 'name', 0, 1, 0, 0, 0, 'creator', 'creator', 'japanese', ?, ?, '', ?, ?, '', 0), ".
+                                  "(?, 3, 3, '作成者(その他言語)', '作成者(その他言語)', 'name', 0, 1, 0, 0, 0, 'creator', 'creator', '', ?, ?, '', ?, ?, '', 0), ".
+                                  "(?, 4, 4, '国立情報学研究所 メタデータ主題語彙集', '国立情報学研究所 メタデータ主題語彙集', 'text', 0, 1, 0, 0, 0, 'NIIsubject', 'subject', '', ?, ?, '', ?, ?, '', 0), ".
+                                  "(?, 5, 5, '日本十進分類法', '日本十進分類法', 'text', 0, 1, 0, 0, 0, 'NDC', 'subject', '', ?, ?, '', ?, ?, '', 0), ".
+                                  "(?, 6, 6, '国立国会図書館分類表', '国立国会図書館分類表', 'text', 0, 1, 0, 0, 0, 'NDLC', 'subject', '', ?, ?, '', ?, ?, '', 0), ".
+                                  "(?, 7, 7, '日本件名標目', '日本件名標目', 'text', 0, 1, 0, 0, 0, 'BSH', 'subject', '', ?, ?, '', ?, ?, '', 0), ".
+                                  "(?, 8, 8, '国立国会図書館件名標目表', '国立国会図書館件名標目表', 'text', 0, 1, 0, 0, 0, 'NDLSH', 'subject', '', ?, ?, '', ?, ?, '', 0), ".
+                                  "(?, 9, 9, '医学件名標目表', '医学件名標目表', 'text', 0, 1, 0, 0, 0, 'MeSH', 'subject', '', ?, ?, '', ?, ?, '', 0), ".
+                                  "(?, 10, 10, 'デューイ十進分類法', 'デューイ十進分類法', 'text', 0, 1, 0, 0, 0, 'DDC', 'subject', '', ?, ?, '', ?, ?, '', 0), ".
+                                  "(?, 11, 11, '米国議会図書館分類法', '米国議会図書館分類法', 'text', 0, 1, 0, 0, 0, 'LCC', 'subject', '', ?, ?, '', ?, ?, '', 0), ".
+                                  "(?, 12, 12, '国際十進分類法', '国際十進分類法', 'text', 0, 1, 0, 0, 0, 'UDC', 'subject', '', ?, ?, '', ?, ?, '', 0), ".
+                                  "(?, 13, 13, '米国議会図書館件名標目表', '米国議会図書館件名標目表', 'text', 0, 1, 0, 0, 0, 'LCSH', 'subject', '', ?, ?, '', ?, ?, '', 0), ".
+                                  "(?, 14, 14, '内容記述', '内容記述', 'textarea', 0, 1, 0, 0, 0, 'description', 'description', '', ?, ?, '', ?, ?, '', 0), ".
+                                  "(?, 15, 15, '公開者', '公開者', 'name', 0, 1, 0, 0, 0, 'publisher', 'publisher', 'japanese', ?, ?, '', ?, ?, '', 0), ".
+                                  "(?, 16, 16, '公開者(その他言語)', '公開者(その他言語)', 'name', 0, 1, 0, 0, 0, 'publisher', 'publisher', '', ?, ?, '', ?, ?, '', 0), ".
+                                  "(?, 17, 17, '寄与者', '寄与者', 'name', 0, 1, 0, 0, 0, 'contributor', 'contributor', 'japanese', ?, ?, '', ?, ?, '', 0), ".
+                                  "(?, 18, 18, '寄与者(その他言語)', '寄与者(その他言語)', 'name', 0, 1, 0, 0, 0, 'contributor', 'contributor', '', ?, ?, '', ?, ?, '', 0), ".
+                                  "(?, 19, 19, '日付', '日付', 'date', 0, 1, 0, 0, 0, 'date', 'date', '', ?, ?, '', ?, ?, '', 0), ".
+                                  "(?, 20, 20, '資源タイプ', '資源タイプ', 'textarea', 0, 1, 0, 0, 0, 'type', 'type', '', ?, ?, '', ?, ?, '', 0), ".
+                                  "(?, 21, 21, 'フォーマット', 'フォーマット', 'text', 0, 1, 0, 0, 0, 'format', 'format', '', ?, ?, '', ?, ?, '', 0), ".
+                                  "(?, 22, 22, 'その他の資源識別子', 'その他の資源識別子', 'text', 0, 1, 0, 0, 0, 'identifier', 'identifier', '', ?, ?, '', ?, ?, '', 0), ".
+                                  "(?, 23, 23, '資源識別子URI', '資源識別子URI', 'link', 1, 0, 0, 0, 0, 'URI', 'identifier', '', ?, ?, '', ?, ?, '', 0), ".
+                                  "(?, 24, 24, '本文フルテキストへのリンク', '本文フルテキストへのリンク', 'link', 0, 1, 0, 0, 0, 'fullTextURL', 'identifier', '', ?, ?, '', ?, ?, '', 0), ".
+                                  "(?, 25, 25, 'ISSN', 'ISSN', 'text', 0, 1, 0, 0, 0, 'issn', 'identifier', '', ?, ?, '', ?, ?, '', 0), ".
+                                  "(?, 26, 26, '処理レコードID(総合目録DB)', '処理レコードID(総合目録DB)', 'text', 0, 1, 0, 0, 0, 'NCID', 'identifier', '', ?, ?, '', ?, ?, '', 0), ".
+                                  "(?, 27, 27, '書誌情報', '書誌情報', 'biblio_info', 0, 0, 0, 0, 0, 'jtitle,volume,issue,spage,epage,dateofissued', 'identifier', '', ?, ?, '', ?, ?, '', 0), ".
+                                  "(?, 28, 28, '情報源', '情報源', 'text', 0, 1, 0, 0, 0, 'source', 'source', '', ?, ?, '', ?, ?, '', 0), ".
+                                  "(?, 29, 29, '言語', '言語', 'text', 0, 1, 0, 0, 0, 'language', 'language', '', ?, ?, '', ?, ?, '', 0), ".
+                                  "(?, 30, 30, '他の資源との関係', '他の資源との関係', 'text', 0, 1, 0, 0, 0, 'relation', 'relation', '', ?, ?, '', ?, ?, '', 0), ".
+                                  "(?, 31, 31, 'PubMed番号', 'PubMed番号', 'text', 0, 0, 0, 0, 0, 'pmid', 'relation', '', ?, ?, '', ?, ?, '', 0), ".
+                                  "(?, 32, 32, 'DOI', 'DOI', 'text', 0, 0, 0, 0, 0, 'doi', 'relation', '', ?, ?, '', ?, ?, '', 0), ".
+                                  "(?, 33, 33, '異版である', '異版である', 'link', 0, 1, 0, 0, 0, 'isVersionOf', 'relation', '', ?, ?, '', ?, ?, '', 0), ".
+                                  "(?, 34, 34, '異版あり', '異版あり', 'link', 0, 1, 0, 0, 0, 'hasVersion', 'relation', '', ?, ?, '', ?, ?, '', 0), ".
+                                  "(?, 35, 35, '置換される', '置換される', 'link', 0, 1, 0, 0, 0, 'isReplacedBy', 'relation', '', ?, ?, '', ?, ?, '', 0), ".
+                                  "(?, 36, 36, '置換する', '置換する', 'link', 0, 1, 0, 0, 0, 'replaces', 'relation', '', ?, ?, '', ?, ?, '', 0), ".
+                                  "(?, 37, 37, '要件とされる', '要件とされる', 'link', 0, 1, 0, 0, 0, 'isRequiredBy', 'relation', '', ?, ?, '', ?, ?, '', 0), ".
+                                  "(?, 38, 38, '要件とする', '要件とする', 'link', 0, 1, 0, 0, 0, 'requires', 'relation', '', ?, ?, '', ?, ?, '', 0), ".
+                                  "(?, 39, 39, '部分である', '部分である', 'link', 0, 1, 0, 0, 0, 'isPartOf', 'relation', '', ?, ?, '', ?, ?, '', 0), ".
+                                  "(?, 40, 40, '部分を持つ', '部分を持つ', 'link', 0, 1, 0, 0, 0, 'hasPart', 'relation', '', ?, ?, '', ?, ?, '', 0), ".
+                                  "(?, 41, 41, '参照される', '参照される', 'link', 0, 1, 0, 0, 0, 'isReferencedBy', 'relation', '', ?, ?, '', ?, ?, '', 0), ".
+                                  "(?, 42, 42, '参照する', '参照する', 'link', 0, 1, 0, 0, 0, 'references', 'relation', '', ?, ?, '', ?, ?, '', 0), ".
+                                  "(?, 43, 43, '別フォーマットである', '別フォーマットである', 'link', 0, 1, 0, 0, 0, 'isFormatOf', 'relation', '', ?, ?, '', ?, ?, '', 0), ".
+                                  "(?, 44, 44, '別フォーマットあり', '別フォーマットあり', 'link', 0, 1, 0, 0, 0, 'hasFormat', 'relation', '', ?, ?, '', ?, ?, '', 0), ".
+                                  "(?, 45, 45, '範囲', '範囲', 'text', 0, 1, 0, 0, 0, 'coverage', 'coverage', '', ?, ?, '', ?, ?, '', 0), ".
+                                  "(?, 46, 46, '空間的', '空間的', 'text', 0, 1, 0, 0, 0, 'spatial', 'coverage', '', ?, ?, '', ?, ?, '', 0), ".
+                                  "(?, 47, 47, '国立情報学研究所 メタデータ主題語彙集(地域)', '国立情報学研究所 メタデータ主題語彙集(地域)', 'text', 0, 1, 0, 0, 0, 'NIIspatial', 'coverage', '', ?, ?, '', ?, ?, '', 0), ".
+                                  "(?, 48, 48, '時間的', '時間的', 'text', 0, 1, 0, 0, 0, 'temporal', 'coverage', '', ?, ?, '', ?, ?, '', 0), ".
+                                  "(?, 49, 49, '国立情報学研究所 メタデータ主題語彙集(時代)', '国立情報学研究所 メタデータ主題語彙集(時代)', 'text', 0, 1, 0, 0, 0, 'NIItemporal', 'coverage', '', ?, ?, '', ?, ?, '', 0), ".
+                                  "(?, 50, 50, '権利', '権利', 'text', 0, 1, 0, 0, 0, 'rights', 'rights', '', ?, ?, '', ?, ?, '', 0), ".
+                                  "(?, 51, 51, '著者版フラグ', '著者版フラグ', 'select', 0, 0, 0, 0, 0, 'textversion', '', '', ?, ?, '', ?, ?, '', 0), ".
+                                  "(?, 52, 52, '機関ID', '機関ID', 'text', 1, 0, 0, 0, 1, '', '', '', ?, ?, '', ?, ?, '', 0), ".
+                                  "(?, 53, 53, 'コンテンツID', 'コンテンツID', 'text', 1, 0, 0, 0, 1, '', '', '', ?, ?, '', ?, ?, '', 0), ".
+                                  "(?, 54, 54, 'コンテンツ更新日時', 'コンテンツ更新日時', 'date', 1, 0, 0, 0, 1, '', '', '', ?, ?, '', ?, ?, '', 0)";
                         if($ii==20015)
                         {
                             $query .= ";";
@@ -2271,9 +2274,9 @@ class Repository_Action_Main_Update extends RepositoryAction
                     $params = array();
                     for($ii=20002; $ii<=20015; $ii++)
                     {
-                        $query .= "(?, '51', '1', 'author', 'author', ?, ?, '', ?, ?, '', '0'), ".
-                                  "(?, '51', '2', 'publisher', 'publisher', ?, ?, '', ?, ?, '', '0'), ".
-                                  "(?, '51', '3', 'none', 'none', ?, ?, '', ?, ?, '', '0')";
+                        $query .= "(?, 51, 1, 'author', 'author', ?, ?, '', ?, ?, '', 0), ".
+                                  "(?, 51, 2, 'publisher', 'publisher', ?, ?, '', ?, ?, '', 0), ".
+                                  "(?, 51, 3, 'none', 'none', ?, ?, '', ?, ?, '', 0)";
                         if($ii==20015)
                         {
                             $query .= ";";
@@ -2369,21 +2372,21 @@ class Repository_Action_Main_Update extends RepositoryAction
                             $params[] = "見出し"; // attribute_name
                             $params[] = "見出し"; // attribute_short_name
                             $params[] = "heading"; // input_type
-                            $params[] = "0"; // is_required
-                            $params[] = "0"; // plural_enable
-                            $params[] = "0"; // line_feed_enable
-                            $params[] = "0"; // list_view_enable
-                            $params[] = "0"; // hidden
+                            $params[] = 0; // is_required
+                            $params[] = 0; // plural_enable
+                            $params[] = 0; // line_feed_enable
+                            $params[] = 0; // list_view_enable
+                            $params[] = 0; // hidden
                             $params[] = ""; // junii2_mapping
                             $params[] = ""; // dublin_core_mapping
                             $params[] = ""; // display_lang_type
                             $params[] = $attr["ins_user_id"]; // ins_user_id
                             $params[] = $attr["ins_user_id"]; // mod_user_id
-                            $params[] = "0"; // del_user_id
+                            $params[] = 0; // del_user_id
                             $params[] = $attr["ins_date"]; // ins_date
                             $params[] = $attr["ins_date"]; // mod_date
                             $params[] = ""; // del_date
-                            $params[] = "0"; // is_delete
+                            $params[] = 0; // is_delete
                             $result = $this->Db->execute($query, $params);
                             if($result === false){
                                 $errMsg = $this->Db->ErrorMsg();
@@ -2426,7 +2429,7 @@ class Repository_Action_Main_Update extends RepositoryAction
                     // Add default item type 'Others' --start--
                     // Insert to repository_item_type table
                     $query = "INSERT INTO ".DATABASE_PREFIX."repository_item_type VALUE ".
-                             "('10010', 'その他 / Others', 'その他 / Others', 'default item type', 'Others', '', '', '', '', ?, ?, '0', ?, ?, '', '0'); ";
+                             "(10010, 'その他 / Others', 'その他 / Others', 'default item type', 'Others', '', '', '', '', ?, ?, '0', ?, ?, '', 0); ";
                     $params = array();
                     $params[] = $user_id;   // ins_user_id
                     $params[] = $user_id;   // mod_user_id
@@ -2448,29 +2451,29 @@ class Repository_Action_Main_Update extends RepositoryAction
                              "`dublin_core_mapping`, `display_lang_type`, `ins_user_id`, `mod_user_id`, ".
                              "`del_user_id`, `ins_date`, `mod_date`, `del_date`, `is_delete`) VALUES ";
                     $params = array();
-                    $query .= "('10010', '1', '1', 'その他（別言語等）のタイトル', 'その他（別言語等）のタイトル', 'text', '0', '1', '0', '0', '0', 'alternative', 'title', '', ?, ?, '', ?, ?, '', '0'), ".
-                              "('10010', '2', '2', '著者', '著者', 'name', '1', '1', '1', '1', '0', 'creator', 'creator', '', ?, ?, '', ?, ?, '', '0'), ".
-                              "('10010', '3', '3', '著者別名', '著者別名', 'name', '0', '1', '0', '0', '0', '', '', '', ?, ?, '', ?, ?, '', '0'), ".
-                              "('10010', '4', '4', '著者ID', '著者ID', 'text', '0', '1', '0', '0', '0', 'identifier', 'identifier', '', ?, ?, '', ?, ?, '', '0'), ".
-                              "('10010', '5', '5', '抄録', '抄録', 'textarea', '0', '1', '0', '0', '0', 'description', 'description', '', ?, ?, '', ?, ?, '', '0'), ".
-                              "('10010', '6', '6', '内容記述', '内容記述', 'textarea', '0', '1', '0', '0', '0', 'description', 'description', '', ?, ?, '', ?, ?, '', '0'), ".
-                              "('10010', '7', '7', '書誌情報', '書誌情報', 'biblio_info', '0', '0', '0', '1', '0', 'jtitle,volume,issue,spage,epage,dateofissued', 'identifier', '', ?, ?, '', ?, ?, '', '0'), ".
-                              "('10010', '8', '8', '出版者', '出版者', 'text', '0', '1', '0', '0', '0', 'publisher', 'publisher', '', ?, ?, '', ?, ?, '', '0'), ".
-                              "('10010', '9', '9', 'ISSN', 'ISSN', 'text', '0', '0', '0', '0', '0', 'issn', 'identifier', '', ?, ?, '', ?, ?, '', '0'), ".
-                              "('10010', '10', '10', 'ISBN', 'ISBN', 'text', '0', '1', '0', '0', '0', 'identifier', 'identifier', '', ?, ?, '', ?, ?, '', '0'), ".
-                              "('10010', '11', '11', '書誌レコードID', '書誌レコードID', 'text', '0', '0', '0', '0', '0', 'NCID', 'identifier', '', ?, ?, '', ?, ?, '', '0'), ".
-                              "('10010', '12', '12', '論文ID（NAID）', '論文ID（NAID）', 'text', '0', '0', '0', '0', '0', 'identifier', 'identifier', '', ?, ?, '', ?, ?, '', '0'), ".
-                              "('10010', '13', '13', 'PubMed番号', 'PubMed番号', 'text', '0', '0', '0', '0', '0', 'pmid', 'relation', '', ?, ?, '', ?, ?, '', '0'), ".
-                              "('10010', '14', '14', 'DOI', 'DOI', 'text', '0', '0', '0', '0', '0', 'doi', 'relation', '', ?, ?, '', ?, ?, '', '0'), ".
-                              "('10010', '15', '15', '権利', '権利', 'text', '0', '1', '0', '0', '0', 'rights', 'rights', '', ?, ?, '', ?, ?, '', '0'), ".
-                              "('10010', '16', '16', '情報源', '情報源', 'text', '0', '1', '0', '0', '0', 'source', 'source', '', ?, ?, '', ?, ?, '', '0'), ".
-                              "('10010', '17', '17', '関連サイト', '関連サイト', 'link', '0', '1', '0', '0', '0', 'source', 'source', '', ?, ?, '', ?, ?, '', '0'), ".
-                              "('10010', '18', '18', '他の資源との関係', '他の資源との関係', 'text', '0', '1', '0', '0', '0', 'relation', 'relation', '', ?, ?, '', ?, ?, '', '0'), ".
-                              "('10010', '19', '19', 'フォーマット', 'フォーマット', 'text', '0', '1', '0', '0', '0', 'format', 'format', '', ?, ?, '', ?, ?, '', '0'), ".
-                              "('10010', '20', '20', '著者版フラグ', '著者版フラグ', 'select', '0', '0', '0', '0', '0', 'textversion', '', '', ?, ?, '', ?, ?, '', '0'), ".
-                              "('10010', '21', '21', '日本十進分類法', '日本十進分類法', 'text', '0', '1', '0', '0', '0', 'NDC', 'subject', '', ?, ?, '', ?, ?, '', '0'), ".
-                              "('10010', '22', '22', 'コンテンツ本体', 'コンテンツ本体', 'file', '0', '1', '1', '1', '0', 'fullTextURL', 'identifier', '', ?, ?, '', ?, ?, '', '0'), ".
-                              "('10010', '23', '23', '見出し', '見出し', 'heading', '0', '0', '0', '0', '0', '', '', '', ?, ?, '', ?, ?, '', '0')";
+                    $query .= "(10010, 1, 1, 'その他（別言語等）のタイトル', 'その他（別言語等）のタイトル', 'text', 0, 1, 0, 0, 0, 'alternative', 'title', '', ?, ?, '', ?, ?, '', 0), ".
+                              "(10010, 2, 2, '著者', '著者', 'name', 1, 1, 1, 1, 0, 'creator', 'creator', '', ?, ?, '', ?, ?, '', 0), ".
+                              "(10010, 3, 3, '著者別名', '著者別名', 'name', 0, 1, 0, 0, 0, '', '', '', ?, ?, '', ?, ?, '', 0), ".
+                              "(10010, 4, 4, '著者ID', '著者ID', 'text', 0, 1, 0, 0, 0, 'identifier', 'identifier', '', ?, ?, '', ?, ?, '', 0), ".
+                              "(10010, 5, 5, '抄録', '抄録', 'textarea', 0, 1, 0, 0, 0, 'description', 'description', '', ?, ?, '', ?, ?, '', 0), ".
+                              "(10010, 6, 6, '内容記述', '内容記述', 'textarea', 0, 1, 0, 0, 0, 'description', 'description', '', ?, ?, '', ?, ?, '', 0), ".
+                              "(10010, 7, 7, '書誌情報', '書誌情報', 'biblio_info', 0, 0, 0, 1, 0, 'jtitle,volume,issue,spage,epage,dateofissued', 'identifier', '', ?, ?, '', ?, ?, '', 0), ".
+                              "(10010, 8, 8, '出版者', '出版者', 'text', 0, 1, 0, 0, 0, 'publisher', 'publisher', '', ?, ?, '', ?, ?, '', 0), ".
+                              "(10010, 9, 9, 'ISSN', 'ISSN', 'text', 0, 0, 0, 0, 0, 'issn', 'identifier', '', ?, ?, '', ?, ?, '', 0), ".
+                              "(10010, 10, 10, 'ISBN', 'ISBN', 'text', 0, 1, 0, 0, 0, 'identifier', 'identifier', '', ?, ?, '', ?, ?, '', 0), ".
+                              "(10010, 11, 11, '書誌レコードID', '書誌レコードID', 'text', 0, 0, 0, 0, 0, 'NCID', 'identifier', '', ?, ?, '', ?, ?, '', 0), ".
+                              "(10010, 12, 12, '論文ID（NAID）', '論文ID（NAID）', 'text', 0, 0, 0, 0, 0, 'identifier', 'identifier', '', ?, ?, '', ?, ?, '', 0), ".
+                              "(10010, 13, 13, 'PubMed番号', 'PubMed番号', 'text', 0, 0, 0, 0, 0, 'pmid', 'relation', '', ?, ?, '', ?, ?, '', 0), ".
+                              "(10010, 14, 14, 'DOI', 'DOI', 'text', 0, 0, 0, 0, 0, 'doi', 'relation', '', ?, ?, '', ?, ?, '', 0), ".
+                              "(10010, 15, 15, '権利', '権利', 'text', 0, 1, 0, 0, 0, 'rights', 'rights', '', ?, ?, '', ?, ?, '', 0), ".
+                              "(10010, 16, 16, '情報源', '情報源', 'text', 0, 1, 0, 0, 0, 'source', 'source', '', ?, ?, '', ?, ?, '', 0), ".
+                              "(10010, 17, 17, '関連サイト', '関連サイト', 'link', 0, 1, 0, 0, 0, 'source', 'source', '', ?, ?, '', ?, ?, '', 0), ".
+                              "(10010, 18, 18, '他の資源との関係', '他の資源との関係', 'text', 0, 1, 0, 0, 0, 'relation', 'relation', '', ?, ?, '', ?, ?, '', 0), ".
+                              "(10010, 19, 19, 'フォーマット', 'フォーマット', 'text', 0, 1, 0, 0, 0, 'format', 'format', '', ?, ?, '', ?, ?, '', 0), ".
+                              "(10010, 20, 20, '著者版フラグ', '著者版フラグ', 'select', 0, 0, 0, 0, 0, 'textversion', '', '', ?, ?, '', ?, ?, '', 0), ".
+                              "(10010, 21, 21, '日本十進分類法', '日本十進分類法', 'text', 0, 1, 0, 0, 0, 'NDC', 'subject', '', ?, ?, '', ?, ?, '', 0), ".
+                              "(10010, 22, 22, 'コンテンツ本体', 'コンテンツ本体', 'file', 0, 1, 1, 1, 0, 'fullTextURL', 'identifier', '', ?, ?, '', ?, ?, '', 0), ".
+                              "(10010, 23, 23, '見出し', '見出し', 'heading', 0, 0, 0, 0, 0, '', '', '', ?, ?, '', ?, ?, '', 0)";
                     for($ii=1; $ii<=23; $ii++)
                     {
                         $params[] = $user_id;   // ins_user_id
@@ -2490,9 +2493,9 @@ class Repository_Action_Main_Update extends RepositoryAction
                              "`candidate_short_value`, `ins_user_id`, `mod_user_id`, ".
                              "`del_user_id`, `ins_date`, `mod_date`, `del_date`, `is_delete`) VALUES ";
                     $params = array();
-                    $query .= "('10010', '20', '1', 'author', 'author', ?, ?, '', ?, ?, '', '0'), ".
-                              "('10010', '20', '2', 'publisher', 'publisher', ?, ?, '', ?, ?, '', '0'), ".
-                              "('10010', '20', '3', 'none', 'none', ?, ?, '', ?, ?, '', '0');";
+                    $query .= "(10010, 20, 1, 'author', 'author', ?, ?, '', ?, ?, '', 0), ".
+                              "(10010, 20, 2, 'publisher', 'publisher', ?, ?, '', ?, ?, '', 0), ".
+                              "(10010, 20, 3, 'none', 'none', ?, ?, '', ?, ?, '', 0);";
                     for($ii=1; $ii<=3; $ii++)
                     {
                         $params[] = $user_id;   // ins_user_id
@@ -2529,7 +2532,7 @@ class Repository_Action_Main_Update extends RepositoryAction
                     }
                     $query = "CREATE TABLE ".DATABASE_PREFIX."repository_pdf_cover_parameter ( ".
                              " `param_name` TEXT(255), ".
-                             " `text` TEXT default '', ".
+                             " `text` TEXT NOT NULL, ".
                              " `image` LONGBLOB NOT NULL, ".
                              " `extension` TEXT NOT NULL, ".
                              " `mimetype` TEXT NOT NULL, ".
@@ -3100,7 +3103,7 @@ class Repository_Action_Main_Update extends RepositoryAction
                     if(count($retRef) == 0){
                         $query = "INSERT INTO ".DATABASE_PREFIX."repository_item_type ".
                                  "VALUE".
-                                "('20016', 'Learning Object Matadata', 'Learning Object Matadata', 'harvesting item type', 'Learning Material', '', '', '', '', '1', '1', '0', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0');";
+                                "(20016, 'Learning Object Matadata', 'Learning Object Matadata', 'harvesting item type', 'Learning Material', '', '', '', '', '1', '1', '0', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0);";
                         $retRef = $this->Db->execute($query);
                         if($retRef === false){
                             $errMsg = $this->Db->ErrorMsg();
@@ -3129,92 +3132,92 @@ class Repository_Action_Main_Update extends RepositoryAction
                                 "input_type, is_required, plural_enable, line_feed_enable, list_view_enable, hidden, ".
                                 "junii2_mapping, dublin_core_mapping, lom_mapping, display_lang_type, ".
                                 "ins_user_id, mod_user_id, del_user_id, ins_date, mod_date, del_date, is_delete) VALUES ".
-                                "('20016', '1', '1', 'URI', 'URI', 'link', '0', '1', '0', '0', '0', 'URI', 'identifier', 'generalIdentifier', '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '2', '2', 'ISSN', 'ISSN', 'text', '0', '1', '0', '0', '0', 'issn', 'identifier', 'generalIdentifier', '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '3', '3', 'NCID', 'NCID', 'text', '0', '1', '0', '0', '0', 'NCID', 'identifier', 'generalIdentifier', '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '4', '4', '書誌情報', '書誌情報', 'biblio_info', '0', '0', '0', '1', '0', 'jtitle,volume,issue,spage,epage,dateofissued', 'identifier', 'generalIdentifier', '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '5', '5', '著者版フラグ', '著者版フラグ', 'select', '0', '0', '0', '0', '0', 'textversion', '', 'generalIdentifier', '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '6', '6', 'その他の識別子', 'その他の識別子', 'text', '0', '1', '0', '0', '0', 'identifier', 'identifier', 'generalIdentifier', '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '7', '7', '言語', '言語', 'text', '0', '1', '0', '0', '0', 'language', 'language', 'generalLanguage', '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '8', '8', '内容記述', '内容記述', 'textarea', '0', '1', '0', '0', '0', 'description', 'description', 'generalDescription', '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '9', '9', '範囲', '範囲', 'text', '0', '1', '0', '0', '0', 'coverage', 'coverage', 'generalCoverage', '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '10', '10', '構成', '構成', 'select', '0', '0', '0', '0', '0', '', '', 'generalStructure', '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '11', '11', '粒度', '粒度', 'select', '0', '0', '0', '0', '0', '', '', 'generalAggregationLevel', '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '12', '12', 'エディション', 'エディション', 'text', '0', '0', '0', '0', '0', '', '', 'lifeCycleVersion', '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '13', '13', 'ステータス', 'ステータス', 'select', '0', '0', '0', '0', '0', '', '', 'lifeCycleStatus', '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '14', '14', '著者(creator)', '著者(creator)', 'name', '0', '1', '0', '0', '0', 'creator', 'creator', 'lifeCycleContributeAuthor', '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '15', '15', '公開者(publisher)', '公開者(publisher)', 'name', '0', '1', '0', '0', '0', 'publisher', 'publisher', 'lifeCycleContributePublisher', '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '16', '16', '日付', '日付', 'date', '0', '1', '0', '0', '0', 'date', 'date', 'lifeCycleContributePublishDate', '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '17', '17', '作成者(initiator)', '作成者(initiator)', 'text', '0', '1', '0', '0', '0', 'contributor', 'contributor', 'lifeCycleContributeInitiator', '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '18', '18', '更新者(terminator)', '更新者(terminator)', 'text', '0', '1', '0', '0', '0', 'contributor', 'contributor', 'lifeCycleContributeTerminator', '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '19', '19', '校閲者(validator)', '校閲者(validator)', 'text', '0', '1', '0', '0', '0', 'contributor', 'contributor', 'lifeCycleContributeValidator', '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '20', '20', '編集者(editor)', '編集者(editor)', 'text', '0', '1', '0', '0', '0', 'contributor', 'contributor', 'lifeCycleContributeEditor', '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '21', '21', '装丁(graphical designer)', '装丁(graphical designer)', 'text', '0', '1', '0', '0', '0', 'contributor', 'contributor', 'lifeCycleContributeGraphicalDesigner', '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '22', '22', '技術(technical implementer)', '技術(technical implementer)', 'text', '0', '1', '0', '0', '0', 'contributor', 'contributor', 'lifeCycleContributeTechnicalImplementer', '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '23', '23', 'コンテンツプロバイダー(content provider)', 'コンテンツプロバイダー(content provider)', 'text', '0', '1', '0', '0', '0', 'contributor', 'contributor', 'lifeCycleContributeContentProvider', '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '24', '24', '技術監修(technical validator)', '技術監修(technical validator)', 'text', '0', '1', '0', '0', '0', 'contributor', 'contributor', 'lifeCycleContributeTechnicalValidator', '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '25', '25', '教育監修(educational validator)', '教育監修(educational validator)', 'text', '0', '1', '0', '0', '0', 'contributor', 'contributor', 'lifeCycleContributeEducationalValidator', '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '26', '26', '台本(script writer)', '台本(script writer)', 'text', '0', '1', '0', '0', '0', 'contributor', 'contributor', 'lifeCycleContributeScriptWriter', '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '27', '27', '教育デザイン(instructional designer)', '教育デザイン(instructional designer)', 'text', '0', '1', '0', '0', '0', 'contributor', 'contributor', 'lifeCycleContributeInstructionalDesigner', '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '28', '28', '専門家(subject matter expert)', '専門家(subject matter expert)', 'text', '0', '1', '0', '0', '0', 'contributor', 'contributor', 'lifeCycleContributeSubjectMatterExpert', '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '29', '29', 'その他の関係者(unknown)', 'その他の関係者(unknown)', 'text', '0', '1', '0', '0', '0', 'contributor', 'contributor', 'lifeCycleContributeUnknown', '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '30', '30', 'その他の関係者', 'その他の関係者', 'text', '0', '1', '0', '0', '0', '', '', 'lifeCycleContribute', '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '31', '31', 'メタデータ識別子', 'メタデータ識別子', 'text', '0', '1', '0', '0', '0', '', '', 'metaMetadataIdentifer', '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '32', '32', 'メタデータ作成者(creator)', 'メタデータ作成者(creator)', 'text', '0', '1', '0', '0', '0', '', '', 'metaMetadataContributeCreator', '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '33', '33', 'メタデータ校閲者(validator)', 'メタデータ校閲者(validator)', 'text', '0', '1', '0', '0', '0', '', '', 'metaMetadataContributeValidator', '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '34', '34', 'その他のメタデータ関係者', 'その他のメタデータ関係者', 'text', '0', '1', '0', '0', '0', '', '', 'metaMetadataContribute', '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '35', '35', 'メタデータスキーマ', 'メタデータスキーマ', 'text', '0', '1', '0', '0', '0', '', '', 'metaMetadataMetadataSchema', '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '36', '36', 'メタデータ言語', 'メタデータ言語', 'text', '0', '0', '0', '0', '0', '', '', 'metaMetadataLanguage', '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '37', '37', 'ファイルフォーマット', 'ファイルフォーマット', 'text', '0', '1', '0', '0', '0', 'format', 'format', 'technicalFormat', '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '38', '38', 'ファイルサイズ', 'ファイルサイズ', 'text', '0', '0', '0', '0', '0', '', '', 'technicalSize', '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '39', '39', 'ファイルリンク', 'ファイルリンク', 'text', '0', '1', '0', '0', '0', '', '', 'technicalLocation', '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '40', '40', '動作環境', '動作環境', 'text', '0', '1', '0', '0', '0', '', '', 'technicalRequirementOrCompositeType', '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '41', '41', '動作条件', '動作条件', 'text', '0', '1', '0', '0', '0', '', '', 'technicalRequirementOrCompositeName', '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '42', '42', '推奨バージョン(下限)', '推奨バージョン(下限)', 'text', '0', '1', '0', '0', '0', '', '', 'technicalRequirementOrCompositeMinimumVersion', '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '43', '43', '推奨バージョン(上限)', '推奨バージョン(上限)', 'text', '0', '1', '0', '0', '0', '', '', 'technicalRequirementOrCompositeMaximumVersion', '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '44', '44', 'インストール手順', 'インストール手順', 'text', '0', '0', '0', '0', '0', '', '', 'technicalInstallationRemarks', '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '45', '45', 'その他の技術要件', 'その他の技術要件', 'text', '0', '0', '0', '0', '0', '', '', 'technicalOtherPlatformRequirements', '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '46', '46', '再生時間', '再生時間', 'text', '0', '0', '0', '0', '0', '', '', 'technicalDuration', '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '47', '47', '授業形態', '授業形態', 'checkbox', '0', '0', '0', '0', '0', '', '', 'educationalInteractivityType', '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '48', '48', 'リソースタイプ', 'リソースタイプ', 'checkbox', '0', '0', '0', '0', '0', 'type', 'type', 'educationalLearningResourceType', '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '49', '49', '双方向性度合(interactivity level)', '双方向性度合(interactivity level)', 'checkbox', '0', '0', '0', '0', '0', '', '', 'educationalInteractivityLevel', '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '50', '50', '情報量(sematic density)', '情報量(sematic density)', 'checkbox', '0', '0', '0', '0', '0', '', '', 'educationalSemanticDensity', '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '51', '51', '利用者', '利用者', 'checkbox', '0', '0', '0', '0', '0', '', '', 'educationalIntendedEndUserRole', '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '52', '52', '利用環境', '利用環境', 'checkbox', '0', '0', '0', '0', '0', '', '', 'educationalContext', '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '53', '53', '対象年齢', '対象年齢', 'text', '0', '1', '0', '0', '0', '', '', 'educationalTypicalAgeRange', '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '54', '54', '難易度', '難易度', 'checkbox', '0', '0', '0', '0', '0', '', '', 'educationalDifficulty', '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '55', '55', '授業時間', '授業時間', 'text', '0', '1', '0', '0', '0', '', '', 'educationalTypicalLearningTime', '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '56', '56', '備考', '備考', 'textarea', '0', '1', '0', '0', '0', '', '', 'educationalDescription', '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '57', '57', '言語', '言語', 'text', '0', '1', '0', '0', '0', '', '', 'educationalLanguage', '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '58', '58', '有料', '有料', 'select', '0', '0', '0', '0', '0', '', '', 'rightsCost', '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '59', '59', '利用形態', '利用形態', 'select', '0', '0', '0', '0', '0', '', '', 'rightsCopyrightAndOtherRestrictions', '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '60', '60', '権利', '権利', 'textarea', '0', '0', '0', '0', '0', 'rights', 'rights', 'rightsDescription', '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '61', '61', 'PubMed番号', 'PubMed番号', 'text', '0', '1', '0', '0', '0', 'pmid', 'relation', 'relation', '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '62', '62', 'DOI', 'DOI', 'text', '0', '1', '0', '0', '0', 'doi', 'relation', 'relation', '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '63', '63', '異版である', '異版である', 'text', '0', '1', '0', '0', '0', 'isVersionOf', 'relation', 'relationIsVersionOf', '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '64', '64', '異版あり', '異版あり', 'text', '0', '1', '0', '0', '0', 'hasVersion', 'relation', 'relationHasVersion', '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '65', '65', '要件とされる', '要件とされる', 'text', '0', '1', '0', '0', '0', 'isRequiredBy', 'relation', 'relationIsRequiredBy', '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '66', '66', '要件とする', '要件とする', 'text', '0', '1', '0', '0', '0', 'requires', 'relation', 'relationRequires', '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '67', '67', '部分である', '部分である', 'text', '0', '1', '0', '0', '0', 'isPartOf', 'relation', 'relationIsPartOf', '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '68', '68', '部分を持つ', '部分を持つ', 'text', '0', '1', '0', '0', '0', 'hasPart', 'relation', 'relationHasPart', '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '69', '69', '参照される', '参照される', 'text', '0', '1', '0', '0', '0', 'isReferencedBy', 'relation', 'relationIsReferencedBy', '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '70', '70', '参照する', '参照する', 'text', '0', '1', '0', '0', '0', 'references', 'relation', 'relationRreferences', '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '71', '71', '別フォーマットである', '別フォーマットである', 'text', '0', '1', '0', '0', '0', 'isFormatOf', 'relation', 'relationIsFormatOf', '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '72', '72', '別フォーマットあり', '別フォーマットあり', 'text', '0', '1', '0', '0', '0', 'hasFormat', 'relation', 'relationHasFormat', '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '73', '73', '基になる', '基になる', 'text', '0', '1', '0', '0', '0', 'relation', 'relation', 'relationIsBasisFor', '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '74', '74', '基づいている', '基づいている', 'text', '0', '1', '0', '0', '0', 'relation', 'relation', 'relationIsBasedOn', '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '75', '75', '他の資源との関係', '他の資源との関係', 'textarea', '0', '1', '0', '0', '0', 'relation', 'relation', 'relation', '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '76', '76', 'コメント(件名)', 'コメント(件名)', 'text', '0', '1', '0', '0', '0', '', '', 'annotationEntity', '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '77', '77', 'コメント(日付)', 'コメント(日付)', 'date', '0', '1', '0', '0', '0', '', '', 'annotationDate', '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '78', '78', 'コメント', 'コメント', 'textarea', '0', '1', '0', '0', '0', '', '', 'annotationDescription', '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '79', '79', '分類目的', '分類目的', 'checkbox', '0', '0', '0', '0', '0', '', '', 'classificationPurpose', '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '80', '80', '分類ソース', '分類ソース', 'text', '0', '1', '0', '0', '0', '', '', 'classificationTaxonPathSource', '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '81', '81', '分類', '分類', 'text', '0', '1', '0', '0', '0', '', '', 'classificationTaxon', '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '82', '82', '分類説明', '分類説明', 'textarea', '0', '1', '0', '0', '0', '', '', 'classificationDescription', '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '83', '83', '分類キーワード', '分類キーワード', 'text', '0', '1', '0', '0', '0', '', '', 'classificationKeyword', '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '84', '84', '機関ID', '機関ID', 'text', '1', '0', '0', '0', '1', '', '', '', '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '85', '85', 'コンテンツID', 'コンテンツID', 'text', '1', '0', '0', '0', '1', '', '', '', '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '86', '86', 'コンテンツ更新日時', 'コンテンツ更新日時', 'date', '1', '0', '0', '0', '1', '', '', '', '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0');";
+                                "(20016, 1, 1, 'URI', 'URI', 'link', 0, 1, 0, 0, 0, 'URI', 'identifier', 'generalIdentifier', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 2, 2, 'ISSN', 'ISSN', 'text', 0, 1, 0, 0, 0, 'issn', 'identifier', 'generalIdentifier', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 3, 3, 'NCID', 'NCID', 'text', 0, 1, 0, 0, 0, 'NCID', 'identifier', 'generalIdentifier', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 4, 4, '書誌情報', '書誌情報', 'biblio_info', 0, 0, 0, 1, 0, 'jtitle,volume,issue,spage,epage,dateofissued', 'identifier', 'generalIdentifier', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 5, 5, '著者版フラグ', '著者版フラグ', 'select', 0, 0, 0, 0, 0, 'textversion', '', 'generalIdentifier', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 6, 6, 'その他の識別子', 'その他の識別子', 'text', 0, 1, 0, 0, 0, 'identifier', 'identifier', 'generalIdentifier', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 7, 7, '言語', '言語', 'text', 0, 1, 0, 0, 0, 'language', 'language', 'generalLanguage', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 8, 8, '内容記述', '内容記述', 'textarea', 0, 1, 0, 0, 0, 'description', 'description', 'generalDescription', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 9, 9, '範囲', '範囲', 'text', 0, 1, 0, 0, 0, 'coverage', 'coverage', 'generalCoverage', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 10, 10, '構成', '構成', 'select', 0, 0, 0, 0, 0, '', '', 'generalStructure', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 11, 11, '粒度', '粒度', 'select', 0, 0, 0, 0, 0, '', '', 'generalAggregationLevel', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 12, 12, 'エディション', 'エディション', 'text', 0, 0, 0, 0, 0, '', '', 'lifeCycleVersion', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 13, 13, 'ステータス', 'ステータス', 'select', 0, 0, 0, 0, 0, '', '', 'lifeCycleStatus', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 14, 14, '著者(creator)', '著者(creator)', 'name', 0, 1, 0, 0, 0, 'creator', 'creator', 'lifeCycleContributeAuthor', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 15, 15, '公開者(publisher)', '公開者(publisher)', 'name', 0, 1, 0, 0, 0, 'publisher', 'publisher', 'lifeCycleContributePublisher', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 16, 16, '日付', '日付', 'date', 0, 1, 0, 0, 0, 'date', 'date', 'lifeCycleContributePublishDate', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 17, 17, '作成者(initiator)', '作成者(initiator)', 'text', 0, 1, 0, 0, 0, 'contributor', 'contributor', 'lifeCycleContributeInitiator', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 18, 18, '更新者(terminator)', '更新者(terminator)', 'text', 0, 1, 0, 0, 0, 'contributor', 'contributor', 'lifeCycleContributeTerminator', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 19, 19, '校閲者(validator)', '校閲者(validator)', 'text', 0, 1, 0, 0, 0, 'contributor', 'contributor', 'lifeCycleContributeValidator', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 20, 20, '編集者(editor)', '編集者(editor)', 'text', 0, 1, 0, 0, 0, 'contributor', 'contributor', 'lifeCycleContributeEditor', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 21, 21, '装丁(graphical designer)', '装丁(graphical designer)', 'text', 0, 1, 0, 0, 0, 'contributor', 'contributor', 'lifeCycleContributeGraphicalDesigner', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 22, 22, '技術(technical implementer)', '技術(technical implementer)', 'text', 0, 1, 0, 0, 0, 'contributor', 'contributor', 'lifeCycleContributeTechnicalImplementer', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 23, 23, 'コンテンツプロバイダー(content provider)', 'コンテンツプロバイダー(content provider)', 'text', 0, 1, 0, 0, 0, 'contributor', 'contributor', 'lifeCycleContributeContentProvider', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 24, 24, '技術監修(technical validator)', '技術監修(technical validator)', 'text', 0, 1, 0, 0, 0, 'contributor', 'contributor', 'lifeCycleContributeTechnicalValidator', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 25, 25, '教育監修(educational validator)', '教育監修(educational validator)', 'text', 0, 1, 0, 0, 0, 'contributor', 'contributor', 'lifeCycleContributeEducationalValidator', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 26, 26, '台本(script writer)', '台本(script writer)', 'text', 0, 1, 0, 0, 0, 'contributor', 'contributor', 'lifeCycleContributeScriptWriter', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 27, 27, '教育デザイン(instructional designer)', '教育デザイン(instructional designer)', 'text', 0, 1, 0, 0, 0, 'contributor', 'contributor', 'lifeCycleContributeInstructionalDesigner', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 28, 28, '専門家(subject matter expert)', '専門家(subject matter expert)', 'text', 0, 1, 0, 0, 0, 'contributor', 'contributor', 'lifeCycleContributeSubjectMatterExpert', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 29, 29, 'その他の関係者(unknown)', 'その他の関係者(unknown)', 'text', 0, 1, 0, 0, 0, 'contributor', 'contributor', 'lifeCycleContributeUnknown', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 30, 30, 'その他の関係者', 'その他の関係者', 'text', 0, 1, 0, 0, 0, '', '', 'lifeCycleContribute', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 31, 31, 'メタデータ識別子', 'メタデータ識別子', 'text', 0, 1, 0, 0, 0, '', '', 'metaMetadataIdentifer', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 32, 32, 'メタデータ作成者(creator)', 'メタデータ作成者(creator)', 'text', 0, 1, 0, 0, 0, '', '', 'metaMetadataContributeCreator', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 33, 33, 'メタデータ校閲者(validator)', 'メタデータ校閲者(validator)', 'text', 0, 1, 0, 0, 0, '', '', 'metaMetadataContributeValidator', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 34, 34, 'その他のメタデータ関係者', 'その他のメタデータ関係者', 'text', 0, 1, 0, 0, 0, '', '', 'metaMetadataContribute', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 35, 35, 'メタデータスキーマ', 'メタデータスキーマ', 'text', 0, 1, 0, 0, 0, '', '', 'metaMetadataMetadataSchema', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 36, 36, 'メタデータ言語', 'メタデータ言語', 'text', 0, 0, 0, 0, 0, '', '', 'metaMetadataLanguage', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 37, 37, 'ファイルフォーマット', 'ファイルフォーマット', 'text', 0, 1, 0, 0, 0, 'format', 'format', 'technicalFormat', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 38, 38, 'ファイルサイズ', 'ファイルサイズ', 'text', 0, 0, 0, 0, 0, '', '', 'technicalSize', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 39, 39, 'ファイルリンク', 'ファイルリンク', 'text', 0, 1, 0, 0, 0, '', '', 'technicalLocation', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 40, 40, '動作環境', '動作環境', 'text', 0, 1, 0, 0, 0, '', '', 'technicalRequirementOrCompositeType', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 41, 41, '動作条件', '動作条件', 'text', 0, 1, 0, 0, 0, '', '', 'technicalRequirementOrCompositeName', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 42, 42, '推奨バージョン(下限)', '推奨バージョン(下限)', 'text', 0, 1, 0, 0, 0, '', '', 'technicalRequirementOrCompositeMinimumVersion', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 43, 43, '推奨バージョン(上限)', '推奨バージョン(上限)', 'text', 0, 1, 0, 0, 0, '', '', 'technicalRequirementOrCompositeMaximumVersion', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 44, 44, 'インストール手順', 'インストール手順', 'text', 0, 0, 0, 0, 0, '', '', 'technicalInstallationRemarks', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 45, 45, 'その他の技術要件', 'その他の技術要件', 'text', 0, 0, 0, 0, 0, '', '', 'technicalOtherPlatformRequirements', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 46, 46, '再生時間', '再生時間', 'text', 0, 0, 0, 0, 0, '', '', 'technicalDuration', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 47, 47, '授業形態', '授業形態', 'checkbox', 0, 0, 0, 0, 0, '', '', 'educationalInteractivityType', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 48, 48, 'リソースタイプ', 'リソースタイプ', 'checkbox', 0, 0, 0, 0, 0, 'type', 'type', 'educationalLearningResourceType', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 49, 49, '双方向性度合(interactivity level)', '双方向性度合(interactivity level)', 'checkbox', 0, 0, 0, 0, 0, '', '', 'educationalInteractivityLevel', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 50, 50, '情報量(sematic density)', '情報量(sematic density)', 'checkbox', 0, 0, 0, 0, 0, '', '', 'educationalSemanticDensity', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 51, 51, '利用者', '利用者', 'checkbox', 0, 0, 0, 0, 0, '', '', 'educationalIntendedEndUserRole', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 52, 52, '利用環境', '利用環境', 'checkbox', 0, 0, 0, 0, 0, '', '', 'educationalContext', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 53, 53, '対象年齢', '対象年齢', 'text', 0, 1, 0, 0, 0, '', '', 'educationalTypicalAgeRange', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 54, 54, '難易度', '難易度', 'checkbox', 0, 0, 0, 0, 0, '', '', 'educationalDifficulty', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 55, 55, '授業時間', '授業時間', 'text', 0, 1, 0, 0, 0, '', '', 'educationalTypicalLearningTime', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 56, 56, '備考', '備考', 'textarea', 0, 1, 0, 0, 0, '', '', 'educationalDescription', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 57, 57, '言語', '言語', 'text', 0, 1, 0, 0, 0, '', '', 'educationalLanguage', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 58, 58, '有料', '有料', 'select', 0, 0, 0, 0, 0, '', '', 'rightsCost', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 59, 59, '利用形態', '利用形態', 'select', 0, 0, 0, 0, 0, '', '', 'rightsCopyrightAndOtherRestrictions', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 60, 60, '権利', '権利', 'textarea', 0, 0, 0, 0, 0, 'rights', 'rights', 'rightsDescription', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 61, 61, 'PubMed番号', 'PubMed番号', 'text', 0, 1, 0, 0, 0, 'pmid', 'relation', 'relation', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 62, 62, 'DOI', 'DOI', 'text', 0, 1, 0, 0, 0, 'doi', 'relation', 'relation', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 63, 63, '異版である', '異版である', 'text', 0, 1, 0, 0, 0, 'isVersionOf', 'relation', 'relationIsVersionOf', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 64, 64, '異版あり', '異版あり', 'text', 0, 1, 0, 0, 0, 'hasVersion', 'relation', 'relationHasVersion', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 65, 65, '要件とされる', '要件とされる', 'text', 0, 1, 0, 0, 0, 'isRequiredBy', 'relation', 'relationIsRequiredBy', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 66, 66, '要件とする', '要件とする', 'text', 0, 1, 0, 0, 0, 'requires', 'relation', 'relationRequires', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 67, 67, '部分である', '部分である', 'text', 0, 1, 0, 0, 0, 'isPartOf', 'relation', 'relationIsPartOf', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 68, 68, '部分を持つ', '部分を持つ', 'text', 0, 1, 0, 0, 0, 'hasPart', 'relation', 'relationHasPart', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 69, 69, '参照される', '参照される', 'text', 0, 1, 0, 0, 0, 'isReferencedBy', 'relation', 'relationIsReferencedBy', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 70, 70, '参照する', '参照する', 'text', 0, 1, 0, 0, 0, 'references', 'relation', 'relationRreferences', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 71, 71, '別フォーマットである', '別フォーマットである', 'text', 0, 1, 0, 0, 0, 'isFormatOf', 'relation', 'relationIsFormatOf', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 72, 72, '別フォーマットあり', '別フォーマットあり', 'text', 0, 1, 0, 0, 0, 'hasFormat', 'relation', 'relationHasFormat', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 73, 73, '基になる', '基になる', 'text', 0, 1, 0, 0, 0, 'relation', 'relation', 'relationIsBasisFor', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 74, 74, '基づいている', '基づいている', 'text', 0, 1, 0, 0, 0, 'relation', 'relation', 'relationIsBasedOn', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 75, 75, '他の資源との関係', '他の資源との関係', 'textarea', 0, 1, 0, 0, 0, 'relation', 'relation', 'relation', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 76, 76, 'コメント(件名)', 'コメント(件名)', 'text', 0, 1, 0, 0, 0, '', '', 'annotationEntity', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 77, 77, 'コメント(日付)', 'コメント(日付)', 'date', 0, 1, 0, 0, 0, '', '', 'annotationDate', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 78, 78, 'コメント', 'コメント', 'textarea', 0, 1, 0, 0, 0, '', '', 'annotationDescription', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 79, 79, '分類目的', '分類目的', 'checkbox', 0, 0, 0, 0, 0, '', '', 'classificationPurpose', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 80, 80, '分類ソース', '分類ソース', 'text', 0, 1, 0, 0, 0, '', '', 'classificationTaxonPathSource', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 81, 81, '分類', '分類', 'text', 0, 1, 0, 0, 0, '', '', 'classificationTaxon', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 82, 82, '分類説明', '分類説明', 'textarea', 0, 1, 0, 0, 0, '', '', 'classificationDescription', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 83, 83, '分類キーワード', '分類キーワード', 'text', 0, 1, 0, 0, 0, '', '', 'classificationKeyword', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 84, 84, '機関ID', '機関ID', 'text', 1, 0, 0, 0, 1, '', '', '', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 85, 85, 'コンテンツID', 'コンテンツID', 'text', 1, 0, 0, 0, 1, '', '', '', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 86, 86, 'コンテンツ更新日時', 'コンテンツ更新日時', 'date', 1, 0, 0, 0, 1, '', '', '', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0);";
                         $retRef = $this->Db->execute($query);
                         if($retRef === false){
                             $errMsg = $this->Db->ErrorMsg();
@@ -3242,76 +3245,76 @@ class Repository_Action_Main_Update extends RepositoryAction
 
                         $query = "INSERT INTO ".DATABASE_PREFIX."repository_item_attr_candidate ".
                                 "VALUE ".
-                                "('20016', '5', '1', 'author', 'author', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '5', '2', 'publisher', 'publisher', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '5', '3', 'none', 'none', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '10', '1', 'atomic', 'atomic', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '10', '2', 'collection', 'collection', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '10', '3', 'networked', 'networked', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '10', '4', 'hierarchical', 'hierarchical', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '10', '5', 'linear', 'linear', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '11', '1', '1', '1', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '11', '2', '2', '2', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '11', '3', '3', '3', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '11', '4', '4', '4', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '13', '1', 'draft', 'draft', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '13', '2', 'final', 'final', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '13', '3', 'revised', 'revised', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '13', '4', 'unavailable', 'unavailable', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '47', '1', 'active', 'active', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '47', '2', 'expositive', 'expositive', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '47', '3', 'mixed', 'mixed', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '48', '1', 'exercise', 'exercise', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '48', '2', 'simulation', 'simulation', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '48', '3', 'questionnaire', 'questionnaire', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '48', '4', 'diagram', 'diagram', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '48', '5', 'figure', 'figure', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '48', '6', 'graph', 'graph', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '48', '7', 'index', 'index', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '48', '8', 'slide', 'slide', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '48', '9', 'table', 'table', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '48', '10', 'narrative text', 'narrative text', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '48', '11', 'exam', 'exam', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '48', '12', 'experiment', 'experiment', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '48', '13', 'problem statement', 'problem statement', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '48', '14', 'self assessment', 'self assessment', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '48', '15', 'lecture', 'lecture', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '49', '1', 'very low', 'very low', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '49', '2', 'low', 'low', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '49', '3', 'medium', 'medium', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '49', '4', 'high', 'high', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '49', '5', 'very high', 'very high', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '50', '1', 'very low', 'very low', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '50', '2', 'low', 'low', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '50', '3', 'medium', 'medium', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '50', '4', 'high', 'high', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '50', '5', 'very high', 'very high', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '51', '1', 'teacher', 'teacher', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '51', '2', 'author', 'author', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '51', '3', 'learner', 'learner', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '51', '4', 'manager', 'manager', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '52', '1', 'school', 'school', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '52', '2', 'higher education', 'higher education', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '52', '3', 'training', 'training', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '52', '4', 'other', 'other', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '54', '1', 'very easy', 'very easy', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '54', '2', 'easy', 'easy', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '54', '3', 'medium', 'medium', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '54', '4', 'difficult', 'difficult', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '54', '5', 'very difficult', 'very difficult', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '58', '1', 'yes', 'yes', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '58', '2', 'no', 'no', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '59', '1', 'yes', 'yes', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '59', '2', 'no', 'no', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '79', '1', 'discipline', 'discipline', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '79', '2', 'idea', 'idea', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '79', '3', 'prerequisite', 'prerequisite', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '79', '4', 'educational objective', 'educational objective', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '79', '5', 'accessibility restrictions', 'accessibility restrictions', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '79', '6', 'educational level', 'educational level', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '79', '7', 'skill level', 'skill level', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '79', '8', 'security level', 'security level', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                                "('20016', '79', '9', 'competency', 'competency', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0');";
+                                "(20016, 5, 1, 'author', 'author', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 5, 2, 'publisher', 'publisher', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 5, 3, 'none', 'none', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 10, 1, 'atomic', 'atomic', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 10, 2, 'collection', 'collection', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 10, 3, 'networked', 'networked', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 10, 4, 'hierarchical', 'hierarchical', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 10, 5, 'linear', 'linear', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 11, 1, 1, 1, 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 11, 2, 2, 2, 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 11, 3, 3, 3, 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 11, 4, 4, 4, 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 13, 1, 'draft', 'draft', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 13, 2, 'final', 'final', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 13, 3, 'revised', 'revised', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 13, 4, 'unavailable', 'unavailable', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 47, 1, 'active', 'active', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 47, 2, 'expositive', 'expositive', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 47, 3, 'mixed', 'mixed', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 48, 1, 'exercise', 'exercise', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 48, 2, 'simulation', 'simulation', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 48, 3, 'questionnaire', 'questionnaire', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 48, 4, 'diagram', 'diagram', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 48, 5, 'figure', 'figure', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 48, 6, 'graph', 'graph', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 48, 7, 'index', 'index', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 48, 8, 'slide', 'slide', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 48, 9, 'table', 'table', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 48, 10, 'narrative text', 'narrative text', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 48, 11, 'exam', 'exam', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 48, 12, 'experiment', 'experiment', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 48, 13, 'problem statement', 'problem statement', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 48, 14, 'self assessment', 'self assessment', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 48, 15, 'lecture', 'lecture', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 49, 1, 'very low', 'very low', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 49, 2, 'low', 'low', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 49, 3, 'medium', 'medium', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 49, 4, 'high', 'high', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 49, 5, 'very high', 'very high', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 50, 1, 'very low', 'very low', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 50, 2, 'low', 'low', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 50, 3, 'medium', 'medium', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 50, 4, 'high', 'high', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 50, 5, 'very high', 'very high', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 51, 1, 'teacher', 'teacher', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 51, 2, 'author', 'author', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 51, 3, 'learner', 'learner', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 51, 4, 'manager', 'manager', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 52, 1, 'school', 'school', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 52, 2, 'higher education', 'higher education', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 52, 3, 'training', 'training', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 52, 4, 'other', 'other', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 54, 1, 'very easy', 'very easy', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 54, 2, 'easy', 'easy', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 54, 3, 'medium', 'medium', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 54, 4, 'difficult', 'difficult', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 54, 5, 'very difficult', 'very difficult', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 58, 1, 'yes', 'yes', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 58, 2, 'no', 'no', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 59, 1, 'yes', 'yes', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 59, 2, 'no', 'no', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 79, 1, 'discipline', 'discipline', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 79, 2, 'idea', 'idea', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 79, 3, 'prerequisite', 'prerequisite', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 79, 4, 'educational objective', 'educational objective', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 79, 5, 'accessibility restrictions', 'accessibility restrictions', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 79, 6, 'educational level', 'educational level', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 79, 7, 'skill level', 'skill level', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 79, 8, 'security level', 'security level', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                                "(20016, 79, 9, 'competency', 'competency', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0);";
                         $retRef = $this->Db->execute($query);
                         if($retRef === false){
                             $errMsg = $this->Db->ErrorMsg();
@@ -3367,10 +3370,10 @@ class Repository_Action_Main_Update extends RepositoryAction
                         {
                             $indertQuery .= ", ";
                         }
-                        $indertQuery .= " (?, ?, '1', 'author', 'author', ?, ?, '', ?, ?, '', '0'), ";
-                        $indertQuery .= " (?, ?, '2', 'publisher', 'publisher', ?, ?, '', ?, ?, '', '0'), ";
-                        $indertQuery .= " (?, ?, '3', 'ETD', 'ETD', ?, ?, '', ?, ?, '', '0'), ";
-                        $indertQuery .= " (?, ?, '4', 'none', 'none', ?, ?, '', ?, ?, '', '0') ";
+                        $indertQuery .= " (?, ?, 1, 'author', 'author', ?, ?, '', ?, ?, '', 0), ";
+                        $indertQuery .= " (?, ?, 2, 'publisher', 'publisher', ?, ?, '', ?, ?, '', 0), ";
+                        $indertQuery .= " (?, ?, 3, 'ETD', 'ETD', ?, ?, '', ?, ?, '', 0), ";
+                        $indertQuery .= " (?, ?, 4, 'none', 'none', ?, ?, '', ?, ?, '', 0) ";
                         for($jj=0; $jj<4; $jj++)
                         {
                             $insertParam[] = $result[$ii]['item_type_id'];
@@ -3602,7 +3605,7 @@ class Repository_Action_Main_Update extends RepositoryAction
                              " `item_type_id` INT NOT NULL default 0, ".
                              " `attribute_id` INT NOT NULL default 0, ".
                              " `language` VARCHAR(64) NOT NULL default '', ".
-                             " `item_type_name` TEXT NOT NULL default '', ".
+                             " `item_type_name` TEXT NOT NULL, ".
                              " `ins_user_id` VARCHAR(40) NOT NULL default 0, ".
                              " `mod_user_id` VARCHAR(40) NOT NULL default 0, ".
                              " `del_user_id` VARCHAR(40) NOT NULL default 0, ".
@@ -3805,6 +3808,14 @@ class Repository_Action_Main_Update extends RepositoryAction
                     $this->updateWekoVersion215To216();
                 case 216:
                     $this->updateWekoVersion216To217();
+                // Add Default Search Type 2014/12/03 K.Sugimoto --start--
+                case 217:
+                    $this->updateWekoVersion217To218();
+                // Add Default Search Type 2014/12/03 K.Sugimoto --end--
+                // Add Gakunin 2015/01/16 T.Ichikawa --start--
+                case 218:
+                    $this->updateWekoVersion218To220();
+                // Add Gakunin 2015/01/16 T.Ichikawa --end--
                 default :
                     break;
             }
@@ -4007,7 +4018,7 @@ class Repository_Action_Main_Update extends RepositoryAction
             }
             $query .= "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
             $params[] = 20016;
-            $params[] = $key;
+            $params[] = intval($key);
             $params[] = "japanese";
             $params[] = $value;
             $params[] = $user_id;
@@ -4055,7 +4066,7 @@ class Repository_Action_Main_Update extends RepositoryAction
             }
             $query .= "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
             $params[] = 20016;
-            $params[] = $key;
+            $params[] = intval($key);
             $params[] = "english";
             $params[] = $value;
             $params[] = $user_id;
@@ -4098,7 +4109,7 @@ class Repository_Action_Main_Update extends RepositoryAction
             }
             $query .= "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
             $params[] = 20016;
-            $params[] = $key;
+            $params[] = intval($key);
             $params[] = "chinese";
             $params[] = $value;
             $params[] = $user_id;
@@ -4597,10 +4608,10 @@ class Repository_Action_Main_Update extends RepositoryAction
 
         // create 'repository_send_feedbackmail_author_id' table
         $query = "CREATE TABLE ".DATABASE_PREFIX. RepositoryConst::DBTABLE_REPOSITORY_SEND_FEEDBACKMAIL_AUTHOR_ID." ( ".
-                " `item_id` int(11) NOT NULL default '0', ".
-                " `item_no` int(11) NOT NULL default '0', ".
-                " `author_id_no` int(11) NOT NULL default '0', ".
-                " `author_id` int(11) NOT NULL default '0', ".
+                " `item_id` int(11) NOT NULL default 0, ".
+                " `item_no` int(11) NOT NULL default 0, ".
+                " `author_id_no` int(11) NOT NULL default 0, ".
+                " `author_id` int(11) NOT NULL default 0, ".
                 " PRIMARY KEY  (`item_id`,`item_no`,`author_id_no`) ".
                 " ) ENGINE=MyISAM; ";
         $params = array();
@@ -4638,38 +4649,38 @@ class Repository_Action_Main_Update extends RepositoryAction
         }
         // create table
         $query = "CREATE TABLE ".DATABASE_PREFIX. "repository_search_update_item ( ".
-                " `item_id` int(11) NOT NULL default '0', ".
-                " `item_no` int(11) NOT NULL default '0', ".
+                " `item_id` int(11) NOT NULL default 0, ".
+                " `item_no` int(11) NOT NULL default 0, ".
                 " PRIMARY KEY  (`item_id`,`item_no`) ".
                 " ) ENGINE=MyISAM; ";
         $this->dbAccess->executeQuery($query);
 
         $query = "CREATE TABLE ".DATABASE_PREFIX. "repository_lock ( ".
                 " `process_name` varchar(60) NOT NULL default '', ".
-                " `status` int NOT NULL default '0', ".
-                " `comment` text NOT NULL default '', ".
+                " `status` int NOT NULL default 0, ".
+                " `comment` text NOT NULL, ".
                 " PRIMARY KEY  (`process_name`) ".
                 " ) ENGINE=innodb; ";
         $this->dbAccess->executeQuery($query);
 
         $query = "CREATE TABLE ".DATABASE_PREFIX. "repository_search_item_setup ( ".
-                " `type_id` int NOT NULL default '0', ".
-                " `search_type` text NOT NULL default '', ".
-                " `use_search` int(1) NOT NULL default '0', ".
-                " `default_show` int(1) NOT NULL default '0', ".
-                " `junii2_mapping` text NOT NULL default '', ".
+                " `type_id` int NOT NULL default 0, ".
+                " `search_type` text NOT NULL, ".
+                " `use_search` int(1) NOT NULL default 0, ".
+                " `default_show` int(1) NOT NULL default 0, ".
+                " `junii2_mapping` text NOT NULL, ".
                 " PRIMARY KEY  (`type_id`) ".
                 " ) ENGINE=innodb; ";
         $this->dbAccess->executeQuery($query);
 
         $query = "CREATE TABLE ".DATABASE_PREFIX. "repository_search_sort ( ".
-                " `item_id` int NOT NULL default '0', ".
-                " `item_no` int NOT NULL default '0', ".
-                " `item_type_id` int NOT NULL default '0', ".
+                " `item_id` int NOT NULL default 0, ".
+                " `item_no` int NOT NULL default 0, ".
+                " `item_type_id` int NOT NULL default 0, ".
                 " `weko_id` varchar(9) NOT NULL default '0', ".
-                " `title` text NOT NULL default '', ".
-                " `title_en` text NOT NULL default '', ".
-                " `uri` text NOT NULL default '', ".
+                " `title` text NOT NULL, ".
+                " `title_en` text NOT NULL, ".
+                " `uri` text NOT NULL, ".
                 " `review_date` varchar(23) NOT NULL default '', ".
                 " `ins_user_id` varchar(40) NOT NULL default '', ".
                 " `mod_date` varchar(23) NOT NULL default '', ".
@@ -4756,9 +4767,9 @@ class Repository_Action_Main_Update extends RepositoryAction
     private function createFullTextSearchTable($tableName, $isMroongaExist)
     {
         $query = "CREATE TABLE ".DATABASE_PREFIX. $tableName. " ( ".
-                " `item_id` int NOT NULL default '0', ".
-                " `item_no` int NOT NULL default '0', ".
-                " `metadata` longtext NOT NULL default '', ".
+                " `item_id` int NOT NULL default 0, ".
+                " `item_no` int NOT NULL default 0, ".
+                " `metadata` longtext NOT NULL, ".
                 " PRIMARY KEY  (`item_id`,`item_no`), ".
                 " FULLTEXT KEY `metadata` (`metadata`) ";
         if($isMroongaExist)
@@ -4780,9 +4791,9 @@ class Repository_Action_Main_Update extends RepositoryAction
     private function createDateSearchTable($tableName)
     {
         $query = "CREATE TABLE ".DATABASE_PREFIX. $tableName. " ( ".
-                " `item_id` int NOT NULL default '0', ".
-                " `item_no` int NOT NULL default '0', ".
-                " `data_no` int NOT NULL default '0', ".
+                " `item_id` int NOT NULL default 0, ".
+                " `item_no` int NOT NULL default 0, ".
+                " `data_no` int NOT NULL default 0, ".
                 " `metadata` varchar(23) NOT NULL default '', ".
                 " PRIMARY KEY  (`item_id`,`item_no`,`data_no`), ".
                 " INDEX `metadata` (`metadata`) ".
@@ -4818,30 +4829,30 @@ class Repository_Action_Main_Update extends RepositoryAction
     {
         $query = "INSERT INTO ". DATABASE_PREFIX. "repository_search_item_setup ".
                  "(`type_id`, `search_type`, `use_search`, `default_show`, `junii2_mapping` ) ".
-                 "VALUES ('1', 'repository_detail_search_show_name_title', 1, 1, 'title,alternative'), ".
-                 "('2', 'repository_detail_search_show_name_creator', 1, 1, 'creator'), ".
-                 "('3', 'repository_detail_search_show_name_subject', 0, 0, 'subject'), ".
-                 "('4', 'repository_detail_search_show_name_niisubject', 0, 0, 'NIIsubject,NDC,NDLC,BSH,NDLSH,MeSH,DDC,LCC,UDC,LCSH'), ".
-                 "('5', 'repository_detail_search_show_name_description', 0, 0, 'description'), ".
-                 "('6', 'repository_detail_search_show_name_publisher', 0, 0, 'publisher'), ".
-                 "('7', 'repository_detail_search_show_name_contributor', 0, 0, 'contributor'), ".
-                 "('8', 'repository_detail_search_show_name_date', 0, 0, 'date'), ".
-                 "('9', 'repository_detail_search_show_name_item_type', 0, 0, ''), ".
-                 "('10', 'repository_detail_search_show_name_type', 1, 1, 'type'), ".
-                 "('11', 'repository_detail_search_show_name_format', 0, 0, 'format'), ".
-                 "('12', 'repository_detail_search_show_name_id', 0, 0, 'identifier,URI,fullTextURL,selfDOI,ISBN,ISSN,NCID,pmid,doi,NAID,ichushi'), ".
-                 "('13', 'repository_detail_search_show_name_jtitle', 0, 0, 'jtitle'), ".
-                 "('14', 'repository_detail_search_show_name_dateofissued', 1, 1, 'dateofissued'), ".
-                 "('15', 'repository_detail_search_show_name_language', 0, 0, 'language'), ".
-                 "('16', 'repository_detail_search_show_name_spatial', 0, 0, 'spatial,NIIspatial'), ".
-                 "('17', 'repository_detail_search_show_name_temporal', 0, 0, 'temporal,NIItemporal'), ".
-                 "('18', 'repository_detail_search_show_name_rights', 0, 0, 'rights'), ".
-                 "('19', 'repository_detail_search_show_name_textversion', 0, 0, 'textversion'), ".
-                 "('20', 'repository_detail_search_show_name_grantid', 0, 0, 'grantid'), ".
-                 "('21', 'repository_detail_search_show_name_dateofgranted', 0, 0, 'dateofgranted'), ".
-                 "('22', 'repository_detail_search_show_name_degreename', 0, 0, 'degreename'), ".
-                 "('23', 'repository_detail_search_show_name_grantor', 0, 0, 'grantor'), ".
-                 "('24', 'repository_detail_search_show_name_index', 1, 1, ''); ";
+                 "VALUES (1, 'repository_detail_search_show_name_title', 1, 1, 'title,alternative'), ".
+                 "(2, 'repository_detail_search_show_name_creator', 1, 1, 'creator'), ".
+                 "(3, 'repository_detail_search_show_name_subject', 0, 0, 'subject'), ".
+                 "(4, 'repository_detail_search_show_name_niisubject', 0, 0, 'NIIsubject,NDC,NDLC,BSH,NDLSH,MeSH,DDC,LCC,UDC,LCSH'), ".
+                 "(5, 'repository_detail_search_show_name_description', 0, 0, 'description'), ".
+                 "(6, 'repository_detail_search_show_name_publisher', 0, 0, 'publisher'), ".
+                 "(7, 'repository_detail_search_show_name_contributor', 0, 0, 'contributor'), ".
+                 "(8, 'repository_detail_search_show_name_date', 0, 0, 'date'), ".
+                 "(9, 'repository_detail_search_show_name_item_type', 0, 0, ''), ".
+                 "(10, 'repository_detail_search_show_name_type', 1, 1, 'type'), ".
+                 "(11, 'repository_detail_search_show_name_format', 0, 0, 'format'), ".
+                 "(12, 'repository_detail_search_show_name_id', 0, 0, 'identifier,URI,fullTextURL,selfDOI,ISBN,ISSN,NCID,pmid,doi,NAID,ichushi'), ".
+                 "(13, 'repository_detail_search_show_name_jtitle', 0, 0, 'jtitle'), ".
+                 "(14, 'repository_detail_search_show_name_dateofissued', 1, 1, 'dateofissued'), ".
+                 "(15, 'repository_detail_search_show_name_language', 0, 0, 'language'), ".
+                 "(16, 'repository_detail_search_show_name_spatial', 0, 0, 'spatial,NIIspatial'), ".
+                 "(17, 'repository_detail_search_show_name_temporal', 0, 0, 'temporal,NIItemporal'), ".
+                 "(18, 'repository_detail_search_show_name_rights', 0, 0, 'rights'), ".
+                 "(19, 'repository_detail_search_show_name_textversion', 0, 0, 'textversion'), ".
+                 "(20, 'repository_detail_search_show_name_grantid', 0, 0, 'grantid'), ".
+                 "(21, 'repository_detail_search_show_name_dateofgranted', 0, 0, 'dateofgranted'), ".
+                 "(22, 'repository_detail_search_show_name_degreename', 0, 0, 'degreename'), ".
+                 "(23, 'repository_detail_search_show_name_grantor', 0, 0, 'grantor'), ".
+                 "(24, 'repository_detail_search_show_name_index', 1, 1, ''); ";
         $this->dbAccess->executeQuery($query);
         return true;
     }
@@ -4864,12 +4875,12 @@ class Repository_Action_Main_Update extends RepositoryAction
 
         // create new table
         $query = "CREATE TABLE ". DATABASE_PREFIX. "repository_index_browsing_authority ( ".
-                 "`index_id` int NOT NULL default '0', ".
-                 "`exclusive_acl_role_id` int NOT NULL default '0', ".
-                 "`exclusive_acl_room_auth` int NOT NULL default '0', ".
-                 "`public_state` INT(1) NOT NULL default '0', ".
+                 "`index_id` int NOT NULL default 0, ".
+                 "`exclusive_acl_role_id` int NOT NULL default 0, ".
+                 "`exclusive_acl_room_auth` int NOT NULL default 0, ".
+                 "`public_state` INT(1) NOT NULL default 0, ".
                  "`pub_date` VARCHAR(23), ".
-                 "`harvest_public_state` INT(1) NOT NULL default '1', ".
+                 "`harvest_public_state` INT(1) NOT NULL default 1, ".
                  "`ins_user_id` VARCHAR(40) NOT NULL default 0, ".
                  "`mod_user_id` VARCHAR(40) NOT NULL default 0, ".
                  "`del_user_id` VARCHAR(40) NOT NULL default 0, ".
@@ -4882,8 +4893,8 @@ class Repository_Action_Main_Update extends RepositoryAction
                  " ) ENGINE=MyISAM; ";
         $this->dbAccess->executeQuery($query);
         $query = "CREATE TABLE ". DATABASE_PREFIX. "repository_index_browsing_groups ( ".
-                 "`index_id` int NOT NULL default '0', ".
-                 "`exclusive_acl_group_id` int NOT NULL default '0', ".
+                 "`index_id` int NOT NULL default 0, ".
+                 "`exclusive_acl_group_id` int NOT NULL default 0, ".
                  "`ins_user_id` VARCHAR(40) NOT NULL default 0, ".
                  "`mod_user_id` VARCHAR(40) NOT NULL default 0, ".
                  "`del_user_id` VARCHAR(40) NOT NULL default 0, ".
@@ -4909,9 +4920,9 @@ class Repository_Action_Main_Update extends RepositoryAction
     {
         // create new table
         $query = "CREATE TABLE ". DATABASE_PREFIX. "repository_prefix ( ".
-                 "`id` int NOT NULL default '0', ".
-                 "`prefix_name` text NOT NULL default '', ".
-                 "`prefix_id` text NOT NULL default '', ".
+                 "`id` int NOT NULL default 0, ".
+                 "`prefix_name` text NOT NULL, ".
+                 "`prefix_id` text NOT NULL, ".
                  "`ins_user_id` VARCHAR(40) NOT NULL default '', ".
                  "`mod_user_id` VARCHAR(40) NOT NULL default '', ".
                  "`del_user_id` VARCHAR(40) NOT NULL default '', ".
@@ -4923,10 +4934,10 @@ class Repository_Action_Main_Update extends RepositoryAction
                  " ) ENGINE=innodb; ";
         $this->dbAccess->executeQuery($query);
         $query = "CREATE TABLE ". DATABASE_PREFIX. "repository_suffix ( ".
-                 "`item_id` int NOT NULL default '0', ".
-                 "`item_no` int NOT NULL default '0', ".
-                 "`id` int NOT NULL default '0', ".
-                 "`suffix` text NOT NULL default '', ".
+                 "`item_id` int NOT NULL default 0, ".
+                 "`item_no` int NOT NULL default 0, ".
+                 "`id` int NOT NULL default 0, ".
+                 "`suffix` text NOT NULL, ".
                  "`ins_user_id` VARCHAR(40) NOT NULL default '', ".
                  "`mod_user_id` VARCHAR(40) NOT NULL default '', ".
                  "`del_user_id` VARCHAR(40) NOT NULL default '', ".
@@ -4976,7 +4987,7 @@ class Repository_Action_Main_Update extends RepositoryAction
         
         $query = "UPDATE ". DATABASE_PREFIX. "repository_prefix".
                  " SET prefix_id = '". $YHandlePrefixParam[0]["param_value"]."'".
-                 " WHERE id = '10' ;";
+                 " WHERE id = 10 ;";
         $this->dbAccess->executeQuery($query);
         
         //JaLC DOI設定値をインデックスに追加する処理
@@ -5078,6 +5089,28 @@ class Repository_Action_Main_Update extends RepositoryAction
                         $this->cleanupDeletedFiles();
                     }
                     break;
+                 // Improve Search Log 2015/03/19 K.Sugimoto --start--
+                case self::KEY_REPOSITORY_SEARCH_LOG:
+                    if($value === true)
+                    {
+                        $this->addDetailSearchItemForExistSearchLog();
+                    }
+                    break;
+                 // Improve Search Log 2015/03/19 K.Sugimoto --end--
+                case self::KEY_REPOSITORY_ELAPSEDTIME_LOG:
+                    if($value === true)
+                    {
+                        $this->insertElapsedLogs();
+                    }
+                    break;
+                 // Improve Log 2015/06/17 K.Sugimoto --start--
+                case self::KEY_REPOSITORY_EXCLUDE_LOG:
+                    if($value === true)
+                    {
+                        $this->excludeLogOfRobotList();
+                    }
+                    break;
+                 // Improve Log 2015/06/17 K.Sugimoto --end--
                 default:
                     break;
             }
@@ -5091,9 +5124,9 @@ class Repository_Action_Main_Update extends RepositoryAction
     private function cleanupDeletedFiles()
     {
         $query = "CREATE TABLE IF NOT EXISTS ".DATABASE_PREFIX. "repository_filecleanup_deleted_file ( ".
-                " `item_id` int(11) NOT NULL default '0', ".
-                " `attribute_id` int(11) NOT NULL default '0', ".
-                " `file_no` int(11) NOT NULL default '0', ".
+                " `item_id` int(11) NOT NULL default 0, ".
+                " `attribute_id` int(11) NOT NULL default 0, ".
+                " `file_no` int(11) NOT NULL default 0, ".
                 " `extension` TEXT NOT NULL, ".
                 " PRIMARY KEY  (`item_id`,`attribute_id`,`file_no`) ".
                 " ) ENGINE=MyISAM; ";
@@ -5170,11 +5203,12 @@ class Repository_Action_Main_Update extends RepositoryAction
     private function insertLockTable($process_name, $status)
     {
         $query = "INSERT INTO ". DATABASE_PREFIX. "repository_lock ".
-                "(`process_name`, `status`) ".
-                "VALUES (?, ?); ";
+                "(`process_name`, `status`, `comment`) ".
+                "VALUES (?, ?, ?); ";
         $params = array();
         $params[] = $process_name;
         $params[] = $status;
+        $params[] = "";
         $this->dbAccess->executeQuery($query, $params);
         return true;
     }
@@ -5236,10 +5270,10 @@ class Repository_Action_Main_Update extends RepositoryAction
      private function createSiteLicenseMailTable() {
          $query = "CREATE TABLE ". DATABASE_PREFIX ."repository_send_mail_sitelicense (".
                   " `no` INT NOT NULL default 0, ".
-                  " `organization_name` TEXT NOT NULL default '', ".
+                  " `organization_name` TEXT NOT NULL, ".
                   " `start_ip_address` BIGINT default 0, ".
                   " `finish_ip_address` BIGINT default 0, ".
-                  " `mail_address` TEXT NOT NULL default '', ".
+                  " `mail_address` TEXT NOT NULL, ".
                   " PRIMARY KEY(`no`) ".
                   ") ENGINE=innodb;";
          $result = $this->dbAccess->executeQuery($query);
@@ -5252,9 +5286,9 @@ class Repository_Action_Main_Update extends RepositoryAction
      private function createIssnTable() {
          $query = "CREATE TABLE ". DATABASE_PREFIX ."repository_issn (".
                   " `issn` VARCHAR(9) NOT NULL default '', ".
-                  " `jtitle` TEXT NOT NULL default '', ".
-                  " `jtitle_en` TEXT NOT NULL default '', ".
-                  " `set_spec` TEXT NOT NULL default '', ".
+                  " `jtitle` TEXT NOT NULL, ".
+                  " `jtitle_en` TEXT NOT NULL, ".
+                  " `set_spec` TEXT NOT NULL, ".
                   " `ins_user_id` VARCHAR(40) NOT NULL default '0', ".
                   " `mod_user_id` VARCHAR(40) NOT NULL default '0', ".
                   " `del_user_id` VARCHAR(40) NOT NULL default '0', ".
@@ -5351,7 +5385,7 @@ class Repository_Action_Main_Update extends RepositoryAction
         $this->dbAccess->executeQuery($query);
         // Add referer
         $query = "ALTER TABLE ". DATABASE_PREFIX. "repository_log ".
-                 "ADD referer TEXT NOT NULL DEFAULT '' ".
+                 "ADD referer TEXT NOT NULL ".
                  "AFTER user_agent; ";
         $this->dbAccess->executeQuery($query);
      }
@@ -5413,7 +5447,7 @@ class Repository_Action_Main_Update extends RepositoryAction
     private function addLidoMapping()
     {
         $query = "ALTER TABLE ".DATABASE_PREFIX."repository_item_attr_type ".
-                 "ADD `lido_mapping` TEXT NOT NULL default '' ".
+                 "ADD `lido_mapping` TEXT NOT NULL ".
                  "AFTER `lom_mapping` ;";
         $this->dbAccess->executeQuery($query);
     }
@@ -5437,7 +5471,7 @@ class Repository_Action_Main_Update extends RepositoryAction
         {
             $query = "INSERT INTO ".DATABASE_PREFIX."repository_item_type ".
                      "VALUE".
-                    "('20017', 'LIDO', 'LIDO', 'harvesting item type', 'Others', '', '', '', '', '1', '1', '0', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0');";
+                    "(20017, 'LIDO', 'LIDO', 'harvesting item type', 'Others', '', '', '', '', '1', '1', '0', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0);";
             $retRef = $this->dbAccess->executeQuery($query);
         }
         
@@ -5456,43 +5490,43 @@ class Repository_Action_Main_Update extends RepositoryAction
                     "input_type, is_required, plural_enable, line_feed_enable, list_view_enable, hidden, ".
                     "junii2_mapping, dublin_core_mapping, lom_mapping, lido_mapping, display_lang_type, ".
                     "ins_user_id, mod_user_id, del_user_id, ins_date, mod_date, del_date, is_delete) VALUES ".
-                    "('20017', '1', '1', 'lidoレコードID', 'lidoレコードID', 'text', '1', '1', '0', '0', '0', 'identifier', 'identifier', '', ?, '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                    "('20017', '2', '2', '作品タイプID', '作品タイプID', 'text', '1', '1', '0', '0', '0', '', '', '', ?, '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                    "('20017', '3', '3', '作品タイプ（語）', '作品タイプ（語）', 'text', '1', '1', '0', '0', '0', '', '', '', ?, '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                    "('20017', '4', '4', '分類ID', '分類ID', 'text', '0', '1', '0', '0', '0', '', '', '', ?, '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                    "('20017', '5', '5', '分類（語）', '分類（語）', 'text', '0', '1', '0', '0', '0', '', '', '', ?, '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                    "('20017', '6', '6', '資料/作品名（値）', '資料/作品名（値）', 'text', '0', '1', '0', '0', '0', 'title', 'title', '', ?, '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                    "('20017', '7', '7', '銘/題辞写', '銘/題辞写', 'text', '0', '1', '0', '0', '0', '', '', '', ?, '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                    "('20017', '8', '8', '所蔵者名（値）', '所蔵者名（値）', 'name', '0', '1', '0', '0', '0', 'rights', 'rights', '', ?, '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                    "('20017', '9', '9', '所蔵者ウェブリンク', '所蔵者ウェブリンク', 'link', '0', '1', '0', '0', '0', '', '', '', ?, '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                    "('20017', '10', '10', '所蔵者資料/作品ID', '所蔵者資料/作品ID', 'text', '0', '1', '0', '0', '0', '', '', '', ?, '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                    "('20017', '11', '11', '資料/作品状態（状態）', '資料/作品状態（状態）', 'text', '0', '1', '0', '0', '0', '', '', '', ?, '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                    "('20017', '12', '12', '記述ノート（値）', '記述ノート（値）', 'text', '0', '1', '0', '0', '0', 'description', 'description', '', ?, '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                    "('20017', '13', '13', '測定（表示用）', '測定（表示用）', 'text', '0', '1', '0', '0', '0', 'description', 'description', '', ?, '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                    "('20017', '14', '14', 'イベント内容（表示用）', 'イベント内容（表示用）', 'textarea', '0', '1', '0', '0', '0', 'coverage', 'coverage', '', ?, '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                    "('20017', '15', '15', 'イベントタイプ（語）', 'イベントタイプ（語）', 'text', '0', '1', '0', '0', '0', '', '', '', ?, '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                    "('20017', '16', '16', 'イベント行為者／役割（表示用）', 'イベント行為者／役割（表示用）', 'text', '0', '1', '0', '0', '0', 'description', 'description', '', ?, '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                    "('20017', '17', '17', 'イベント発生期間(表示用)', 'イベント発生期間(表示用)', 'text', '0', '1', '0', '0', '0', 'coverage', 'coverage', '', ?, '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                    "('20017', '18', '18', 'イベント発生期間（西暦）（開始日）', 'イベント発生期間（西暦）（開始日）', 'date', '0', '1', '0', '0', '0', '', '', '', ?, '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                    "('20017', '19', '19', 'イベント発生期間（西暦）（終了日）', 'イベント発生期間（西暦）（終了日）', 'date', '0', '1', '0', '0', '0', '', '', '', ?, '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                    "('20017', '20', '20', 'イベント発生時代・年代（語）', 'イベント発生時代・年代（語）', 'text', '0', '1', '0', '0', '0', '', '', '', ?, '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                    "('20017', '21', '21', 'イベント発生地（表示用）', 'イベント発生地（表示用）', 'text', '0', '1', '0', '0', '0', '', '', '', ?, '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                    "('20017', '22', '22', 'イベント発生地緯度・経度', 'イベント発生地緯度・経度', 'text', '0', '1', '0', '0', '0', 'spatial', 'coverage', '', ?, '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                    "('20017', '23', '23', 'イベント素材/技術(表示用)', 'イベント素材/技術(表示用)', 'text', '0', '1', '0', '0', '0', '', '', '', ?, '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                    "('20017', '24', '24', '主題(表示用)', '主題(表示用)', 'text', '0', '1', '0', '0', '0', 'subject', 'subject', '', ?, '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                    "('20017', '25', '25', '関連作品(表示用)', '関連作品(表示用)', 'text', '0', '1', '0', '0', '0', '', '', '', ?, '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                    "('20017', '26', '26', '記録ID', '記録ID', 'text', '1', '1', '0', '0', '0', 'source', 'source', '', ?, '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                    "('20017', '27', '27', '記録タイプ（語）', '記録タイプ（語）', 'text', '1', '1', '0', '0', '0', '', '', '', ?, '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                    "('20017', '28', '28', '記録者名（値）', '記録者名（値）', 'name', '1', '1', '0', '0', '0', 'creator', 'creator', '', ?, '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                    "('20017', '29', '29', '記録情報リンク', '記録情報リンク', 'link', '0', '1', '0', '0', '0', 'URI', 'identifier', '', ?, '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                    "('20017', '30', '30', '記録情報メタデータ記録日', '記録情報メタデータ記録日', 'date', '0', '1', '0', '0', '0', 'date', 'date', '', ?, '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                    "('20017', '31', '31', 'リソースURL', 'リソースURL', 'link', '0', '1', '0', '0', '0', '', '', '', ?, '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                    "('20017', '32', '32', 'リソース説明/記述', 'リソース説明/記述', 'textarea', '0', '1', '0', '0', '0', '', '', '', ?, '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                    "('20017', '33', '33', 'リソース所有者名（値）', 'リソース所有者名（値）', 'name', '0', '1', '0', '0', '0', 'contributor', 'contributor', '', ?, '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                    "('20017', '34', '34', 'リソース権利クレジットライン', 'メタデータ校閲者(validator)リソース権利クレジットライン', 'text', '0', '1', '0', '0', '0', '', '', '', ?, '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                    "('20017', '35', '35', '機関ID', '機関ID', 'text', '1', '0', '0', '0', '1', '', '', '', '', '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                    "('20017', '36', '36', 'コンテンツID', 'コンテンツID', 'text', '1', '0', '0', '0', '1', '', '', '', '', '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0'),".
-                    "('20017', '37', '37', 'コンテンツ更新日時', 'コンテンツ更新日時', 'text', '1', '0', '0', '0', '1', '', '', '', '', '', '1', '1', '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', '0') ; ";
+                    "(20017, 1, 1, 'lidoレコードID', 'lidoレコードID', 'text', 1, 1, 0, 0, 0, 'identifier', 'identifier', '', ?, '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                    "(20017, 2, 2, '作品タイプID', '作品タイプID', 'text', 1, 1, 0, 0, 0, '', '', '', ?, '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                    "(20017, 3, 3, '作品タイプ（語）', '作品タイプ（語）', 'text', 1, 1, 0, 0, 0, '', '', '', ?, '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                    "(20017, 4, 4, '分類ID', '分類ID', 'text', 0, 1, 0, 0, 0, '', '', '', ?, '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                    "(20017, 5, 5, '分類（語）', '分類（語）', 'text', 0, 1, 0, 0, 0, '', '', '', ?, '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                    "(20017, 6, 6, '資料/作品名（値）', '資料/作品名（値）', 'text', 0, 1, 0, 0, 0, 'title', 'title', '', ?, '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                    "(20017, 7, 7, '銘/題辞写', '銘/題辞写', 'text', 0, 1, 0, 0, 0, '', '', '', ?, '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                    "(20017, 8, 8, '所蔵者名（値）', '所蔵者名（値）', 'name', 0, 1, 0, 0, 0, 'rights', 'rights', '', ?, '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                    "(20017, 9, 9, '所蔵者ウェブリンク', '所蔵者ウェブリンク', 'link', 0, 1, 0, 0, 0, '', '', '', ?, '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                    "(20017, 10, 10, '所蔵者資料/作品ID', '所蔵者資料/作品ID', 'text', 0, 1, 0, 0, 0, '', '', '', ?, '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                    "(20017, 11, 11, '資料/作品状態（状態）', '資料/作品状態（状態）', 'text', 0, 1, 0, 0, 0, '', '', '', ?, '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                    "(20017, 12, 12, '記述ノート（値）', '記述ノート（値）', 'text', 0, 1, 0, 0, 0, 'description', 'description', '', ?, '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                    "(20017, 13, 13, '測定（表示用）', '測定（表示用）', 'text', 0, 1, 0, 0, 0, 'description', 'description', '', ?, '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                    "(20017, 14, 14, 'イベント内容（表示用）', 'イベント内容（表示用）', 'textarea', 0, 1, 0, 0, 0, 'coverage', 'coverage', '', ?, '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                    "(20017, 15, 15, 'イベントタイプ（語）', 'イベントタイプ（語）', 'text', 0, 1, 0, 0, 0, '', '', '', ?, '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                    "(20017, 16, 16, 'イベント行為者／役割（表示用）', 'イベント行為者／役割（表示用）', 'text', 0, 1, 0, 0, 0, 'description', 'description', '', ?, '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                    "(20017, 17, 17, 'イベント発生期間(表示用)', 'イベント発生期間(表示用)', 'text', 0, 1, 0, 0, 0, 'coverage', 'coverage', '', ?, '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                    "(20017, 18, 18, 'イベント発生期間（西暦）（開始日）', 'イベント発生期間（西暦）（開始日）', 'date', 0, 1, 0, 0, 0, '', '', '', ?, '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                    "(20017, 19, 19, 'イベント発生期間（西暦）（終了日）', 'イベント発生期間（西暦）（終了日）', 'date', 0, 1, 0, 0, 0, '', '', '', ?, '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                    "(20017, 20, 20, 'イベント発生時代・年代（語）', 'イベント発生時代・年代（語）', 'text', 0, 1, 0, 0, 0, '', '', '', ?, '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                    "(20017, 21, 21, 'イベント発生地（表示用）', 'イベント発生地（表示用）', 'text', 0, 1, 0, 0, 0, '', '', '', ?, '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                    "(20017, 22, 22, 'イベント発生地緯度・経度', 'イベント発生地緯度・経度', 'text', 0, 1, 0, 0, 0, 'spatial', 'coverage', '', ?, '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                    "(20017, 23, 23, 'イベント素材/技術(表示用)', 'イベント素材/技術(表示用)', 'text', 0, 1, 0, 0, 0, '', '', '', ?, '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                    "(20017, 24, 24, '主題(表示用)', '主題(表示用)', 'text', 0, 1, 0, 0, 0, 'subject', 'subject', '', ?, '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                    "(20017, 25, 25, '関連作品(表示用)', '関連作品(表示用)', 'text', 0, 1, 0, 0, 0, '', '', '', ?, '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                    "(20017, 26, 26, '記録ID', '記録ID', 'text', 1, 1, 0, 0, 0, 'source', 'source', '', ?, '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                    "(20017, 27, 27, '記録タイプ（語）', '記録タイプ（語）', 'text', 1, 1, 0, 0, 0, '', '', '', ?, '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                    "(20017, 28, 28, '記録者名（値）', '記録者名（値）', 'name', 1, 1, 0, 0, 0, 'creator', 'creator', '', ?, '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                    "(20017, 29, 29, '記録情報リンク', '記録情報リンク', 'link', 0, 1, 0, 0, 0, 'URI', 'identifier', '', ?, '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                    "(20017, 30, 30, '記録情報メタデータ記録日', '記録情報メタデータ記録日', 'date', 0, 1, 0, 0, 0, 'date', 'date', '', ?, '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                    "(20017, 31, 31, 'リソースURL', 'リソースURL', 'link', 0, 1, 0, 0, 0, '', '', '', ?, '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                    "(20017, 32, 32, 'リソース説明/記述', 'リソース説明/記述', 'textarea', 0, 1, 0, 0, 0, '', '', '', ?, '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                    "(20017, 33, 33, 'リソース所有者名（値）', 'リソース所有者名（値）', 'name', 0, 1, 0, 0, 0, 'contributor', 'contributor', '', ?, '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                    "(20017, 34, 34, 'リソース権利クレジットライン', 'メタデータ校閲者(validator)リソース権利クレジットライン', 'text', 0, 1, 0, 0, 0, '', '', '', ?, '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                    "(20017, 35, 35, '機関ID', '機関ID', 'text', 1, 0, 0, 0, 1, '', '', '', '', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                    "(20017, 36, 36, 'コンテンツID', 'コンテンツID', 'text', 1, 0, 0, 0, 1, '', '', '', '', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
+                    "(20017, 37, 37, 'コンテンツ更新日時', 'コンテンツ更新日時', 'text', 1, 0, 0, 0, 1, '', '', '', '', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0) ; ";
             
             $params = array();
             $params[] = RepositoryConst::LIDO_TAG_LIDO_REC_ID;
@@ -5608,10 +5642,10 @@ class Repository_Action_Main_Update extends RepositoryAction
         // create search engines url analyze rule table
         $query = "CREATE TABLE ". DATABASE_PREFIX. "repository_external_searchengine_analyticalrule ( ".
                  " `engine_id` INT NOT NULL default 0, ".
-                 " `engine_name` TEXT NOT NULL default '', ".
-                 " `domain` TEXT NOT NULL default '', ".
-                 " `search_word` TEXT NOT NULL default '', ".
-                 " `delimiter` TEXT NOT NULL default '', ".
+                 " `engine_name` TEXT NOT NULL, ".
+                 " `domain` TEXT NOT NULL, ".
+                 " `search_word` TEXT NOT NULL, ".
+                 " `delimiter` TEXT NOT NULL, ".
                  " `ins_user_id` VARCHAR(40) NOT NULL default '0', ".
                  " `mod_user_id` VARCHAR(40) NOT NULL default '0', ".
                  " `del_user_id` VARCHAR(40) NOT NULL default '0', ".
@@ -5990,5 +6024,869 @@ class Repository_Action_Main_Update extends RepositoryAction
         $query .= ";";
         $this->dbAccess->executeQuery($query, $params);
     }
+
+    // Add Default Search Type 2014/12/03 K.Sugimoto --start--
+    /**
+     * update Weko Version 2.1.7 To 2.1.8
+     *
+     */
+    private function updateWekoVersion217To218()
+    {
+        // add Default Search Type
+        $this->addDefaultSearchTypeParameter();
+        
+        // add Usage Statistics link display setting
+        $this->addUsageStatisticsLinkDisplayParameter();
+
+        // add ranking tab display
+        $this->addRankingTabDisplayParameter();
+        
+        // add Institution Name
+        $this->addInstitutionName();
+
+        // add Itemtype Exclusive Authority Tables
+        $this->createItemtypeAuthorityTable();
+        
+        // version up to 2.1.8
+        $this->versionUp('2.1.8');
+    }
+    
+    /**
+     * add Default Search Type
+     *
+     */
+    private function addDefaultSearchTypeParameter()
+    {
+        $query = "INSERT INTO ". DATABASE_PREFIX. "repository_parameter ".
+                 "(param_name, param_value, explanation, ".
+                 " ins_user_id, mod_user_id, del_user_id, ins_date, mod_date, del_date, is_delete) ".
+                 "VALUES ";
+        $params = array();
+        $query .= "(?, ?, ?, ?, ?, '', ?, ?, '', ?)";
+        $params[] = "default_search_type"; // param_name
+        $params[] = 0; // param_value
+        $params[] = "検索設定のデフォルト値設定 0:全文検索 1:キーワード検索"; // explanation
+        $params[] = $this->Session->getParameter("_user_id");;   // ins_user_id
+        $params[] = $this->Session->getParameter("_user_id");;   // mod_user_id
+        $params[] = $this->TransStartDate;  // ins_date
+        $params[] = $this->TransStartDate;  // mod_date
+        $params[] = 0; // is delete
+        $query .= ";";
+        $this->dbAccess->executeQuery($query, $params);
+    }
+    // Add Default Search Type 2014/12/03 K.Sugimoto --end--
+    
+    // Add Usage Statistics link display setting 2014/12/16 K.Matsushita --start--
+    /**
+     * add Usage Statistics link display setting
+     */
+    private function addUsageStatisticsLinkDisplayParameter()
+    {
+        $query = "INSERT INTO ". DATABASE_PREFIX. "repository_parameter ".
+                "(param_name, param_value, explanation, ".
+                " ins_user_id, mod_user_id, del_user_id, ins_date, mod_date, del_date, is_delete) ".
+                "VALUES ";
+        $params = array();
+        $query .= "(?, ?, ?, ?, ?, '', ?, ?, '', ?)";
+        $params[] = "usagestatistics_link_display"; // param_name
+        $params[] = 1; // param_value
+        $params[] = "利用統計リンク表示設定 0:表示しない 1:表示する"; // explanation
+        $params[] = $this->Session->getParameter("_user_id");;   // ins_user_id
+        $params[] = $this->Session->getParameter("_user_id");;   // mod_user_id
+        $params[] = $this->TransStartDate;  // ins_date
+        $params[] = $this->TransStartDate;  // mod_date
+        $params[] = 0; // is delete
+        $query .= ";";
+        $this->dbAccess->executeQuery($query, $params);
+    }
+    // Add Usage Statistics link display setting 2014/12/16 K.Matsushita --end--
+
+    // Add ranking tab display setting 2014/12/19 K.Matsushita --start--
+    /**
+     * add ranking tab display
+     *
+     */
+    private function addRankingTabDisplayParameter()
+    {
+        $query = "INSERT INTO ". DATABASE_PREFIX. "repository_parameter ".
+                "(param_name, param_value, explanation, ".
+                " ins_user_id, mod_user_id, del_user_id, ins_date, mod_date, del_date, is_delete) ".
+                "VALUES ";
+        $params = array();
+        $query .= "(?, ?, ?, ?, ?, '', ?, ?, '', ?)";
+        $params[] = "ranking_tab_display"; // param_name
+        $params[] = 1; // param_value
+        $params[] = "ランキングタブ表示値設定 0:表示しない 1:表示する"; // explanation
+        $params[] = $this->Session->getParameter("_user_id");;   // ins_user_id
+        $params[] = $this->Session->getParameter("_user_id");;   // mod_user_id
+        $params[] = $this->TransStartDate;  // ins_date
+        $params[] = $this->TransStartDate;  // mod_date
+        $params[] = 0; // is delete
+        $query .= ";";
+        $this->dbAccess->executeQuery($query, $params);
+    }
+    // Add ranking tab display setting 2014/12/19 K.Matsushita --end--
+    
+    /**
+     * add Institution Name
+     *
+     */
+    private function addInstitutionName()
+    {
+        $user_id = $this->Session->getParameter("_user_id");
+        // Add new record to parameter table
+        $query = "INSERT INTO " . DATABASE_PREFIX. "repository_parameter ".
+        "(param_name, param_value, explanation, ins_user_id, mod_user_id, del_user_id, ins_date, mod_date, del_date, is_delete) " . 
+        "VALUES (?, '', ?, ?, ?, ?, ?, ?, '', ?)";
+        
+        $params = array();
+        $params[] = "institution_name";
+        $params[] = "Google Scholar メタタグ出力用機関名称設定値";
+        $params[] = $user_id;
+        $params[] = $user_id;
+        $params[] = "0";
+        $params[] = $this->TransStartDate;
+        $params[] = $this->TransStartDate;
+        $params[] = 0;
+        
+        $this->dbAccess->executeQuery($query, $params);
+    }
+    
+    /**
+     * create itemtype authority tables
+     *
+     */
+    private function createItemtypeAuthorityTable()
+    {
+        // create exclusive base authority table
+        $query = "CREATE TABLE ".DATABASE_PREFIX. "repository_item_type_exclusive_base_auth ( ".
+                " `item_type_id` int(11) NOT NULL default 0, ".
+                " `exclusive_base_auth_id` int(11) NOT NULL default 0, ".
+                " `ins_user_id` VARCHAR(40) NOT NULL default '0', ".
+                " `mod_user_id` VARCHAR(40) NOT NULL default '0', ".
+                " `del_user_id` VARCHAR(40) NOT NULL default '0', ".
+                " `ins_date` VARCHAR(23), ".
+                " `mod_date` VARCHAR(23), ".
+                " `del_date` VARCHAR(23), ".
+                " `is_delete` INT(1), ".
+                " PRIMARY KEY  (`item_type_id`,`exclusive_base_auth_id`) ".
+                " ) ENGINE=innodb; ";
+        $this->dbAccess->executeQuery($query);
+        
+        // create exclusive room authority table
+        $query = "CREATE TABLE ".DATABASE_PREFIX. "repository_item_type_exclusive_room_auth ( ".
+                " `item_type_id` int(11) NOT NULL default 0, ".
+                " `exclusive_room_auth_id` int(11) NOT NULL default 0, ".
+                " `ins_user_id` VARCHAR(40) NOT NULL default '0', ".
+                " `mod_user_id` VARCHAR(40) NOT NULL default '0', ".
+                " `del_user_id` VARCHAR(40) NOT NULL default '0', ".
+                " `ins_date` VARCHAR(23), ".
+                " `mod_date` VARCHAR(23), ".
+                " `del_date` VARCHAR(23), ".
+                " `is_delete` INT(1), ".
+                " PRIMARY KEY  (`item_type_id`) ".
+                " ) ENGINE=innodb; ";
+        $this->dbAccess->executeQuery($query);
+    }
+    
+    /**
+     * update Weko Version 2.1.8 To 2.2.0
+     *
+     */
+    private function updateWekoVersion218To220()
+    {
+        // add Sitelicense Information Tables
+        $this->createSitelicenseInfoTable();
+        
+        // Add CrossRef Metadata Auto Input and Add DataCite 2015/02/03 K.Sugimoto --start--
+        // add CrossRef Metadata Auto Input
+        $this->addCrossrefQueryService();
+        
+        // add DataCite
+        $this->addDataCite();
+        // Add CrossRef Metadata Auto Input and Add DataCite 2015/02/03 K.Sugimoto --end--
+        
+	    // Extend Search Keyword 2015/02/20 K.Sugimoto --start--
+        // convert search table hankaku
+        $this->convertSearchTableKana();
+	    // Extend Search Keyword 2015/02/20 K.Sugimoto --end--
+        
+        // add operation_log table
+        $this->addOperationlog();
+        
+        // add elapsed time log table
+        $this->addElapsedTimeLog();
+        
+        // create exclusion list tables
+        $this->createLogExclusionListTables();
+        
+        // Improve Search Log 2015/03/19 K.Sugimoto --start--
+        // add detail search item
+        $this->addDetailSearchItem();
+        // Improve Search Log 2015/03/19 K.Sugimoto --end--
+        
+        // bug fix external searchword empty 2015/04/09 K.Sugimoto --start--
+        // delete external searchword empty
+        $this->deleteExternalSearchwordEmpty();
+        // bug fix external searchword empty 2015/04/09 K.Sugimoto --end--
+        
+        // update licence master creative common's link
+        $this->updateLicenseMasterLinks();
+        
+        $this->recursiveProcessingFlgList[self::KEY_REPOSITORY_ELAPSEDTIME_LOG] = true;
+        
+        // version up to 2.2.0
+        $this->versionUp('2.2.0');
+    }
+    
+    /**
+     * update licence master creative common's link
+     *
+     */
+    private function updateLicenseMasterLinks()
+    {
+        $query = "SELECT * ".
+                 "FROM ".DATABASE_PREFIX. "repository_license_master ";
+        
+        $result = $this->dbAccess->executeQuery($query);
+        
+        for ($ii = 0; $ii < count($result); $ii++) 
+        {
+            $query = "UPDATE ".DATABASE_PREFIX. "repository_license_master ". 
+                     "SET text_url = ?".
+                     "WHERE license_id = ?";
+            
+            $params = array();
+            if ($result[$ii]["license_id"] == 101) {
+                $params[] = "http://creativecommons.org/licenses/by/3.0/deed.ja";
+            }
+            else if ($result[$ii]["license_id"] == 102) {
+                $params[] = "http://creativecommons.org/licenses/by-sa/3.0/deed.ja";
+            }
+            else if ($result[$ii]["license_id"] == 103) {
+                $params[] = "http://creativecommons.org/licenses/by-nd/3.0/deed.ja";
+            }
+            else if ($result[$ii]["license_id"] == 104) {
+                $params[] = "http://creativecommons.org/licenses/by-nc/3.0/deed.ja";
+            }
+            else if ($result[$ii]["license_id"] == 105) {
+                $params[] = "http://creativecommons.org/licenses/by-nc-sa/3.0/deed.ja";
+            }
+            else {
+                $params[] = "http://creativecommons.org/licenses/by-nc-nd/3.0/deed.ja";
+            }
+            
+            $params[] = $result[$ii]["license_id"];
+            
+            $this->dbAccess->executeQuery($query, $params);
+        }
+    }
+    
+    /**
+     * create log exclusion list tables of ip_address and user_agent
+     *
+     */
+    private function createLogExclusionListTables()
+    {
+        $query = "CREATE TABLE ".DATABASE_PREFIX. "repository_robotlist_master (". 
+                 "robotlist_id int(4) NOT NULL, ".
+                 "robotlist_url text, ".
+                 "is_robotlist_use int(1) NOT NULL, ".
+                 "del_column varchar(40) NOT NULL, ".
+                 "robotlist_version varchar(40) NOT NULL, ".
+                 "robotlist_date varchar(100) NOT NULL, ".
+                 "robotlist_revision varchar(40) NOT NULL, ".
+                 "robotlist_author varchar(100) NOT NULL, ".
+                 "ins_user_id varchar(40) NOT NULL default '0', ".
+                 "mod_user_id varchar(40) NOT NULL default '0', ".
+                 "del_user_id varchar(40) NOT NULL default '0', ".
+                 "ins_date varchar(23) default NULL, ".
+                 "mod_date varchar(23) default NULL, ".
+                 "del_date varchar(23) default NULL, ".
+                 "is_delete int(1) default NULL, ".
+                 "PRIMARY KEY  (`robotlist_id`) ".
+                 ") ENGINE=InnoDb DEFAULT CHARSET=utf8; ";
+        $this->dbAccess->executeQuery($query);
+        
+        $query = "CREATE TABLE ".DATABASE_PREFIX. "repository_robotlist_data (". 
+                 "list_id int(10) NOT NULL AUTO_INCREMENT, ".
+                 "robotlist_id int(4) NOT NULL, ".
+                 "word text, ".
+                 "status varchar(2) NOT NULL default '0', ".
+                 "ins_user_id varchar(40) NOT NULL default '0', ".
+                 "mod_user_id varchar(40) NOT NULL default '0', ".
+                 "del_user_id varchar(40) NOT NULL default '0', ".
+                 "ins_date varchar(23) default NULL, ".
+                 "mod_date varchar(23) default NULL, ".
+                 "del_date varchar(23) default NULL, ".
+                 "is_delete int(1) default NULL, ".
+                 "PRIMARY KEY  (`list_id`) ".
+                 ") ENGINE=InnoDb DEFAULT CHARSET=utf8; ";
+        $this->dbAccess->executeQuery($query);
+        
+        // Improve Log 2015/06/17 K.Sugimoto --start--
+        $ipAddressCrawlerList = 'https://bitbucket.org/niijp/jairo-crawler-list/raw/master/JAIRO_Crawler-List_ip_blacklist.txt';
+        $userAgentCrawlerList = 'https://bitbucket.org/niijp/jairo-crawler-list/raw/master/JAIRO_Crawler-List_useragent.txt';
+        $query = "INSERT INTO ". DATABASE_PREFIX. "repository_robotlist_master ".
+                 "(robotlist_id, robotlist_url, is_robotlist_use, del_column, robotlist_version, robotlist_date, robotlist_revision, robotlist_author, ins_user_id, mod_user_id, del_user_id, ins_date, mod_date, del_date, is_delete) ".
+                 "VALUES (?, ?, ?, ?, '', '', '', '', ?, ?, ?, ?, ?, ?, ?),".
+                 "(?, ?, ?, ?, '', '', '', '', ?, ?, ?, ?, ?, ?, ?) ;";
+        $params = array();
+        $params[] = 1;                                          // robotlist_id
+        $params[] = $ipAddressCrawlerList;                      // robotlist_url
+        $params[] = 1;                                          // is_robotlist_use
+        $params[] = 'ip_address';                               // del_column
+        $params[] = $this->Session->getParameter("_user_id");   // ins_user_id
+        $params[] = $this->Session->getParameter("_user_id");   // mod_user_id
+        $params[] = "";                                         // del_user_id
+        $params[] = $this->TransStartDate;                      // ins_date
+        $params[] = $this->TransStartDate;                      // mod_date
+        $params[] = "";                                         // del_date
+        $params[] = 0;                                          // is_delete
+        
+        $params[] = 2;                                          // robotlist_id
+        $params[] = $userAgentCrawlerList;                      // robotlist_url
+        $params[] = 1;                                          // is_robotlist_use
+        $params[] = 'user_agent';                               // del_column
+        $params[] = $this->Session->getParameter("_user_id");   // ins_user_id
+        $params[] = $this->Session->getParameter("_user_id");   // mod_user_id
+        $params[] = "";                                         // del_user_id
+        $params[] = $this->TransStartDate;                      // ins_date
+        $params[] = $this->TransStartDate;                      // mod_date
+        $params[] = "";                                         // del_date
+        $params[] = 0;                                          // is_delete
+        $this->dbAccess->executeQuery($query, $params);
+        
+        $this->insertLockTable('Repository_Action_Common_Robotlist', 0);
+        $this->insertLockTable('Repository_Action_Common_Background_Deleterobotlist', 0);
+        
+        $this->recursiveProcessingFlgList[self::KEY_REPOSITORY_EXCLUDE_LOG] = true;
+        // Improve Log 2015/06/17 K.Sugimoto --end--
+    }
+    
+    /**
+     * create elapsed log table
+     *
+     */
+    private function addElapsedTimeLog()
+    {
+        $query = "CREATE TABLE ".DATABASE_PREFIX. "repository_log_elapsed_time (". 
+                     "`log_no` INT, ". 
+                     "`elapsed_time` INT, ". 
+                     "`ins_user_id` VARCHAR(40) NOT NULL default '0',". 
+                     "`mod_user_id` VARCHAR(40) NOT NULL default '0',". 
+                     "`del_user_id` VARCHAR(40) NOT NULL default '0',". 
+                     "`ins_date` VARCHAR(23),". 
+                     "`mod_date` VARCHAR(23),". 
+                     "`del_date` VARCHAR(23),". 
+                     "`is_delete` INT(1),". 
+                     "PRIMARY KEY(`log_no`)". 
+                 ") ENGINE=MyISAM;";
+         $this->dbAccess->executeQuery($query);
+        
+        $this->insertLockTable('Repository_Action_Common_Background_Elapsedtime', 0);
+        
+        // Improve Log 2015/06/17 K.Sugimoto --start--
+        $query = "ALTER TABLE ".DATABASE_PREFIX. RepositoryConst::DBTABLE_REPOSITORY_LOG. " ".
+                 "ADD INDEX ". RepositoryConst::DBCOL_REPOSITORY_LOG_RECORD_DATE. " (".
+                 RepositoryConst::DBCOL_REPOSITORY_LOG_RECORD_DATE. "); ";
+        $this->dbAccess->executeQuery($query);
+        // Improve Log 2015/06/17 K.Sugimoto --end--
+    }
+    
+    /**
+     * create sitelicense tables
+     *
+     */
+    private function createSitelicenseInfoTable()
+    {
+        // create info table
+        $query = "CREATE TABLE ".DATABASE_PREFIX. "repository_sitelicense_info ( ".
+                " `organization_id` int(11) NOT NULL default 0, ".
+                " `show_order` int default 0, ".
+                " `organization_name` text NOT NULL, ".
+                " `group_name` text NOT NULL, ".
+                " `mail_address` VARCHAR(255) NOT NULL, ".
+                " `ins_user_id` VARCHAR(40) NOT NULL default 0, ".
+                " `mod_user_id` VARCHAR(40) NOT NULL default 0, ".
+                " `del_user_id` VARCHAR(40) NOT NULL default 0, ".
+                " `ins_date` VARCHAR(23), ".
+                " `mod_date` VARCHAR(23), ".
+                " `del_date` VARCHAR(23), ".
+                " `is_delete` INT(1), ".
+                " PRIMARY KEY  (`organization_id`) ".
+                " ) ENGINE=innodb; ";
+        $this->dbAccess->executeQuery($query);
+        
+        // create ip address table
+        $query = "CREATE TABLE ".DATABASE_PREFIX. "repository_sitelicense_ip_address ( ".
+                " `organization_id` int(11) NOT NULL default 0, ".
+                " `organization_no` int(11) NOT NULL default 0, ".
+                " `start_ip_address` VARCHAR(16) NOT NULL, ".
+                " `finish_ip_address` VARCHAR(16) NOT NULL, ".
+                " `ins_user_id` VARCHAR(40) NOT NULL default 0, ".
+                " `mod_user_id` VARCHAR(40) NOT NULL default 0, ".
+                " `del_user_id` VARCHAR(40) NOT NULL default 0, ".
+                " `ins_date` VARCHAR(23), ".
+                " `mod_date` VARCHAR(23), ".
+                " `del_date` VARCHAR(23), ".
+                " `is_delete` INT(1), ".
+                " PRIMARY KEY  (`organization_id`, `organization_no`) ".
+                " ) ENGINE=innodb; ";
+        $this->dbAccess->executeQuery($query);
+        
+        // insert data
+        $query = "SELECT param_value FROM ". DATABASE_PREFIX. "repository_parameter ".
+                 "WHERE param_name = ? ;";
+        $params = array();
+        $params[] = "site_license";
+        $result = $this->dbAccess->executeQuery($query, $params);
+        if(strlen($result[0]["param_value"]) > 0) {
+            // 機関毎に分割する
+            $sitelicenses = explode("|", $result[0]["param_value"]);
+            // データを「機関名」「開始IP」「終了IP」「メールアドレス」に分割する
+            $organization_id = 0; // 機関ID
+            $show_order = 0;      // ソート順番
+            for($ii = 0; $ii < count($sitelicenses); $ii++) {
+                $sitelicense_data = explode(",", $sitelicenses[$ii]);
+                // 機関ID
+                $organization_id++;
+                $show_order++;
+                // 機関名
+                $organization_name = $sitelicense_data[0];
+                $organization_name = str_replace("&#124;", "|", $organization_name);
+                $organization_name = str_replace("&#44;", ",", $organization_name);
+                $organization_name = str_replace("&#46;", ".", $organization_name);
+                // 開始IPアドレス
+                $start_ip_address = $sitelicense_data[1];
+                // 終了IPアドレス
+                $finish_ip_address = $sitelicense_data[2];
+                // メールアドレス
+                $mail_address = $sitelicense_data[3];
+                $mail_address = str_replace("&#124;", "|", $mail_address);
+                $mail_address = str_replace("&#44;", ",", $mail_address);
+                $mail_address = str_replace("&#46;", ".", $mail_address);
+                
+                // insert base info
+                $query = "INSERT INTO ". DATABASE_PREFIX. "repository_sitelicense_info ".
+                         "(organization_id, show_order, organization_name, group_name, mail_address, ins_user_id, mod_user_id, del_user_id, ins_date, mod_date, del_date, is_delete) ".
+                         "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ;";
+                $params = array();
+                $params[] = $organization_id;                           // organization_id
+                $params[] = $show_order;                                // show order
+                $params[] = $organization_name;                         // organization_name
+                $params[] = "";                                         // group_name
+                $params[] = $mail_address;                              // mail_address
+                $params[] = $this->Session->getParameter("_user_id");   // ins_user_id
+                $params[] = $this->Session->getParameter("_user_id");   // mod_user_id
+                $params[] = "";                                         // del_user_id
+                $params[] = $this->TransStartDate;                      // ins_date
+                $params[] = $this->TransStartDate;                      // mod_date
+                $params[] = "";                                         // del_date
+                $params[] = 0;                                          // is_delete
+                $this->dbAccess->executeQuery($query, $params);
+                
+                // insert ip address
+                $query = "INSERT INTO ". DATABASE_PREFIX. "repository_sitelicense_ip_address ".
+                         "(organization_id, organization_no, start_ip_address, finish_ip_address, ins_user_id, mod_user_id, del_user_id, ins_date, mod_date, del_date, is_delete) ".
+                         "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ;";
+                $params = array();
+                $params[] = $organization_id;                           // organization_id
+                $params[] = 1;                                          // organization_no
+                $params[] = $start_ip_address;                          // start_ip_address
+                $params[] = $finish_ip_address;                         // finish_ip_address
+                $params[] = $this->Session->getParameter("_user_id");   // ins_user_id
+                $params[] = $this->Session->getParameter("_user_id");   // mod_user_id
+                $params[] = "";                                         // del_user_id
+                $params[] = $this->TransStartDate;                      // ins_date
+                $params[] = $this->TransStartDate;                      // mod_date
+                $params[] = "";                                         // del_date
+                $params[] = 0;                                          // is_delete
+                $this->dbAccess->executeQuery($query, $params);
+            }
+            
+            // delete sitelicense data from parameter table
+            $query = "DELETE FROM ". DATABASE_PREFIX. "repository_parameter ".
+                     "WHERE param_name = ? ;";
+            $params = array();
+            $params[] = "site_license";
+            $this->dbAccess->executeQuery($query, $params);
+        }
+        // サイトライセンスメール送信先テーブル
+        // IPアドレス情報カラムを削除し、組織名カラムを追加する
+        $query = "ALTER TABLE ". DATABASE_PREFIX ."repository_send_mail_sitelicense ".
+                 "DROP `start_ip_address` ; ";
+        $this->dbAccess->executeQuery($query);
+        $query = "ALTER TABLE ". DATABASE_PREFIX ."repository_send_mail_sitelicense ".
+                 "DROP `finish_ip_address` ; ";
+        $this->dbAccess->executeQuery($query);
+        
+        // ログテーブルにサイトライセンス機関情報保存用カラムを作成する
+        $query = "ALTER TABLE ". DATABASE_PREFIX ."repository_log ".
+                 "ADD `site_license_id` INT(11) default 0 ".
+                 "AFTER `site_license` ;";
+        $this->dbAccess->executeQuery($query);
+        
+    }
+    
+    // Add CrossRef Metadata Auto Input and Add DataCite 2015/02/03 K.Sugimoto --start--
+    /**
+     * add CrossRef metadata auto input
+     *
+     */
+    private function addCrossrefQueryService()
+    {
+        $query = "INSERT INTO ". DATABASE_PREFIX. "repository_parameter ".
+                "(param_name, param_value, explanation, ".
+                " ins_user_id, mod_user_id, del_user_id, ins_date, mod_date, del_date, is_delete) ".
+                "VALUES ";
+        $params = array();
+        $query .= "(?, ?, ?, ?, ?, '', ?, ?, '', ?)";
+        $params[] = "crossref_query_service_account"; // param_name
+        $params[] = ""; // param_value
+        $params[] = "CrossRef APIにアクセスするための設定値(メールアドレス)"; // explanation
+        $params[] = $this->Session->getParameter("_user_id");   // ins_user_id
+        $params[] = $this->Session->getParameter("_user_id");   // mod_user_id
+        $params[] = $this->TransStartDate;  // ins_date
+        $params[] = $this->TransStartDate;  // mod_date
+        $params[] = 0; // is delete
+        $query .= ";";
+        $this->dbAccess->executeQuery($query, $params);
+    }
+
+    /**
+     * add DataCite
+     *
+     */
+    private function addDataCite()
+    {
+    	// プレフィックステーブルにDataCite DOIプレフィックスレコードを追加
+        $query = "INSERT INTO ". DATABASE_PREFIX. "repository_prefix ".
+                "(id, prefix_name, prefix_id, ".
+                " ins_user_id, mod_user_id, del_user_id, ins_date, mod_date, del_date, is_delete) ".
+                "VALUES ";
+        $params = array();
+        $query .= "(?, ?, ?, ?, ?, '', ?, ?, '', ?)";
+        $params[] = 25; // id
+        $params[] = "DataCite"; // prefix_name
+        $params[] = ""; // prefix_id
+        $params[] = $this->Session->getParameter("_user_id");   // ins_user_id
+        $params[] = $this->Session->getParameter("_user_id");   // mod_user_id
+        $params[] = $this->TransStartDate;  // ins_date
+        $params[] = $this->TransStartDate;  // mod_date
+        $params[] = 0; // is delete
+        $query .= ";";
+        $this->dbAccess->executeQuery($query, $params);
+        
+        // パラメータテーブルにYハンドルPrefixフラグレコードを追加
+        $query = "INSERT INTO ". DATABASE_PREFIX. "repository_parameter ".
+                "(param_name, param_value, explanation, ".
+                " ins_user_id, mod_user_id, del_user_id, ins_date, mod_date, del_date, is_delete) ".
+                "VALUES ";
+        $params = array();
+        $query .= "(?, ?, ?, ?, ?, '', ?, ?, '', ?)";
+        $params[] = "prefix_flag"; // param_name
+        $params[] = 0; // param_value
+        $params[] = "DOI付与時、YハンドルのPrefixIDをSuffixに付与するか否か(0:付与しない,1:付与する) すでにDOIを付与されている場合は変更できない"; // explanation
+        $params[] = $this->Session->getParameter("_user_id");   // ins_user_id
+        $params[] = $this->Session->getParameter("_user_id");   // mod_user_id
+        $params[] = $this->TransStartDate;  // ins_date
+        $params[] = $this->TransStartDate;  // mod_date
+        $params[] = 0; // is delete
+        $query .= ";";
+        $this->dbAccess->executeQuery($query, $params);
+
+        // DOI付与フラグを取得
+        $query = "SELECT param_name ".
+                 "FROM ".DATABASE_PREFIX."repository_parameter ".
+                 "WHERE param_name LIKE ? ".
+                 "AND is_delete = ? ;";
+        $params = array();
+        $params[] = "edit_doi_flag_%";
+        $params[] = 0;
+        $result = $this->dbAccess->executeQuery($query, $params);
+
+        // パラメータテーブルからDOI付与フラグを削除
+        $query = "DELETE FROM ".DATABASE_PREFIX."repository_parameter ".
+                 "WHERE param_name LIKE ? ".
+                 "AND is_delete = ? ;";
+        $params = array();
+        $params[] = "edit_doi_flag_%";
+        $params[] = 0;
+        $this->dbAccess->executeQuery($query, $params);
+        
+        // DOI付与判定テーブルを作成
+        $query = "CREATE TABLE ".DATABASE_PREFIX. "repository_doi_flag ( ".
+                " `doi_flag_id` INT NOT NULL, ".
+                " `nii_type` text NOT NULL, ".
+                " `jalc` INT(2) NOT NULL default '0', ".
+                " `multiple_resolution` INT(2) NOT NULL default '0', ".
+                " `crossref` INT(2) NOT NULL default '0', ".
+                " `datacite` INT(2) NOT NULL default '0', ".
+                " `ins_user_id` VARCHAR(40) NOT NULL default 0, ".
+                " `mod_user_id` VARCHAR(40) NOT NULL default 0, ".
+                " `del_user_id` VARCHAR(40) NOT NULL default 0, ".
+                " `ins_date` VARCHAR(23), ".
+                " `mod_date` VARCHAR(23), ".
+                " `del_date` VARCHAR(23), ".
+                " `is_delete` INT(1), ".
+                " PRIMARY KEY  (`doi_flag_id`) ".
+                " ) ENGINE=innodb; ";
+        $this->dbAccess->executeQuery($query);
+        
+        // DOI付与判定フラグを追加
+        for($i = 0; $i < count($result); $i++)
+        {
+	        if(isset($result[$i]["param_name"]))
+	        {
+		        $niiType = str_replace("edit_doi_flag_", "", $result[$i]["param_name"]);
+		        $niiType = str_replace("_", " ", $niiType);
+		        
+		        $query = "INSERT INTO ". DATABASE_PREFIX. "repository_doi_flag ".
+		                "(doi_flag_id, nii_type, jalc, multiple_resolution, crossref, datacite, ".
+		                " ins_user_id, mod_user_id, del_user_id, ins_date, mod_date, del_date, is_delete) ".
+		                "VALUES ";
+		        $params = array();
+		        $query .= "(?, ?, ?, ?, ?, ?, ?, ?, '', ?, ?, '', ?)";
+		        $params[] = $i + 1; // doi_flag_id
+		        $params[] = $niiType; // nii_type
+		        if($niiType === "others")
+		        {
+			        $params[] = 0; // jalc
+		        }
+		        else
+		        {
+			        $params[] = 1; // jalc
+		        }
+		        if($niiType === "thesis or dissertation")
+		        {
+		        	$params[] = 1; // multiple_resolution
+		        }
+		        else
+		        {
+		        	$params[] = 0; // multiple_resolution
+		        }
+		        if(($niiType === "data or dataset") 
+		           || ($niiType === "learning material") 
+		           || ($niiType === "others") 
+		           || ($niiType === "presentation") 
+		           || ($niiType === "software") 
+		           || ($niiType === "thesis or dissertation"))
+		        {
+			        $params[] = 0; // crossref
+		        }
+		        else
+		        {
+			        $params[] = 1; // crossref
+		        }
+		        if(($niiType === "data or dataset") || ($niiType === "software"))
+		        {
+			        $params[] = 1; // datacite
+		        }
+		        else
+		        {
+			        $params[] = 0; // datacite
+		        }
+		        $params[] = $this->Session->getParameter("_user_id");   // ins_user_id
+		        $params[] = $this->Session->getParameter("_user_id");   // mod_user_id
+		        $params[] = $this->TransStartDate;  // ins_date
+		        $params[] = $this->TransStartDate;  // mod_date
+		        $params[] = 0; // is delete
+		        $query .= ";";
+		        $this->dbAccess->executeQuery($query, $params);
+	        }
+        }
+    }
+    // Add CrossRef Metadata Auto Input and Add DataCite 2015/02/03 K.Sugimoto --end--
+    
+    // Improve Search Log 2015/03/19 K.Sugimoto --start--
+    /**
+     * improve search log
+     *
+     */
+    private function addDetailSearchItem()
+    {
+        // 詳細検索項目テーブルを作成
+        $query = "CREATE TABLE ".DATABASE_PREFIX. "repository_log_detail_search ( ".
+                " `log_no` INT NOT NULL, ".
+                " `advanced_search_id` INT(2) NOT NULL, ".
+                " `ins_user_id` VARCHAR(40) NOT NULL default 0, ".
+                " `mod_user_id` VARCHAR(40) NOT NULL default 0, ".
+                " `del_user_id` VARCHAR(40) NOT NULL default 0, ".
+                " `ins_date` VARCHAR(23), ".
+                " `mod_date` VARCHAR(23), ".
+                " `del_date` VARCHAR(23), ".
+                " `is_delete` INT(1), ".
+                " PRIMARY KEY  (`log_no`,`advanced_search_id`) ".
+                " ) ENGINE=MyISAM; ";
+        $this->dbAccess->executeQuery($query);
+        
+        // 集計対象詳細検索項目テーブルを作成
+        $query = "CREATE TABLE ".DATABASE_PREFIX. "repository_target_search_item ( ".
+                " `search_item_id` INT(2) NOT NULL, ".
+                " `ranking_flag` INT NOT NULL, ".
+                " `ins_user_id` VARCHAR(40) NOT NULL default 0, ".
+                " `mod_user_id` VARCHAR(40) NOT NULL default 0, ".
+                " `del_user_id` VARCHAR(40) NOT NULL default 0, ".
+                " `ins_date` VARCHAR(23), ".
+                " `mod_date` VARCHAR(23), ".
+                " `del_date` VARCHAR(23), ".
+                " `is_delete` INT(1), ".
+                " PRIMARY KEY  (`search_item_id`) ".
+                " ) ENGINE=innodb; ";
+        $this->dbAccess->executeQuery($query);
+        
+        // 既存キーワード検索ログ検索項目追加
+        $this->recursiveProcessingFlgList[self::KEY_REPOSITORY_SEARCH_LOG] = true;
+        
+    	// 集計対象の詳細検索項目を追加
+    	for($ii = 0; $ii < 26; $ii++)
+    	{
+	        $query = "INSERT INTO ". DATABASE_PREFIX. "repository_target_search_item ".
+	                "(search_item_id, ranking_flag, ".
+	                " ins_user_id, mod_user_id, del_user_id, ins_date, mod_date, del_date, is_delete) ".
+	                "VALUES ";
+	        $params = array();
+	        $query .= "(?, ?, ?, ?, '', ?, ?, '', ?)";
+	        $params[] = $ii; // search_item_id
+	        if($ii == 0 || $ii == 1 || $ii == 2 || $ii == 3 || $ii == 5 || $ii == 6 || $ii == 7 || $ii == 13)
+	        {
+		        $params[] = 1; // ranking_flag
+	        }
+	        else
+	        {
+		        $params[] = 0; // ranking_flag
+	        }
+	        $params[] = $this->Session->getParameter("_user_id");   // ins_user_id
+	        $params[] = $this->Session->getParameter("_user_id");   // mod_user_id
+	        $params[] = $this->TransStartDate;  // ins_date
+	        $params[] = $this->TransStartDate;  // mod_date
+	        $params[] = 0; // is delete
+	        $query .= ";";
+	        $this->dbAccess->executeQuery($query, $params);
+        }
+        
+        // ロックテーブルに既存検索ログ検索項目追加クラスを追加
+        $this->insertLockTable('Repository_Action_Common_Background_Detailsearchitem', 0);
+    }
+    
+    /**
+     * execute recursive proccessing of DetailSearchItem
+     *
+     */
+    private function addDetailSearchItemForExistSearchLog()
+    {
+        if (!isset($_SERVER["SERVER_PORT"])) // NULLの時
+        {
+            //BASE_URLの先頭をチェックしてhttps://なら443を$_SERVER["SERVER_PORT"]に入力
+            if ( preg_match("/^https\:\/\//", BASE_URL) ) {
+                $_SERVER["SERVER_PORT"] = 443;
+            }
+            //BASE_URLの先頭をチェックしてhttp://なら80を$_SERVER["SERVER_PORT"]に入力
+            else if ( preg_match("/^http\:\/\//", BASE_URL) ){
+                $_SERVER["SERVER_PORT"] = 80;
+            }
+        }
+        
+        $startLogNo = 1;
+        
+        // Request parameter for next URL
+        $nextRequest = BASE_URL."/?action=repository_action_common_background_detailsearchitem&log_no=".$startLogNo;
+        $result = RepositoryProcessUtility::callAsyncProcess($nextRequest);
+        return $result;
+    }
+    // Improve Search Log 2015/03/19 K.Sugimoto --end--
+    
+    /**
+     * execute recursive proccessing of ElapsedtimeLog
+     *
+     */
+    private function insertElapsedLogs()
+    {
+        if (!isset($_SERVER["SERVER_PORT"])) // NULLの時
+        {
+            //BASE_URLの先頭をチェックしてhttps://なら443を$_SERVER["SERVER_PORT"]に入力
+            if ( preg_match("/^https\:\/\//", BASE_URL) ) {
+                $_SERVER["SERVER_PORT"] = 443;
+            }
+            //BASE_URLの先頭をチェックしてhttp://なら80を$_SERVER["SERVER_PORT"]に入力
+            else if ( preg_match("/^http\:\/\//", BASE_URL) ){
+                $_SERVER["SERVER_PORT"] = 80;
+            }
+        }
+        
+        // Request parameter for next URL
+        $nextRequest = BASE_URL."/?action=repository_action_common_background_elapsedtime";
+        $result = RepositoryProcessUtility::callAsyncProcess($nextRequest);
+        return $result;
+    }
+    
+    /**
+     * add operation_log table
+     */
+    private function addOperationlog()
+    {
+        // create repository_operation_log table
+        $query = "CREATE TABLE {repository_operation_log} ( ".
+            " `log_id` INT, ".
+            " `record_date` VARCHAR(23) NOT NULL, ".
+            " `user_id` VARCHAR(40) NOT NULL default 0, ".
+            " `request_parameter` TEXT, ".
+            " `start_log_id` INT default 0, ".
+            " PRIMARY KEY(`log_id`) ".
+            ") ENGINE=MyISAM;";
+        $this->dbAccess->executeQuery($query);
+    }
+
+    // Extend Search Keyword 2015/02/20 K.Sugimoto --start--
+    /**
+     * Convert Search Table Hankaku
+     *
+     */
+    private function convertSearchTableKana()
+    {
+        $this->recursiveProcessingFlgList[self::KEY_REPOSITORY_SEARCH_TABLE_PROCESSING] = true;
+    }
+    // Extend Search Keyword 2015/02/20 K.Sugimoto --end--
+    
+    // bug fix external searchword empty 2015/04/09 K.Sugimoto --start--
+    /**
+     * delete external searchword empty
+     */
+    private function deleteExternalSearchwordEmpty()
+    {
+        $query = "DELETE FROM ". DATABASE_PREFIX. "repository_item_external_searchword ".
+                 "WHERE word = ? ;";
+        $params = array();
+        $params[] = '';
+        $this->dbAccess->executeQuery($query, $params);
+    }
+    // bug fix external searchword empty 2015/04/09 K.Sugimoto --end--
+    
+    // ImproveLog 2015/06/17 K.Sugimoto --start--
+    /**
+     * execute recursive proccessing of RobotList
+     *
+     */
+    private function excludeLogOfRobotList()
+    {
+        if (!isset($_SERVER["SERVER_PORT"])) // NULLの時
+        {
+            //BASE_URLの先頭をチェックしてhttps://なら443を$_SERVER["SERVER_PORT"]に入力
+            if ( preg_match("/^https\:\/\//", BASE_URL) ) {
+                $_SERVER["SERVER_PORT"] = 443;
+            }
+            //BASE_URLの先頭をチェックしてhttp://なら80を$_SERVER["SERVER_PORT"]に入力
+            else if ( preg_match("/^http\:\/\//", BASE_URL) ){
+                $_SERVER["SERVER_PORT"] = 80;
+            }
+        }
+        
+        // Request parameter for next URL
+        $nextRequest = BASE_URL."/?action=repository_action_common_robotlist";
+        $result = RepositoryProcessUtility::callAsyncProcess($nextRequest);
+        return $result;
+    }
+    // ImproveLog 2015/06/17 K.Sugimoto --end--
 }
 ?>

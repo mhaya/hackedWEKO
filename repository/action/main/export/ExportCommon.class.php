@@ -1,7 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-// $Id: ExportCommon.class.php 610 2014-08-29 07:24:55Z ivis $
+// $Id: ExportCommon.class.php 53594 2015-05-28 05:25:53Z kaede_matsushita $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -618,7 +618,7 @@ class ExportCommon extends RepositoryAction
                             "item_id=\"" . $result_file_price_Table[0]["item_id"] . "\" " .         // item_id
                             "item_no=\"" .$result_file_price_Table[0]["item_no"] . "\" " .          // item_no
                             "attribute_id=\"" .$result_file_price_Table[0]["attribute_id"] . "\" " .    // attribute_id
-                            "file_no=\"" ."1" . "\" " ;          // file_no
+                            "file_no=\"" . $result_file_price_Table[0]["file_no"] . "\" " ;          // file_no
                     // Add the management value is changed from room_id to page_name. Y.Nakao 2008/10/06 --start--
                     $price_export = "";
                     $price = explode("|", $result_file_price_Table[0]["price"]);
@@ -673,14 +673,12 @@ class ExportCommon extends RepositoryAction
                 copy($file_path, $output_file);
                 // Add separate file from DB 2009/04/22 Y.Nakao --end--
                 
-                // Bug Fix WEKO-2014-047 T.Koyasu 2014/07/24 --start--
-                // restore to output download log in export
-                $this->entryLog(RepositoryConst::LOG_OPERATION_DOWNLOAD_FILE, 
-                                $result[$ii]["item_id"], 
-                                $result[$ii]["item_no"], 
-                                $result[$ii]["attribute_id"], 
-                                $result[$ii]["file_no"]);
-                // Bug Fix WEKO-2014-047 T.Koyasu 2014/07/24 --start--
+                // Mod entryLog T.Koyasu 2015/03/06 --start--
+                $this->infoLog("businessLogmanager", __FILE__, __CLASS__, __LINE__);
+                BusinessFactory::initialize($this->Session, $this->Db, $this->TransStartDate);
+                $logManager = BusinessFactory::getFactory()->getBusiness("businessLogmanager");
+                $logManager->entryLogForDownload($result[$ii]["item_id"], $result[$ii]["item_no"], $result[$ii]["attribute_id"], $result[$ii]["file_no"]);
+                // Mod entryLog T.Koyasu 2015/03/06 --end--
                 
                 array_push($output_files, $output_file);
             }

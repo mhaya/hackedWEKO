@@ -1,7 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-// $Id: Multilang.class.php 564 2014-04-14 01:06:48Z ivis $
+// $Id: Multilang.class.php 22759 2013-05-21 04:47:11Z koji_matsuo $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -34,7 +34,7 @@ class Repository_View_Common_Itemtype_Multilang extends RepositoryAction
      *
      * @access  public
      */
-    function execute()
+    function executeApp()
     {
         return "success";
     }

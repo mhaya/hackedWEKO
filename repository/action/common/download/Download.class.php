@@ -1,7 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-// $Id: Download.class.php 620 2014-09-12 07:32:43Z ivis $
+// $Id: Download.class.php 53594 2015-05-28 05:25:53Z kaede_matsushita $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -15,6 +15,7 @@
 
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryDownload.class.php';
+require_once WEBAPP_DIR. '/modules/repository/components/RepositoryPdfCover.class.php';
 
 /**
  * [[機能説明]]
@@ -175,6 +176,7 @@ class Repository_Action_Common_Download extends RepositoryAction
         $params[] = 0;
         
         $ret = $this->Db->execute($query, $params);
+        
         // SQLエラーの場合 終了
         if ($ret === false) {
             $error_msg = $this->Db->ErrorMsg();
@@ -197,51 +199,112 @@ class Repository_Action_Common_Download extends RepositoryAction
         }
         // Download check
         
-        // throw file contents for user
-        // Add separate file from DB 2009/04/21 Y.Nakao --start--
-        // get contents save path
-        $contents_path = $this->getFileSavePath("file");
-        if(strlen($contents_path) == 0){
-            // default directory
-            $contents_path = BASE_DIR.'/webapp/uploads/repository/files';
-        }
-        // check directory exists 
-        if( !(file_exists($contents_path)) ){
-            //$this->Session->setParameter("error_msg", $error_msg);
-            $this->failTrans();
-            return false;
-        }
-        // Add separate file from DB 2009/04/21 Y.Nakao --end--
-        $file_path = $contents_path.DIRECTORY_SEPARATOR.
-                    $this->item_id.'_'.
-                    $this->attribute_id.'_'.
-                    $this->file_no.'.'.
-                    $ret[0]['extension'];
-        // check file exists
-        if( !(file_exists($file_path)) ){
-            $this->failTrans();
-            return false;
-        }
-        $copy_path = BASE_DIR.'/webapp/uploads/repository/'.
-                    $this->item_id.'_'.
-                    $this->attribute_id.'_'.
-                    $this->file_no.'.'.
-                    $ret[0]['extension'];
-        // コンテンツ本体コピー
-        copy($file_path, $copy_path);
+        // Add delete pdf cover 2015/01/27 K.Matsushita -start-
+        // get temporary directory path for pdfCover instance
+        $tmpDirPath = $this->getDefaltTmpDirPath();
         
-        // Add RepositoryDownload action 2010/03/30 A.Suzuki --start--
-        $repositoryDownload = new RepositoryDownload();
-        $repositoryDownload->downloadFile($copy_path, $ret[0]['file_name'], $ret[0]['mime_type']);
-        // Add RepositoryDownload action 2010/03/30 A.Suzuki --end--
+        $user_id = $this->Session->getParameter("_user_id");
         
-        unlink($copy_path);
+        $pdfCover = new RepositoryPdfCover(
+                                            $this->Session,
+                                            $this->Db,
+                                            $this->TransStartDate,
+                                            $user_id,
+                                            $this->item_id,
+                                            $this->item_no,
+                                            $this->attribute_id,
+                                            $this->file_no,
+                                            $tmpDirPath
+                                            );
+        
+        // Check index setting of pdf cover create
+        $index_id = $this->index_id;
+        if( $index_id == null ){
+            // get index_id
+            $query = " SELECT index_id  ".
+                     " FROM ". DATABASE_PREFIX ."repository_position_index ".
+                     " WHERE item_id = ? ".
+                     "  AND item_no = ? ".
+                     "  AND is_delete = ?; ";
+            
+            $params = array();
+            $params[] = $this->item_id;
+            $params[] = $this->item_no;
+            $params[] = 0;
+            
+            $retGetIndexId = $this->Db->execute($query, $params);
+            
+            // SQLエラーの場合 終了
+            if ($retGetIndexId === false) {
+                $error_msg = $this->Db->ErrorMsg();
+                $this->failTrans();
+                return;
+            }
+            $index_id = $retGetIndexId[0]["index_id"];
+        }
+        
+        $indexIds = array( 0 => $index_id );
+        $pdfCoverCreateFlag = $this->checkIndexCreateCover($indexIds);
+        
+        if( $pdfCoverCreateFlag == TRUE && $ret[0]['extension'] == "pdf" ){
+            
+            $download_file_path = "";
+            
+            // create pdf cover page
+            if( !$pdfCover->execute() ){
+                //cover create  failure -> DL file without cover 
+                $download_file_path = $this->getCopyFilePath($ret[0]['extension']);
+                
+            }
+            else{
+                //cover create sucess
+                $download_file_path = $tmpDirPath.RepositoryPdfCover::PDF_NAME_COMBINED;
+            }
+            
+            if( file_exists( $download_file_path ) === TRUE ){
+                
+                $repositoryDownload = new RepositoryDownload();
+                $repositoryDownload->downloadFile(
+                        $download_file_path,
+                        $ret[0]['file_name'],
+                        $ret[0]['mime_type']
+                );
+                
+                if( file_exists($copy_path) === TRUE ){
+                    unlink($copy_path);
+                }
+            }
+        }
+        else 
+        {
+            $coverCreatedFlag = false;
+            if( $pdfCover->chkExistCover($coverCreatedFlag) === TRUE ){
+                // delete pdf cover page
+                $pdfCover->deleteCoverPage();
+                
+            }
+            
+            $copy_path = $this->getCopyFilePath($ret[0]['extension']);
+            
+            // Add RepositoryDownload action 2010/03/30 A.Suzuki --start--
+            $repositoryDownload = new RepositoryDownload();
+            $repositoryDownload->downloadFile($copy_path, $ret[0]['file_name'], $ret[0]['mime_type']);
+            // Add RepositoryDownload action 2010/03/30 A.Suzuki --end--
+            
+            unlink($copy_path);
+        }
+        
+        // remove temporary directory for pdfCover instance
+        $this->removeDirectory($tmpDirPath);
+        // Add delete pdf cover 2015/01/27 K.Matsushita -end-
         
         if($this->image_slide == null)
         {
-            // Add log common action Y.Nakao 2010/03/05 --start--
-            $this->entryLog(2, $this->item_id, $this->item_no, $this->attribute_id, $this->file_no, $this->image_slide);
-            // Add log common action Y.Nakao 2010/03/05 --end--
+            // Mod entryLog T.Koyasu 2015/03/06 --start--
+            $this->infoLog("businessLogmanager", __FILE__, __CLASS__, __LINE__);
+            $logManager = BusinessFactory::getFactory()->getBusiness("businessLogmanager");
+            $logManager->entryLogForDownload($this->item_id, $this->item_no, $this->attribute_id, $this->file_no);
+            // Mod entryLog T.Koyasu 2015/03/06 --end--
         }
         
         // アクション終了処理
@@ -406,5 +469,72 @@ class Repository_Action_Common_Download extends RepositoryAction
         $result = $this->exitAction();
         return;
     }
+    
+    // Add delete pdf cover 2015/01/27 K.Matsushita -start-
+    /**
+     * Get defaut temporary directory path
+     *
+     * @return string
+     */
+    private function getDefaltTmpDirPath()
+    {
+        $tmpDirPath = "";
+        $query = "SELECT DATE_FORMAT(NOW(), '%Y%m%d%H%i%s') AS now_date;";
+        $result = $this->Db->execute($query);
+        if($result === false || count($result) != 1){
+            return $tmpDirPath;
+        }
+        $date = $result[0]['now_date'];
+        $tmpDirPath = WEBAPP_DIR."/uploads/repository/_".$date."/";
+    
+        return $tmpDirPath;
+    }
+    
+    /**
+     * Get copy path of download file 
+     * 
+     * @param string
+     * @return string
+     */
+    private function getCopyFilePath($extension){
+        
+        // throw file contents for user
+        // Add separate file from DB 2009/04/21 Y.Nakao --start--
+        // get contents save path
+        $contents_path = $this->getFileSavePath("file");
+        if(strlen($contents_path) == 0){
+            // default directory
+            $contents_path = BASE_DIR.'/webapp/uploads/repository/files';
+        }
+        // check directory exists
+        if( !(file_exists($contents_path)) ){
+            $this->failTrans();
+            return false;
+        }
+        // Add separate file from DB 2009/04/21 Y.Nakao --end--
+        
+        $file_path = $contents_path.DIRECTORY_SEPARATOR.
+        $this->item_id.'_'.
+        $this->attribute_id.'_'.
+        $this->file_no.'.'.
+        $extension;
+        // check file exists
+        if( !(file_exists($file_path)) ){
+            $this->failTrans();
+            return false;
+        }
+        $copy_path = BASE_DIR.'/webapp/uploads/repository/'.
+                $this->item_id.'_'.
+                $this->attribute_id.'_'.
+                $this->file_no.'.'.
+                $extension;
+        // コンテンツ本体コピー
+        copy($file_path, $copy_path);
+        
+        return $copy_path;
+    }
+    
+    
+    // Add delete pdf cover 2015/01/27 K.Matsushita -end-
 }
 ?>

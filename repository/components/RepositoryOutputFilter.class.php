@@ -1,7 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-// $Id: RepositoryOutputFilter.class.php 41901 2014-09-22 12:39:14Z tatsuya_koyasu $
+// $Id: RepositoryOutputFilter.class.php 46336 2015-01-15 01:04:14Z yuko_nakao $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -854,7 +854,7 @@ class RepositoryOutputFilterJuNii2 extends RepositoryOutputFilter
         $pattern_zero = "/^\d{5}[AB]\d+$/";
         $pattern_one = "/^\d{5}.*第.*\d+号$/";
         
-        if(preg_match($pattern_zero, $strTarget) || preg_match($pattern_one, $strTarget))
+        if(preg_match($pattern_zero, $strTarget)===1 || preg_match($pattern_one, $strTarget)===1)
         {
             return $strTarget;
         }

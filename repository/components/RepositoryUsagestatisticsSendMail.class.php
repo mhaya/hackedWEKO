@@ -1,7 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-// $Id: RepositoryUsagestatisticsSendMail.class.php 562 2014-04-14 01:03:17Z ivis $
+// $Id: RepositoryUsagestatisticsSendMail.class.php 30569 2014-01-09 07:37:40Z rei_matsuura $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources

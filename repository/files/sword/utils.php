@@ -1,7 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-// $Id: utils.php 640 2014-10-24 08:07:50Z ivis $
+// $Id: utils.php 43165 2014-10-22 10:48:15Z tomohiro_ichikawa $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics,
 // Research and Development Center for Scientific Information Resources
@@ -360,7 +360,6 @@ function process_headers($request)
         $filename = "deposit";
         $token = split('[;]', $deposition);
         foreach($token as $value) {
-            $value = trim($value);
             $filename = split('[=]', $value);
             if(!strcmp($filename[0],'filename')) {
                 $filename = $filename[1];

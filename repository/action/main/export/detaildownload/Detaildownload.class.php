@@ -1,7 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-// $Id: Detaildownload.class.php 562 2014-04-14 01:03:17Z ivis $
+// $Id: Detaildownload.class.php 53594 2015-05-28 05:25:53Z kaede_matsushita $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -140,8 +140,8 @@ class Repository_Action_Main_Export_Detaildownload extends RepositoryAction
 					if($nCnt != 0){
 						$where_clause .= " OR ";
 					}
-					$where_clause .= "(attribute_id = '" . $license_agree_file_no[$nCnt] ."' AND ";
-					$where_clause .= "file_no = '" . $license_agree_file_no[$nCnt+1] . "' )";
+					$where_clause .= "(attribute_id = " . $license_agree_file_no[$nCnt] ." AND ";
+					$where_clause .= "file_no = " . $license_agree_file_no[$nCnt+1] . " )";
 				}
 				$where_clause .= " ) ";				
 			}

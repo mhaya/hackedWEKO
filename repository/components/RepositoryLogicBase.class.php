@@ -1,7 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-// $Id: RepositoryLogicBase.class.php 564 2014-04-14 01:06:48Z ivis $
+// $Id: RepositoryLogicBase.class.php 30197 2013-12-19 09:55:45Z rei_matsuura $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources

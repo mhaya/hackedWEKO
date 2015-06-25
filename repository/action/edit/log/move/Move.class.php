@@ -1,7 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-// $Id: Move.class.php 599 2014-07-14 09:06:17Z ivis $
+// $Id: Move.class.php 53594 2015-05-28 05:25:53Z kaede_matsushita $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics,
 // Research and Development Center for Scientific Information Resources
@@ -49,7 +49,7 @@ class Repository_Action_Edit_Log_Move extends RepositoryAction
 	// member
 	var $log_exception = "";
 	
-	function execute()
+	function executeApp()
 	{
 		try {
 			ini_set('memory_limit', -1);
@@ -230,8 +230,9 @@ class Repository_Action_Edit_Log_Move extends RepositoryAction
             // -------------------------------------------
             // Aggregate usage statistics
             // -------------------------------------------
-            $RepositoryUsagestatistics = new RepositoryUsagestatistics($this->Session, $this->Db, $this->TransStartDate);
-            if(!$RepositoryUsagestatistics->aggregateUsagestatistics())
+            $this->infoLog("businessUsagestatistics", __FILE__, __CLASS__, __LINE__);
+            $usageStatistics = BusinessFactory::getFactory()->getBusiness("businessUsagestatistics");
+            if(!$usageStatistics->aggregateUsagestatistics())
             {
                 $this->failTrans();
                 $this->exitAction();
@@ -395,7 +396,7 @@ class Repository_Action_Edit_Log_Move extends RepositoryAction
 					" FROM  ".DATABASE_PREFIX."repository_log AS log ".
 					" WHERE log.record_date >= '$start_date' ".
 					" AND log.record_date <= '$end_date' ".
-					" AND log.operation_id = '1' ".
+					" AND log.operation_id = 1 ".
 					$this->log_exception.
 					" GROUP BY d1 ";
 			$result = $this->Db->execute($query);
@@ -415,10 +416,10 @@ class Repository_Action_Edit_Log_Move extends RepositoryAction
 					 "   SELECT DISTINCT DATE_FORMAT( record_date, '%Y-%m-%d %H:%i' ) AS record_date,".
 					 "   ip_address, item_id, item_no, attribute_id, file_no, user_id, operation_id, user_agent".
 					 "   FROM ". DATABASE_PREFIX ."repository_log ".
-					 "   WHERE operation_id='2' ) AS log".
+					 "   WHERE operation_id=2 ) AS log".
 					" WHERE log.record_date >= '$start_date' ".
 					" AND log.record_date <= '$end_date' ".
-					" AND log.operation_id = '2' ".
+					" AND log.operation_id = 2 ".
 					$this->log_exception.
 					" GROUP BY d1 ";
 			// Modify for remove IE Continuation log K.Matsuo 2011/11/17 --end-- 
@@ -437,7 +438,7 @@ class Repository_Action_Edit_Log_Move extends RepositoryAction
 					" FROM  ".DATABASE_PREFIX."repository_log AS log ".
 					" WHERE log.record_date >= '$start_date' ".
 					" AND log.record_date <= '$end_date' ".
-					" AND log.operation_id = '3' ".
+					" AND log.operation_id = 3 ".
 					$this->log_exception.
 					" GROUP BY d1 ".
 					" ORDER BY d1 ";
@@ -453,9 +454,12 @@ class Repository_Action_Edit_Log_Move extends RepositoryAction
 			// make log file(yyyy.txt)
 			// ------------------------------------------
 			$year = "";
+	        
 			foreach ($log_per_date as $date => $val){
 				if(substr($date, 0, 4) != $year){
-					fclose($fp);
+				    if (strlen($year) > 0){
+					    fclose($fp);
+				    }
 					$year = substr($date, 0, 4);
 					$fp = fopen(WEBAPP_DIR."/logs/weko/logfile/log_per_date_$year.txt", "a");
 				}
@@ -479,7 +483,7 @@ class Repository_Action_Edit_Log_Move extends RepositoryAction
 					" FROM  ".DATABASE_PREFIX."repository_log AS log ".
 					" WHERE log.record_date >= '$start_date' ".
 					" AND log.record_date <= '$end_date' ".
-					" AND log.operation_id = '1' ".
+					" AND log.operation_id = 1 ".
 					$this->log_exception.
 					" GROUP BY d1, addr ".
 					" ORDER BY d1, addr ";
@@ -514,10 +518,10 @@ class Repository_Action_Edit_Log_Move extends RepositoryAction
 					"   SELECT DISTINCT DATE_FORMAT( record_date, '%Y-%m-%d %H:%i' ) AS record_date,".
 					"	ip_address, item_id, item_no, attribute_id, file_no, user_id, operation_id, user_agent, host".
 					"   FROM ". DATABASE_PREFIX ."repository_log ".
-					"   WHERE operation_id='2' ) AS log".
+					"   WHERE operation_id=2 ) AS log".
 					" WHERE log.record_date >= '$start_date' ".
 					" AND log.record_date <= '$end_date' ".
-					" AND log.operation_id = '2' ".
+					" AND log.operation_id = 2 ".
 					$this->log_exception.
 					" GROUP BY d1, addr ".
 					" ORDER BY d1, addr ";
@@ -551,7 +555,7 @@ class Repository_Action_Edit_Log_Move extends RepositoryAction
 					" FROM  ".DATABASE_PREFIX."repository_log AS log ".
 					" WHERE log.record_date >= '$start_date' ".
 					" AND log.record_date <= '$end_date' ".
-					" AND log.operation_id = '3' ".
+					" AND log.operation_id = 3 ".
 					$this->log_exception.
 					" GROUP BY d1, addr ".
 					" ORDER BY d1, addr ";
@@ -581,9 +585,12 @@ class Repository_Action_Edit_Log_Move extends RepositoryAction
 			// make log file(log_per_host_yyyyMM.txt)
 			// ------------------------------------------
 			$month = "";
+	        
 			foreach ($log_per_host as $date => $list){
 				if(substr($date, 0, 4).substr($date, 5, 2) != $month){
-					fclose($fp);
+					if (strlen($month) > 0){
+					    fclose($fp);
+				    }
 					$month = substr($date, 0, 4).substr($date, 5, 2);
 					$fp = fopen(WEBAPP_DIR."/logs/weko/logfile/log_per_host_".$month.".txt", "a"); 
 				}
@@ -612,10 +619,10 @@ class Repository_Action_Edit_Log_Move extends RepositoryAction
 					"   SELECT DISTINCT DATE_FORMAT( record_date, '%Y-%m-%d %H:%i' ) AS record_date,".
 					"	ip_address, item_id, item_no, attribute_id, file_no, user_id, operation_id, user_agent".
 					"   FROM ". DATABASE_PREFIX ."repository_log ".
-					"   WHERE operation_id='2' ) AS log".
+					"   WHERE operation_id=2 ) AS log".
 					" WHERE log.record_date >= '$start_date' ".
 					" AND log.record_date <= '$end_date' ".
-					" AND log.operation_id = '2' ".
+					" AND log.operation_id = 2 ".
 					$this->log_exception.
 					" GROUP BY d1, item_id, item_no ".
 					" ORDER BY d1, item_id, item_no; ";
@@ -650,7 +657,7 @@ class Repository_Action_Edit_Log_Move extends RepositoryAction
 					" FROM  ".DATABASE_PREFIX."repository_log AS log ".
 					" WHERE log.record_date >= '$start_date' ".
 					" AND log.record_date <= '$end_date' ".
-					" AND log.operation_id = '3' ".
+					" AND log.operation_id = 3 ".
 					$this->log_exception.
 					" GROUP BY d1, item_id, item_no ".
 					" ORDER BY d1, item_id, item_no; ";
@@ -681,9 +688,12 @@ class Repository_Action_Edit_Log_Move extends RepositoryAction
 			// make log file(log_per_host_yyyyMM.txt)
 			// ------------------------------------------
 			$month = "";
+	        
 			foreach ($log_per_item as $date => $list){
 				if(substr($date, 0, 4).substr($date, 5, 2) != $month){
-					fclose($fp);
+					if (strlen($month) > 0){
+					    fclose($fp);
+				    }
 					$month = substr($date, 0, 4).substr($date, 5, 2);
 					$fp = fopen(WEBAPP_DIR."/logs/weko/logfile/log_per_item_$month.txt", "a");
 				}
@@ -710,30 +720,39 @@ class Repository_Action_Edit_Log_Move extends RepositoryAction
 	 */
 	function makeLogReport(){
 		$block_id = $this->getBlockPageId();
-		$logreport = new Repository_Logreport();
-		//$cnt_month = 0;
-		//$end_time = mktime(0, 0, 0, $this->end_month, 1, $this->end_year);
+        $this->infoLog("businessLogreport", __FILE__, __CLASS__, __LINE__);
+        $logreport = BusinessFactory::getFactory()->getBusiness("businessLogreport");
+        $logreport->setAdminBase($this->repository_admin_base);
+        $logreport->setAdminRoom($this->repository_admin_room);
+        $repositoryLogreport = new Repository_Logreport();
 		
 		$start_date = $this->start_year."-".$this->start_month."-01";
 		$end_date = $this->end_year."-".$this->end_month."-01";
 		$query = "SELECT DATEDIFF('".$end_date."', '".$start_date."') AS date_diff;";
 		$result = $this->Db->execute($query);
-		if($result === false || count($result) != 1){
-			return false;
+		if($result === false){
+            $this->errorLog($this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+            throw new AppException($this->Db->ErrorMsg());
 		}
+        
+        if(count($result) != 1) {
+            return false;
+        }
 		$diff = $result[0]['date_diff'];
 		$tmp_date = $start_date;
-		
-		//while( ($month = mktime(0, 0, 0, $this->start_month+$cnt_month, 1, $this->start_year)) <= $end_time){
+        
 		while( $diff >= 0){
-			//$report_file = WEBAPP_DIR."/logs/weko/logreport/logReport_".date("Y", $month).date("m", $month).".zip";
-			
 			$query = "SELECT DATE_FORMAT('".$tmp_date."', '%Y') AS tmp_y, ".
 					 "DATE_FORMAT('".$tmp_date."', '%m') AS tmp_m;";
 			$result = $this->Db->execute($query);
-			if($result === false || count($result) != 1){
-				return false;
-			}
+		    if($result === false){
+                $this->errorLog($this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                throw new AppException($this->Db->ErrorMsg());
+    		}
+            
+            if(count($result) != 1) {
+                return false;
+            }
 			$tmp_year = $result[0]['tmp_y'];
 			$tmp_month = $result[0]['tmp_m'];
 			$report_file = WEBAPP_DIR."/logs/weko/logreport/logReport_".$tmp_year.$tmp_month.".zip";
@@ -745,100 +764,57 @@ class Repository_Action_Edit_Log_Move extends RepositoryAction
 			// -----------------------------------------------
 			// init
 			// -----------------------------------------------
-			$logreport->smartyAssign = $this->smartyAssign;
-			$logreport->Session = $this->Session;
-			$logreport->Db = $this->Db;
-			//$logreport->sy_log = date("Y", $month);
-			//$logreport->sm_log = date("m", $month);
-			$logreport->sy_log = $tmp_year;
-			$logreport->sm_log = $tmp_month;
-			$logreport->mail = false;
 			// set start date
-			$logreport->start_date = sprintf("%d-%02d-%02d",$logreport->sy_log, $logreport->sm_log,$logreport->sd_log);
-			$logreport->disp_start_date = sprintf("%d-%02d",$logreport->sy_log, $logreport->sm_log);
-			// set end date
-			$logreport->ey_log = $logreport->sy_log;
-			$logreport->em_log = $logreport->sm_log;
-			$logreport->end_date = sprintf("%d-%02d-%02d",$logreport->ey_log, $logreport->em_log,$logreport->ed_log);
-			$logreport->disp_end_date = sprintf("%d-%02d",$logreport->ey_log, $logreport->em_log);
+            $logreport->setStartYear($tmp_year);
+            $logreport->setStartMonth($tmp_month);
+            // set end date
+            $logreport->setEndYear($tmp_year);
+            $logreport->setEndMonth($tmp_month);
+            // set parameter
+            $repositoryLogreport->Session = $this->Session;
+            $repositoryLogreport->Db = $this->Db;
+            $repositoryLogreport->sy_log = $tmp_year;
+            $repositoryLogreport->sm_log = $tmp_month;
+            $repositoryLogreport->start_date = sprintf("%d-%02d-%02d",$repositoryLogreport->sy_log, $repositoryLogreport->sm_log, $repositoryLogreport->sd_log);
+            $repositoryLogreport->disp_start_date = sprintf("%d-%02d",$repositoryLogreport->sy_log, $repositoryLogreport->sm_log);
+            $repositoryLogreport->ey_log = $repositoryLogreport->sy_log;
+            $repositoryLogreport->em_log = $repositoryLogreport->sm_log;
+            $repositoryLogreport->end_date = sprintf("%d-%02d-%02d",$repositoryLogreport->ey_log, $repositoryLogreport->em_log,$repositoryLogreport->ed_log);
+            $repositoryLogreport->disp_end_date = sprintf("%d-%02d",$repositoryLogreport->ey_log, $repositoryLogreport->em_log);
+            $repositoryLogreport->setupLanguageResourceForOtherAction();
+            $repositoryLogreport->setupGroupList();
+            
 			// add for compress files
 			$output_files = array();
 			//$date = date("YmdHis");
 			$query = "SELECT DATE_FORMAT(NOW(), '%Y%m%d%H%i%s') AS now_date;";
 			$result = $this->Db->execute($query);
-			if($result === false || count($result) != 1){
-				return false;
-			}
+		    if($result === false){
+                $this->errorLog($this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                throw new AppException($this->Db->ErrorMsg());
+    		}
+            
+            if(count($result) != 1) {
+                return false;
+            }
 			$date = $result[0]['now_date'];
 			$tmp_dir = WEBAPP_DIR."/uploads/repository/_".$date;
 			mkdir( $tmp_dir, 0777 );
-			// setting log ecception
-			$log_report->log_exception = $this->log_exception;
 			
 			// -----------------------------------------------
 			// make
 			// -----------------------------------------------
-			// site license
-			$log_str = $logreport->makeAccessLogReport();
-			$log_file = $tmp_dir . "/logReport_SiteAccess_".
-						str_replace("-", "", $logreport->disp_start_date).".tsv";
-			$log_report = fopen($log_file, "w");
-			fwrite($log_report, $log_str);
-			fclose($log_report);
-			array_push( $output_files, $log_file );
-			
-			// download file num
-			$log_str = $logreport->makeFilePriceDownloadLogReportStr();
-			$log_file = $tmp_dir . "/logReport_PayPerView_".
-						str_replace("-", "", $logreport->disp_start_date).".tsv";
-			$log_report = fopen($log_file, "w");
-			fwrite($log_report, $log_str);
-			fclose($log_report);
-			array_push( $output_files, $log_file );
-			
-			// detail view as index
-			$log_str = $logreport->makeIndexLogReport();
-			$log_file = $tmp_dir . "/logReport_IndexAccess_".
-						str_replace("-", "", $logreport->disp_start_date).".tsv";
-			$log_report = fopen($log_file, "w");
-			fwrite($log_report, $log_str);
-			fclose($log_report);
-			array_push( $output_files, $log_file );
-			
-			// detail view and download file num as supple items
-			$log_str = $logreport->makeSuppleLogReport();
-			$log_file = $tmp_dir . "/logReport_SuppleAccess_".
-						str_replace("-", "", $logreport->disp_start_date).".tsv";
-			$log_report = fopen($log_file, "w");
-			fwrite($log_report, $log_str);
-			fclose($log_report);
-			array_push( $output_files, $log_file );
-			
-			// host log
-			$log_str = $logreport->makeHostLogReport();
-			$log_file = $tmp_dir . "/logReport_HostAccess_".
-						str_replace("-", "", $logreport->disp_start_date).".tsv";
-			$log_report = fopen($log_file, "w");
-			fwrite($log_report, $log_str);
-			fclose($log_report);
-			array_push( $output_files, $log_file );
-			
-            // Add Flash view log 2011/03/01 Y.Nakao --start--
-            $log_str = $logreport->makeFlashViewLogReport();
-            $log_file = $tmp_dir . "/logReport_FlashView_".
-                        str_replace("-", "", $logreport->disp_start_date).".tsv";
-            $log_report = fopen($log_file, "w");
-            fwrite($log_report, $log_str);
-            fclose($log_report);
-            array_push( $output_files, $log_file );
-            // Add Flash view log 2011/03/01 Y.Nakao --end--
-			
+            // Get data
+			$logreport->execute();
+            // Make file
+            $output_files = $repositoryLogreport->createLogReport($tmp_dir);
+            
 			// -----------------------------------------------
 			// compress zip file
 			// -----------------------------------------------
 			// set zip file name
 			$zip_file = "logReport_".
-						str_replace("-", "", $logreport->disp_start_date).".zip";
+						str_replace("-", "", sprintf("%d-%02d",$tmp_year, $tmp_month)).".zip";
 			// compress zip file	
 			File_Archive::extract(
 				$output_files,
