@@ -266,7 +266,7 @@ class Repository_OpenSearch_Atom extends Repository_Opensearch_FormatAbstract
                 $url = str_replace("file_id","attribute_id",$url);
                 $url .= '&item_no='.$searchResult[0]['item_no'];
                 $url .= '&page_id='.$this->blockid['page_id'].'&block_id='.$this->blockid['block_id'];
-                
+                //enclosure要素の作成
                 $xml .= '       <link rel="enclosure" title="'.$this->RepositoryAction->forXmlChange($itemData[self::DATA_FILE_NAME][$jj]).'" type="'.$this->RepositoryAction->forXmlChange($itemData[self::DATA_MIME_TYPE][$jj]).'" href="'.$this->RepositoryAction->forXmlChange($url).'" />'.self::LF;
 
                 //end mhaya
