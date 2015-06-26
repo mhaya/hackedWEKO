@@ -539,7 +539,9 @@ function generateEntryDocument($infos, &$response)
     # Header
     $response = "<?xml version=\"1.0\" encoding=\"utf-8\"?>" . "\n";
     # ENTRY
-    $response.= "<entry xmlns=\"http://www.w3.org/2005/Atom\" xmlns:sword=\"http://purl.org/net/sword/\">" . "\n";
+    //$response.= "<entry xmlns=\"http://www.w3.org/2005/Atom\" xmlns:sword=\"http://purl.org/net/sword/\">" . "\n";
+    //http://swordapp.github.io/SWORDv2-Profile/SWORDProfile.html#namespaces_sword
+    $response.= "<entry xmlns=\"http://www.w3.org/2005/Atom\" xmlns:sword=\"http://purl.org/net/sword/terms/\">" . "\n";
     # TITLE
     $response.= "  <title>" . $infos['collectionName'] . "</title>" . "\n";
     # ID    ( or SLUG => at the mo, the Slug value is kept in the db, but not shown in the answer )
@@ -682,10 +684,18 @@ function generateErrorDocument($infos, &$response)
     # Header
     $response = "<?xml version=\"1.0\" encoding=\"utf-8\"?>" . "\n";
     # ERROR
+    /*
     $response.= "<sword:error xmlns=\"". htmlspecialchars_self("http://www.w3.org/2005/Atom").
                 "\" xmlns:sword=\""    . htmlspecialchars_self("http://purl.org/net/sword/") .
                 "\" xmlns:arxiv=\""    . htmlspecialchars_self("http://arxiv.org/schemas/atom") .
                 "\" href=\""           . htmlspecialchars_self("http://example.org/errors/BadManifest"). "\">" . "\n";
+    */
+    //http://swordapp.github.io/SWORDv2-Profile/SWORDProfile.html#namespaces_sword
+    $response.= "<sword:error xmlns=\"". htmlspecialchars_self("http://www.w3.org/2005/Atom").
+                "\" xmlns:sword=\""    . htmlspecialchars_self("http://purl.org/net/sword/terms/") .
+                "\" xmlns:arxiv=\""    . htmlspecialchars_self("http://arxiv.org/schemas/atom") .
+                "\" href=\""           . htmlspecialchars_self("http://example.org/errors/BadManifest"). "\">" . "\n";
+
     # TITLE (const string)
     $response.= "  <title>" . "ERROR" . "</title>" . "\n";
     # UPDATED

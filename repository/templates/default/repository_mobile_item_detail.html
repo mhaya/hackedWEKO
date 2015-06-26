@@ -626,7 +626,9 @@
                         <{$attr_type[i].attribute_name}>
                     </div>
                     <div style="text-align:left; padding-left:20px;">
-                        <{if count($item_attr[i])==1}>
+                      <{if count($item_attr[i])==1}>
+                      <!-- using iframe/img tag 2012/09/20 by mhaya start -->
+                      <!--
                              <a target="_blank" href="<{$item_attr[i][0].attribute_value[0]}>">
                                  <{if $item_attr[i][0].attribute_value[1] != ""}>
                                      <{$item_attr[i][0].attribute_value[1]}>
@@ -634,7 +636,27 @@
                                      <{$item_attr[i][0].attribute_value[0]}>
                                  <{/if}>
                              </a>
-                        <{else}>
+-->
+                             
+<{if $item_attr[i][j].attribute_value[1] != "" && (strstr(strtolower($item_attr[i][0].attribute_value[1]),"iframe"))==true}>
+       <iframe src="<{$item_attr[i][j].attribute_value[0]}>" height="700" width="100%" scrolling="auto">Sorry. This content use IFrame</iframe>
+
+<{elseif strstr(strtolower($item_attr[i][j].attribute_value[0]),".jpg")==true||strstr(strtolower($item_attr[i][j].attribute_value[0]),".jpg")==true}>
+       <img src="<{$item_attr[i][j].attribute_value[0]}>" alt="<{$item_attr[i][j].attribute_value[1]}>" width=200px height=200px />
+<{else}>
+
+
+                              <a target="_blank" href="<{$item_attr[i][0].attribute_value[0]}>">
+                                  <{if $item_attr[i][0].attribute_value[1] != ""}>
+                                      <{$item_attr[i][0].attribute_value[1]}>
+@@ -634,6 +642,8 @@
+                                      <{$item_attr[i][0].attribute_value[0]}>
+                                  <{/if}>
+                              </a>
+<{/if}>
++<!-- using iframe/img tag 2012/09/20 by mhaya end -->
+                              
+                             <{else}>
                             <table width="100%">
                                 <{section name=j loop=$item_attr[i]}>
                                     <tr>
@@ -642,6 +664,9 @@
                                             <{$smarty.section.j.index_next}>.
                                         </td>
                                         <td style="width:100%; padding-top: 5px;">
+                                            <!-- using iframe/img tag 2012/09/20 by mhaya start -->
+                                          
+                                          <!--
                                             <a target="_blank" href="<{$item_attr[i][j].attribute_value[0]}>">
                                                 <{if $item_attr[i][j].attribute_value[1] != ""}>
                                                     <{$item_attr[i][j].attribute_value[1]}>
@@ -649,6 +674,25 @@
                                                     <{$item_attr[i][j].attribute_value[0]}>
                                                 <{/if}>
                                             </a>
+                                          -->
+
+<{if $item_attr[i][j].attribute_value[1] != "" && (strstr(strtolower($item_attr[i][0].attribute_value[1]),"iframe"))==true}>
+       <iframe src="<{$item_attr[i][j].attribute_value[0]}>" height="700" width="100%" scrolling="auto">Sorry. This content use IFrame</iframe>
+<{elseif strstr(strtolower($item_attr[i][j].attribute_value[0]),".jpg")==true||strstr(strtolower($item_attr[i][j].attribute_value[0]),".jpg")==true}>
+       <img src="<{$item_attr[i][j].attribute_value[0]}>" alt="<{$item_attr[i][j].attribute_value[1]}>" width=200px height=200px />
+<{else}>
+
+
+                                             <a target="_blank" href="<{$item_attr[i][j].attribute_value[0]}>">
+                                                 <{if $item_attr[i][j].attribute_value[1] != ""}>
+                                                     <{$item_attr[i][j].attribute_value[1]}>
+
+                                                     <{$item_attr[i][j].attribute_value[0]}>
+                                                 <{/if}>
+                                             </a>
+
+<{/if}>
+<!-- using iframe/img tag 2012/09/20 by mhaya end -->
                                         </td>
                                     </tr>
                                 <{/section}>

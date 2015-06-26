@@ -894,7 +894,9 @@
                                             <tr class="tr_detail_line_repos" <{ if $attr_type[i].hidden == '1' }>style="color: #808080;"<{/if}>>
                                                 <th class="th_detail_line_repos vt al w20 ws"><{$attr_type[i].attribute_name}></th>
                                                 <td class="td_detail_line_repos w80">
-                                                    <{section name=j loop=$item_attr[i]}>
+                                                  <{section name=j loop=$item_attr[i]}>
+<!-- using iframe/img tag 2012/09/20 by mhaya start -->
+                                                  <!--
                                                         <a target="_blank" href="<{$item_attr[i][j].attribute_value[0]}>">
                                                             <{if $item_attr[i][j].attribute_value[1] != ""}>
                                                                 <{$item_attr[i][j].attribute_value[1]}>
@@ -902,6 +904,22 @@
                                                                 <{$item_attr[i][j].attribute_value[0]}>
                                                             <{/if}>
                                                         </a><br>
+                                                    -->
+                                                    <{if $item_attr[i][j].attribute_value[1] != "" && (strstr(strtolower($item_attr[i][0].attribute_value[1]),"iframe"))==true}>
+       <iframe src="<{$item_attr[i][j].attribute_value[0]}>" height="700" width="100%" scrolling="auto">Sorry. This content use IFrame</iframe>
+<{elseif strstr(strtolower($item_attr[i][j].attribute_value[0]),".jpg")==true||strstr(strtolower($item_attr[i][j].attribute_value[0]),".jpg")==true}>
+       <img src="<{$item_attr[i][j].attribute_value[0]}>" alt="<{$item_attr[i][j].attribute_value[1]}>" width=200px height=200px />
+<{else}>
+       <a target="_blank" href="<{$item_attr[i][j].attribute_value[0]}>">
+       <{if $item_attr[i][j].attribute_value[1] != ""}>
+               <{$item_attr[i][j].attribute_value[1]}>
+       <{else}>
+               <{$item_attr[i][j].attribute_value[0]}>
+       <{/if}>
+       </a><br>
+<{/if}>
+       <!-- using iframe/img tag 2012/09/20 by mhaya end -->
+       
                                                     <{/section}>
                                                 </td>
                                             </tr>
