@@ -164,7 +164,11 @@ class Repository_Opensearch extends RepositorySearch
             case RepositorySearchRequestParameter::FORMAT_ATOM:
                 // output ATOM
                 require_once WEBAPP_DIR.'/modules/repository/opensearch/format/Atom.class.php';
-                $outputClass = new Repository_OpenSearch_Atom($this->Session, $this->Db);
+                /* start Repository_OpenSearch_Atomにblockidを渡す mhaya  */
+                //$outputClass = new Repository_OpenSearch_Atom($this->Session, $this->Db);
+                $blockid = $this->RepositoryAction->getBlockPageId();
+                $outputClass = new Repository_OpenSearch_Atom($this->Session, $this->Db,$blockid);
+                /* end mhaya*/
                 $searchResult = $this->search();
                 $requestParam = $this->getRequestParameter();
                 $requestParam[self::REQUEST_LOG_TERM] = $this->log_term;

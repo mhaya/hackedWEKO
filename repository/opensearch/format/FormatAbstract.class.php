@@ -31,6 +31,9 @@ class Repository_Opensearch_FormatAbstract
     const DATA_ITEM_TYPE_NAME = "item_type_name";
     const DATA_MIME_TYPE = "mime_type";
     const DATA_FILE_URI = "file_uri";
+    // start mhaya
+    const DATA_FILE_NAME = "file_name";
+    // end mhaya
     const DATA_CREATOR = "creator";
     const DATA_PUBLISHER = "publisher";
     const DATA_INDEX_PATH = "index_path";
@@ -242,6 +245,9 @@ class Repository_Opensearch_FormatAbstract
                         self::DATA_ITEM_TYPE_NAME => "",
                         self::DATA_MIME_TYPE => array(),
                         self::DATA_FILE_URI => array(),
+                        // start mhaya
+                        self::DATA_FILE_NAME => array(),
+                        // end mhaya
                         self::DATA_URL => array(),
                         self::DATA_CREATOR => array(),
                         self::DATA_CREATOR_LANG => array(),
@@ -396,6 +402,9 @@ class Repository_Opensearch_FormatAbstract
                                    "&file_id=".$itemAttr[$ii][$jj][RepositoryConst::DBCOL_REPOSITORY_FILE_ATTRIBUTE_ID].
                                    "&file_no=".$itemAttr[$ii][$jj][RepositoryConst::DBCOL_REPOSITORY_FILE_FILE_NO];
                         array_push($itemData[self::DATA_FILE_URI], $fileUri);
+                        // start ファイル名を取得 mhaya
+                        array_push($itemData[self::DATA_FILE_NAME],$itemAttr[$ii][$jj][RepositoryConst::DBCOL_REPOSITORY_FILE_FILE_NAME]);
+                        // end mhaya
                     }
                 }
                 
