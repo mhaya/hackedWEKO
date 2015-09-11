@@ -1,7 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-// $Id: Download.class.php 564 2014-04-14 01:06:48Z ivis $
+// $Id: Download.class.php 36217 2014-05-26 04:22:11Z satoshi_arata $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources

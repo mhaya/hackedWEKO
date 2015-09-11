@@ -1,7 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-// $Id: Usagestatistics.class.php 535 2012-12-07 09:26:24Z ivis $
+// $Id: Usagestatistics.class.php 18959 2012-08-07 05:03:29Z atsushi_suzuki $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources

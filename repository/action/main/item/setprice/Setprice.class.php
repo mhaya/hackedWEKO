@@ -1,7 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-// $Id: Setprice.class.php 640 2014-10-24 08:07:50Z ivis $
+// $Id: Setprice.class.php 41054 2014-09-05 08:34:02Z tomohiro_ichikawa $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources

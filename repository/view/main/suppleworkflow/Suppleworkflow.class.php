@@ -1,7 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-// $Id: Suppleworkflow.class.php 516 2012-05-22 09:30:55Z ivis $
+// $Id: Suppleworkflow.class.php 9306 2011-06-03 11:48:07Z atsushi_suzuki $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources

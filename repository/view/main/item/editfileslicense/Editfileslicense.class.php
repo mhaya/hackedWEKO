@@ -1,7 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-// $Id: Editfileslicense.class.php 599 2014-07-14 09:06:17Z ivis $
+// $Id: Editfileslicense.class.php 38124 2014-07-01 06:56:02Z rei_matsuura $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources

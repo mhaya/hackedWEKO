@@ -1,7 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-// $Id: Logincheck.class.php 567 2014-05-21 08:30:29Z ivis $
+// $Id: Logincheck.class.php 36236 2014-05-26 07:53:04Z satoshi_arata $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources

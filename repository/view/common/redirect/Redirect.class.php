@@ -1,7 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-// $Id: Redirect.class.php 562 2014-04-14 01:03:17Z ivis $
+// $Id: Redirect.class.php 22759 2013-05-21 04:47:11Z koji_matsuo $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources

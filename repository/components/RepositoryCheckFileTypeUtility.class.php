@@ -1,7 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-// $Id: RepositoryCheckFileTypeUtility.class.php 564 2014-04-14 01:06:48Z ivis $
+// $Id: RepositoryCheckFileTypeUtility.class.php 30910 2014-01-20 07:33:12Z rei_matsuura $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources

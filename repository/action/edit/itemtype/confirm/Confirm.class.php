@@ -1,7 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-// $Id: Confirm.class.php 640 2014-10-24 08:07:50Z ivis $
+// $Id: Confirm.class.php 41407 2014-09-11 10:35:24Z tomohiro_ichikawa $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources

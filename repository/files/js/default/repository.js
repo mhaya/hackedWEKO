@@ -1,6 +1,6 @@
 // --------------------------------------------------------------------
 //
-// $Id: repository.js 600 2014-08-06 04:41:16Z ivis $
+// $Id: repository.js 3131 2011-01-28 11:36:33Z haruka_goto $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources

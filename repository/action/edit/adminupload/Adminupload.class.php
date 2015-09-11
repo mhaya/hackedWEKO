@@ -1,7 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-// $Id: Adminupload.class.php 535 2012-12-07 09:26:24Z ivis $
+// $Id: Adminupload.class.php 18290 2012-06-25 07:05:42Z atsushi_suzuki $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources

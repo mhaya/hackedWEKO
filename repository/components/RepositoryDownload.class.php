@@ -1,7 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-// $Id: RepositoryDownload.class.php 562 2014-04-14 01:03:17Z ivis $
+// $Id: RepositoryDownload.class.php 31589 2014-02-12 02:00:46Z tomohiro_ichikawa $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources

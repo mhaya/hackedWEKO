@@ -1,7 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-// $Id: Shufflemetadata.class.php 562 2014-04-14 01:03:17Z ivis $
+// $Id: Shufflemetadata.class.php 24559 2013-08-02 00:47:17Z koji_matsuo $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources

@@ -1,7 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-// $Id: Importauthority.class.php 564 2014-04-14 01:06:48Z ivis $
+// $Id: Importauthority.class.php 30569 2014-01-09 07:37:40Z rei_matsuura $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources

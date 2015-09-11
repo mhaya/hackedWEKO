@@ -1,7 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-// $Id: RepositoryIndexManager.class.php 663 2014-12-18 02:25:06Z ivis $
+// $Id: RepositoryIndexManager.class.php 42836 2014-10-09 10:42:29Z yuko_nakao $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics,
 // Research and Development Center for Scientific Information Resources
@@ -141,11 +141,16 @@ class RepositoryIndexManager extends RepositoryLogicBase
             $auth_id = $this->Session->getParameter("_auth_id");
             $language = $this->Session->getParameter("_lang");
 
-            // インデックスリンクの取得
-            $result = array();
-            
-            // ルートインデックスから探索する
-            $this->getIndexList(0, $result);
+            // インデックスリストの取得
+            $query = "SELECT index_id, index_name, index_name_english, select_index_list_name, select_index_list_name_english ".
+                     "FROM ".DATABASE_PREFIX."repository_index ".
+                     "WHERE select_index_list_display = 1 ".
+                     "AND is_delete = 0 ;";
+
+            $result = $this->dbAccess->executeQuery($query);
+            if (count($result) == 0) {
+                return array();
+            }
 
             // 閲覧可能なインデックスIDの取得
             $indexAuthorityManager = new RepositoryIndexAuthorityManager($this->Session, $this->dbAccess, $this->transStartDate);
@@ -203,39 +208,6 @@ class RepositoryIndexManager extends RepositoryLogicBase
             return array();
         }
         return $displayIndexList;
-    }
-
-    /**
-     * インデックスリンクに表示する一覧を取得する
-     *
-     * @param var $parentIndexId search index, 
-     * @param var $indexList the list of index list
-     */
-    private function getIndexList($parentIndexId, &$indexLinkList)
-    {
-        // 親インデックスに所属するインデックスをすべて取得
-        $query = "SELECT index_id, index_name, index_name_english, select_index_list_display, select_index_list_name, select_index_list_name_english " .
-                 "FROM " . DATABASE_PREFIX . "repository_index " .
-                 "WHERE parent_index_id = ? AND is_delete = ? " . 
-                 "ORDER BY show_order ;";
-        
-        $params = array();
-        $params[] = $parentIndexId;
-        $params[] = 0;
-        
-        $result = $this->dbAccess->executeQuery($query, $params);
-        
-        for ($ii = 0; $ii < count($result); $ii++)
-        {
-            // インデックスリンクに表示するものを追加する
-            if ($result[$ii]["select_index_list_display"] == 1)
-            {
-                $indexLinkList[] = $result[$ii];
-            }
-            
-            // 1階層深く探査
-            $this->getIndexList($result[$ii]["index_id"], $indexLinkList);
-        }
     }
 
     /**

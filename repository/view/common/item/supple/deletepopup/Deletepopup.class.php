@@ -1,7 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-// $Id: Deletepopup.class.php 516 2012-05-22 09:30:55Z ivis $
+// $Id: Deletepopup.class.php 9461 2011-06-16 00:39:22Z yuko_nakao $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources

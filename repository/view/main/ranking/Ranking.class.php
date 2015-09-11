@@ -1,7 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-// $Id: Ranking.class.php 663 2014-12-18 02:25:06Z ivis $
+// $Id: Ranking.class.php 44305 2014-11-21 08:22:24Z keiya_sugimoto $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -646,7 +646,7 @@ class Repository_View_Main_Ranking extends RepositoryAction
         $public_index_query = $repositoryIndexAuthorityManager->getPublicIndexQuery(false, $this->repository_admin_base, $this->repository_admin_room);
         // Make TmpTable 2014/11/07 T.Ichikawa --start--
         $now = date("YmdHis", strtotime($this->TransStartDate));
-        $public_index_query = $this->replaceQueryForTemporaryTable($public_index_query, $now, $cntGroupNum);
+        $public_index_query = $this->replaceQueryForTemporaryTable($public_index_query, $now);
         
         $sqlCmd=" 
             SELECT item.item_id, item.item_no, item.title, item.title_english,count(*)
@@ -664,7 +664,7 @@ class Repository_View_Main_Ranking extends RepositoryAction
               ORDER BY count(*) desc; ";
         $result = $this->Db->execute($sqlCmd);
         
-        $this->dropTemporaryTable($now, $cntGroupNum);
+        $this->dropTemporaryTable($now);
         // Make TmpTable 2014/11/07 T.Ichikawa --end--
         return $result;
             }
@@ -727,7 +727,7 @@ class Repository_View_Main_Ranking extends RepositoryAction
         $public_index_query = $repositoryIndexAuthorityManager->getPublicIndexQuery(false, $this->repository_admin_base, $this->repository_admin_room);
         // Make TmpTable 2014/11/07 T.Ichikawa --start--
         $now = date("YmdHis", strtotime($this->TransStartDate));
-        $public_index_query = $this->replaceQueryForTemporaryTable($public_index_query, $now, $cntGroupNum);
+        $public_index_query = $this->replaceQueryForTemporaryTable($public_index_query, $now);
         // Modify for remove IE Continuation log K.Matsuo 2011/11/17 --start-- 
         $sqlCmd=" 
             SELECT item.item_id,item.item_no,item.title,item.title_english,". DATABASE_PREFIX ."repository_file.file_name,". DATABASE_PREFIX ."repository_file.file_no,count(*)
@@ -753,7 +753,7 @@ class Repository_View_Main_Ranking extends RepositoryAction
               " GROUP BY ". DATABASE_PREFIX ."repository_log.item_id, ". DATABASE_PREFIX ."repository_log.attribute_id, ". DATABASE_PREFIX ."repository_log.file_no 
             ORDER BY count(*) desc;     ";
         $result = $this->Db->execute($sqlCmd);
-        $this->dropTemporaryTable($now, $cntGroupNum);
+        $this->dropTemporaryTable($now);
         // Make TmpTable 2014/11/07 T.Ichikawa --end--
         return $result;
         // Mod OpenDepo 2014/01/31 S.Arata --end--
@@ -917,7 +917,7 @@ class Repository_View_Main_Ranking extends RepositoryAction
         $public_index_query = $repositoryIndexAuthorityManager->getPublicIndexQuery(false, $this->repository_admin_base, $this->repository_admin_room);
         // Make TmpTable 2014/11/07 T.Ichikawa --start--
         $now = date("YmdHis", strtotime($this->TransStartDate));
-        $public_index_query = $this->replaceQueryForTemporaryTable($public_index_query, $now, $cntGroupNum);
+        $public_index_query = $this->replaceQueryForTemporaryTable($public_index_query, $now);
         
         $sqlCmd=" 
             SELECT DISTINCT item.item_id,item.item_no,item.title,item.title_english,item.shown_date
@@ -933,7 +933,7 @@ class Repository_View_Main_Ranking extends RepositoryAction
              " ORDER BY item.shown_date desc, item.item_id desc;
         ";
         $result = $this->Db->execute($sqlCmd);
-        $this->dropTemporaryTable($now, $cntGroupNum);
+        $this->dropTemporaryTable($now);
         // Make TmpTable 2014/11/07 T.Ichikawa --end--
         return $result;
         // Mod OpenDepo 2014/01/31 S.Arata --end--
@@ -1010,7 +1010,7 @@ class Repository_View_Main_Ranking extends RepositoryAction
      * @param string $query
      * @param string $date
      */
-     private function replaceQueryForTemporaryTable($mod_query, $date, &$cntGroupNum=0) {
+     private function replaceQueryForTemporaryTable($mod_query, $date) {
         // 一時テーブル作成
         $query = "CREATE TEMPORARY TABLE ". DATABASE_PREFIX. "repository_index_browsing_authority_".$date." ".
                  "( PRIMARY KEY (`index_id`), ".
@@ -1032,7 +1032,6 @@ class Repository_View_Main_Ranking extends RepositoryAction
                      "( PRIMARY KEY (`index_id`,`exclusive_acl_group_id`) ) ".
                      "SELECT * FROM ". DATABASE_PREFIX. "repository_index_browsing_groups ;";
             $result = $this->Db->execute($query);
-            $cntGroupNum++;
         }
         // Bug Fix temporary table can read only once 2014/11/20 T.Koyasu --end--
         
@@ -1067,17 +1066,14 @@ class Repository_View_Main_Ranking extends RepositoryAction
      * ランキング処理用の一時テーブルを削除する
      * 
      * @param string $date
-     * @param int    $cntGroupNum
      */
-     private function dropTemporaryTable($date, $cntGroupNum) {
-        $this->Db->execute("DROP TEMPORARY TABLE IF EXISTS ".DATABASE_PREFIX ."repository_index_browsing_authority_".$date.";");
+     private function dropTemporaryTable($date) {
+        $this->Db->execute("DROP TABLE IF EXISTS ".DATABASE_PREFIX ."repository_index_browsing_authority_".$date.";");
         // Bug Fix temporary table can read only once 2014/11/20 T.Koyasu --start--
         // drop table to all temporary table "repository_index_browsing_groups_YYYYMMDD_?" by wild card
-        for($ii = 0; $ii < $cntGroupNum; $ii++){
-            $this->Db->execute("DROP TEMPORARY TABLE IF EXISTS ".DATABASE_PREFIX ."repository_index_browsing_groups_".$date."_".$ii.";");
-        }
+        $this->Db->execute("DROP TABLE IF EXISTS ".DATABASE_PREFIX ."repository_index_browsing_groups_".$date."_%;");
         // Bug Fix temporary table can read only once 2014/11/20 T.Koyasu --end--
-        $this->Db->execute("DROP TEMPORARY TABLE IF EXISTS ".DATABASE_PREFIX ."pages_users_link_".$date.";");
+        $this->Db->execute("DROP TABLE IF EXISTS ".DATABASE_PREFIX ."pages_users_link_".$date.";");
      }
 }
 ?>

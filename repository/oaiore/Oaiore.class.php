@@ -1,7 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-// $Id: Oaiore.class.php 599 2014-07-14 09:06:17Z ivis $
+// $Id: Oaiore.class.php 36229 2014-05-26 05:49:55Z satoshi_arata $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources

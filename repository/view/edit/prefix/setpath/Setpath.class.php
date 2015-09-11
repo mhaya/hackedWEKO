@@ -1,7 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-// $Id: Setpath.class.php 328 2009-05-15 08:09:28Z ivis $
+// $Id: Setpath.class.php 3 2010-02-02 05:07:44Z atsushi_suzuki $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources

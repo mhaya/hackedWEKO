@@ -1,7 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-// $Id: Snippet.class.php 663 2014-12-18 02:25:06Z ivis $
+// $Id: Snippet.class.php 42014 2014-09-24 12:26:22Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics,
 // Research and Development Center for Scientific Information Resources
@@ -1674,9 +1674,9 @@ class Repository_View_Main_Item_Snippet extends RepositoryAction
             $query .= " WHERE idx.parent_index_id = ? ".
                       " AND idx.is_delete = ? ".
                       " ORDER BY idx.`show_order` ASC ";
-            $generalParams = array();
-            $generalParams[] = $this->index_id;
-            $generalParams[] = 0;
+            $params = array();
+            $params[] = $this->index_id;
+            $params[] = 0;
             // Mod OpenDepo 2014/01/31 S.Arata --end--
         } else {
             $privatetree_sort_order = "";
@@ -1708,7 +1708,7 @@ class Repository_View_Main_Item_Snippet extends RepositoryAction
                      " AND is_delete = 0 ".
                      " AND LENGTH( owner_user_id ) = 0 ".
                      " AND `owner_user_id` = '' ".    // Add not show privateTree K.Matsuo 2013/04/10
-                     " ) AS TABLE1 ";
+                     " ORDER BY `show_order` ) AS TABLE1 ";
 
             if ($user_auth_id >= $this->repository_admin_base && $auth_id >= $this->repository_admin_room)
             {
@@ -1757,7 +1757,7 @@ class Repository_View_Main_Item_Snippet extends RepositoryAction
                               "  AND is_delete = 0 ".
                               "  AND LENGTH( owner_user_id ) > 0 ".
                               " AND LENGTH( index_name_english ) = 0 ".
-                              " ) ".
+                              " ) ".$order.
                               ") AS TABLE2 ";
 
             if ($user_auth_id >= $this->repository_admin_base && $auth_id >= $this->repository_admin_room)
@@ -1785,45 +1785,20 @@ class Repository_View_Main_Item_Snippet extends RepositoryAction
             }
             // Mod OpenDepo 2014/01/31 S.Arata --end--
 
-            $privateTreeQuery .=  $order . ";";
-            $query .= " ORDER BY `show_order` ;";
-            
-            $generalParams = array();
-            $generalParams[] = $this->index_id;
-            
-            $privateParams = array();
-            $privateParams[] = $this->index_id;
-            $privateParams[] = $this->index_id;
-            $privateParams[] = $this->index_id;
+            $query .= " UNION ". $privateTreeQuery;
+            $query .= " ;";
+            $params = array();
+            $params[] = $this->index_id;
+            $params[] = $this->index_id;
+            $params[] = $this->index_id;
+            $params[] = $this->index_id;
         }
         // get children index
-        // 通常ツリーとプライベートツリーを合成する配列
-        $childIndexList = array();
-        
-        // 通常ツリーを取得
-        $generalList = $this->Db->execute($query, $generalParams);
-        if($generalList === false)
+        $childIndexList = $this->Db->execute($query, $params);
+        if($childIndexList === false)
         {
-            $generalList = array();
+            $childIndexList = array();
         }
-        
-        // プライベートツリーを取得
-        if (isset($privateTreeQuery)) 
-        {
-            $privateList = $this->Db->execute($privateTreeQuery, $privateParams);
-            if($privateList === false)
-            {
-                $privateList = array();
-            }
-            
-            // プライベートツリーが存在するなら通常ツリーと合成
-            $childIndexList = array_merge($generalList, $privateList);
-        }
-        else {
-            // プライベートツリーが存在しないなら通常ツリーだけを代入
-            $childIndexList = $generalList;
-        }
-        
         for($ii=0; $ii<count($childIndexList); $ii++)
         {
             $childIndexList[$ii]["oaiore_uri"] = "";

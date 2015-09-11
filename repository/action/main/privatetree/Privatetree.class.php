@@ -1,7 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-// $Id: Privatetree.class.php 564 2014-04-14 01:06:48Z ivis $
+// $Id: Tree.class.php 20897 2013-01-11 07:26:13Z ayumi_jin $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources

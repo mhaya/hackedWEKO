@@ -1,7 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-// $Id: Update.class.php 640 2014-10-24 08:07:50Z ivis $
+// $Id: Update.class.php 41684 2014-09-18 00:04:18Z yuko_nakao $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources

@@ -1,7 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-// $Id: ExportCommon.class.php 610 2014-08-29 07:24:55Z ivis $
+// $Id: ExportCommon.class.php 40365 2014-08-25 04:54:42Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources

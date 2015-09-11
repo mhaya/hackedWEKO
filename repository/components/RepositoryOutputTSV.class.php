@@ -1,7 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-// $Id: RepositoryOutputTSV.class.php 640 2014-10-24 08:07:50Z ivis $
+// $Id: RepositoryDownload.class.php 24001 2013-07-10 01:33:59Z yuko_nakao $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources

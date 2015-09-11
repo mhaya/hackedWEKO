@@ -1,7 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-// $Id: Validator_DownloadCheck.class.php 645 2014-10-29 12:39:52Z ivis $
+// $Id: Validator_DownloadCheck.class.php 43338 2014-10-29 05:14:00Z tomohiro_ichikawa $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics,
 // Research and Development Center for Scientific Information Resources

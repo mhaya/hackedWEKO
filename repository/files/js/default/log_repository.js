@@ -1,6 +1,6 @@
 // --------------------------------------------------------------------
 //
-// $Id: log_repository.js 562 2014-04-14 01:03:17Z ivis $
+// $Id: log_repository.js 9472 2011-06-16 07:54:19Z yuko_nakao $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources

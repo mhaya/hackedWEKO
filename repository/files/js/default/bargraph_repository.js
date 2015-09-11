@@ -1,6 +1,6 @@
 // --------------------------------------------------------------------
 //
-// $Id: bargraph_repository.js 270 2009-01-21 04:50:41Z ivis $
+// $Id: bargraph_repository.js 3131 2011-01-28 11:36:33Z haruka_goto $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources

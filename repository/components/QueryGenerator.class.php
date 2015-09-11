@@ -1,7 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-// $Id: QueryGenerator.class.php 44575 2014-12-01 12:09:36Z tomohiro_ichikawa $
+// $Id: QueryGenerator.class.php 42605 2014-10-03 01:02:01Z keiya_sugimoto $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -869,18 +869,13 @@ class Repository_Components_Querygenerator implements Repository_Components_Quer
             if($count > 0){
                 $tmpTermQuery .= $innerAndor." ";
             }
-            // Add Senna judge T.Ichikawa 2014/12/01 --start--
-            if($this->searchEngine == "mroonga") {
+            if($isFulltext){
                 $tmpTermQuery .= "MATCH(".$shortName.".metadata) AGAINST(mroonga_escape(?, '()~><-*`\"\\\') IN BOOLEAN MODE) ";
-                $connectQueryParam[] = "+".$searchStringList[$ii];
-            } else if($this->searchEngine == "senna") {
-                $tmpTermQuery .= "MATCH(".$shortName.".metadata) AGAINST(? IN BOOLEAN MODE) ";
                 $connectQueryParam[] = "+".$searchStringList[$ii];
             } else {
                 $tmpTermQuery .= $shortName.".metadata LIKE ? ";
                 $connectQueryParam[] = "%".$searchStringList[$ii]."%";
             }
-            // Add Senna judge T.Ichikawa 2014/12/01 --end--
             $count++;
         }
         $tmpTermQuery .= ") ";

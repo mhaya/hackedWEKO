@@ -1,7 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-// $Id: Icon.class.php 516 2012-05-22 09:30:55Z ivis $
+// $Id: Icon.class.php 15605 2012-02-20 09:30:55Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources

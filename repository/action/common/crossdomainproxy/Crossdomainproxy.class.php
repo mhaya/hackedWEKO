@@ -1,7 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-// $Id: Crossdomainproxy.class.php 564 2014-04-14 01:06:48Z ivis $
+// $Id: Crossdomainproxy.class.php 28536 2013-11-21 08:46:23Z shota_suzuki $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources

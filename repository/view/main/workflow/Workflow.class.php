@@ -1,7 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-// $Id: Workflow.class.php 516 2012-05-22 09:30:55Z ivis $
+// $Id: Workflow.class.php 16916 2012-04-06 05:10:11Z ayumi_jin $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources

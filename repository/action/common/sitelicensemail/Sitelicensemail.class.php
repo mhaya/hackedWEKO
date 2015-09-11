@@ -1,7 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-// $Id: Sitelicensemail.class.php 44462 2014-11-28 02:42:41Z tomohiro_ichikawa $
+// $Id: Sitelicensemail.class.php 35484 2014-05-09 10:54:58Z tomohiro_ichikawa $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -181,8 +181,6 @@ class Repository_Action_Common_Sitelicensemail extends RepositoryAction
         $lang = $this->Session->getParameter("_lang");
         $nextRequest = BASE_URL."/?action=repository_action_common_background_sitelicensemail".
                        "&login_id=".$this->login_id."&password=".$this->password. "&lang=". $lang;
-        $url = parse_url($nextRequest);
-        $nextRequest = str_replace($url["scheme"]."://".$url["host"], "",  $nextRequest);
         
         // Call oneself by async
         $host = array();
@@ -191,20 +189,17 @@ class Repository_Action_Common_Sitelicensemail extends RepositoryAction
         if($hostName == "localhost"){
             $hostName = gethostbyname($_SERVER['SERVER_NAME']);
         }
-        $hostSock = $hostName;
         if($_SERVER["SERVER_PORT"] == 443)
         {
-            $hostSock = "ssl://".$hostName;
+            $hostName = "ssl://".$hostName;
         }
-        
-        $handle = fsockopen($hostSock, $_SERVER["SERVER_PORT"]);
+        $handle = fsockopen($hostName, $_SERVER["SERVER_PORT"]);
         if (!$handle)
         {
             return false;
         }
-        
         stream_set_blocking($handle, false);
-        fwrite($handle, "GET ".$nextRequest." HTTP/1.1\r\nHost: ". $hostName."\r\n\r\n");
+        fwrite($handle, "GET ".$nextRequest." HTTP/1.0\r\n\r\n");
         fclose ($handle);
         
         return true;

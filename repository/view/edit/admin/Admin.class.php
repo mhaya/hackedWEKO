@@ -1,7 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-// $Id: Admin.class.php 640 2014-10-24 08:07:50Z ivis $
+// $Id: Admin.class.php 42605 2014-10-03 01:02:01Z keiya_sugimoto $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -570,7 +570,7 @@ class Repository_View_Edit_Admin extends RepositoryAction
             }
             // search string 'OAI-PMH'
             $search_result = strpos($resBody, "OAI-PMH");
-
+            
             if(is_numeric($search_result) && $search_result > 0) {
                 // url rewrite is used
                 $show_base_url = BASE_URL ."/oai";
