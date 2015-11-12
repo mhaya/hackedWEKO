@@ -1,7 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-// $Id: Ranking.class.php 53594 2015-05-28 05:25:53Z kaede_matsushita $
+// $Id: Ranking.class.php 57108 2015-08-26 01:03:29Z keiya_sugimoto $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -73,7 +73,6 @@ class Repository_View_Main_Ranking extends WekoAction
     // Fix advanced search for ranking view at top page. Y.Nakao 2014/01/14 --start--
     public $active_search_flag = null;              // flag for detail search or simple search
     public $detail_search_usable_item = array();    // detail search usable item
-    public $all_search_type = null;                 // all search type
     public $detail_search_item_type = array();      // search itemtype
     public $detail_search_select_item = array();    // search itemtype
     public $default_detail_search = array();        // default detail search items
@@ -83,6 +82,9 @@ class Repository_View_Main_Ranking extends WekoAction
     var $fileIdx = "";                              // ログイン後のファイルダウンロード情報
     var $block_id = null;
     // Fix download request url 2015/02/03 T.Ichikawa --end--
+    
+    private $rank_num = 5;
+    var $search_type = null;
 
     /**
      * create ranking data
@@ -685,7 +687,11 @@ class Repository_View_Main_Ranking extends WekoAction
             $this->uri_export = null;
         } else {
             $tmp_status = $this->uri_export["status"];
-            $this->uri_export["status"] = $this->checkExportFileDownload($this->uri_export["status"]);
+            $repositoryAction = new RepositoryAction();
+            $repositoryAction->Db = $this->Db;
+            $repositoryAction->Session = $this->Session;
+            $repositoryAction->TransStartDate = $this->accessDate;
+            $this->uri_export["status"] = $repositoryAction->checkExportFileDownload($this->uri_export["status"]);
             if($tmp_status == "login"){
                 // ログイン処理を読みだす
                 // sessionにはreloadを保存、表示にはloginを使用

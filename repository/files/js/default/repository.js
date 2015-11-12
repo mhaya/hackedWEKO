@@ -3346,6 +3346,7 @@ clsRepository.prototype = {
 		this.repositoryItemAddSpaceToEmptyText(form);
 		// Fix input suffix vulnerability. 2011/07/04 Y.Nakao --start--
 		suffix = encodeURIComponent(suffix);
+		fillStr = encodeURIComponent(fillStr);
 		// Fix input suffix vulnerability. 2011/07/04 Y.Nakao --end--
 		// Get Opend Node IDs & Checked Node Ids.
 		params["param"] = "action=repository_action_main_item_fillauthor" + "&" +

@@ -1,7 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-// $Id: RepositoryConst.class.php 49321 2015-03-03 12:15:32Z keiya_sugimoto $
+// $Id: RepositoryConst.class.php 56711 2015-08-19 13:21:44Z tomohiro_ichikawa $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -1077,5 +1077,13 @@ class RepositoryConst
     const PARAM_SHOW_ALTERNATIVE_LANG = "1";
     const PARAM_HIDE_ALTERNATIVE_LANG = "0";
     // Bug fix WEKO-2014-031 T.Koyasu 2014/06/25 --end--
+    
+    // -------------------------------------------
+    // FPDF Header Status
+    // -------------------------------------------
+    const ALIGN_LEFT = 'L';
+    const ALIGN_CENTER = 'C';
+    const ALIGN_RIGHT = 'R';
+    const ALIGN_CENTERLEFT = 'CL';
 }
 ?>

@@ -21,18 +21,9 @@ class Repository_Components_Business_Logreport extends Repository_Components_Bus
     const IS_SITELICENSE = "is_sitelicense";
     const IS_NOT_SITELICENSE = "is_not_sitelicense";
     
-    // member
-    private $keywordRankingReport = array();
-    private $detailViewReport = array();
-    private $fileViewReport = array();
-    private $fileViewPerUser = array();
-    private $hostAccessReport = array();
-    private $indexAccessReport = array();
-    private $payPerViewReport = array();
-    private $siteAccessReport = array();
-    private $userAffiliateReport = array();
-    private $suppleReport = array();
+    const LIMIT_NUM = 11000;
     
+    // member
     // start date
     private $sy_log = 0;
     private $sm_log = 0;
@@ -46,26 +37,6 @@ class Repository_Components_Business_Logreport extends Repository_Components_Bus
     // 
     private $repository_admin_base = null;
     private $repository_admin_room = null;
-    
-    /**
-     * supple report create flag
-     *
-     * @var boolean
-     */
-    private $isCreatedSuppleReport = false;
-    
-    // getter
-    public function getKeywordRankingReport(){  return $this->keywordRankingReport; }
-    public function getDetailViewReport(){      return $this->detailViewReport;     }
-    public function getFileViewReport(){        return $this->fileViewReport;       }
-    public function getFileViewPerUser(){       return $this->fileViewPerUser;      }
-    public function getHostAccessReport(){      return $this->hostAccessReport;     }
-    public function getIndexAccessReport(){     return $this->indexAccessReport;    }
-    public function getPayPerViewReport(){      return $this->payPerViewReport;     }
-    public function getSiteAccessReport(){      return $this->siteAccessReport;     }
-    public function getUserAffiliateReport(){   return $this->userAffiliateReport;  }
-    public function getSuppleReport(){          return $this->suppleReport;         }
-    public function getIsCreatedSuppleReport(){ return $this->isCreatedSuppleReport;}
     
     // setter
     public function setStartYear($year)     {    $this->sy_log = $year;     }
@@ -82,35 +53,6 @@ class Repository_Components_Business_Logreport extends Repository_Components_Bus
      */
     protected function executeApp()
     {
-        $this->traceLog("createKeywordRankingReport", __FILE__, __CLASS__, __LINE__);
-        $this->createKeywordRankingReport();
-        
-        $this->traceLog("createDetailViewReport", __FILE__, __CLASS__, __LINE__);
-        $this->createDetailViewReport();
-        
-        $this->traceLog("createFileViewReport", __FILE__, __CLASS__, __LINE__);
-        $this->createFileViewReport();
-        
-        $this->traceLog("createFileViewPerUser", __FILE__, __CLASS__, __LINE__);
-        $this->createFileViewPerUser();
-        
-        $this->traceLog("createHostAccessReport", __FILE__, __CLASS__, __LINE__);
-        $this->createHostAccessReport();
-        
-        $this->traceLog("createIndexAccessReport", __FILE__, __CLASS__, __LINE__);
-        $this->createIndexAccessReport();
-        
-        $this->traceLog("createSiteAccessReport", __FILE__, __CLASS__, __LINE__);
-        $this->createSiteAccessReport();
-        
-        $this->traceLog("createUserAffiliateReport", __FILE__, __CLASS__, __LINE__);
-        $this->createUserAffiliateReport();
-        
-        if($this->isCreateSuppleReport())
-        {
-            $this->traceLog("createSuppleReport", __FILE__, __CLASS__, __LINE__);
-            $this->createSuppleReport();
-        }
     }
     
     // private method(international processing)
@@ -120,7 +62,7 @@ class Repository_Components_Business_Logreport extends Repository_Components_Bus
      * @return boolean true : is create
      *                 false: is not create
      */
-    private function isCreateSuppleReport()
+    public function isCreateSuppleReport()
     {
         // supple_weko_url of parameter table is empty?
         $query = "SELECT param_value ". 
@@ -228,7 +170,7 @@ class Repository_Components_Business_Logreport extends Repository_Components_Bus
      * create keyword ranking report
      *
      */
-    private function createKeywordRankingReport()
+    public function createKeywordRankingReport()
     {
         $this->infoLog("businessRanking", __FILE__, __CLASS__, __LINE__);
         $ranking = BusinessFactory::getFactory()->getBusiness('businessRanking');
@@ -243,14 +185,14 @@ class Repository_Components_Business_Logreport extends Repository_Components_Bus
         $ranking->setEndDate($this->getEndDate());
         
         $ranking->execute();
-        $this->keywordRankingReport = $ranking->getKeywordRanking();
+        return $ranking->getKeywordRanking();
     }
     
     /**
      * create item detail view report
      *
      */
-    private function createDetailViewReport()
+    public function createDetailViewReport()
     {
         // -----------------------------------------------
         // get detail view log
@@ -262,7 +204,7 @@ class Repository_Components_Business_Logreport extends Repository_Components_Bus
                  "        ITEM.item_no AS item_no, ". 
                  "        LOG.user_id AS user_id ".
                  " FROM ". DATABASE_PREFIX. "repository_item AS ITEM ". 
-                 " INNER JOIN (".
+                 " LEFT JOIN (".
                      " SELECT LOG.item_id AS item_id, ". 
                      "        LOG.item_no AS item_no, ". 
                      "        LOG.user_id AS user_id ". 
@@ -295,42 +237,76 @@ class Repository_Components_Business_Logreport extends Repository_Components_Bus
                 $viewLog[$key]['group']['0'] = 0;// 非会員(login user(not affiliate))
             }
             // 個人ダウンロード(未ログインダウンロード)かどうか判定(check not login download)
-            $viewLog[$key]['total']++;
-            if($log[$ii]['user_id'] == "0"){
-                $viewLog[$key]['not_login']++;
-            } else {
-                ///// ユーザが入っているroom_idを取得(get user group list) /////
-                $user_group = $this->getUserGroupIds($log[$ii]['user_id']);
-                // select first room_id
-                $group = $user_group[0]['room_id'];
-                if(!isset($group) || strlen($group) === 0){
-                    // this group is non member
-                    $group = "0";
-                }
-                
-                if(isset($viewLog[$key]['group'][$group])){
-                    $viewLog[$key]['group'][$group]++;
+            if(isset($log[$ii]['user_id']))
+            {
+                $viewLog[$key]['total']++;
+                if($log[$ii]['user_id'] == "0"){
+                    $viewLog[$key]['not_login']++;
                 } else {
-                    $viewLog[$key]['group'][$group] = 1;
+                    ///// ユーザが入っているroom_idを取得(get user group list) /////
+                    $user_group = $this->getUserGroupIds($log[$ii]['user_id']);
+                    // select first room_id
+                    
+                    if(count($user_group) > 0){
+                        $group = $user_group[0]['room_id'];
+                    } else {
+                        // this group is non member
+                        $group = "0";
+                    }
+                    
+                    if(isset($viewLog[$key]['group'][$group])){
+                        $viewLog[$key]['group'][$group]++;
+                    } else {
+                        $viewLog[$key]['group'][$group] = 1;
+                    }
                 }
             }
         }
         
-        $this->detailViewReport = $viewLog;
+        return $viewLog;
     }
     
     /**
      * create file download report
      *
      */
-    private function createFileViewReport()
+    public function createFileViewReport()
     {
-        $fileReport = "";
-        $priceReport = "";
+        $priceLog = array();
+        $priceOpenLog = array();
+        $fileLog = array();
+        $fileOpenLog = array();
+        $currentNum = 0;
         
-        // -----------------------------------------------
-        // Get file download log
-        // -----------------------------------------------
+        do
+        {
+            // -----------------------------------------------
+            // Get file download log
+            // -----------------------------------------------
+            $log = $this->searchFileDownloadLog($currentNum);
+            $currentNum += count($log);
+            
+            // -----------------------------------------------
+            // Get data for make log
+            // -----------------------------------------------
+            $result = $this->makeDownloadInfo($log, $priceLog, $priceOpenLog, $fileLog, $fileOpenLog);
+            
+            $this->debugLog("usage_memory = ". memory_get_usage(), __FILE__, __CLASS__, __LINE__);
+            
+        } while(count($log) > 0);
+        
+        $fileDownloadReport = array("fileViewReport" => array("fileLog" => $fileLog, "fileOpenLog" => $fileOpenLog), "payPerViewReport" => array("priceLog" => $priceLog, "priceOpenLog" => $priceOpenLog));
+        return $fileDownloadReport;
+    }
+
+    /**
+     * Get file download log
+     *
+     * @param int $currentNum
+     * @return array
+     */
+    private function searchFileDownloadLog($currentNum)
+    {
         $subQuery = Repository_Components_Business_Logmanager::getSubQueryForAnalyzeLog(Repository_Components_Business_Logmanager::SUB_QUERY_TYPE_DEFAULT);
         $query = "SELECT LOG.record_date, LOG.ip_address, LOG.user_agent, ". 
                  "       LOG.item_id, LOG.item_no, LOG.attribute_id, LOG.file_no, ".
@@ -343,7 +319,8 @@ class Repository_Components_Business_Logreport extends Repository_Components_Bus
                  " AND LOG.operation_id = ? ". 
                  " ORDER BY LOG.item_id ASC, ".
                  "          LOG.attribute_id ASC, ".
-                 "          LOG.file_no ASC;";
+                 "          LOG.file_no ASC ".
+                 " LIMIT ".$currentNum.", ".self::LIMIT_NUM." ;";
         $params = array();
         $params[] = $this->getStartDate();
         $params[] = $this->getEndDate();
@@ -355,17 +332,7 @@ class Repository_Components_Business_Logreport extends Repository_Components_Bus
             throw new AppException($this->Db->ErrorMsg());
         }
         
-        // -----------------------------------------------
-        // Get data for make log
-        // -----------------------------------------------
-        $priceLog = array();
-        $priceOpenLog = array();
-        $fileLog = array();
-        $fileOpenLog = array();
-        $result = $this->makeDownloadInfo($log, $priceLog, $priceOpenLog, $fileLog, $fileOpenLog);
-        
-        $this->fileViewReport = array("fileLog" => $fileLog, "fileOpenLog" => $fileOpenLog);
-        $this->payPerViewReport = array("priceLog" => $priceLog, "priceOpenLog" => $priceOpenLog);
+        return $log;
     }
 
     /**
@@ -426,7 +393,7 @@ class Repository_Components_Business_Logreport extends Repository_Components_Bus
      * create file download per each users report
      *
      */
-    private function createFileViewPerUser()
+    public function createFileViewPerUser()
     {
         // ---------------------------------------------
         // get data
@@ -464,7 +431,7 @@ class Repository_Components_Business_Logreport extends Repository_Components_Bus
             throw new AppException($this->Db->ErrorMsg());
         }
         
-        $this->createFileViewPerUserBySqlResult($result);
+        return $this->createFileViewPerUserBySqlResult($result);
     }
     
     /**
@@ -479,7 +446,7 @@ class Repository_Components_Business_Logreport extends Repository_Components_Bus
         $session = $container->getComponent("Session");
         $userAuthorityManager = new RepositoryUserAuthorityManager($session, $this->Db, $this->accessDate);
         
-        $this->fileViewPerUser = array();
+        $fileViewPerUser = array();
         for($ii=0; $ii<count($result); $ii++){
             $user_id = $result[$ii]['user_id'];
             $login_id = $result[$ii]['login_id'];
@@ -537,22 +504,23 @@ class Repository_Components_Business_Logreport extends Repository_Components_Bus
             // ---------------------------------------------
             // create output a row text
             // ---------------------------------------------
-            array_push($this->fileViewPerUser, array("login_id" => $login_id, 
-                                                     "handle" => $handle,
-                                                     "name" => $name, 
-                                                     "base_authority_name" => $base_authority_name, 
-                                                     "room_authority_name" => $room_authority_name, 
-                                                     "group_name_list" => $group_name_list, 
-                                                     "dl_count" => strval($dl_count)
-                                                     ));
+            array_push($fileViewPerUser, array("login_id" => $login_id, 
+                                               "handle" => $handle,
+                                               "name" => $name, 
+                                               "base_authority_name" => $base_authority_name, 
+                                               "room_authority_name" => $room_authority_name, 
+                                               "group_name_list" => $group_name_list, 
+                                               "dl_count" => strval($dl_count)
+                                               ));
         }
+        return $fileViewPerUser;
     }
     
     /**
      * create host access report
      *
      */
-    private function createHostAccessReport()
+    public function createHostAccessReport()
     {
         // -----------------------------------------------
         // get access log report per host
@@ -576,36 +544,31 @@ class Repository_Components_Business_Logreport extends Repository_Components_Bus
             throw new AppException($this->Db->ErrorMsg());
         }
         
-        $this->hostAccessReport = $result;
+        return $result;
     }
     
     /**
      * create index access report
      *
      */
-    private function createIndexAccessReport()
+    public function createIndexAccessReport()
     {
         // -----------------------------------------------
-        // get All detail access num
+        // get detail access num on each index
         // -----------------------------------------------
-        $subQuery = Repository_Components_Business_Logmanager::getSubQueryForAnalyzeLog(Repository_Components_Business_Logmanager::SUB_QUERY_TYPE_DEFAULT);
-        $query = "SELECT LOG.ip_address AS ip_address ". 
-                 $subQuery[Repository_Components_Business_Logmanager::SUB_QUERY_KEY_FROM]. 
-                 " WHERE ".$subQuery[Repository_Components_Business_Logmanager::SUB_QUERY_KEY_WHERE]. 
-                 " AND LOG.record_date BETWEEN ? AND ? ".
-                 " AND LOG.operation_id=?; ";
-        $params = array();
-        $params[] = $this->getStartDate();
-        $params[] = $this->getEndDate();
-        $params[] = 3;
-        $result = $this->Db->execute($query, $params);
-        if($result === false){
-            $this->errorLog($this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
-            throw new AppException($this->Db->ErrorMsg());
+        $detailViewPerIndex = $this->getDetailViewPerIndexTree();
+        
+        $totalAccess = 0;
+        foreach($detailViewPerIndex as $parentArray)
+        {
+            foreach($parentArray as $indexData)
+            {
+                $totalAccess += $indexData['detail_view'];
+            }
         }
         
-        $this->indexAccessReport = array("totalAccess" => count($result), 
-                                         "detailViewPerIndex" => $this->getDetailViewPerIndexTree());
+        return array("totalAccess" => $totalAccess, 
+                     "detailViewPerIndex" => $detailViewPerIndex);
     }
     
     /**
@@ -625,10 +588,9 @@ class Repository_Components_Business_Logreport extends Repository_Components_Bus
                  " LEFT JOIN ( ".
                  "   SELECT POS.index_id, count(LOG.log_no) AS detail_view ".
                  $subQuery[Repository_Components_Business_Logmanager::SUB_QUERY_KEY_FROM].
-                 "        INNER JOIN ". DATABASE_PREFIX."repository_position_index POS ". 
+                 "        LEFT JOIN ". DATABASE_PREFIX."repository_position_index POS ". 
                  "          ON POS.is_delete = ? ".
                  "          AND POS.item_id = LOG.item_id ".
-                 "          AND POS.item_no = LOG.item_no ".
                  "   WHERE ".$subQuery[Repository_Components_Business_Logmanager::SUB_QUERY_KEY_WHERE].
                  "   AND LOG.record_date BETWEEN ? AND ? ".
                  "   AND LOG.operation_id = ? ".
@@ -643,6 +605,10 @@ class Repository_Components_Business_Logreport extends Repository_Components_Bus
         $params[] = $this->getEndDate();
         $params[] = 3;
         $params[] = 0;
+        
+        $this->debugLog($query, __FILE__, __CLASS__, __LINE__);
+        $this->debugLog(print_r($params, true), __FILE__, __CLASS__, __LINE__);
+        
         $result = $this->Db->execute($query, $params);
         if($result === false){
             $this->errorLog($this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
@@ -696,6 +662,114 @@ class Repository_Components_Business_Logreport extends Repository_Components_Bus
     }
     
     /**
+     * select sitelicense access record by database
+     *
+     * @param int $operationId
+     * @return array
+     */
+    private function selectSiteLicense($operationId)
+    {
+        if($operationId === RepositoryConst::LOG_OPERATION_SEARCH){
+            $subQuery = Repository_Components_Business_Logmanager::getSubQueryForAnalyzeLog(Repository_Components_Business_Logmanager::SUB_QUERY_TYPE_RANKING);
+        } else {
+            $subQuery = Repository_Components_Business_Logmanager::getSubQueryForAnalyzeLog(Repository_Components_Business_Logmanager::SUB_QUERY_TYPE_DEFAULT);
+        }
+        
+        $query = "SELECT LOG.user_id AS user_id, ". 
+                 " LOG.site_license_id AS site_license_id, ". 
+                 " LOG.site_license AS site_license, ".
+                 " LOG.ip_address AS ip_address ". 
+                 $subQuery[Repository_Components_Business_Logmanager::SUB_QUERY_KEY_FROM]. 
+                 " WHERE ".$subQuery[Repository_Components_Business_Logmanager::SUB_QUERY_KEY_WHERE]. 
+                 " AND LOG.record_date >= ? ". 
+                 " AND LOG.record_date <= ? ".
+                 " AND LOG.operation_id=? "; 
+        $params = array();
+        $params[] = $this->getStartDate();
+        $params[] = $this->getEndDate();
+        $params[] = $operationId;
+        
+        if($operationId === RepositoryConst::LOG_OPERATION_SEARCH){
+            // 検索のアクセス回数を確認する場合、検索キーワードが空文字でないかの判定を実施する必要がある
+            $query .= " AND NOT(LOG.search_keyword=?) ";
+            $params[] = "";
+        }
+        $query .= ";";
+        
+        $result = $this->Db->execute($query, $params);
+        if($result === false){
+            $this->errorLog($this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+            throw new AppException($this->Db->ErrorMsg());
+        }
+        
+        $this->debugLog($query, __FILE__, __CLASS__, __LINE__);
+        $this->debugLog(print_r($params, true), __FILE__, __CLASS__, __LINE__);
+        
+        return $result;
+    }
+    
+    /**
+     * calculate site license report(top or search)
+     *
+     * @param array $result
+     * @param string $is_sitelicense
+     * @param string $not_sitelicense
+     * @param string $operation: "top" or "search"
+     * @param array $log_data
+     * @return array
+     */
+    private function calcSiteLicenseReportNoSupportItemType($result, $is_sitelicense, $not_sitelicense, $operation, $log_data)
+    {
+        // check site license
+        for($ii=0; $ii<count($result); $ii++){
+            if(isset($result[$ii]['site_license']))
+            {
+                // Exist site license info in log recode
+                if($result[$ii]['site_license'] == 1)
+                {
+                    $organization = "";
+                    if($result[$ii]['site_license_id'] > 0){
+                        $organization = $this->getSiteLicenseOrganizationById($result[$ii]['site_license_id']);
+                    } else {
+                        $this->checkSiteLicenseForLogReport($result[$ii]['ip_address'], $result[$ii]['user_id'], $organization);
+                    }
+                    if(strlen($organization) == 0){
+                        // Not exist organization
+                        $organization = $result[$ii]['ip_address'];
+                    }
+                    
+                    if(!isset($log_data[$organization])){
+                        $log_data[$organization]['top'] = 0;
+                        $log_data[$organization]['search'] = 0;
+                        $log_data[$organization]['detail'] = 0;
+                        $log_data[$organization]['download'] = 0;
+                    }
+                    $log_data[$organization][$operation]++;
+                    $log_data[$is_sitelicense][$operation]++;
+                }
+                else
+                {
+                    // Site license OFF
+                    $log_data[$not_sitelicense][$operation]++;
+                }
+            }
+            else
+            {
+                // Not exist site license info in log recode
+                $organization = "";
+                if($this->checkSiteLicenseForLogReport($result[$ii]['ip_address'], $result[$ii]['user_id'], $organization)){
+                    $log_data[$organization][$operation]++;
+                    $log_data[$is_sitelicense][$operation]++;
+                } else {
+                    $log_data[$not_sitelicense][$operation]++;
+                }
+            }
+        }
+        
+        return $log_data;
+    }
+    
+    /**
      * calculate top page access by site lisence user and no site license user
      *
      * @param string $is_sitelicense
@@ -708,65 +782,13 @@ class Repository_Components_Business_Logreport extends Repository_Components_Bus
         // -----------------------------------------------
         // get WEKO Top page access
         // -----------------------------------------------
-        $subQuery = Repository_Components_Business_Logmanager::getSubQueryForAnalyzeLog(Repository_Components_Business_Logmanager::SUB_QUERY_TYPE_DEFAULT);
-        $query = "SELECT LOG.user_id AS user_id, ". 
-                 " LOG.site_license_id AS site_license_id, ". 
-                 " LOG.site_license AS site_license, ".
-                 " LOG.ip_address AS ip_address ". 
-                 $subQuery[Repository_Components_Business_Logmanager::SUB_QUERY_KEY_FROM]. 
-                 " WHERE ".$subQuery[Repository_Components_Business_Logmanager::SUB_QUERY_KEY_WHERE]. 
-                 " AND LOG.record_date >= ? ". 
-                 " AND LOG.record_date <= ? ".
-                 " AND LOG.operation_id=? ";
-        $params = array();
-        $params[] = $this->getStartDate();
-        $params[] = $this->getEndDate();
-        $params[] = 5;
-        $result = $this->Db->execute($query, $params);
-        if($result === false){
-            $this->errorLog($this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
-            throw new AppException($this->Db->ErrorMsg());
-        }
-        // check site license
-        for($ii=0; $ii<count($result); $ii++){
-            if(isset($result[$ii]['site_license']))
-            {
-                // Exist site license info in log recode
-                if($result[$ii]['site_license'] == 1)
-                {
-                    $organization = $this->getSiteLicenseOrganizationById($result[$ii]['site_license_id']);
-                    if(strlen($organization) == 0){
-                        // Not exist organization
-                        $organization = $result[$ii]['ip_address'];
-                    }
-                    
-                    if(!isset($log_data[$organization])){
-                        $log_data[$organization]['top'] = 0;
-                        $log_data[$organization]['search'] = 0;
-                        $log_data[$organization]['detail'] = 0;
-                        $log_data[$organization]['download'] = 0;
-                    }
-                    $log_data[$organization]['top']++;
-                    $log_data[$is_sitelicense]['top']++;
-                }
-                else
-                {
-                    // Site license OFF
-                    $log_data[$not_sitelicense]['top']++;
-                }
-            }
-            else
-            {
-                // Not exist site license info in log recode
-                $organization = "";
-                if($this->checkSiteLicenseForLogReport($result[$ii]['ip_address'], $result[$ii]['user_id'], $organization)){
-                    $log_data[$organization]['top']++;
-                    $log_data[$is_sitelicense]['top']++;
-                } else {
-                    $log_data[$not_sitelicense]['top']++;
-                }
-            }
-        }
+        $result = $this->selectSiteLicense(RepositoryConst::LOG_OPERATION_TOP);
+        
+        $this->traceLog(count($result), __FILE__, __CLASS__, __LINE__);
+        
+        $log_data = $this->calcSiteLicenseReportNoSupportItemType($result, $is_sitelicense, $not_sitelicense, "top", $log_data);
+        
+        $this->traceLog(print_r($log_data, true), __FILE__, __CLASS__, __LINE__);
     }
     
     /**
@@ -808,81 +830,19 @@ class Repository_Components_Business_Logreport extends Repository_Components_Bus
         // -----------------------------------------------
         // get search result page access
         // -----------------------------------------------
-        $subQuery = Repository_Components_Business_Logmanager::getSubQueryForAnalyzeLog(Repository_Components_Business_Logmanager::SUB_QUERY_TYPE_RANKING);
-        $query = "SELECT LOG.user_id AS user_id, ". 
-                 " LOG.site_license_id AS site_license_id, ". 
-                 " LOG.site_license AS site_license, ".
-                 " LOG.ip_address AS ip_address ". 
-                 $subQuery[Repository_Components_Business_Logmanager::SUB_QUERY_KEY_FROM].
-                 " WHERE ".$subQuery[Repository_Components_Business_Logmanager::SUB_QUERY_KEY_WHERE].
-                 " AND LOG.record_date >= ? ". 
-                 " AND LOG.record_date <= ? ".
-                 " AND LOG.operation_id=?; ";
-        $params = array();
-        $params[] = $this->getStartDate();
-        $params[] = $this->getEndDate();
-        $params[] = 4;
-        $result = $this->Db->execute($query, $params);
-        if($result === false){
-            $this->errorLog($this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
-            throw new AppException($this->Db->ErrorMsg());
-        }
-        // check site license
-        for($ii=0; $ii<count($result); $ii++){
-            if(isset($result[$ii]['site_license']))
-            {
-                // Exist site license info in log recode
-                if($result[$ii]['site_license'] == 1)
-                {
-                    $organization = $this->getSiteLicenseOrganizationById($result[$ii]['site_license_id']);
-                    if(strlen($organization) == 0){
-                        // Not exist organization
-                        $organization = $result[$ii]['ip_address'];
-                    }
-                    
-                    if(!isset($log_data[$organization]))
-                    {
-                        $log_data[$organization]['top'] = 0;
-                        $log_data[$organization]['search'] = 0;
-                        $log_data[$organization]['detail'] = 0;
-                        $log_data[$organization]['download'] = 0;
-                    }
-                    $log_data[$organization]['search']++;
-                    $log_data[$is_sitelicense]['search']++;
-                }
-                else
-                {
-                    // Site license OFF
-                    $log_data[$not_sitelicense]['search']++;
-                }
-            }
-            else
-            {
-                // Not exist site license info in log recode
-                $organization = "";
-                if($this->checkSiteLicenseForLogReport($result[$ii]['ip_address'], $result[$ii]['user_id'], $organization)){
-                    $log_data[$organization]['search']++;
-                    $log_data[$is_sitelicense]['search']++;
-                } else {
-                    $log_data[$not_sitelicense]['search']++;
-                }
-            }
-        }
+        $result = $this->selectSiteLicense(RepositoryConst::LOG_OPERATION_SEARCH);
+        
+        $log_data = $this->calcSiteLicenseReportNoSupportItemType($result, $is_sitelicense, $not_sitelicense, "search", $log_data);
     }
     
     /**
-     * calculate item detail view access by site lisence user and no site license user
+     * select sitelicense(detail or download) access record by database
      *
-     * @param string $is_sitelicense
-     * @param string $not_sitelicense
-     * @param array $log_data
+     * @param int $operationId
+     * @return array
      */
-    private function calcDetailViewReport($is_sitelicense, $not_sitelicense, &$log_data)
+    private function selectSiteLicenseLogSupportItemtype($operationId)
     {
-        // -----------------------------------------------
-        // get detail display page access
-        // -----------------------------------------------
-        // Add exclude item_type_id for site license 2013/07/01 A.Suzuki --start--
         $subQuery = Repository_Components_Business_Logmanager::getSubQueryForAnalyzeLog(Repository_Components_Business_Logmanager::SUB_QUERY_TYPE_DEFAULT);
         $query = "SELECT LOG.user_id AS user_id, ". 
                  " LOG.ip_address AS ip_address, ". 
@@ -900,12 +860,29 @@ class Repository_Components_Business_Logreport extends Repository_Components_Bus
         $params = array();
         $params[] = $this->getStartDate();
         $params[] = $this->getEndDate();
-        $params[] = 3;
+        $params[] = $operationId;
         $result = $this->Db->execute($query, $params);
         if($result === false){
             $this->errorLog($this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
             throw new AppException($this->Db->ErrorMsg());
         }
+        
+        return $result;
+    }
+    
+    /**
+     * calculate sitelicense access report(download or detail)
+     *
+     * @param array $result
+     * @param string $is_sitelicense
+     * @param string $not_sitelicense
+     * @param array $siteLicenseItemTypeId
+     * @param string $operation: "detail" or "download"
+     * @param array $log_data
+     * @return array
+     */
+    private function calcSiteLicenseReportSupportItemType($result, $is_sitelicense, $not_sitelicense, $siteLicenseItemTypeId, $operation, $log_data)
+    {
         // check site license
         for($ii=0; $ii<count($result); $ii++){
             if(isset($result[$ii]['site_license']))
@@ -913,7 +890,12 @@ class Repository_Components_Business_Logreport extends Repository_Components_Bus
                 // Exist site license info in log recode
                 if($result[$ii]['site_license'] == 1)
                 {
-                    $organization = $this->getSiteLicenseOrganizationById($result[$ii]['site_license_id']);
+                    $organization = "";
+                    if($result[$ii]['site_license_id'] > 0){
+                        $organization = $this->getSiteLicenseOrganizationById($result[$ii]['site_license_id']);
+                    } else {
+                        $this->checkSiteLicenseForLogReport($result[$ii]['ip_address'], $result[$ii]['user_id'], $organization);
+                    }
                     if(strlen($organization) == 0){
                         // Not exist organization
                         $organization = $result[$ii]['ip_address'];
@@ -926,46 +908,88 @@ class Repository_Components_Business_Logreport extends Repository_Components_Bus
                         $log_data[$organization]['detail'] = 0;
                         $log_data[$organization]['download'] = 0;
                     }
-                    $log_data[$organization]['detail']++;
-                    $log_data[$is_sitelicense]['detail']++;
+                    $log_data[$organization][$operation]++;
+                    $log_data[$is_sitelicense][$operation]++;
                 }
                 else
                 {
                     // Site license OFF
-                    $log_data[$not_sitelicense]['detail']++;
+                    $log_data[$not_sitelicense][$operation]++;
                 }
             }
             else
             {
                 // Not exist site license info in log recode
-                $organization = "";
-                if($this->checkSiteLicenseForLogReport($result[$ii]['ip_address'], $result[$ii]['user_id'], $organization))
-                {
-                    // Add exclude item_type_id for site license 2013/07/01 A.Suzuki --start--
-                    $matchFlag = false;
-                    for($jj=0; $jj<count($siteLicenseItemTypeId); $jj++)
-                    {
-                        if($siteLicenseItemTypeId[$jj] == $result[$ii]['item_type_id'])
-                        {
-                            $matchFlag = true;
-                            break;
-                        }
-                    }
-                    if($matchFlag)
-                    {
-                        $log_data[$not_sitelicense]['detail']++;
-                    }
-                    else
-                    {
-                        $log_data[$organization]['detail']++;
-                        $log_data[$is_sitelicense]['detail']++;
-                    }
-                    // Add exclude item_type_id for site license 2013/07/01 A.Suzuki --end--
-                } else {
-                    $log_data[$not_sitelicense]['detail']++;
-                }
+                $log_data = $this->calcSiteLicenseReportSupportItemTypeNotExistSitelicenseInfo($result[$ii]['ip_address'], $result[$ii]['user_id'], $result[$ii]['item_type_id'], $siteLicenseItemTypeId, $log_data, $operation, $is_sitelicense, $not_sitelicense);
             }
         }
+        
+        return $log_data;
+    }
+    
+    /**
+     * calculation sitelicense report for the records not exists sitelicense info
+     *
+     * @param string $ip_address
+     * @param string $user_id
+     * @param int $item_type_id
+     * @param int $siteLicenseItemTypeId
+     * @param array $log_data
+     * @param string $operation
+     * @param string $is_sitelicense
+     * @param string $not_sitelicense
+     * @return array
+     */
+    private function calcSiteLicenseReportSupportItemTypeNotExistSitelicenseInfo($ip_address, $user_id, $item_type_id, $siteLicenseItemTypeId, $log_data, $operation, $is_sitelicense, $not_sitelicense)
+    {
+        // Not exist site license info in log recode
+        $this->debugLog(__FUNCTION__, __FILE__, __CLASS__, __LINE__);
+        $organization = "";
+        if($this->checkSiteLicenseForLogReport($ip_address, $user_id, $organization))
+        {
+            // Add exclude item_type_id for site license 2013/07/01 A.Suzuki --start--
+            $matchFlag = false;
+            for($jj=0; $jj<count($siteLicenseItemTypeId); $jj++)
+            {
+                if($siteLicenseItemTypeId[$jj] == $item_type_id)
+                {
+                    $matchFlag = true;
+                    break;
+                }
+            }
+            if($matchFlag)
+            {
+                $log_data[$not_sitelicense][$operation]++;
+            }
+            else
+            {
+                $log_data[$organization][$operation]++;
+                $log_data[$is_sitelicense][$operation]++;
+            }
+            // Add exclude item_type_id for site license 2013/07/01 A.Suzuki --end--
+        } else {
+            $log_data[$not_sitelicense][$operation]++;
+        }
+        
+        return $log_data;
+    }
+    
+    
+    /**
+     * calculate item detail view access by site lisence user and no site license user
+     *
+     * @param string $is_sitelicense
+     * @param string $not_sitelicense
+     * @param array $log_data
+     */
+    private function calcDetailViewReport($is_sitelicense, $not_sitelicense, $siteLicenseItemTypeId, &$log_data)
+    {
+        // -----------------------------------------------
+        // get detail display page access
+        // -----------------------------------------------
+        $result = $this->selectSiteLicenseLogSupportItemtype(RepositoryConst::LOG_OPERATION_DETAIL_VIEW);
+        
+        $log_data = $this->calcSiteLicenseReportSupportItemType($result, $is_sitelicense, $not_sitelicense, $siteLicenseItemTypeId, "detail", $log_data);
     }
     
     /**
@@ -975,103 +999,21 @@ class Repository_Components_Business_Logreport extends Repository_Components_Bus
      * @param string $not_sitelicense
      * @param array $log_data
      */
-    private function calcDownloadReport($is_sitelicense, $not_sitelicense, &$log_data)
+    private function calcDownloadReport($is_sitelicense, $not_sitelicense, $siteLicenseItemTypeId, &$log_data)
     {
         // -----------------------------------------------
         // get download access
         // -----------------------------------------------
-        // Add exclude item_type_id for site license 2013/07/01 A.Suzuki --start--
-        // Modify for remove IE Continuation log K.Matsuo 2011/11/15 --start-- 
-        $subQuery = Repository_Components_Business_Logmanager::getSubQueryForAnalyzeLog(Repository_Components_Business_Logmanager::SUB_QUERY_TYPE_DEFAULT);
-        $query = "SELECT LOG.user_id AS user_id, ".
-                 " LOG.ip_address AS ip_address, ".
-                 " ITEM.item_type_id AS item_type_id, ".
-                 " LOG.site_license_id AS site_license_id, ". 
-                 " LOG.site_license AS site_license ".
-                 $subQuery[Repository_Components_Business_Logmanager::SUB_QUERY_KEY_FROM]. 
-                 " LEFT JOIN ".DATABASE_PREFIX."repository_item AS ITEM ".
-                 " ON LOG.item_id = ITEM.item_id AND LOG.item_no = ITEM.item_no ".
-                 " WHERE ".$subQuery[Repository_Components_Business_Logmanager::SUB_QUERY_KEY_WHERE]. 
-                 " AND LOG.record_date >= ? ". 
-                 " AND LOG.record_date <= ? ".
-                 " AND LOG.operation_id=?; ";
-        // Add exclude item_type_id for site license 2013/07/01 A.Suzuki --end--
-        $params = array();
-        $params[] = $this->getStartDate();
-        $params[] = $this->getEndDate();
-        $params[] = 2;
-        $result = $this->Db->execute($query, $params);
-        if($result === false){
-            $this->errorLog($this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
-            throw new AppException($this->Db->ErrorMsg());
-        }
-        // check site license
-        for($ii=0; $ii<count($result); $ii++){
-            if(isset($result[$ii]['site_license']))
-            {
-                // Exist site license info in log recode
-                if($result[$ii]['site_license'] == 1)
-                {
-                    $organization = $this->getSiteLicenseOrganizationById($result[$ii]['site_license_id']);
-                    if(strlen($organization) == 0){
-                        // Not exist organization
-                        $organization = $result[$ii]['ip_address'];
-                    }
-                    
-                    if(!isset($log_data[$organization]))
-                    {
-                        $log_data[$organization]['top'] = 0;
-                        $log_data[$organization]['search'] = 0;
-                        $log_data[$organization]['detail'] = 0;
-                        $log_data[$organization]['download'] = 0;
-                    }
-                    $log_data[$organization]['download']++;
-                    $log_data[$is_sitelicense]['download']++;
-                }
-                else
-                {
-                    // Site license OFF
-                    $log_data[$not_sitelicense]['download']++;
-                }
-            }
-            else
-            {
-                // Not exist site license info in log recode
-                $organization = "";
-                if($this->checkSiteLicenseForLogReport($result[$ii]['ip_address'], $result[$ii]['user_id'], $organization))
-                {
-                    // Add exclude item_type_id for site license 2013/07/01 A.Suzuki --start--
-                    $matchFlag = false;
-                    for($jj=0; $jj<count($siteLicenseItemTypeId); $jj++)
-                    {
-                        if($siteLicenseItemTypeId[$jj] == $result[$ii]['item_type_id'])
-                        {
-                            $matchFlag = true;
-                            break;
-                        }
-                    }
-                    if($matchFlag)
-                    {
-                        $log_data[$not_sitelicense]['download']++;
-                    }
-                    else
-                    {
-                        $log_data[$organization]['download']++;
-                        $log_data[$is_sitelicense]['download']++;
-                    }
-                    // Add exclude item_type_id for site license 2013/07/01 A.Suzuki --end--
-                } else {
-                    $log_data[$not_sitelicense]['download']++;  
-                }
-            }
-        }
+        $result = $this->selectSiteLicenseLogSupportItemtype(RepositoryConst::LOG_OPERATION_DOWNLOAD_FILE);
+        
+        $log_data = $this->calcSiteLicenseReportSupportItemType($result, $is_sitelicense, $not_sitelicense, $siteLicenseItemTypeId, "download", $log_data);
     }
     
     /**
      * create site access report
      *
      */
-    private function createSiteAccessReport()
+    public function createSiteAccessReport()
     {
         $log_data = array();
         // -----------------------------------------------
@@ -1130,18 +1072,18 @@ class Repository_Components_Business_Logreport extends Repository_Components_Bus
         
         $this->calcSearchAccessReport($is_sitelicense, $not_sitelicense, $log_data);
         
-        $this->calcDetailViewReport($is_sitelicense, $not_sitelicense, $log_data);
+        $this->calcDetailViewReport($is_sitelicense, $not_sitelicense, $siteLicenseItemTypeId, $log_data);
         
-        $this->calcDownloadReport($is_sitelicense, $not_sitelicense, $log_data);
+        $this->calcDownloadReport($is_sitelicense, $not_sitelicense, $siteLicenseItemTypeId, $log_data);
         
-        $this->siteAccessReport = $log_data;
+        return $log_data;
     }
     
     /**
      * create user's affiliation report
      *
      */
-    private function createUserAffiliateReport()
+    public function createUserAffiliateReport()
     {
         // -----------------------------------------------
         // init
@@ -1192,17 +1134,19 @@ class Repository_Components_Business_Logreport extends Repository_Components_Bus
                 $userRoom = array_values($userRoom);
             }
         }
-        $this->userAffiliateReport = array("all_group" => array(), 
-                                           "userAuth" => array());
-        $this->userAffiliateReport["all_group"] = $all_group;
-        $this->userAffiliateReport["userAuth"] = $userAuth;
+        $userAffiliateReport = array("all_group" => array(), 
+                                     "userAuth" => array());
+        $userAffiliateReport["all_group"] = $all_group;
+        $userAffiliateReport["userAuth"] = $userAuth;
+        
+        return $userAffiliateReport;
     }
     
     /**
      * create supplement contents report 
      *
      */
-    private function createSuppleReport()
+    public function createSuppleReport()
     {
         // サプリテーブルの情報を取得
         $query = "SELECT * ". 
@@ -1260,8 +1204,7 @@ class Repository_Components_Business_Logreport extends Repository_Components_Bus
             throw new AppException($msg);
         }
         
-        $this->isCreatedSuppleReport = true;
-        $this->suppleReport = $suppleData;
+        return $suppleData;
     }
     
     /**
@@ -1394,7 +1337,7 @@ class Repository_Components_Business_Logreport extends Repository_Components_Bus
                         else if($result) {
                             $organization = $result[0]["organization_name"];
                         }
-                        return "true";
+                        return true;
                     }
                 } else if($ip == $from) {
                     // IPが始点(=from)のみ設定されている場合はそれと一致するかどうかを判定する
@@ -1413,59 +1356,6 @@ class Repository_Components_Business_Logreport extends Repository_Components_Bus
                     else if($result) {
                         $organization = $result[0]["organization_name"];
                     }
-                    return "true";
-                }
-            }
-        }
-        
-        // ユーザーがサイトライセンス組織に所属しているかのチェック
-        if($user_id != 0) {
-            $sitelicense_group = $this->checkSiteLicenseGroupForLogReport($user_id, $organization);
-            // サイトライセンス組織に設定されている場合はtrueを返す
-            if($sitelicense_group === true) {
-                return "true";
-            }
-        }
-        
-        return "false";
-    }
-    
-    /**
-     * check sitelicense group
-     *
-     * @return bool sitelicense_flag
-     */
-    private function checkSiteLicenseGroupForLogReport($user_id, &$organization)
-    {
-        // ユーザー所属組織情報の取得
-        $query = "SELECT content FROM ". DATABASE_PREFIX. "users_items_link ".
-                 "WHERE user_id = ? ".
-                 "AND item_id = ? ;";
-        $params = array();
-        $params[] = $user_id;
-        $params[] = 8;
-        $result = $this->Db->execute($query, $params);
-        if($result === false) {
-            $this->errorLog($this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
-            throw new AppException($this->Db->ErrorMsg());
-        }
-        // ユーザーが組織に所属している場合、それがサイトライセンス組織であるか判定する
-        if(isset($result) && count($result) > 0 && strlen($result[0]["content"]) > 0) {
-            // サイトライセンス組織情報の取得
-            $query = "SELECT organization_name, group_name FROM ". DATABASE_PREFIX. "repository_sitelicense_info ".
-                     "WHERE is_delete = ? ;";
-            $params = array();
-            $params[] = 0;
-            $sitelicense_groups = $this->Db->execute($query, $params);
-            if($sitelicense_groups === false) {
-                $this->errorLog($this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
-                throw new AppException($this->Db->ErrorMsg());
-            }
-            // チェック処理
-            for($ii = 0; $ii < count($sitelicense_groups); $ii++) {
-                // ユーザーの所属組織名がサイトライセンス組織名と一致した場合trueを返す
-                if($result[0]["content"] == $sitelicense_groups[$ii]["group_name"]) {
-                    $organization = $sitelicense_groups[$ii]["organization_name"];
                     return true;
                 }
             }
@@ -1473,7 +1363,6 @@ class Repository_Components_Business_Logreport extends Repository_Components_Bus
         
         return false;
     }
-    
     
     /**
      * when price file download, the user is used group?
@@ -1832,7 +1721,7 @@ class Repository_Components_Business_Logreport extends Repository_Components_Bus
             $fileLog[$key]['register'] = 0;     // Download by register
         }
         
-        $this->debugLog($loginStatus, __FILE__, __CLASS__, __LINE__);
+        $this->traceLog($loginStatus, __FILE__, __CLASS__, __LINE__);
         
         // Check not login download
         $fileLog[$key]['total']++;
@@ -1886,7 +1775,7 @@ class Repository_Components_Business_Logreport extends Repository_Components_Bus
         }
         
         // Check not login download
-        $this->debugLog($loginStatus, __FILE__, __CLASS__, __LINE__);
+        $this->traceLog($loginStatus, __FILE__, __CLASS__, __LINE__);
         $priceLog[$key]['total']++;
         if($loginStatus == RepositoryConst::LOG_LOGIN_STATUS_ADMIN)
         {
@@ -2132,9 +2021,6 @@ class Repository_Components_Business_Logreport extends Repository_Components_Bus
     
         return $userAuthId;
     }
-    
-    
-    
-    
+
 }
 ?>

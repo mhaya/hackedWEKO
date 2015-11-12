@@ -1,7 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-// $Id: RepositoryPdfCover.class.php 49641 2015-03-09 07:02:34Z tomohiro_ichikawa $
+// $Id: RepositoryPdfCover.class.php 36229 2014-05-26 05:49:55Z satoshi_arata $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -14,7 +14,6 @@
 require_once WEBAPP_DIR. '/modules/repository/files/fpdf/mc_table.php';
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryConst.class.php';
-require_once WEBAPP_DIR. '/modules/repository/components/RepositoryHandleManager.class.php';
 
 /**
  * Repository module create PDF cover class
@@ -155,14 +154,6 @@ class RepositoryPdfCover extends PDF_MC_Table
      */
     private $errorMsg = "";
     
-    /**
-     * tmp dir delete flg
-     * 
-     * @var int
-     * @access private
-     */
-    private $deleteTmpDirFlg = 0;
-    
     // -------------------------------------------------------
     // Const
     // -------------------------------------------------------
@@ -221,11 +212,6 @@ class RepositoryPdfCover extends PDF_MC_Table
     // Error message
     const ERR_CANNOT_CREATE = "Could not create PDF cover page.";
     
-    // Add delete pdf cover 2015/01/26 K.Matsushita -start-
-    const ERR_CANNOT_DELETE = "Could not delete PDF cover page.";
-    const RESET_CREATED_FLG = 0;
-    // Add delete pdf cover 2015/01/26 K.Matsushita -end-
-    
     // -------------------------------------------------------
     // Constructor
     // -------------------------------------------------------
@@ -243,7 +229,7 @@ class RepositoryPdfCover extends PDF_MC_Table
      * @access public
      */
     public function RepositoryPdfCover(
-        $Session, $Db, $TransStartDate, $userId="", $itemId=0, $itemNo=0, $attributeId=0, $fileNo=0, $tmpFolderPath="")
+        $Session, $Db, $TransStartDate, $userId="", $itemId=0, $itemNo=0, $attributeId=0, $fileNo=0)
     {
         // Set member
         $this->Session = $Session;
@@ -254,16 +240,7 @@ class RepositoryPdfCover extends PDF_MC_Table
         $this->itemNo = $itemNo;
         $this->attributeId = $attributeId;
         $this->fileNo = $fileNo;
-        
-        if( strlen($tmpFolderPath) > 0 ){
-            $this->tmpDir = $tmpFolderPath;
-            $this->deleteTmpDirFlg = 0;
-        }
-        else 
-        {
-            $this->tmpDir = $this->getDefaltTmpDirPath();
-            $this->deleteTmpDirFlg = 1;
-        }
+        $this->setDefaltTmpDirPath();
         
         if(strlen($this->userId) == 0)
         {
@@ -391,8 +368,21 @@ class RepositoryPdfCover extends PDF_MC_Table
             $success = false;
         }
         
-        // Delete created cover page
-        if( $success && !$this->deleteCoverPage() ){
+        // Make temporary directory
+        if($success && !$this->makeTmpDir())
+        {
+            $success = false;
+        }
+        
+        // Get target file path
+        if($success && strlen($this->getTargetPdfFilePath()) == 0)
+        {
+            $success = false;
+        }
+        
+        // Copy Target PDF to temporary directory
+        if($success && !copy($this->getTargetPdfFilePath(), $this->tmpDir.self::PDF_NAME_TARGET))
+        {
             $success = false;
         }
         
@@ -402,11 +392,45 @@ class RepositoryPdfCover extends PDF_MC_Table
             $success = false;
         }
         
+        // Check existing cover page
+        $coverCreatedFlag = 0;
+        if($success && $this->chkExistCover($coverCreatedFlag))
+        {
+            // Divide PDF pages
+            if(!$this->dividePdf(
+                    $this->tmpDir.self::PDF_NAME_TARGET,
+                    $this->tmpDir.self::PDF_NAME_ORG_TARGET,
+                    sprintf(($coverCreatedFlag+1)."-end")))
+            {
+                $success = false;
+            }
+        }
+        
         // Combine PDF pages
         if($success && !$this->combinePdf())
         {
             $success = false;
         }
+        
+        // Combined PDF replace to file directory
+        if($success && !copy($this->tmpDir.self::PDF_NAME_COMBINED, $this->getTargetPdfFilePath()))
+        {
+            $success = false;
+        }
+        
+        // Update cover created flag
+        if($success && !$this->updateCoverCreatedFlag())
+        {
+            $success = false;
+        }
+        
+        // Create PDF thumbnail
+        if($success)
+        {
+            $this->makeThumbnail();
+        }
+        
+        $this->removeTmpDir();
         
         if(!$success)
         {
@@ -420,22 +444,21 @@ class RepositoryPdfCover extends PDF_MC_Table
     // PRIVATE
     // -------------------------------------------------------
     /**
-     * Get defaut temporary directory path
+     * Set defaut temporary directory path
      *
-     * @return string
+     * @return bool
      */
-    private function getDefaltTmpDirPath()
+    private function setDefaltTmpDirPath()
     {
-        $tmpDirPath = "";
         $query = "SELECT DATE_FORMAT(NOW(), '%Y%m%d%H%i%s') AS now_date;";
         $result = $this->Db->execute($query);
         if($result === false || count($result) != 1){
-            return $tmpDirPath;
+            return false;
         }
         $date = $result[0]['now_date'];
-        $tmpDirPath = WEBAPP_DIR.self::WEKO_UPLOAD_DIR."_".$date."/";
-    
-        return $tmpDirPath;
+        $this->tmpDir = WEBAPP_DIR.self::WEKO_UPLOAD_DIR."_".$date."/";
+        
+        return true;
     }
     
     /**
@@ -450,13 +473,9 @@ class RepositoryPdfCover extends PDF_MC_Table
         if(strlen($this->tmpDir) == 0)
         {
             // Set directory path
-            $tmpDirPath = $this->getDefaltTmpDirPath();
-            if( strlen($tmpDirPath) == 0 ){
-                return false;
-            }
-            else 
+            if($this->setDefaltTmpDirPath())
             {
-                $this->tmpDir = $tmpDirPath;
+                return false;
             }
         }
         
@@ -1026,20 +1045,8 @@ class RepositoryPdfCover extends PDF_MC_Table
         }
         
         // Add PDF file URL
-        // Bug Fix WEKO-2014-083 K.Sugimoto 2014/09/05 --start--
-        $uri = "";
-        
-        $handleManager = new RepositoryHandleManager($this->Session, $this->Db, $this->TransStartDate);
-        
-        // Mod PDF Cover page timing 2015/01/26 K.Matsushita --start--//
-        $uri = $handleManager->createUriForDetail($this->itemId, $this->itemNo);
-        // Mod PDF Cover page timing 2015/01/26 K.Matsushita --end--//
-        
-        if(strlen($uri) <= 0) {
-            $uri = $handleManager->getSubstanceUri($this->itemId, $this->itemNo);
-        }
-        // Bug Fix WEKO-2014-083 K.Sugimoto 2014/09/05 --end--
-        array_push($metadataList, array("name" => "URL", "value" => $uri));
+        $url = $itemData["item"][0]["uri"];
+        array_push($metadataList, array("name" => "URL", "value" => $url));
         
         foreach($metadataList as $metadata)
         {
@@ -1075,7 +1082,7 @@ class RepositoryPdfCover extends PDF_MC_Table
      * @return bool false: Not exist / true: Existing
      * @access private
      */
-    public function chkExistCover(&$coverCreatedFlag)
+    private function chkExistCover(&$coverCreatedFlag)
     {
         $coverCreatedFlag = 0;
         $query = "SELECT ".RepositoryConst::DBCOL_REPOSITORY_FILE_COVER_CREATED_FLAG." ".
@@ -1191,22 +1198,20 @@ class RepositoryPdfCover extends PDF_MC_Table
         
         // PDF -> PNG
         $cmd = "\"".$this->cmdPathImageMagick."\" ".
-                "-quality 100 ".
-                "\"".$this->tmpDir.self::PDF_NAME_TARGET."\"[0] ".
-                "\"".$this->tmpDir.self::PDF_NAME_TARGET.".png\"";
-        
+               "-quality 100 ".
+               "\"".$this->tmpDir.self::PDF_NAME_COMBINED."\"[0] ".
+               "\"".$this->tmpDir.self::PDF_NAME_COMBINED.".png\"";
         exec(escapeshellcmd($cmd));
         
-        if(file_exists($this->tmpDir.self::PDF_NAME_TARGET.".png"))
+        if(file_exists($this->tmpDir.self::PDF_NAME_COMBINED.".png"))
         {
             // Success
             // Get image size
             $imgSize = array();
-            $imgSize = getimagesize($this->tmpDir.self::PDF_NAME_TARGET.".png");
-            $width = $imgSize[0];
-            $height = $imgSize[1];
-            
-            if(unlink($this->tmpDir.self::PDF_NAME_TARGET.".png"))
+            $imgSize = getimagesize($this->tmpDir.self::PDF_NAME_COMBINED.".png");
+            $width = $imgsize[0];
+            $height = $imgsize[1];
+            if(unlink($this->tmpDir.self::PDF_NAME_COMBINED.".png"))
             {
                 // Resize
                 if($height > $width)
@@ -1214,23 +1219,23 @@ class RepositoryPdfCover extends PDF_MC_Table
                     // Height is longer than width
                     $cmd = "\"".$this->cmdPathImageMagick."\" ".
                            "-quality 100 -density 200x200 -resize 200x ".
-                           "\"".$this->tmpDir.self::PDF_NAME_TARGET."\"[0] ".
-                           "\"".$this->tmpDir.self::PDF_NAME_TARGET.".png\"";
+                           "\"".$this->tmpDir.self::PDF_NAME_COMBINED."\"[0] ".
+                           "\"".$this->tmpDir.self::PDF_NAME_COMBINED.".png\"";
                 }
                 else
                 {
                     // Width is longer than height
                     $cmd = "\"".$this->cmdPathImageMagick."\" ".
                            "-quality 100 -density 200x200 -resize x280 ".
-                           "\"".$this->tmpDir.self::PDF_NAME_TARGET."\"[0] ".
-                           "\"".$this->tmpDir.self::PDF_NAME_TARGET.".png\"";
+                           "\"".$this->tmpDir.self::PDF_NAME_COMBINED."\"[0] ".
+                           "\"".$this->tmpDir.self::PDF_NAME_COMBINED.".png\"";
                 }
                 exec(escapeshellcmd($cmd));
                 
-                if(file_exists($this->tmpDir.self::PDF_NAME_TARGET.".png"))
-                {   
+                if(file_exists($this->tmpDir.self::PDF_NAME_COMBINED.".png"))
+                {
                     // Success
-                    $this->updateThumbnail($this->tmpDir.self::PDF_NAME_TARGET.".png");
+                    $this->updateThumbnail($this->tmpDir.self::PDF_NAME_COMBINED.".png");
                     $isSuccess = true;
                 }
             }
@@ -1317,26 +1322,24 @@ class RepositoryPdfCover extends PDF_MC_Table
         return $this->targetFilePath;
     }
     
-    
-    // Mod delete pdf cover 2015/01/26 K.Matsushita -start-
     /**
-     * Reset cover_created_flag
-     * 
+     * Update cover_created_flag
+     *
      * @return bool
      * @access private
      */
-    private function resetCoverCreatedFlag()
+    private function updateCoverCreatedFlag()
     {
         $query = "UPDATE ".DATABASE_PREFIX.RepositoryConst::DBTABLE_REPOSITORY_FILE." ".
-                "SET ".RepositoryConst::DBCOL_REPOSITORY_FILE_COVER_CREATED_FLAG." = ?, ".
-                RepositoryConst::DBCOL_COMMON_MOD_USER_ID." = ?, ".
-                RepositoryConst::DBCOL_COMMON_MOD_DATE." = ? ".
-                "WHERE ".RepositoryConst::DBCOL_REPOSITORY_FILE_ITEM_ID." = ? ".
-                "AND ".RepositoryConst::DBCOL_REPOSITORY_FILE_ITEM_NO." = ? ".
-                "AND ".RepositoryConst::DBCOL_REPOSITORY_FILE_ATTRIBUTE_ID." = ? ".
-                "AND ".RepositoryConst::DBCOL_REPOSITORY_FILE_FILE_NO." = ?; ";
+                 "SET ".RepositoryConst::DBCOL_REPOSITORY_FILE_COVER_CREATED_FLAG." = ?, ".
+                 RepositoryConst::DBCOL_COMMON_MOD_USER_ID." = ?, ".
+                 RepositoryConst::DBCOL_COMMON_MOD_DATE." = ? ".
+                 "WHERE ".RepositoryConst::DBCOL_REPOSITORY_FILE_ITEM_ID." = ? ".
+                 "AND ".RepositoryConst::DBCOL_REPOSITORY_FILE_ITEM_NO." = ? ".
+                 "AND ".RepositoryConst::DBCOL_REPOSITORY_FILE_ATTRIBUTE_ID." = ? ".
+                 "AND ".RepositoryConst::DBCOL_REPOSITORY_FILE_FILE_NO." = ?; ";
         $params = array();
-        $params[] = self::RESET_CREATED_FLG;
+        $params[] = intval($this->page);
         $params[] = $this->userId;
         $params[] = $this->TransStartDate;
         $params[] = $this->itemId;
@@ -1351,8 +1354,6 @@ class RepositoryPdfCover extends PDF_MC_Table
         
         return true;
     }
-    // Mod delete pdf cover 2015/01/26 K.Matsushita -end-
-    
     
     /**
      * Strip accent string
@@ -1637,7 +1638,7 @@ class RepositoryPdfCover extends PDF_MC_Table
                     else if($headerAlign == self::ALIGN_LEFT)
                     {
                         // left
-                        $this->SetX(self::MARGIN_LEFT );
+                        $this->SetX(self::MARGIN_LEFT - $w_unit);
                     }
                     
                     $this->Image($this->tmpDir.$imageName, $this->GetX(), $this->GetY(), $w_unit, $h_unit);
@@ -1736,87 +1737,6 @@ class RepositoryPdfCover extends PDF_MC_Table
         $this->SetY(self::MARGIN_TOP);
         $this->SetX(self::MARGIN_LEFT);
     }
-    
-    // Add delete pdf cover 2015/01/26 K.Matsushita -start-
-    /**
-     * delete cover page
-     * @return bool
-     */
-    public function deleteCoverPage(){
-        
-        $success = true;
-        
-        // Make temporary directory
-        if(!$this->makeTmpDir())
-        {
-            $success = false;
-        }
-        
-        // Get target file path
-        $targetFilePath = $this->getTargetPdfFilePath();
-        if($success && strlen($targetFilePath) == 0)
-        {
-            $success = false;
-        }
-        
-        // Copy Target PDF to temporary directory
-        if($success && !copy($targetFilePath, $this->tmpDir.self::PDF_NAME_TARGET))
-        {
-            $success = false;
-        }
-        
-        // Check existing cover page
-        $coverCreatedFlag = 0;
-        if( $this->chkExistCover($coverCreatedFlag) ){
-            
-            // Divide PDF pages
-            if(!$this->dividePdf( $this->tmpDir.self::PDF_NAME_TARGET,
-                                  $this->tmpDir.self::PDF_NAME_ORG_TARGET,
-                                  sprintf(($coverCreatedFlag+1)."-end")))
-            {
-                $success = false;
-            }
-            
-            // divided PDF replace to file directory
-            if($success && !copy($this->tmpDir.self::PDF_NAME_TARGET, $targetFilePath))
-            {
-                $success = false;
-            }
-            
-            // Reset cover created flag
-            if( $success && !$this->resetCoverCreatedFlag() ){
-                $success = false;
-            }
-            
-            // Create PDF thumbnail
-            if($success && !$this->makeThumbnail() )
-            {
-                $success = false;
-            }
-            
-            
-        }
-        
-        // if caller is Adddb
-        if( $this->deleteTmpDirFlg == 1 ){
-        
-            // delete temporary directory
-            $this->removeTmpDir();
-            if( file_exists($this->tmpDir) ){
-                $success = false;
-            }
-        }
-        
-        if(!$success)
-        {
-            $this->errorMsg = self::ERR_CANNOT_DELETE;
-        }
-        
-        return $success;
-    }
-    
-    // Add delete pdf cover 2015/01/26 K.Matsushita -end-
-    
 }
 
 ?>

@@ -1,7 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-// $Id: Logreport.class.php 53594 2015-05-28 05:25:53Z kaede_matsushita $
+// $Id: Logreport.class.php 57652 2015-09-03 10:28:00Z keiya_sugimoto $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -152,37 +152,39 @@ class Repository_Logreport extends WekoAction
             $businessLogreport->setEndMonth($this->em_log);
             $businessLogreport->setAdminBase($this->repository_admin_base);
             $businessLogreport->setAdminRoom($this->repository_admin_room);
-            $businessLogreport->execute();
             
-            // create each log report
-            $output_files = array();
-            $output_files = $this->createLogReport($tmp_dir);
-            
-            // -----------------------------------------------
-            // compress zip file
-            // -----------------------------------------------
-            // set zip file name
-            $zip_file = "logReport_". $this->getStrOfJoinedStartYearAndStartMonth().".zip";
-            // compress zip file    
-            File_Archive::extract(
-                $output_files,
-                File_Archive::toArchive($zip_file, File_Archive::toFiles( $tmp_dir."/" ))
-            );
-    
-            // -----------------------------------------------
-            // download zip file
-            // -----------------------------------------------
-            if($this->mail == "true"){
-                // send mail
-                $this->sendMailLogReport($tmp_dir."/".$zip_file, $zip_file);
-            } else {
-                // ダウンロードアクション処理(download)
-                $repositoryDownload = new RepositoryDownload();
-                $repositoryDownload->downloadFile($tmp_dir."/".$zip_file, $zip_file);
+            try {
+                $businessLogreport->execute();
+                
+                // create each log report
+                $output_files = array();
+                $output_files = $this->createLogReport($tmp_dir);
+                
+                // -----------------------------------------------
+                // compress zip file
+                // -----------------------------------------------
+                // set zip file name
+                $zip_file = "logReport_". $this->getStrOfJoinedStartYearAndStartMonth().".zip";
+                // compress zip file    
+                File_Archive::extract(
+                    $output_files,
+                    File_Archive::toArchive($zip_file, File_Archive::toFiles( $tmp_dir ))
+                );
+        
+                // -----------------------------------------------
+                // download zip file
+                // -----------------------------------------------
+                if($this->mail == "true"){
+                    // send mail
+                    $this->sendMailLogReport($tmp_dir.$zip_file, $zip_file);
+                } else {
+                    // ダウンロードアクション処理(download)
+                    $repositoryDownload = new RepositoryDownload();
+                    $repositoryDownload->downloadFile($tmp_dir.$zip_file, $zip_file);
+                }
+            } catch (AppException $e) {
+                    echo "<script class='nc_script' type='text/javascript'>alert('".$this->smartyAssign->getLang('repository_log_excluding')."');</script>";
             }
-            
-            // delete tmp folder
-            $repositoryAction->removeDirectory($tmp_dir);
         }
         
         return "";
@@ -199,7 +201,7 @@ class Repository_Logreport extends WekoAction
         $businessLogreport->setAdminBase($this->repository_admin_base);
         $businessLogreport->setAdminRoom($this->repository_admin_room);
         
-        $log_data = $businessLogreport->getSiteAccessReport();
+        $log_data = $businessLogreport->createSiteAccessReport();
         
         $is_sitelicense = self::IS_SITELICENSE;
         $not_sitelicense = self::IS_NOT_SITELICENSE;
@@ -261,8 +263,10 @@ class Repository_Logreport extends WekoAction
         $logReport = BusinessFactory::getFactory()->getBusiness("businessLogreport");
         $logReport->setAdminBase($this->repository_admin_base);
         $logReport->setAdminRoom($this->repository_admin_room);
-        $indexAccessReport = $logReport->getIndexAccessReport();
+        $indexAccessReport = $logReport->createIndexAccessReport();
+        
         $total_access = $indexAccessReport["totalAccess"];
+        
         // -----------------------------------------------
         // get all index's child item access num
         // -----------------------------------------------
@@ -313,28 +317,19 @@ class Repository_Logreport extends WekoAction
      * 
      * @param string $fileReport
      * @param string $priceReport
-     * @return string log report 
+     * @return boolean process result
      */
-    private function makeFileDownloadLogReport(&$fileReport, &$priceReport)
+    private function makeFileDownloadLogReport($fileLogPath, $priceLogPath)
     {
-        $fileReport = "";
-        $priceReport = "";
-        
         $this->infoLog("businessLogmanager", __FILE__, __CLASS__, __LINE__);
         $logReport = BusinessFactory::getFactory()->getBusiness("businessLogreport");
-        $logReport->setAdminBase($this->repository_admin_base);
-        $logReport->setAdminRoom($this->repository_admin_room);
-        
-        $fileViewReport = $logReport->getFileViewReport();
-        $payPerViewReport = $logReport->getPayPerViewReport();
+        $fileDownloadReport = $logReport->createFileViewReport();
         
         // -----------------------------------------------
-        // Get data for make log
+        // Make log report of related file
         // -----------------------------------------------
-        $fileReport = $this->makeFileDownloadLogReportStr($fileViewReport["fileLog"], $fileViewReport["fileOpenLog"]);
-        $priceReport = $this->makeFilePriceDownloadLogReportStr($payPerViewReport["priceLog"], $payPerViewReport["priceOpenLog"]);
-        
-        return true;
+        $this->makeFileView($fileLogPath, $fileDownloadReport["fileViewReport"]);
+        $this->makePayPerView($priceLogPath, $fileDownloadReport["payPerViewReport"]);
     }
     
     /**
@@ -347,7 +342,7 @@ class Repository_Logreport extends WekoAction
         $logReport = BusinessFactory::getFactory()->getBusiness("businessLogreport");
         $logReport->setAdminBase($this->repository_admin_base);
         $logReport->setAdminRoom($this->repository_admin_room);
-        $supple_data = $logReport->getSuppleReport();
+        $supple_data = $logReport->createSuppleReport();
         
         // -----------------------------------------------
         // make log report
@@ -627,7 +622,7 @@ class Repository_Logreport extends WekoAction
         $logReport = BusinessFactory::getFactory()->getBusiness("businessLogreport");
         $logReport->setAdminBase($this->repository_admin_base);
         $logReport->setAdminRoom($this->repository_admin_room);
-        $result = $logReport->getHostAccessReport();
+        $result = $logReport->createHostAccessReport();
         
         // -----------------------------------------------
         // make log report text
@@ -665,7 +660,7 @@ class Repository_Logreport extends WekoAction
         // -----------------------------------------------
         // get data for make log
         // -----------------------------------------------
-        $viewLog = $logReport->getDetailViewReport();
+        $viewLog = $logReport->createDetailViewReport();
         
         // -----------------------------------------------
         // make file price download log
@@ -728,7 +723,7 @@ class Repository_Logreport extends WekoAction
         $logReport = BusinessFactory::getFactory()->getBusiness("businessLogreport");
         $logReport->setAdminBase($this->repository_admin_base);
         $logReport->setAdminRoom($this->repository_admin_room);
-        $userAffiliation = $logReport->getUserAffiliateReport();
+        $userAffiliation = $logReport->createUserAffiliateReport();
         
         $userAuth = $userAffiliation["userAuth"];
         $all_group = $userAffiliation["all_group"];
@@ -781,7 +776,7 @@ class Repository_Logreport extends WekoAction
         $logReport->setAdminBase($this->repository_admin_base);
         $logReport->setAdminRoom($this->repository_admin_room);
         $this->traceLog("logReport::getFileViewPerUser", __FILE__, __CLASS__, __LINE__);
-        $result = $logReport->getFileViewPerUser();
+        $result = $logReport->createFileViewPerUser();
         
         // -----------------------------------------------
         // make log report text
@@ -854,182 +849,79 @@ class Repository_Logreport extends WekoAction
     }
     
     /**
-     * Create file download report string
+     * Create file download report
      *
-     * @return string file download log report 
+     * @param string filePath : logReport_FileView
+     * @param array() $fileViewReport
      */
-    private function makeFileDownloadLogReportStr($fileLog, $fileOpenLog)
+    private function makeFileView($logFilePath, $fileViewReport)
     {
-        // -----------------------------------------------
-        // Make file download log
-        // -----------------------------------------------
-        $str = '';
-        $str .= $this->smartyAssign->getLang("repository_log_file_download_title")."\r\n";
-        $str .= $this->smartyAssign->getLang("repository_log_totaling_month")."\t".$this->disp_start_date."\r\n";
-        $str .= "\r\n";
-        $str .= $this->smartyAssign->getLang("repository_log_download_file");
-        $str .= "\r\n";
-        $str .= $this->smartyAssign->getLang("repository_log_download_filename")."\t";
-        $str .= $this->smartyAssign->getLang("repository_log_download_index")."\t";
-        $str .= $this->smartyAssign->getLang("repository_log_download_total")."\t";
-        $str .= $this->smartyAssign->getLang("repository_log_download_not_login")."\t";
-        $str .= $this->smartyAssign->getLang("repository_log_download_login")."\t";
-        $str .= $this->smartyAssign->getLang("repository_log_download_sitelicense")."\t";
-        $str .= $this->smartyAssign->getLang("repository_log_download_admin")."\t";
-        $str .= $this->smartyAssign->getLang("repository_log_download_register");
-        $str .= "\r\n";
-        foreach ($fileLog as $key => $value)
-        {
-            $str .= $value['file_name']."\t";
-            $str .= $value['index_name']."\t";
-            $str .= $value['total']."\t";
-            $str .= $value['not_login']."\t";
-            $str .= $value['login']."\t";
-            $str .= $value['site_license']."\t";
-            $str .= $value['admin']."\t";
-            $str .= $value['register'];
-            $str .= "\r\n";
-        }
-        $str .= "\r\n";
-        $str .= $this->smartyAssign->getLang("repository_log_download_open");
-        $str .= "\r\n";
-        $str .= $this->smartyAssign->getLang("repository_log_download_filename")."\t";
-        $str .= $this->smartyAssign->getLang("repository_log_download_index")."\t";
-        $str .= $this->smartyAssign->getLang("repository_log_download_total")."\t";
-        $str .= $this->smartyAssign->getLang("repository_log_download_not_login")."\t";
-        $str .= $this->smartyAssign->getLang("repository_log_download_login")."\t";
-        $str .= $this->smartyAssign->getLang("repository_log_download_sitelicense")."\t";
-        $str .= $this->smartyAssign->getLang("repository_log_download_admin")."\t";
-        $str .= $this->smartyAssign->getLang("repository_log_download_register");
-        $str .= "\r\n";
-        foreach ($fileOpenLog as $key => $value)
-        {
-            $str .= $value['file_name']."\t";
-            $str .= $value['index_name']."\t";
-            $str .= $value['total']."\t";
-            $str .= $value['not_login']."\t";
-            $str .= $value['login']."\t";
-            $str .= $value['site_license']."\t";
-            $str .= $value['admin']."\t";
-            $str .= $value['register'];
-            $str .= "\r\n";
+        $BOM = pack('C*',0xEF,0xBB,0xBF);
+        
+        $this->traceLog("open file download report", __FILE__, __CLASS__, __LINE__);
+        $fp = fopen($logFilePath, "w");
+        if($fp === false){
+            $ex = new AppException("mistake file open::". $logFilePath);
+            throw $ex;
         }
         
-        return $str;
+        try{
+            $this->traceLog("write bom", __FILE__, __CLASS__, __LINE__);
+            $this->writeReport($fp, $BOM);
+            
+            $this->writeCloseFileAccessReport($fp, $fileViewReport);
+            
+            $this->writeOpenFileAccessReport($fp, $fileViewReport);
+        } catch(AppException $ex) {
+            fclose($fp);
+            throw $ex;
+        }
+        
+        // write file log report
+        $this->traceLog("close file download report", __FILE__, __CLASS__, __LINE__);
+        $result = fclose($fp);
+        if($result === false){
+            $ex = new AppException("mistake file close::". $logFilePath);
+            throw $ex;
+        }
     }
     
     /**
-     * Create file price download report string
+     * Create file price download report
      *
-     * @return string file price download log report 
+     * @param string $logFilePath : PayPerView
+     * @param array() $payPerViewReport
      */
-    private function makeFilePriceDownloadLogReportStr($priceLog, $priceOpenLog)
+    private function makePayPerView($logFilePath, $payPerViewReport)
     {
-        // -----------------------------------------------
-        // Get group list(room_id and room_name list)
-        // -----------------------------------------------
-        $all_group = array();
-        $error_msg = "";
+        $BOM = pack('C*',0xEF,0xBB,0xBF);
         
-        $all_group = $this->groupList;
-        
-        // -----------------------------------------------
-        // make file price download log
-        // -----------------------------------------------
-        $str = '';
-        $str .= $this->smartyAssign->getLang("repository_log_download_title")."\r\n";
-        $str .= $this->smartyAssign->getLang("repository_log_totaling_month")."\t".$this->disp_start_date."\r\n";
-        $str .= "\r\n";
-        $str .= $this->smartyAssign->getLang("repository_log_download_price");
-        $str .= "\r\n";
-        $str .= $this->smartyAssign->getLang("repository_log_download_filename")."\t";
-        $str .= $this->smartyAssign->getLang("repository_log_download_index")."\t";
-        $str .= $this->smartyAssign->getLang("repository_log_download_total")."\t";
-        $str .= $this->smartyAssign->getLang("repository_log_download_not_login")."\t";
-        $str .= $this->smartyAssign->getLang("repository_item_gest")."\t";
-        for($ii=0; $ii<count($all_group); $ii++)
-        {
-            $str .= $all_group[$ii]['page_name']."\t";
+        $this->traceLog("open file download report", __FILE__, __CLASS__, __LINE__);
+        $fp = fopen($logFilePath, "w");
+        if($fp === false){
+            $ex = new AppException("mistake file open::". $logFilePath);
+            throw $ex;
         }
-        $str .= $this->smartyAssign->getLang("repository_log_download_deleted_group")."\t";
-        $str .= $this->smartyAssign->getLang("repository_log_download_sitelicense")."\t";
-        $str .= $this->smartyAssign->getLang("repository_log_download_admin")."\t";
-        $str .= $this->smartyAssign->getLang("repository_log_download_register");
-        $str .= "\r\n";
-        foreach($priceLog as $key => $value)
-        {
-            $deletedGroup = $value['total'] - $value['not_login'] - $value['group']['0'] -
-                            $value['site_license'] - $value['admin'] - $value['register'];
-            $str .= $value['file_name']."\t";
-            $str .= $value['index_name']."\t";
-            $str .= $value['total']."\t";
-            $str .= $value['not_login']."\t";
-            $str .= $value['group']['0']."\t";
-            for($ii=0; $ii<count($all_group); $ii++)
-            {
-                if($value['group'][$all_group[$ii]['room_id']] == null)
-                {
-                    $str .= "0\t";
-                }
-                else
-                {
-                    $str .= $value['group'][$all_group[$ii]['room_id']]."\t";
-                    $deletedGroup -= $value['group'][$all_group[$ii]['room_id']];
-                }
-            }
-            $str .= $deletedGroup."\t";
-            $str .= $value['site_license']."\t";
-            $str .= $value['admin']."\t";
-            $str .= $value['register'];
-            $str .= "\r\n";
-        }
-        $str .= "\r\n";
-        $str .= $this->smartyAssign->getLang("repository_log_download_open");
-        $str .= "\r\n";
-        $str .= $this->smartyAssign->getLang("repository_log_download_filename")."\t";
-        $str .= $this->smartyAssign->getLang("repository_log_download_index")."\t";
-        $str .= $this->smartyAssign->getLang("repository_log_download_total")."\t";
-        $str .= $this->smartyAssign->getLang("repository_log_download_not_login")."\t";
-        $str .= $this->smartyAssign->getLang("repository_item_gest")."\t";
-        for($ii=0; $ii<count($all_group); $ii++)
-        {
-            $str .= $all_group[$ii]['page_name']."\t";
-        }
-        $str .= $this->smartyAssign->getLang("repository_log_download_deleted_group")."\t";
-        $str .= $this->smartyAssign->getLang("repository_log_download_sitelicense")."\t";
-        $str .= $this->smartyAssign->getLang("repository_log_download_admin")."\t";
-        $str .= $this->smartyAssign->getLang("repository_log_download_register");
-        $str .= "\r\n";
-        foreach($priceOpenLog as $key => $value)
-        {
-            $deletedGroup = $value['total'] - $value['not_login'] - $value['group']['0'] -
-                            $value['site_license'] - $value['admin'] - $value['register'];
-            $str .= $value['file_name']."\t";
-            $str .= $value['index_name']."\t";
-            $str .= $value['total']."\t";
-            $str .= $value['not_login']."\t";
-            $str .= $value['group']['0']."\t";
-            for($ii=0; $ii<count($all_group); $ii++)
-            {
-                if($value['group'][$all_group[$ii]['room_id']] == null)
-                {
-                    $str .= "0\t";
-                }
-                else
-                {
-                    $str .= $value['group'][$all_group[$ii]['room_id']]."\t";
-                    $deletedGroup -= $value['group'][$all_group[$ii]['room_id']];
-                }
-            }
+        try{
+            $this->writeReport($fp, $BOM);
             
-            $str .= $deletedGroup."\t";
-            $str .= $value['site_license']."\t";
-            $str .= $value['admin']."\t";
-            $str .= $value['register'];
-            $str .= "\r\n";
+            $this->debugLog(__FUNCTION__. "::usage_memory = ". memory_get_usage(), __FILE__, __CLASS__, __LINE__);
+            $this->writeClosePriceFileAccessReport($fp, $payPerViewReport);
+            
+            $this->writeOpenPriceFileAccessReport($fp, $payPerViewReport);
+            $this->debugLog(__FUNCTION__. "::usage_memory = ". memory_get_usage(), __FILE__, __CLASS__, __LINE__);
+        } catch(AppException $ex){
+            fclose($fp);
+            throw $ex;
         }
         
-        return $str;
+        // write file log report
+        $this->traceLog("close file download report", __FILE__, __CLASS__, __LINE__);
+        $result = fclose($fp);
+        if($result === false){
+            $ex = new AppException("mistake file close::". $logFilePath);
+            throw $ex;
+        }
     }
     
     /**
@@ -1042,7 +934,7 @@ class Repository_Logreport extends WekoAction
         $logReport->setAdminBase($this->repository_admin_base);
         $logReport->setAdminRoom($this->repository_admin_room);
         
-        $keywordRanking = $logReport->getKeywordRankingReport();
+        $keywordRanking = $logReport->createKeywordRankingReport();
         
         // -----------------------------------------------
         // make log report
@@ -1104,18 +996,9 @@ class Repository_Logreport extends WekoAction
      */
     private function createTempDirectory()
     {
-        // add for compress files
-        $output_files = array();
-        //$date = date("YmdHis");
-        $query = "SELECT DATE_FORMAT(NOW(), '%Y%m%d%H%i%s') AS now_date;";
-        $result = $this->Db->execute($query);
-        if($result === false || count($result) != 1){
-            $this->errorLog($this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
-            throw new AppException($this->Db->ErrorMsg());
-        }
-        $date = $result[0]['now_date'];
-        $tmp_dir = WEBAPP_DIR."/uploads/repository/_".$date;
-        mkdir( $tmp_dir, 0777 );
+        $this->infoLog("businessWorkdirectory", __FILE__, __CLASS__, __LINE__);
+        $businessWorkdirectory = BusinessFactory::getFactory()->getBusiness("businessWorkdirectory");
+        $tmp_dir = $businessWorkdirectory->create();
         
         return $tmp_dir;
     }
@@ -1155,82 +1038,97 @@ class Repository_Logreport extends WekoAction
     {
         $output_files = array();
         
+        $this->debugLog("usage_memory = ". memory_get_usage(), __FILE__, __CLASS__, __LINE__);
+        
         // サイトライセンス別アクセス数(access num as site lisence)
         $this->traceLog("write access report per sitelicense", __FILE__, __CLASS__, __LINE__);
         $log_str = $this->makeAccessLogReport();
-        $log_file = $tmp_dir. DIRECTORY_SEPARATOR. self::FILE_NAME_SITE_ACCESS. $this->getStrOfJoinedStartYearAndStartMonth().".tsv";
+        $log_file = $tmp_dir. self::FILE_NAME_SITE_ACCESS. $this->getStrOfJoinedStartYearAndStartMonth().".tsv";
         $this->writeLogReport($log_str, $log_file);
         array_push( $output_files, $log_file );
         
+        $this->debugLog("usage_memory = ". memory_get_usage(), __FILE__, __CLASS__, __LINE__);
+        
         // 課金ファイルダウンロード数(download file num)
-        $fileLogStr = "";
-        $priceLogStr = "";
+        // common file download report path
+        $fileLogPath = $tmp_dir. self::FILE_NAME_FILE_DOWNLOAD. $this->getStrOfJoinedStartYearAndStartMonth(). ".tsv";
+        // accounting file download report path
+        $priceLogPath = $tmp_dir. self::FILE_NAME_PAY_PER_VIEW. $this->getStrOfJoinedStartYearAndStartMonth(). ".tsv";
+        
         $this->traceLog("output file download report data", __FILE__, __CLASS__, __LINE__);
-        $this->makeFileDownloadLogReport($fileLogStr, $priceLogStr);
+        $this->makeFileDownloadLogReport($fileLogPath, $priceLogPath);
+        array_push( $output_files, $fileLogPath );
+        array_push( $output_files, $priceLogPath );
         
-        // FileView
-        $this->traceLog("write file download report", __FILE__, __CLASS__, __LINE__);
-        $log_file = $tmp_dir. DIRECTORY_SEPARATOR. self::FILE_NAME_FILE_DOWNLOAD. $this->getStrOfJoinedStartYearAndStartMonth(). ".tsv";
-        $this->writeLogReport($fileLogStr, $log_file);
-        array_push( $output_files, $log_file );
-        
-        // PayPerView
-        $this->traceLog("write price file download report", __FILE__, __CLASS__, __LINE__);
-        $log_file = $tmp_dir. DIRECTORY_SEPARATOR. self::FILE_NAME_PAY_PER_VIEW. $this->getStrOfJoinedStartYearAndStartMonth(). ".tsv";
-        $this->writeLogReport($priceLogStr, $log_file);
-        array_push( $output_files, $log_file );
+        $this->debugLog("usage_memory = ". memory_get_usage(), __FILE__, __CLASS__, __LINE__);
         
         // インデックごとの詳細画面アクセス数(detail view as index)
         $this->traceLog("write access report per index", __FILE__, __CLASS__, __LINE__);
         $log_str = $this->makeIndexLogReport();
-        $log_file = $tmp_dir. DIRECTORY_SEPARATOR. self::FILE_NAME_INDEX_ACCESS. $this->getStrOfJoinedStartYearAndStartMonth(). ".tsv";
+        $log_file = $tmp_dir. self::FILE_NAME_INDEX_ACCESS. $this->getStrOfJoinedStartYearAndStartMonth(). ".tsv";
         $this->writeLogReport($log_str, $log_file);
         array_push( $output_files, $log_file );
+        
+        $this->debugLog("usage_memory = ". memory_get_usage(), __FILE__, __CLASS__, __LINE__);
         
         $this->infoLog("businessLogreport", __FILE__, __CLASS__, __LINE__);
         $logReport = BusinessFactory::getFactory()->getBusiness("businessLogreport");
         $logReport->setAdminBase($this->repository_admin_base);
         $logReport->setAdminRoom($this->repository_admin_room);
         
-        if($logReport->getIsCreatedSuppleReport()){
+        $this->debugLog("usage_memory = ". memory_get_usage(), __FILE__, __CLASS__, __LINE__);
+        
+        if($logReport->isCreateSuppleReport()){
             // サプリコンテンツの閲覧回数およびダウンロード回数(detail view and download file num as supple items)
             $this->traceLog("write supple contents usagestatics report", __FILE__, __CLASS__, __LINE__);
             $log_str = $this->makeSuppleLogReport();
-            $log_file = $tmp_dir. DIRECTORY_SEPARATOR. self::FILE_NAME_SUPPLE_ACCESS. $this->getStrOfJoinedStartYearAndStartMonth(). ".tsv";
+            $log_file = $tmp_dir. self::FILE_NAME_SUPPLE_ACCESS. $this->getStrOfJoinedStartYearAndStartMonth(). ".tsv";
             $this->writeLogReport($log_str, $log_file);
             array_push( $output_files, $log_file );
+            
+            $this->debugLog("usage_memory = ". memory_get_usage(), __FILE__, __CLASS__, __LINE__);
         }
         
         $this->traceLog("write access report per host", __FILE__, __CLASS__, __LINE__);
         $log_str = $this->makeHostLogReport();
-        $log_file = $tmp_dir. DIRECTORY_SEPARATOR. self::FILE_NAME_HOST_ACCESS. $this->getStrOfJoinedStartYearAndStartMonth(). ".tsv";
+        $log_file = $tmp_dir. self::FILE_NAME_HOST_ACCESS. $this->getStrOfJoinedStartYearAndStartMonth(). ".tsv";
         $this->writeLogReport($log_str, $log_file);
         array_push( $output_files, $log_file );
+        
+        $this->debugLog("usage_memory = ". memory_get_usage(), __FILE__, __CLASS__, __LINE__);
         
         $this->traceLog("write item detail report", __FILE__, __CLASS__, __LINE__);
         $log_str = $this->makeDetailViewLogReport();
-        $log_file = $tmp_dir. DIRECTORY_SEPARATOR. self::FILE_NAME_DETAIL_VIEW. $this->getStrOfJoinedStartYearAndStartMonth(). ".tsv";
+        $log_file = $tmp_dir. self::FILE_NAME_DETAIL_VIEW. $this->getStrOfJoinedStartYearAndStartMonth(). ".tsv";
         $this->writeLogReport($log_str, $log_file);
         array_push( $output_files, $log_file );
+        
+        $this->debugLog("usage_memory = ". memory_get_usage(), __FILE__, __CLASS__, __LINE__);
         
         $this->traceLog("write user affiliation report", __FILE__, __CLASS__, __LINE__);
         $log_str = $this->makeUserLogReport();
-        $log_file = $tmp_dir. DIRECTORY_SEPARATOR. self::FILE_NAME_USER_AFFILIATE. $this->getStrOfJoinedStartYearAndStartMonth(). ".tsv";
+        $log_file = $tmp_dir. self::FILE_NAME_USER_AFFILIATE. $this->getStrOfJoinedStartYearAndStartMonth(). ".tsv";
         $this->writeLogReport($log_str, $log_file);
         array_push( $output_files, $log_file );
         
+        $this->debugLog("usage_memory = ". memory_get_usage(), __FILE__, __CLASS__, __LINE__);
+        
         $this->traceLog("write file download report per user", __FILE__, __CLASS__, __LINE__);
         $log_str = $this->makeUsersDLLogReport();
-        $log_file = $tmp_dir. DIRECTORY_SEPARATOR. self::FILE_NAME_DOWNLOAD_PER_USER. $this->getStrOfJoinedStartYearAndStartMonth(). ".tsv";
+        $log_file = $tmp_dir. self::FILE_NAME_DOWNLOAD_PER_USER. $this->getStrOfJoinedStartYearAndStartMonth(). ".tsv";
         $this->writeLogReport($log_str, $log_file);
         array_push( $output_files, $log_file );
+        
+        $this->debugLog("usage_memory = ". memory_get_usage(), __FILE__, __CLASS__, __LINE__);
         
         // 検索キーワードランキング
         $this->traceLog("write search keyword report", __FILE__, __CLASS__, __LINE__);
         $log_str = $this->makeSearchLogReport();
-        $log_file = $tmp_dir. DIRECTORY_SEPARATOR. self::FILE_NAME_SEARCH_COUNT. $this->getStrOfJoinedStartYearAndStartMonth(). ".tsv";
+        $log_file = $tmp_dir. self::FILE_NAME_SEARCH_COUNT. $this->getStrOfJoinedStartYearAndStartMonth(). ".tsv";
         $this->writeLogReport($log_str, $log_file);
         array_push( $output_files, $log_file );
+        
+        $this->debugLog("usage_memory = ". memory_get_usage(), __FILE__, __CLASS__, __LINE__);
         
         return $output_files;
     }
@@ -1347,6 +1245,279 @@ class Repository_Logreport extends WekoAction
             throw new AppException($error_msg);
         }
         $this->groupList = $all_group;
+    }
+    
+    /**
+     * write close file access report
+     *
+     * @param handle $fp
+     * @param array() $fileViewReport
+     */
+    private function writeCloseFileAccessReport($fp, $fileViewReport)
+    {
+        // access log of close file
+        $fileLog = $fileViewReport["fileLog"];
+        
+        // -----------------------------------------------
+        // Make file download log
+        // -----------------------------------------------
+        $this->writeReport($fp, $this->smartyAssign->getLang("repository_log_file_download_title")."\r\n");
+        $this->writeReport($fp, $this->smartyAssign->getLang("repository_log_totaling_month")."\t".$this->disp_start_date."\r\n");
+        $this->writeReport($fp, "\r\n");
+        $this->writeReport($fp, $this->smartyAssign->getLang("repository_log_download_file"));
+        $this->writeReport($fp, "\r\n");
+        $this->writeReport($fp, $this->smartyAssign->getLang("repository_log_download_filename")."\t");
+        $this->writeReport($fp, $this->smartyAssign->getLang("repository_log_download_index")."\t");
+        $this->writeReport($fp, $this->smartyAssign->getLang("repository_log_download_total")."\t");
+        $this->writeReport($fp, $this->smartyAssign->getLang("repository_log_download_not_login")."\t");
+        $this->writeReport($fp, $this->smartyAssign->getLang("repository_log_download_login")."\t");
+        $this->writeReport($fp, $this->smartyAssign->getLang("repository_log_download_sitelicense")."\t");
+        $this->writeReport($fp, $this->smartyAssign->getLang("repository_log_download_admin")."\t");
+        $this->writeReport($fp, $this->smartyAssign->getLang("repository_log_download_register"));
+        $this->writeReport($fp, "\r\n");
+        foreach ($fileLog as $key => $value)
+        {
+            $this->writeReport($fp, $value['file_name']."\t");
+            $this->writeReport($fp, $value['index_name']."\t");
+            $this->writeReport($fp, $value['total']."\t");
+            $this->writeReport($fp, $value['not_login']."\t");
+            $this->writeReport($fp, $value['login']."\t");
+            $this->writeReport($fp, $value['site_license']."\t");
+            $this->writeReport($fp, $value['admin']."\t");
+            $this->writeReport($fp, $value['register']);
+            $this->writeReport($fp, "\r\n");
+        }
+        $this->writeReport($fp, "\r\n");
+    }
+    
+    /**
+     * write open file access report
+     *
+     * @param handle $fp
+     * @param array() $fileViewReport
+     */
+    private function writeOpenFileAccessReport($fp, $fileViewReport)
+    {
+        // access log of open file
+        $fileOpenLog = $fileViewReport["fileOpenLog"];
+        
+        $this->writeReport($fp, $this->smartyAssign->getLang("repository_log_download_open"));
+        $this->writeReport($fp, "\r\n");
+        $this->writeReport($fp, $this->smartyAssign->getLang("repository_log_download_filename")."\t");
+        $this->writeReport($fp, $this->smartyAssign->getLang("repository_log_download_index")."\t");
+        $this->writeReport($fp, $this->smartyAssign->getLang("repository_log_download_total")."\t");
+        $this->writeReport($fp, $this->smartyAssign->getLang("repository_log_download_not_login")."\t");
+        $this->writeReport($fp, $this->smartyAssign->getLang("repository_log_download_login")."\t");
+        $this->writeReport($fp, $this->smartyAssign->getLang("repository_log_download_sitelicense")."\t");
+        $this->writeReport($fp, $this->smartyAssign->getLang("repository_log_download_admin")."\t");
+        $this->writeReport($fp, $this->smartyAssign->getLang("repository_log_download_register"));
+        $this->writeReport($fp, "\r\n");
+        foreach ($fileOpenLog as $key => $value)
+        {
+            $this->writeReport($fp, $value['file_name']."\t");
+            $this->writeReport($fp, $value['index_name']."\t");
+            $this->writeReport($fp, $value['total']."\t");
+            $this->writeReport($fp, $value['not_login']."\t");
+            $this->writeReport($fp, $value['login']."\t");
+            $this->writeReport($fp, $value['site_license']."\t");
+            $this->writeReport($fp, $value['admin']."\t");
+            $this->writeReport($fp, $value['register']);
+            $this->writeReport($fp, "\r\n");
+        }
+    }
+    
+    /**
+     * make par per view report for close file
+     *
+     * @param handle $fp
+     * @param array() $payPerViewReport
+     */
+    private function writeClosePriceFileAccessReport($fp, $payPerViewReport)
+    {
+        // log of close price file
+        $priceLog = $payPerViewReport["priceLog"];
+        
+        // -----------------------------------------------
+        // Get group list(room_id and room_name list)
+        // -----------------------------------------------
+        $all_group = array();
+        $error_msg = "";
+        
+        $all_group = $this->groupList;
+        
+        // -----------------------------------------------
+        // make file price download log
+        // -----------------------------------------------
+        $this->writeReport($fp, $this->smartyAssign->getLang("repository_log_download_title"));
+        $this->writeReport($fp, "\r\n");
+        $this->writeReport($fp, $this->smartyAssign->getLang("repository_log_totaling_month"));
+        $this->writeReport($fp, "\t");
+        $this->writeReport($fp, $this->disp_start_date);
+        $this->writeReport($fp, "\r\n");
+        $this->writeReport($fp, "\r\n");
+        $this->writeReport($fp, $this->smartyAssign->getLang("repository_log_download_price"));
+        $this->writeReport($fp, "\r\n");
+        $this->writeReport($fp, $this->smartyAssign->getLang("repository_log_download_filename"));
+        $this->writeReport($fp, "\t");
+        $this->writeReport($fp, $this->smartyAssign->getLang("repository_log_download_index"));
+        $this->writeReport($fp, "\t");
+        $this->writeReport($fp, $this->smartyAssign->getLang("repository_log_download_total"));
+        $this->writeReport($fp, "\t");
+        $this->writeReport($fp, $this->smartyAssign->getLang("repository_log_download_not_login"));
+        $this->writeReport($fp, "\t");
+        $this->writeReport($fp, $this->smartyAssign->getLang("repository_item_gest"));
+        $this->writeReport($fp, "\t");
+        for($ii=0; $ii<count($all_group); $ii++)
+        {
+            $this->writeReport($fp, $all_group[$ii]['page_name']);
+            $this->writeReport($fp, "\t");
+        }
+        $this->writeReport($fp, $this->smartyAssign->getLang("repository_log_download_deleted_group"));
+        $this->writeReport($fp, "\t");
+        $this->writeReport($fp, $this->smartyAssign->getLang("repository_log_download_sitelicense"));
+        $this->writeReport($fp, "\t");
+        $this->writeReport($fp, $this->smartyAssign->getLang("repository_log_download_admin"));
+        $this->writeReport($fp, "\t");
+        $this->writeReport($fp, $this->smartyAssign->getLang("repository_log_download_register"));
+        $this->writeReport($fp, "\r\n");
+        $this->debugLog(__FUNCTION__. "::usage_memory = ". memory_get_usage(), __FILE__, __CLASS__, __LINE__);
+        foreach($priceLog as $key => $value)
+        {
+            $deletedGroup = $value['total'] - $value['not_login'] - $value['group']['0'] -
+                            $value['site_license'] - $value['admin'] - $value['register'];
+            $this->writeReport($fp, $value['file_name']);
+            $this->writeReport($fp, "\t");
+            $this->writeReport($fp, $value['index_name']);
+            $this->writeReport($fp, "\t");
+            $this->writeReport($fp, $value['total']);
+            $this->writeReport($fp, "\t");
+            $this->writeReport($fp, $value['not_login']);
+            $this->writeReport($fp, "\t");
+            $this->writeReport($fp, $value['group']['0']);
+            $this->writeReport($fp, "\t");
+            for($ii=0; $ii<count($all_group); $ii++)
+            {
+                if(!isset($value['group'][$all_group[$ii]['room_id']]))
+                {
+                    $this->writeReport($fp, "0\t");
+                }
+                else
+                {
+                    $this->writeReport($fp, $value['group'][$all_group[$ii]['room_id']]);
+                    $this->writeReport($fp, "\t");
+                    $deletedGroup -= $value['group'][$all_group[$ii]['room_id']];
+                }
+            }
+            $this->writeReport($fp, $deletedGroup);
+            $this->writeReport($fp, "\t");
+            $this->writeReport($fp, $value['site_license']);
+            $this->writeReport($fp, "\t");
+            $this->writeReport($fp, $value['admin']);
+            $this->writeReport($fp, "\t");
+            $this->writeReport($fp, $value['register']);
+            $this->writeReport($fp, "\r\n");
+        }
+        $this->debugLog(__FUNCTION__. "::usage_memory = ". memory_get_usage(), __FILE__, __CLASS__, __LINE__);
+        $this->writeReport($fp, "\r\n");
+    }
+    
+    /**
+     * make payper view report for open file
+     *
+     * @param handle $fp
+     * @param array() $payPerViewReport
+     */
+    private function writeOpenPriceFileAccessReport($fp, $payPerViewReport)
+    {
+        // log of openprice file
+        $priceOpenLog = $payPerViewReport["priceOpenLog"];
+        
+        $all_group = array();
+        $error_msg = "";
+        
+        $all_group = $this->groupList;
+        
+        $this->writeReport($fp, $this->smartyAssign->getLang("repository_log_download_open"));
+        $this->writeReport($fp, "\r\n");
+        $this->writeReport($fp, $this->smartyAssign->getLang("repository_log_download_filename"));
+        $this->writeReport($fp, "\t");
+        $this->writeReport($fp, $this->smartyAssign->getLang("repository_log_download_index"));
+        $this->writeReport($fp, "\t");
+        $this->writeReport($fp, $this->smartyAssign->getLang("repository_log_download_total"));
+        $this->writeReport($fp, "\t");
+        $this->writeReport($fp, $this->smartyAssign->getLang("repository_log_download_not_login"));
+        $this->writeReport($fp, "\t");
+        $this->writeReport($fp, $this->smartyAssign->getLang("repository_item_gest"));
+        $this->writeReport($fp, "\t");
+        for($ii=0; $ii<count($all_group); $ii++)
+        {
+            $this->writeReport($fp, $all_group[$ii]['page_name']);
+            $this->writeReport($fp, "\t");
+        }
+        $this->writeReport($fp, $this->smartyAssign->getLang("repository_log_download_deleted_group"));
+        $this->writeReport($fp, "\t");
+        $this->writeReport($fp, $this->smartyAssign->getLang("repository_log_download_sitelicense"));
+        $this->writeReport($fp, "\t");
+        $this->writeReport($fp, $this->smartyAssign->getLang("repository_log_download_admin"));
+        $this->writeReport($fp, "\t");
+        $this->writeReport($fp, $this->smartyAssign->getLang("repository_log_download_register"));
+        $this->writeReport($fp, "\r\n");
+        $this->debugLog(__FUNCTION__. "::usage_memory = ". memory_get_usage(), __FILE__, __CLASS__, __LINE__);
+        foreach($priceOpenLog as $key => $value)
+        {
+            $deletedGroup = $value['total'] - $value['not_login'] - $value['group']['0'] -
+                            $value['site_license'] - $value['admin'] - $value['register'];
+            $this->writeReport($fp, $value['file_name']);
+            $this->writeReport($fp, "\t");
+            $this->writeReport($fp, $value['index_name']);
+            $this->writeReport($fp, "\t");
+            $this->writeReport($fp, $value['total']);
+            $this->writeReport($fp, "\t");
+            $this->writeReport($fp, $value['not_login']);
+            $this->writeReport($fp, "\t");
+            $this->writeReport($fp, $value['group']['0']);
+            $this->writeReport($fp, "\t");
+            for($ii=0; $ii<count($all_group); $ii++)
+            {
+                if(!isset($value['group'][$all_group[$ii]['room_id']]))
+                {
+                    $this->writeReport($fp, "0\t");
+                }
+                else
+                {
+                    $this->writeReport($fp, $value['group'][$all_group[$ii]['room_id']]);
+                    $this->writeReport($fp, "\t");
+                    $deletedGroup -= $value['group'][$all_group[$ii]['room_id']];
+                }
+            }
+            
+            $this->writeReport($fp, $deletedGroup);
+            $this->writeReport($fp, "\t");
+            $this->writeReport($fp, $value['site_license']);
+            $this->writeReport($fp, "\t");
+            $this->writeReport($fp, $value['admin']);
+            $this->writeReport($fp, "\t");
+            $this->writeReport($fp, $value['register']);
+            $this->writeReport($fp, "\r\n");
+        }
+        $this->debugLog(__FUNCTION__. "::usage_memory = ". memory_get_usage(), __FILE__, __CLASS__, __LINE__);
+    }
+    
+    /**
+     * write report files
+     *
+     * @param handle $fp
+     * @param string $line
+     * @return int write bytes
+     */
+    private function writeReport($fp, $line)
+    {
+        $result = fwrite($fp, $line);
+        if($result === false){
+            $ex = new AppException("mistake write file.");
+            throw $ex;
+        }
+        return $result;
     }
 }
 ?>

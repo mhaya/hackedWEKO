@@ -1,7 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-// $Id: Confirm.class.php 53594 2015-05-28 05:25:53Z kaede_matsushita $
+// $Id: Confirm.class.php 58647 2015-10-10 08:13:31Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -262,6 +262,7 @@ class Repository_Action_Edit_Import_Confirm extends RepositoryAction
                     $this->failTrans();
                     throw $exception;
                 }
+                
                 if(strlen($warningMsg) > 0){
                     $array_item[$nCnt]["error_msg"] = $warningMsg;
                 } else {
@@ -414,7 +415,6 @@ class Repository_Action_Edit_Import_Confirm extends RepositoryAction
         $tmp_file = $this->Session->getParameter("filelist");
         $this->Session->removeParameter("filelist");
         
-        //$dir_path = WEBAPP_DIR. "\\uploads\\repository\\";
         $dir_path = WEBAPP_DIR. "/uploads/repository/";
         $file_path = $dir_path . $tmp_file[0]['physical_file_name'];
         
@@ -425,13 +425,11 @@ class Repository_Action_Edit_Import_Confirm extends RepositoryAction
         
         // make dir for extract
         $dir = $dir_path . $tmp_file[0]['upload_id'];
-        if (!mkdir($dir, 0777)){
-            // error
-            $exception = new RepositoryException( "ERR_MSG_xxx-xxx1", 001 );
-            $this->failTrans(); // ROLLBACK
-            throw $exception;
-        }
-
+        $this->infoLog("businessWorkdirectory", __FILE__, __CLASS__, __LINE__);
+        $businessWorkdirectory = BusinessFactory::getFactory()->getBusiness('businessWorkdirectory');
+        $dir = $businessWorkdirectory->create();
+        $dir = substr($dir, 0, -1);
+        
         // Update SuppleContentsEntry Y.Yamazawa 2015/04/02 --satrt--
         // extract zip file
         $result = Repository_Components_Util_ZipUtility::extract($file_path, $dir);

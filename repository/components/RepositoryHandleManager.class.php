@@ -1,7 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-// $Id: RepositoryHandleManager.class.php 54835 2015-06-25 04:10:46Z keiya_sugimoto $
+// $Id: RepositoryHandleManager.class.php 58745 2015-10-13 05:55:10Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics,
 // Research and Development Center for Scientific Information Resources
@@ -13,6 +13,9 @@
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryLogicBase.class.php';
 require_once WEBAPP_DIR. '/modules/repository/components/IDServer.class.php';
+require_once WEBAPP_DIR. '/modules/repository/components/FW/AppException.class.php';
+require_once WEBAPP_DIR. '/modules/repository/components/FW/AppLogger.class.php';
+
 /**
  * repository handle IDs management class
  * 
@@ -31,11 +34,18 @@ class RepositoryHandleManager extends RepositoryLogicBase
     const PREFIX_CNRI = "http://hdl.handle.net/";
     const PREFIX_Y_HANDLE = "http://id.nii.ac.jp/";
     const PREFIX_SELF_DOI = "info:doi/";
-    const PREFIX_LIBRARY_DOI_INFO = "info:doi.org/";
+    const PREFIX_LIBRARY_DOI_HTTP_DX = "http://dx.doi.org/";
     const PREFIX_LIBRARY_DOI_HTTP = "http://doi.org/";
     const PREFIX_LIBRARY_DOI_DOI = "doi:";
     const DOI_STATUS_GRANTED = 1;
     const DOI_STATUS_DROPED = 2;
+    
+    const ERROR_KEY_NO_PREFIX_NDL = 'repository_no_prefix_ndl';
+    const ERROR_KEY_NO_PREFIX_Y_HANDLE = 'repository_no_prefix_y_handle';
+    const ERROR_KEY_NO_PREFIX_CNRI = 'repository_no_prefix_cnri';
+    const ERROR_KEY_INVALID_NDL_DOI_FORMAT = 'repository_invalid_doi_format';
+    const ERROR_KEY_INVALID_Y_HANDLE_FORMAT = 'repository_invalid_y_handle_format';
+    const ERROR_KEY_INVALID_CNRI_FORMAT = 'repository_invalid_cnri_format';
     
     // Add DataCite 2015/02/26 K.Sugimoto --start--
     public $err_msg = null;
@@ -207,14 +217,8 @@ class RepositoryHandleManager extends RepositoryLogicBase
         $IDServer = new IDServer($this->Session, $this->dbAccess->getDb());
         
         $url = $IDServer->getSuffix($title, $item_id, $this->transStartDate);
-        $pre = $this->getPrefix(self::ID_Y_HANDLE);
-        if(empty($pre)) {
-            return false;
-        }
         
-        $suf = str_replace(self::PREFIX_Y_HANDLE, "", $url);
-        $suf = str_replace($pre, "", $suf);
-        $suf = str_replace("/", "", $suf);
+        $suf = $this->extractYhandleSuffix($url);
         
         $query = "INSERT INTO ".DATABASE_PREFIX."repository_suffix".
                  " (item_id, item_no, id, suffix, ins_user_id, mod_user_id, del_user_id, ins_date, mod_date, del_date, is_delete)".
@@ -238,7 +242,7 @@ class RepositoryHandleManager extends RepositoryLogicBase
         $params[] = $suf;
         $params[] = $this->Session->getParameter("_user_id");
         $params[] = $this->transStartDate;
-                 
+        
         $this->dbAccess->executeQuery($query, $params);
     }
     
@@ -282,8 +286,8 @@ class RepositoryHandleManager extends RepositoryLogicBase
         $params[] = $this->transStartDate;
                  
         $this->dbAccess->executeQuery($query, $params);
-    }
-    */
+    }*/
+    
     
     /**
      * Register prefix by id
@@ -394,6 +398,10 @@ class RepositoryHandleManager extends RepositoryLogicBase
             	break;
             	
         	case self::ID_CNRI_HANDLE:
+                // CNRIのSuffixがない場合はYハンドルのSuffixを参照するようにする
+                if(strlen($suf) == 0){
+                    $suf = $this->getHandleSuffix($item_id, $item_no, self::ID_Y_HANDLE);
+                }
             	$pre = $this->getCnriPrefix();
             	break;
             	
@@ -643,6 +651,137 @@ class RepositoryHandleManager extends RepositoryLogicBase
     }
     
     /**
+     * extract suffix by Permalink of National Diet Library
+     * 国立国会図書館のPermalinkからsuffixを抽出する
+     *
+     * @param string $uri
+     * @return string length > 0: extraction is success
+     *                length = 0: extraction is failed
+     */
+    private function extractLibraryDoiSuffix($uri){
+        $matches = array();
+        $suffix = "";
+        
+        $prefix = $this->getLibraryJalcDoiPrefix();
+        if(strlen($prefix) === 0){
+            $exception = new AppException(self::ERROR_KEY_NO_PREFIX_NDL);
+            $exception->addError(self::ERROR_KEY_NO_PREFIX_NDL);
+            
+            AppLogger::debugLog(self::ERROR_KEY_NO_PREFIX_NDL, __FILE__, __CLASS__, __LINE__);
+            throw $exception;
+        }
+        
+        // 下記形式のURIから[suffix]を抽出する
+        // DOIの入力形式は下記の通り
+        //   - http://doi.org/[prefix]/[suffix]
+        //   - http://dx.doi.org/[prefix]/[suffix]
+        //   - doi:[prefix]/[suffix]
+        //   - info:doi/[prefix]/[suffix]
+        //   - [prefix]/[suffix]
+        if(preg_match("/^". preg_quote(self::PREFIX_SELF_DOI. $prefix, "/"). "\/(.+)$/", $uri, $matches) === 1
+            || preg_match("/^". preg_quote(self::PREFIX_LIBRARY_DOI_HTTP_DX. $prefix, "/"). "\/(.+)$/", $uri, $matches) === 1
+            || preg_match("/^". preg_quote(self::PREFIX_LIBRARY_DOI_HTTP. $prefix, "/"). "\/(.+)$/", $uri, $matches) === 1
+            || preg_match("/^". preg_quote(self::PREFIX_LIBRARY_DOI_DOI. $prefix, "/"). "\/(.+)$/", $uri, $matches) === 1
+            || preg_match("/^". preg_quote($prefix, "/"). "\/(.+)$/", $uri, $matches) === 1){
+            
+            $suffix = $this->checkDoiFormat($matches[1]);
+            if(strlen($suffix) === 0){
+                $exception = new AppException(self::ERROR_KEY_INVALID_NDL_DOI_FORMAT);
+                $exception->addError(self::ERROR_KEY_INVALID_NDL_DOI_FORMAT);
+                
+                AppLogger::debugLog(self::ERROR_KEY_INVALID_NDL_DOI_FORMAT. "::uri=". $uri, __FILE__, __CLASS__, __LINE__);
+                throw $exception;
+            }
+        } else {
+            $exception = new AppException(self::ERROR_KEY_INVALID_NDL_DOI_FORMAT);
+            $exception->addError(self::ERROR_KEY_INVALID_NDL_DOI_FORMAT);
+            
+            AppLogger::debugLog(self::ERROR_KEY_INVALID_NDL_DOI_FORMAT. "::uri=". $uri, __FILE__, __CLASS__, __LINE__);
+            throw $exception;
+        }
+        
+        return $suffix;
+    }
+    
+    /**
+     * extract suffix by Permalink of Y-Handle
+     * Yハンドル(IDサーバ)のPermalinkからsuffixを抽出する
+     *
+     * @param string $uri
+     * @return string length > 0: extraction is success
+     *                length = 0: extraction is failed
+     */
+    private function extractYhandleSuffix($uri){
+        $matches = array();
+        $suffix = "";
+    
+        $prefix = $this->getYHandlePrefix();
+        if(strlen($prefix) === 0){
+            // Prefix未設定での運用もあり、そちらはエラーというわけではないので、
+            // 空文字としてSuffixを登録する
+            return "";
+        }
+        
+        // http://id.nii.ac.jp/[prefix]/[suffix]の
+        // [suffix]を抽出する(0埋め8桁)
+        // [prefix]内に正規表現の特殊文字が含まれる可能性があるため、
+        // preg_quoteでエスケープするようにしている
+        if(preg_match("/^". preg_quote(self::PREFIX_Y_HANDLE. $prefix, "/"). "\/([0-9]{8})\//", $uri, $matches) === 1){
+            $suffix = $matches[1];
+        } else {
+            $exception = new AppException(self::ERROR_KEY_INVALID_Y_HANDLE_FORMAT);
+            $exception->addError(self::ERROR_KEY_INVALID_Y_HANDLE_FORMAT);
+            
+            AppLogger::debugLog(self::ERROR_KEY_INVALID_Y_HANDLE_FORMAT. "::uri=". $uri, __FILE__, __CLASS__, __LINE__);
+            throw $exception;
+        }
+        
+        return $suffix;
+    }
+    
+    /**
+     * extract suffix by Permalink of CNRI-Handle
+     * CNRIハンドルのPermalinkからsuffixを抽出する
+     *
+     * @param string $uri
+     * @return string length > 0: extraction is success
+     *                length = 0: extraction is failed
+     */
+    public function extractCnriSuffix($uri){
+        $matches = array();
+        $suffix = "";
+        
+        $prefix = $this->getCnriPrefix();
+        if(strlen($prefix) === 0){
+            $exception = new AppException(self::ERROR_KEY_NO_PREFIX_CNRI);
+            $exception->addError(self::ERROR_KEY_NO_PREFIX_CNRI);
+            
+            AppLogger::debugLog(self::ERROR_KEY_NO_PREFIX_CNRI, __FILE__, __CLASS__, __LINE__);
+            throw $exception;
+        }
+        
+        // http://hdl.handle.net/[prefix]/[suffix]または[prefix]/[suffix]の
+        // [suffix]を抽出する
+        // [prefix]内に正規表現の特殊文字が含まれる可能性があるため、
+        // preg_quoteでエスケープするようにしている
+        // 下記URLより、suffixとして使用できる値に制限はない
+        //  http://www.handle.net/HSj/hdlnet-2-SVC-AGREE-3.pdf
+        if(preg_match("/^". preg_quote(self::PREFIX_CNRI. $prefix, "/"). "\/(.+)$/", $uri, $matches) === 1
+           || preg_match("/^". preg_quote($prefix, "/"). "\/(.+)$/", $uri, $matches) === 1){
+           
+            $suffix = $matches[1];
+        } else {
+            $exception = new AppException(self::ERROR_KEY_INVALID_CNRI_FORMAT);
+            $exception->addError(self::ERROR_KEY_INVALID_CNRI_FORMAT);
+            
+            AppLogger::debugLog(self::ERROR_KEY_INVALID_CNRI_FORMAT. "::uri=". $uri, __FILE__, __CLASS__, __LINE__);
+            throw $exception;
+        }
+        
+        return $suffix;
+    }
+    
+    /**
      * Regist Library JaLC DOI suffix
      * 
      * @param int $item_id
@@ -651,43 +790,28 @@ class RepositoryHandleManager extends RepositoryLogicBase
      */
     public function registLibraryJalcdoiSuffix($item_id, $item_no, $uri)
     {
-        $suffix = "";
-        $prefix = $this->getLibraryJalcDoiPrefix();
+        // Permalinkからsuffixを抽出する
+        // 抽出できなかった場合、空文字が返却される
+        $suffix = $this->extractLibraryDoiSuffix($uri);
         
-        if(strpos($uri, $prefix) !== false)
+        // Add DataCite 2015/02/10 K.Sugimoto --start--
+        $query = "SELECT param_value".
+                 " FROM ".DATABASE_PREFIX."repository_parameter".
+                 " WHERE param_name = ?".
+                 " AND is_delete = ?;";
+        $params = array();
+        $params[] = "prefix_flag";
+        $params[] = 0;
+        $result = $this->dbAccess->executeQuery($query, $params);
+        if(count($result) > 0 && $result[0]["param_value"] == 1)
         {
-            $uri = str_replace(self::PREFIX_SELF_DOI.$prefix."/", "", $uri);
-            $uri = str_replace(self::PREFIX_LIBRARY_DOI_INFO.$prefix."/", "", $uri);
-            $uri = str_replace(self::PREFIX_LIBRARY_DOI_HTTP.$prefix."/", "", $uri);
-            $uri = str_replace(self::PREFIX_LIBRARY_DOI_DOI.$prefix."/", "", $uri);
-            $uri = str_replace($prefix."/", "", $uri);
-            if(strpos($uri, "/") === false)
-            {
-                $suffix = $uri;
-                $suffix = $this->checkDoiFormat($suffix);
-            }
+        	$yHandlePrefix = $this->getYHandlePrefix();
+        	$suffix = $yHandlePrefix.".".$suffix;
         }
+        // Add DataCite 2015/02/10 K.Sugimoto --end--
         
-        if(strlen($suffix) > 0){
-	        // Add DataCite 2015/02/10 K.Sugimoto --start--
-	        $query = "SELECT param_value".
-	                 " FROM ".DATABASE_PREFIX."repository_parameter".
-	                 " WHERE param_name = ?".
-	                 " AND is_delete = ?;";
-	        $params = array();
-	        $params[] = "prefix_flag";
-	        $params[] = 0;
-	        $result = $this->dbAccess->executeQuery($query, $params);
-	        if(count($result) > 0 && $result[0]["param_value"] == 1)
-	        {
-	        	$yHandlePrefix = $this->getYHandlePrefix();
-	        	$suffix = $yHandlePrefix.".".$suffix;
-	        }
-	        // Add DataCite 2015/02/10 K.Sugimoto --end--
-	        
-            $this->registSuffix($item_id, $item_no, self::ID_LIBRARY_JALC_DOI, $suffix);
-            $this->registDoiStatus($item_id, $item_no, self::DOI_STATUS_GRANTED);
-        }
+        $this->registSuffix($item_id, $item_no, self::ID_LIBRARY_JALC_DOI, $suffix);
+        $this->registDoiStatus($item_id, $item_no, self::DOI_STATUS_GRANTED);
     }
     
     /**
@@ -1058,16 +1182,23 @@ class RepositoryHandleManager extends RepositoryLogicBase
     
     // Add DataCite 2015/02/26 K.Sugimoto --start--
     /**
-     * プレフィックスのフォーマットが正しいかチェックする
+     * check prefix or suffix format. if format is invalid, return empty string
+     * プレフィックスまたはサフィックスのフォーマットが正しいかチェックし、正しくない場合は空文字を返す
      * 
-     * @param string $doi
-     * @return string
+     * @param string $doi: プレフィックスまたはサフィックス
+     * @return string: any -> format is valid
+     *                 empty -> format is invalid
      */
-    private function checkDoiFormat($doi)
+    public function checkDoiFormat($doi)
     {
         $match = array();
         
         // 半角英数字、_、-、.、;、(、)、/のみ使用可
+        // JaLCのDOI付与ルールに関しては下記に記載
+        //  https://japanlinkcenter.org/top/doc/JaLC_tech_journal_article_manual.pdf
+        // CrossRefのDOI付与ルールに関しては下記に記載
+        //  http://help.crossref.org/obtaining_a_doi_prefix
+        //  http://help.crossref.org/establishing_a_doi_suffix_pattern
         if(preg_match("/^(\w|\-|\.|\;|\(|\)|\/)*$/", $doi, $match)==1)
         {
         	return $doi;

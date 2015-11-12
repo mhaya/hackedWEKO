@@ -1,7 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-// $Id: Adminadmit.class.php 53594 2015-05-28 05:25:53Z kaede_matsushita $
+// $Id: Adminadmit.class.php 58145 2015-09-28 04:23:40Z keiya_sugimoto $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -18,6 +18,7 @@ require_once WEBAPP_DIR. '/modules/repository/components/NameAuthority.class.php
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryHarvesting.class.php';
 require_once WEBAPP_DIR. '/modules/repository/action/edit/tree/Tree.class.php';
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryHandleManager.class.php';
+require_once WEBAPP_DIR. '/modules/repository/components/RepositoryDatabaseConst.class.php';
 
 /**
  * repository module admin action
@@ -2426,83 +2427,88 @@ class Repository_Action_Edit_Adminadmit extends RepositoryAction
                  "FROM " . DATABASE_PREFIX . "repository_robotlist_master ; ";
         
         $params = array();
-        $all = $this->Db->execute($query, $params);
+        $robotlistMasters = $this->Db->execute($query, $params);
         
-        if($all === false) {
+        if($robotlistMasters === false) {
             $this->errorLog($this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
             throw new AppException($this->Db->ErrorMsg());
         }
         
-        $validIds = array();
-        if (isset($this->robotlistValid)){
-            $validIds = array_keys($this->robotlistValid);
-        }
-        
-        for ($ii = 0; $ii < count($all); $ii++) {
-            for ($jj = 0; $jj < count($validIds); $jj++) {
-                // 渡ってきた値が有効を示す
-                if ($all[$ii]["robotlist_id"] == $validIds[$jj]) {
-                    // 登録されている値が無効を示す
-                    if ($all[$ii]["is_robotlist_use"] == 0)
-                    {
-                        $query = "UPDATE " . DATABASE_PREFIX . "repository_robotlist_data " . 
-                                 "SET status = ?, " . 
-                                 "mod_user_id = ?, " . 
-                                 "mod_date = ? " . 
-                                 "WHERE robotlist_id = ? ; " ;
-                        
-                        $params = array();
-                        $params[] = "0"; 
-                        $params[] = $this->Session->getParameter("_user_id");
-                        $params[] = $this->TransStartDate;
-                        $params[] = $all[$ii]["robotlist_id"];
-                        
-                        $update = $this->Db->execute($query, $params);
-                        
-                        if($update === false) {
-                            $this->errorLog($this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
-                            throw new AppException($this->Db->ErrorMsg());
-                        }
-                    }
-                }
-                // 渡ってきた値が無効を示す
-                else {
-                    // 登録されている値が有効を示す
-                    if ($all[$ii]["is_robotlist_use"] == 1)
-                    {
-                        $query = "UPDATE " . DATABASE_PREFIX . "repository_robotlist_data " . 
-                                 "SET status = ?, " . 
-                                 "mod_user_id = ?, " . 
-                                 "mod_date = ? " . 
-                                 "WHERE robotlist_id = ? ; " ;
-                        
-                        $params = array();
-                        $params[] = "-1"; 
-                        $params[] = $this->Session->getParameter("_user_id");
-                        $params[] = $this->TransStartDate;
-                        $params[] = $all[$ii]["robotlist_id"];
-                        
-                        $update = $this->Db->execute($query, $params);
-                        
-                        if($update === false) {
-                            $this->errorLog($this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
-                            throw new AppException($this->Db->ErrorMsg());
-                        }
-                    }
-                }
+        for ($ii = 0; $ii < count($robotlistMasters); $ii++) {
+            // 更新後のクローラーリストが有効の場合
+            if ($this->isRobotlistEnabled($robotlistMasters[$ii]["robotlist_id"], $this->robotlistValid)) {
+                $this->enableRobotlist($robotlistMasters[$ii]);
+            }
+            // 更新後のクローラーリストが無効の場合
+            else {
+                $this->disableRobotlist($robotlistMasters[$ii]);
             }
         }
+    }
+    
+    /**
+     * check robotlist enabled
+     * 
+     */
+    private function isRobotlistEnabled($robotlist_id, $robotlistValid)
+    {
+        if(!isset($robotlistValid))
+        {
+            return false;
+        }
         
-        // 全て無効化
-        $query = "UPDATE " . DATABASE_PREFIX . "repository_robotlist_master " . 
-                 "SET is_robotlist_use = ?, " . 
+        $result = array_key_exists($robotlist_id, $robotlistValid);
+        
+        return $result;
+    }
+    
+    /**
+     * update checked robotlist
+     * 
+     */
+    private function enableRobotlist($robotlist)
+    {
+        // 更新前のクローラーリストが無効の場合
+        // 有効の場合、ログ削除を実施したかどうかの情報を持つため、変更しない
+        if ($robotlist["is_robotlist_use"] == RepositoryDatabaseConst::ROBOTLIST_MASTER_NOTUSED)
+        {
+            $this->updateRobotlistDataStatus($robotlist["robotlist_id"], RepositoryDatabaseConst::ROBOTLIST_DATA_STATUS_NOTDELETED);
+            $this->updateRobotlistMasterStatus($robotlist["robotlist_id"], RepositoryDatabaseConst::ROBOTLIST_MASTER_USED);
+        }
+        
+    }
+
+    /**
+     * update unchecked robotlist
+     * 
+     */
+    private function disableRobotlist($robotlist)
+    {
+        // 更新前のクローラーリストが有効の場合
+        if ($robotlist["is_robotlist_use"] == RepositoryDatabaseConst::ROBOTLIST_MASTER_USED)
+        {
+            $this->updateRobotlistDataStatus($robotlist["robotlist_id"], RepositoryDatabaseConst::ROBOTLIST_DATA_STATUS_DISABLED);
+            $this->updateRobotlistMasterStatus($robotlist["robotlist_id"], RepositoryDatabaseConst::ROBOTLIST_MASTER_NOTUSED);
+        }
+    }
+
+    /**
+     * update robotlist data status
+     * 
+     */
+    private function updateRobotlistDataStatus($robotlist_id, $status)
+    {
+        $query = "UPDATE " . DATABASE_PREFIX . "repository_robotlist_data " . 
+                 "SET status = ?, " . 
                  "mod_user_id = ?, " . 
-                 "mod_date = ? ; ";
+                 "mod_date = ? " . 
+                 "WHERE robotlist_id = ? ; " ;
         
         $params = array();
-        $params[] = 0; 
+        $params[] = $status; 
         $params[] = $this->Session->getParameter("_user_id");
         $params[] = $this->TransStartDate;
+        $params[] = $robotlist_id;
         
         $update = $this->Db->execute($query, $params);
         
@@ -2510,28 +2516,31 @@ class Repository_Action_Edit_Adminadmit extends RepositoryAction
             $this->errorLog($this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
             throw new AppException($this->Db->ErrorMsg());
         }
+    }
+
+    /**
+     * update robotlist master status
+     * 
+     */
+    private function updateRobotlistMasterStatus($robotlist_id, $status)
+    {
+        $query = "UPDATE " . DATABASE_PREFIX . "repository_robotlist_master " . 
+                 "SET is_robotlist_use = ?, " . 
+                 "mod_user_id = ?, " . 
+                 "mod_date = ? " . 
+                 "WHERE robotlist_id = ? ; " ;
         
-        // チェックされているものだけ有効化
-        for ($ii = 0; $ii < count($validIds); $ii++)
-        {
-            $query = "UPDATE " . DATABASE_PREFIX . "repository_robotlist_master " . 
-                     "SET is_robotlist_use = ?, " . 
-                     "mod_user_id = ?, " . 
-                     "mod_date = ? " . 
-                     "WHERE robotlist_id = ? ; " ;
-            
-            $params = array();
-            $params[] = 1; 
-            $params[] = $this->Session->getParameter("_user_id");
-            $params[] = $this->TransStartDate;
-            $params[] = $validIds[$ii];
-            
-            $update = $this->Db->execute($query, $params);
-            
-            if($update === false) {
-                $this->errorLog($this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
-                throw new AppException($this->Db->ErrorMsg());
-            }
+        $params = array();
+        $params[] = $status; 
+        $params[] = $this->Session->getParameter("_user_id");
+        $params[] = $this->TransStartDate;
+        $params[] = $robotlist_id;
+        
+        $update = $this->Db->execute($query, $params);
+        
+        if($update === false) {
+            $this->errorLog($this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+            throw new AppException($this->Db->ErrorMsg());
         }
     }
     // Add RobotList 2015/04/06 S.Suzuki --end--

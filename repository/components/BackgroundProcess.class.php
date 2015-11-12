@@ -1,7 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-// $Id: BackgroundProcess.class.php 54835 2015-06-25 04:10:46Z keiya_sugimoto $
+// $Id: BackgroundProcess.class.php 55181 2015-07-02 09:25:01Z keiya_sugimoto $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -22,6 +22,13 @@ class BackgroundProcess extends RepositoryAction
      * @var string
      */
     private $process_name = null;
+    
+    /**
+     * background process finish flag
+     *
+     * @var string
+     */
+    private $isFinish = false;
     
     /**
      * constructer
@@ -45,7 +52,8 @@ class BackgroundProcess extends RepositoryAction
         
         // init background process
         if($status != 0){
-            exit();
+            $this->isFinish = true;
+            return;
         }
         
         // get target 
@@ -53,7 +61,8 @@ class BackgroundProcess extends RepositoryAction
         
         if($executeFlag == false){
             $this->unlockProcess();
-            exit();
+            $this->isFinish = true;
+            return;
         }
         
         // execute Background Process
@@ -70,7 +79,10 @@ class BackgroundProcess extends RepositoryAction
      */
     final protected function afterTrans()
     {
-        $this->callAsyncProcess();
+        if(!$this->isFinish)
+        {
+            $this->callAsyncProcess();
+        }
     }
     
     /**

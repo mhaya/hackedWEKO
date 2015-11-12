@@ -1,7 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-// $Id: HarvestingOaipmh.class.php 53594 2015-05-28 05:25:53Z kaede_matsushita $
+// $Id: HarvestingOaipmh.class.php 58676 2015-10-10 12:33:17Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -19,6 +19,7 @@ require_once WEBAPP_DIR. '/modules/repository/components/RepositoryOutputFilter.
 require_once WEBAPP_DIR. '/modules/repository/components/RepositorySearchTableProcessing.class.php';
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryHandleManager.class.php';
 require_once WEBAPP_DIR. '/modules/repository/components/Checkdoi.class.php';
+require_once WEBAPP_DIR. '/modules/repository/components/FW/AppException.class.php';
 
 /**
  * Repository module OAI-PMH harvesting class
@@ -909,7 +910,6 @@ class HarvestingOaipmh extends RepositoryAction
             {
                 case RepositoryConst::HARVESTING_COL_SETSPEC:
                     $setSpec = $this->forXmlChangeDecode($val["value"]);
-                    $setSpec = $this->getSetspecValue($setSpec);
                     break;
                 case RepositoryConst::HARVESTING_COL_SETNAME:
                     $setName = $this->forXmlChangeDecode($val["value"]);
@@ -1516,7 +1516,13 @@ class HarvestingOaipmh extends RepositoryAction
                     
                     // BugFix when before and after update, assignment doi is failed T.Koyasu 2015/03/09 --start--
                     // must check self_doi when after update item metadatas
-                    $this->itemRegister->updateSelfDoi($irBasic);
+                    try{
+                        $this->itemRegister->updateSelfDoi($irBasic);
+                    } catch(AppException $ex){
+                        array_push($this->logMsg, $ex->getMessage());
+                        $this->harvestingLogStatus = RepositoryConst::HARVESTING_LOG_STATUS_WARNING;
+                    }
+                    
                     // BugFix when before and after update, assignment doi is failed T.Koyasu 2015/03/09 --end--
                 }
                 catch (Exception $ex)
@@ -1667,9 +1673,7 @@ class HarvestingOaipmh extends RepositoryAction
         {
             array_push($this->logMsg, "repository_harvesting_success_no_update");
         }
-        $this->entryHarvestingLog(RepositoryConst::HARVESTING_OPERATION_ID_LISTRECORD, $updateStatus,
-                    "", $setSpecStr, $indexIdStr, $identifier, $itemId, $this->requestUrl, $datestamp);
-        
+    
         // Library JaLC DOI Regist Check
         
         if($this->metadataPrefix == self::METADATAPREFIX_JUNII2)
@@ -1682,10 +1686,21 @@ class HarvestingOaipmh extends RepositoryAction
                 if($checkRegist)
                 {
                     $handleManager = new RepositoryHandleManager($this->Session, $this->Db, $this->TransStartDate);
-                    $handleManager->registLibraryJalcdoiSuffix($itemId, $itemNo, $metadata[strtoupper(RepositoryConst::JUNII2_SELFDOI)][0]["value"]);
+                    try{
+                        $handleManager->registLibraryJalcdoiSuffix($itemId, $itemNo, $metadata[strtoupper(RepositoryConst::JUNII2_SELFDOI)][0]["value"]);
+                    } catch(AppException $ex){
+                        $error = $ex->getMessage();
+                        array_push($this->logMsg, $error);
+                        $this->harvestingLogStatus = RepositoryConst::HARVESTING_LOG_STATUS_WARNING;
+                        $this->debugLog($error. "::itemId=". $itemId. "::selfDoi=". $metadata[strtoupper(RepositoryConst::JUNII2_SELFDOI)][0]["value"], __FILE__, __CLASS__, __LINE__);
+                    }
                 }
             }
         }
+        
+        $this->entryHarvestingLog(RepositoryConst::HARVESTING_OPERATION_ID_LISTRECORD, $updateStatus,
+                    "", $setSpecStr, $indexIdStr, $identifier, $itemId, $this->requestUrl, $datestamp);
+        
         return true;
     }
     
@@ -3296,7 +3311,17 @@ class HarvestingOaipmh extends RepositoryAction
         
         $repositoryHandleManager = new RepositoryHandleManager($this->Session, $this->Db, $this->TransStartDate);
         
-        $result = $repositoryHandleManager->registerYHandleSuffix($result[0]["title"], $itemId, $itemNo);
+        $suffix = $repositoryHandleManager->getYHandleSuffix($itemId, $itemNo);
+        if(strlen($suffix) === 0){
+            try{
+                $result = $repositoryHandleManager->registerYHandleSuffix($result[0]["title"], $itemId, $itemNo);
+            } catch(AppException $ex){
+                $error = $ex->getMessage();
+                array_push($this->logMsg, $error);
+                $this->harvestingLogStatus = RepositoryConst::HARVESTING_LOG_STATUS_WARNING;
+                $this->debugLog($error. "::itemId=". $itemId, __FILE__, __CLASS__, __LINE__);
+            }
+        }
         
         $uri = $repositoryHandleManager->getSubstanceUri($itemId, $itemNo);
         
@@ -4317,30 +4342,6 @@ class HarvestingOaipmh extends RepositoryAction
         return true;
     }
     // Add for JuNii2 Redaction 2013/09/16 R.Matsuura --end--
-    
-    
-    /**
-     * get setSpec Value
-     * 
-     * @param string $setSpec
-     * @return string
-     */
-    private function getSetspecValue($setSpec) {
-        if(preg_match("/^[0-9]+$/", $setSpec) == 1) {
-            // 通常のsetSpecが来た場合そのまま返す
-            return $setSpec;
-        } else {
-            // setSpecが連結形式で来た場合は最後の要素を返す
-            $specs = explode(":", $setSpec);
-            if(count($specs) > 1 && preg_match("/^[0-9]+$/", $specs[count($set)-1]) == 1) {
-                // 照合に使うのは最後の1節部分なので配列の最後の値を返す
-                return $specs[count($set)-1];
-            }
-        }
-        
-        // どれにも一致しなかった場合はエラーとして空文字を返す
-        return "";
-    }
 }
 
 ?>

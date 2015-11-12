@@ -1,7 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-// $Id: Download.class.php 48455 2015-02-16 10:53:40Z atsushi_suzuki $
+// $Id: Download.class.php 57144 2015-08-26 06:55:05Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -36,19 +36,17 @@ class Repository_Action_Edit_Importauthority_Download extends RepositoryAction
     function executeApp()
     {
         // 作業用ディレクトリ作成
-        $query = "SELECT DATE_FORMAT(NOW(), '%Y%m%d%H%i%s') AS now_date;";
-        $result = $this->dbAccess->executeQuery($query);
-        if(count($result) != 1){
-            return 'false';
-        }
-        $date = $result[0]['now_date'];
-        $this->tmp_dir = WEBAPP_DIR."/uploads/repository/_".$date;
-        mkdir( $this->tmp_dir, 0777 );
+        $this->infoLog("businessWorkdirectory", __FILE__, __CLASS__, __LINE__);
+        $businessWorkdirectory = BusinessFactory::getFactory()->getBusiness('businessWorkdirectory');
+        $this->tmp_dir = $businessWorkdirectory->create();
+        $this->tmp_dir = substr($this->tmp_dir, 0, -1);
         
         $this->downloadNameAuthorityTSV();
         
-        // ワークディレクトリ削除
-        $this->removeDirectory();
+        // 本来であればexitActionをよび、その中で
+        // finalize処理を実施するべきだが、
+        // コミットによる影響があるため、finalize処理のみを実施
+        $this->finalize();
         
         exit();
     }

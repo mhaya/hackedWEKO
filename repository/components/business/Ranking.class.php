@@ -58,7 +58,7 @@ class Repository_Components_Business_Ranking extends Repository_Components_Busin
         $this->repository_admin_base = $repositoryAction->repository_admin_base;
         $this->repository_admin_room = $repositoryAction->repository_admin_room;
         
-        $this->infoLog("Session", __FILE__, __CLASS__, __LINE__);
+        $this->debugLog("Session", __FILE__, __CLASS__, __LINE__);
         $container = & DIContainerFactory::getContainer();
         $session = $container->getComponent("Session");
         
@@ -272,6 +272,9 @@ class Repository_Components_Business_Ranking extends Repository_Components_Busin
             $this->errorLog($this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
             throw new AppException($this->Db->ErrorMsg());
         }
+        
+        $this->debugLog($sqlCmd , __FILE__, __CLASS__, __LINE__);
+        $this->debugLog(print_r($params, true), __FILE__, __CLASS__, __LINE__);
         
         $this->keyword_ranking = $items;
     }

@@ -1,7 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-// $Id: Result.class.php 53594 2015-05-28 05:25:53Z kaede_matsushita $
+// $Id: Result.class.php 56591 2015-08-18 01:37:11Z keiya_sugimoto $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -108,36 +108,65 @@ class Repository_Action_Edit_Log_Result extends WekoAction
         $customReport->setCountType($this->type_log);
         $customReport->setCountPer($this->per_log);
         
-        // create custom report data
-        $customReport->execute();
-        
-        $items = $customReport->getCustomReportData();
-        
         $this->smartyAssign = $this->Session->getParameter("smartyAssign");
         $this->repositoryDownload = new RepositoryDownload();
         
-        switch($this->per_log)
-        {
-            case self::PER_LOG_DAY:
-            case self::PER_LOG_WEEK:
-            case self::PER_LOG_MONTH:
-            case self::PER_LOG_YEAR:
-                $this->createPerDateData($items);
-                break;
-            case self::PER_LOG_HOST:
-                $this->createPerHostData($items);
-                break;
-            case self::PER_LOG_ITEM:
-                $this->createPerItemData($items);
-                break;
-            default:
-                $this->warnLog("input is invalid", __FILE__, __CLASS__, __LINE__);
-                break;
+        try {
+            // create custom report data
+            $customReport->execute();
+            
+            $items = $customReport->getCustomReportData();
+            
+            switch($this->per_log)
+            {
+                case self::PER_LOG_DAY:
+                case self::PER_LOG_WEEK:
+                case self::PER_LOG_MONTH:
+                case self::PER_LOG_YEAR:
+                    $this->createPerDateData($items);
+                    break;
+                case self::PER_LOG_HOST:
+                    $this->createPerHostData($items);
+                    break;
+                case self::PER_LOG_ITEM:
+                    $this->createPerItemData($items);
+                    break;
+                default:
+                    $this->warnLog("input is invalid", __FILE__, __CLASS__, __LINE__);
+                    break;
+            }
+        } catch (AppException $e) {
+            $this->createErrorMessage();
         }
         
         $this->exitFlag = true;
         
         return "";
+    }
+
+    /**
+     * create error message by removing log
+     *
+     */
+    private function createErrorMessage()
+    {
+        if($this->is_csv_log == self::DOWNLOAD_TYPE_CSV || $this->is_csv_log == self::DOWNLOAD_TYPE_TSV)
+        {
+            echo "<script class='nc_script' type='text/javascript'>alert('".$this->smartyAssign->getLang('repository_log_excluding')."');</script>";
+        } 
+        else if ($this->is_csv_log == self::DOWNLOAD_TYPE_HTML)
+        {
+            $html = "";
+            $html .= '<center>';
+            $html .= '<div class="error_msg al">';
+            $html .= $this->smartyAssign->getLang('repository_log_excluding').'<br/>';
+            $html .= '</div>';
+            $html .= '</center>';
+            
+            // download
+            $this->repositoryDownload->download($html, "log.html");
+            
+        }
     }
 
     /**

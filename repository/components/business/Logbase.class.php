@@ -37,7 +37,9 @@ class Repository_Components_Business_Logbase extends BusinessBase
         for($cnt = 0; $cnt < count($result); $cnt++)
         {
             if(intval($result[$cnt]['status']) > 0){
-                throw new AppException("removing log", self::APP_EXCEPTION_KEY_REMOVING_LOG);
+                $exception = new AppException("repository_log_excluding", self::APP_EXCEPTION_KEY_REMOVING_LOG);
+                $exception->addError("repository_log_excluding");
+                throw $exception;
             }
         }
         

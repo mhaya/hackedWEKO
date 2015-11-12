@@ -1,7 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-// $Id: Adddb.class.php 603 2014-08-08 09:00:39Z ivis $
+// $Id: Adddb.class.php 39778 2014-08-08 07:19:36Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources

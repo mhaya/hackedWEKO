@@ -1,7 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-// $Id: ImportCommon.class.php 54835 2015-06-25 04:10:46Z keiya_sugimoto $
+// $Id: ImportCommon.class.php 58688 2015-10-11 08:21:12Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics,
 // Research and Development Center for Scientific Information Resources
@@ -17,7 +17,6 @@ include_once MAPLE_DIR.'/includes/pear/File/Archive.php';
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
 require_once WEBAPP_DIR. '/modules/repository/components/IDServer.class.php';
 require_once WEBAPP_DIR. '/modules/repository/components/NameAuthority.class.php';
-require_once WEBAPP_DIR. '/modules/repository/components/RepositoryPdfCover.class.php';
 require_once WEBAPP_DIR. '/modules/repository/components/ItemRegister.class.php';
 require_once WEBAPP_DIR. '/modules/repository/action/main/sword/SwordUpdate.class.php';
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryOutputFilter.class.php';
@@ -1229,7 +1228,15 @@ class ImportCommon extends RepositoryAction
 
         $this->writeLog("    Set Y-handle suffix.\n");
         $this->getRepositoryHandleManager();
-        if(!$this->repositoryHandleManager->setSuffix($item_array[0]["TITLE"], $item_id, $item_no))
+        
+        try {
+            $result = $this->repositoryHandleManager->setSuffix($item_array[0]["TITLE"], $item_id, $item_no);
+        } catch(AppException $ex){
+            $this->debugLog($ex->getMessage(). "::itemId=". $item_id, __FILE__, __CLASS__, __LINE__);
+            $warningMsg = $this->addWarningMsg($ex->getMessage(), $warningMsg);
+        }
+        
+        if(!$result)
         {
             $this->writeLog("    Failed set Y-handle suffix.\n");
         }
@@ -2098,9 +2105,6 @@ class ImportCommon extends RepositoryAction
                 $path = $tmp_dir. DIRECTORY_SEPARATOR. $file_array[$cnt]['RENAME'];
 
                 $image = ImageCreateFromPNG($path); //read png file
-                $result = $this->createThumbnailImage($image , $new_image);
-
-                $new_image = null;
                 $result = $this->createThumbnailImage($image , $path.".png");
                 imagedestroy ($image);
 
@@ -2631,17 +2635,16 @@ class ImportCommon extends RepositoryAction
         // Add cnri handle 2014/09/17 T.Ichikawa --start--
         //////////////////////////////////// Insert CNRI handle //////////////////////////////////
         // CNRIの値は"http://hdl.handle.net/[PrefixID]/[Suffix]/の形式で送られてくる"
-        // CNRIプレフィックス値の設定のチェック
-        $cnri_prefix = $this->repositoryHandleManager->getCnriPrefix();
-        if(strlen($cnri_prefix) > 0) {
-            for ($cnt = 0; $cnt < count($cnri_array); $cnt++){
-                // サーバとXMLのプレフィックスIDを照合する
-                $params = str_replace("http://hdl.handle.net/", "", $cnri_array[$cnt]['CNRI']);
-                $handle = explode("/", $params);
-                if($cnri_prefix == $handle[0]) {
-                    // CNRIのプレフィックスIDが一致したら処理を行う
-                    $this->repositoryHandleManager->registCnriSuffix(intval($item_id), intval($cnri_array[$cnt]['ITEM_NO']), $handle[1]);
-                }
+        // CNRIプレフィックス値の設定のチェックも抽出メソッド内で実施する
+        for ($cnt = 0; $cnt < count($cnri_array); $cnt++){
+            // サーバに設定されたprefixからsuffixを抽出する
+            try {
+                $suffix = $this->repositoryHandleManager->extractCnriSuffix($cnri_array[$cnt]['CNRI']);
+                
+                $this->repositoryHandleManager->registCnriSuffix(intval($item_id), intval($cnri_array[$cnt]['ITEM_NO']), $suffix);
+            } catch(AppException $ex){
+                $this->debugLog($ex->getMessage(). "::itemId=". $item_id. "::cnri=". $cnri_array[$cnt]['CNRI'], __FILE__, __CLASS__, __LINE__);
+                $warningMsg = $this->addWarningMsg($ex->getMessage(), $warningMsg);
             }
         }
         // Add cnri handle 2014/09/17 T.Ichikawa --end--
@@ -2661,7 +2664,12 @@ class ImportCommon extends RepositoryAction
                     $checkRegist = $checkdoi->checkDoiGrant($item_id, $item_no, Repository_Components_Checkdoi::TYPE_LIBRARY_JALC_DOI, Repository_Components_Checkdoi::CHECKING_STATUS_ITEM_REGISTRATION);
                     if($checkRegist)
                     {
-                        $handleManager->registLibraryJalcdoiSuffix($item_id, $item_no, $selfdoi_array[0]['SELFDOI']);
+                        try {
+                            $handleManager->registLibraryJalcdoiSuffix($item_id, $item_no, $selfdoi_array[0]['SELFDOI']);
+                        } catch(AppException $ex){
+                            $this->debugLog($ex->getMessage(). "::itemId=". $item_id. "::selfDoi=". $selfdoi_array[0]['SELFDOI'], __FILE__, __CLASS__, __LINE__);
+                            $warningMsg = $this->addWarningMsg($ex->getMessage(), $warningMsg);
+                        }
                     }
                     else
                     {
@@ -2704,7 +2712,7 @@ class ImportCommon extends RepositoryAction
                     $handleManager->registDataciteSuffix($item_id, $item_no, $suffix);
                 }
             }
-        	// Add DataCite 2015/02/09 K.Sugimoto --end--
+    	// Add DataCite 2015/02/09 K.Sugimoto --end--
         }
 
         // Add suppleContentsEntry Y.Yamazawa --start-- 2015/03/17 --start--
@@ -2729,11 +2737,7 @@ class ImportCommon extends RepositoryAction
         if($result)
         {
             $this->writeLog("  requiredCheck OK.\n");
-
-            // Add PDF cover page 2012/06/18 A.Suzuki --start--
-            $this->executeCreatePdfCover($index_id, intval($item_id), intval($item_array[0]['ITEM_NO']), $user_id, $error_msg);
-            // Add PDF cover page 2012/06/18 A.Suzuki --end--
-
+            
             // Convert to flash
             if(!$this->convertToFlash(intval($item_id), intval($item_array[0]['ITEM_NO']), $error_msg))
             {
@@ -3127,73 +3131,7 @@ class ImportCommon extends RepositoryAction
         return $lang;
     }
     // Fix null language 2012/02/21 Y.Nakao --end--
-
-    /**
-     * Create PDF cover
-     *
-     * @param int $itemId
-     * @param int $itemNo
-     * @param string $userId
-     * @param bool $coverErrorFlag
-     * @return bool
-     */
-    private function createPdfCover($itemId, $itemNo, $userId="", &$coverErrorFlag)
-    {
-        $coverErrorFlag = false;
-
-        // Set user_id
-        if(strlen($userId) > 0)
-        {
-            $userId = $this->Session->getParameter("_user_id");
-        }
-
-        // Get registered files
-        $result = $this->getRegistertedFileData($itemId, $itemNo);
-        if($result === false)
-        {
-            $coverErrorFlag = true;
-            return false;
-        }
-        // Loop for files
-        for($ii=0; $ii<count($result); $ii++)
-        {
-            // Check file type
-            if(strtolower($result[$ii][RepositoryConst::DBCOL_REPOSITORY_FILE_EXTENSION])!="pdf")
-            {
-                continue;
-            }
-
-            $pdfCover = new RepositoryPdfCover(
-                                $this->Session,
-                                $this->Db,
-                                $this->TransStartDate,
-                                $userId,
-                                $result[$ii][RepositoryConst::DBCOL_REPOSITORY_FILE_ITEM_ID],
-                                $result[$ii][RepositoryConst::DBCOL_REPOSITORY_FILE_ITEM_NO],
-                                $result[$ii][RepositoryConst::DBCOL_REPOSITORY_FILE_ATTRIBUTE_ID],
-                                $result[$ii][RepositoryConst::DBCOL_REPOSITORY_FILE_FILE_NO]
-                            );
-            if($pdfCover->execute())
-            {
-                // Success
-                // Delete this file's old flash
-                $this->removeDirectory(
-                    $this->getFlashFolder(
-                            $result[$ii][RepositoryConst::DBCOL_REPOSITORY_FILE_ITEM_ID],
-                            $result[$ii][RepositoryConst::DBCOL_REPOSITORY_FILE_ATTRIBUTE_ID],
-                            $result[$ii][RepositoryConst::DBCOL_REPOSITORY_FILE_FILE_NO]
-                        )
-                    );
-            }
-            else
-            {
-                $coverErrorFlag = true;
-            }
-        }
-
-        return true;
-    }
-
+    
     /**
      * Get registered files data
      *
@@ -3322,29 +3260,7 @@ class ImportCommon extends RepositoryAction
 
         return $replaceAttrIdArray;
     }
-
-    /**
-     * Execute create pdf cover
-     *
-     * @param array $indexIds
-     * @param int $itemId
-     * @param string $itemNo
-     * @param string $user_id
-     * @param string $errorMsg
-     */
-    public function executeCreatePdfCover($indexIds, $itemId, $itemNo, $user_id, &$errorMsg)
-    {
-        $pdfCoverCreateFlag = $this->checkIndexCreateCover($indexIds);
-        if($pdfCoverCreateFlag)
-        {
-            $this->createPdfCover($itemId, $itemNo, $user_id, $coverErrorFlag);
-            if($coverErrorFlag)
-            {
-                $errorMsg .= "warning: There are same files that failed to create PDF cover.";
-            }
-        }
-    }
-
+    
     /**
      * Convert to flash
      *
@@ -4470,7 +4386,7 @@ class ImportCommon extends RepositoryAction
         }
         
         // 現在のユーザーの権限で使用可能なアイテムタイプの一覧を取得する
-        $result = $this->itemtypeManager->getItemtypeDataByUserAuth($user_role_id, $user_room_auth_id);
+        $result = $this->itemtypeManager->getItemtypeDataByUserAuth($user_role_id, $user_room_auth_id, true);
         // 引数のアイテムタイプが使用できるアイテムタイプに含まれているかチェックする
         $check_result = array();
         for($ii = 0; $ii < count($item_type_id_list); $ii++) {
@@ -4530,5 +4446,25 @@ class ImportCommon extends RepositoryAction
         return true;
     }
     // Add suppleContentsEntry Y.Yamazawa --end-- 2015/03/17 --end--
+    
+    /**
+     * add warning message
+     * 警告メッセージを追記する
+     *
+     * @param string $msgKey: 追加する警告文の言語リソースキー
+     * @param string $warningMsg: 追加元の警告メッセージ
+     * @return string: 警告メッセージ(スラッシュ区切り)
+     */
+    private function addWarningMsg($msgKey, $warningMsg){
+        $this->setLangResource();
+        $smarty_assign = $this->Session->getParameter('smartyAssign');
+        
+        if(strlen($warningMsg) > 0){
+            $warningMsg .= "/";
+        }
+        $warningMsg .= $smarty_assign->getLang($msgKey);
+        
+        return $warningMsg;
+    }
 }
 ?>

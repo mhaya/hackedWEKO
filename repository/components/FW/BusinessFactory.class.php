@@ -1,6 +1,6 @@
 <?php
 /**
- * $Id: BusinessFactory.class.php 48455 2015-02-16 10:53:40Z atsushi_suzuki $
+ * $Id: BusinessFactory.class.php 56711 2015-08-19 13:21:44Z tomohiro_ichikawa $
  * 
  * ビジネスロジックインスタンス生成抽象クラス
  * 
@@ -11,6 +11,8 @@
     private $Session = null;
     private $Db = null;
     private $accessDate = null;
+    
+    private $instanceList = array();
     
     protected static $instance = null;
     
@@ -56,6 +58,11 @@
      */
     public static function uninitialize()
     {
+        if(isset(self::$instance)) {
+            for($ii = 0; $ii < count(self::$instance->instanceList); $ii++) {
+                self::$instance->instanceList[$ii]->finalizeBusiness();
+            }
+        }
         self::$instance = null;
     }
     
@@ -77,6 +84,7 @@
             $handle = $this->Session->getParameter("_handle");
             $auth_id = $this->Session->getParameter("_role_auth_id");
             $instance->initializeBusiness($this->Db, $this->accessDate, $user_id, $handle, $auth_id);
+            $this->instanceList[] =& $instance;
         }
         
         return $instance;

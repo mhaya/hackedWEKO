@@ -1,7 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-// $Id: Admin.class.php 54835 2015-06-25 04:10:46Z keiya_sugimoto $
+// $Id: Admin.class.php 57169 2015-08-26 12:01:09Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -128,7 +128,9 @@ class Repository_View_Edit_Admin extends RepositoryAction
             if($tmp_dir != "" && $tmp_dir != null){
                 // ワークディレクトリ削除
                 $this->removeDirectory($tmp_dir);
-                unlink("./.rnd");
+                if(file_exists("./.rnd")){
+                    unlink("./.rnd");
+                }
                 if(file_exists(BASE_DIR."/htdocs/weko/capcha.png")){
                     unlink(BASE_DIR."/htdocs/weko/capcha.png");
                 }

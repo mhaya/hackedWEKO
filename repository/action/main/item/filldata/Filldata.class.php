@@ -1,7 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-// $Id: Filldata.class.php 54835 2015-06-25 04:10:46Z keiya_sugimoto $
+// $Id: Filldata.class.php 58745 2015-10-13 05:55:10Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics,
 // Research and Development Center for Scientific Information Resources
@@ -16,6 +16,7 @@ require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.
 require_once WEBAPP_DIR. '/modules/repository/components/JSON.php';
 require_once WEBAPP_DIR. '/modules/repository/components/NameAuthority.class.php';
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryIndexAuthorityManager.class.php';
+require_once WEBAPP_DIR. '/modules/repository/components/RepositoryHandleManager.class.php';
 
 /**
  * Fill biblio info from other site.
@@ -23,6 +24,8 @@ require_once WEBAPP_DIR. '/modules/repository/components/RepositoryIndexAuthorit
  *  - PubMed
  *  - Amazon
  *  - CiNii
+ *  - WEKO Item ID
+ *  - CrossRef DOI
  *
  */
 class Repository_Action_Main_Item_Filldata extends RepositoryAction
@@ -1347,7 +1350,74 @@ class Repository_Action_Main_Item_Filldata extends RepositoryAction
         
         return true;
     }
+    
+    /**
+     * extract prefix and suffix by crossref doi uri
+     * CrossRef DOIのURIからPrefixとSuffixを抽出し返す
+     *
+     * @param string $url: CrossRef DOIのURI
+     * @return string [prefix]/[suffix]
+     */
+    private function extractCrossRefDoiPrefixSuffix($url){
+        $prefix_suffix = "";
         
+        // 実際はRepositoryHandleManagerにPrefixとSuffix取得用の
+        // 関数を作成し、それから取得するべきである(TODO)
+        // DOIの入力形式は下記の通り
+        //   - http://doi.org/[prefix]/[suffix]
+        //   - http://dx.doi.org/[prefix]/[suffix]
+        //   - doi:[prefix]/[suffix]
+        //   - info:doi/[prefix]/[suffix]
+        //   - [prefix]/[suffix]
+        if( preg_match("/^(info:|http:\/\/)/", $url) === 1 ){
+            if( preg_match("/^(info:doi|http:\/\/dx.doi.org|http:\/\/doi.org)\/([^\/]+)\/(.+)$/", $url, $matches) === 1 ){
+                // OK
+                $prefix = $matches[2];
+                $suffix = $matches[3];
+            } else {
+                // NG
+                $exception = new AppException("repository_invalid_crossref_doi_format");
+                $exception->addError('repository_invalid_crossref_doi_format');
+                $this->debugLog("repository_invalid_crossref_doi_format::url=". $url, __FILE__, __CLASS__, __LINE__);
+                throw $exception;
+            }
+        } else if( preg_match("/^doi:/", $url) === 1 ){
+            if( preg_match("/^doi:([^\/]+)\/(.+)$/", $url, $matches) === 1 ){
+                // OK
+                $prefix = $matches[1];
+                $suffix = $matches[2];
+            } else {
+                $exception = new AppException("repository_invalid_crossref_doi_format");
+                $exception->addError('repository_invalid_crossref_doi_format');
+                $this->debugLog("repository_invalid_crossref_doi_format::url=". $url, __FILE__, __CLASS__, __LINE__);
+                throw $exception;
+            }
+        } else if( preg_match("/^([^\/]+)\/(.+)$/", $url, $matches) === 1 ){
+            // OK
+            $prefix = $matches[1];
+            $suffix = $matches[2];
+        } else{
+            // NG
+            $exception = new AppException("repository_invalid_crossref_doi_format");
+            $exception->addError('repository_invalid_crossref_doi_format');
+            $this->debugLog("repository_invalid_crossref_doi_format::url=". $url, __FILE__, __CLASS__, __LINE__);
+            throw $exception;
+        }
+        
+        $handleManager = new RepositoryHandleManager($this->Session, $this->dbAccess, $this->TransStartDate);
+        $checkedSuffix = $handleManager->checkDoiFormat($suffix);
+        if(strlen($checkedSuffix) === 0){
+            $exception = new AppException("repository_invalid_crossref_doi_format");
+            $exception->addError('repository_invalid_crossref_doi_format');
+            $this->debugLog("repository_invalid_crossref_doi_format::url=". $url, __FILE__, __CLASS__, __LINE__);
+            throw $exception;
+        }
+        
+        $prefix_suffix = urlencode($prefix. "/". $checkedSuffix);
+        
+        return $prefix_suffix;
+    }
+    
     // Auto Input Metadata by CrossRef DOI 2015/03/04 K.Sugimoto --start--
     /**
      * fill from CrossRef
@@ -1364,7 +1434,7 @@ class Repository_Action_Main_Item_Filldata extends RepositoryAction
      *  + epage
      *  + dateofissued
      */
-    function fillCrossRef( $crossref_doi ){
+    private function fillCrossRef( $crossref_doi ){
         // get CrossRef account
         $crossref_query_services_account = "";
         $query = "SELECT param_value ".
@@ -1392,24 +1462,19 @@ class Repository_Action_Main_Item_Filldata extends RepositoryAction
         }
         
         // request URL send for CrossRef
-        if(preg_match("/^info:doi\//", $crossref_doi))
-        {
-	        $crossref_doi = str_replace("info:doi/", "", $crossref_doi);
+        try{
+            $prefix_suffix = $this->extractCrossRefDoiPrefixSuffix($crossref_doi);
+        } catch(AppException $ex){
+            $error = $this->smartyAssign->getLang($ex->getMessage());
+            array_push($this->error_msg, $error );
+            $this->debugLog($ex->getMessage(), __FILE__, __CLASS__, __LINE__);
+            return false;
         }
-        else if(preg_match("/^http:\/\/dx\.doi\.org\//", $crossref_doi))
-        {
-	        $crossref_doi = str_replace("http://dx.doi.org/", "", $crossref_doi);
-        }
-        else if(preg_match("/^http:\/\/doi\.org\//", $crossref_doi))
-        {
-	        $crossref_doi = str_replace("http://doi.org/", "", $crossref_doi);
-        }
-        $crossref_doi = urlencode($crossref_doi);
         
         $send_param = "";
         $send_param .= self::CROSSREF_URI;
         $send_param .= '?id=doi:';
-        $send_param .= $crossref_doi;
+        $send_param .= $prefix_suffix;
         $send_param .= '&noredirect=true';
         $send_param .= '&pid=';
         $send_param .= $crossref_query_services_account;

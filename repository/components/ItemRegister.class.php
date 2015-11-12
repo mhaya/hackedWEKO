@@ -1,7 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-// $Id: ItemRegister.class.php 53594 2015-05-28 05:25:53Z kaede_matsushita $
+// $Id: ItemRegister.class.php 58688 2015-10-11 08:21:12Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -268,8 +268,9 @@ class ItemRegister extends RepositoryAction
      * 
      * @param $item
      * @param $errMsg エラーメッセージ
+     * @param $warningMsg 警告メッセージ
      */
-    function updateItem($item, &$errMsg){
+    function updateItem($item, &$errMsg, &$warningMsg = ""){
         $query = "UPDATE ". DATABASE_PREFIX ."repository_item ".
                  "SET revision_no = ?, ".
                  "prev_revision_no = ?, ".
@@ -346,16 +347,17 @@ class ItemRegister extends RepositoryAction
         if(isset($item['cnri_suffix']) && is_array($item['cnri_suffix']))
         {
             $handleManager = new RepositoryHandleManager($this->Session, $this->Db, $this->TransStartDate);
-            $cnri_prefix = $handleManager->getCnriPrefix();
-            if(strlen($cnri_prefix) > 0) {
-                for ($cnt = 0; $cnt < count($item['cnri_suffix']); $cnt++){
-                    // サーバとXMLのプレフィックスIDを照合する
-                    $params = str_replace("http://hdl.handle.net/", "", $item['cnri_suffix'][$cnt]['CNRI']);
-                    $handle = explode("/", $params);
-                    if($cnri_prefix == $handle[0]) {
-                        // CNRIのプレフィックスIDが一致したら処理を行う
-                        $handleManager->registCnriSuffix($item['item_id'], $item['item_no'], $handle[1]);
-                    }
+            for ($cnt = 0; $cnt < count($item['cnri_suffix']); $cnt++){
+                // サーバに設定されたprefixからsuffixを抽出する
+                try{
+                    $suffix = $handleManager->extractCnriSuffix($item['cnri_suffix'][$cnt]['CNRI']);
+                    
+                    // CNRIの登録を行う
+                    $handleManager->registCnriSuffix($item['item_id'], $item['item_no'], $suffix);
+                } catch(AppException $ex){
+                    $smartyAssign = $this->Session->getParameter('smartyAssign');
+                    $warningMsg .= $smartyAssign->getlang($ex->getMessage());
+                    $this->debugLog($ex->getMessage(). "::itemId=". $item['item_id']. "::cnri=". $item['cnri_suffix'][$cnt]['CNRI'], __FILE__, __CLASS__, __LINE__);
                 }
             }
         }
@@ -1549,7 +1551,7 @@ class ItemRegister extends RepositoryAction
      * @return true : success
      *         false: error
      */
-    function entryMetadata($metadata, &$errMsg){
+    function entryMetadata(&$metadata, &$errMsg){
         switch($metadata["input_type"]){
             case 'select':
                 // if null, continue;
@@ -1614,10 +1616,8 @@ class ItemRegister extends RepositoryAction
                     $this->failTrans(); //ROLLBACK
                     return false;
                 }
-                if(intval($metadata["author_id"]) == 0)
-                {
-                    $metadata["author_id"] = $result;
-                }
+                
+                $metadata["author_id"] = $result;
                 
                 $params = array();
                 $params[] = $metadata["family"];    // family
@@ -2688,20 +2688,10 @@ class ItemRegister extends RepositoryAction
                     $flashDirPath = $this->makeFlashFolder($fileInfo['item_id'], $fileInfo['attribute_id'], $fileInfo['file_no']);
                     
                     // create temp directory
-                    $query = "SELECT DATE_FORMAT(NOW(), '%Y%m%d%H%i%s') AS now_date;";
-                    $result = $this->Db->execute($query);
-                    if($result === false || count($result) != 1){
-                        $errMsg = $this->Db->ErrorMsg();
-                        $this->failTrans();
-                        return false;
-                    }
-                    $date = $result[0]['now_date'];
-                    
-                    $tempDirPath = $flashDirPath. "_". $date;
-                    if(!file_exists($tempDirPath)){
-                        mkdir($tempDirPath, 0777);
-                    }
-                    chmod($tempDirPath, 0777);
+                    $this->infoLog("businessWorkdirectory", __FILE__, __CLASS__, __LINE__);
+                    $businessWorkdirectory = BusinessFactory::getFactory()->getBusiness('businessWorkdirectory');
+                    $tempDirPath = $businessWorkdirectory->create();
+                    $tempDirPath = substr($tempDirPath, 0, -1);
                     
                     // コマンドを実行し、FLVファイルを生成
                     // audio/video file -> FLV ffmpegを使用

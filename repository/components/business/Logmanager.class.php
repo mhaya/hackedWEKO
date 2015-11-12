@@ -68,6 +68,10 @@ class Repository_Components_Business_Logmanager extends BusinessBase
         {
             return 0;
         }
+        // if entry search log and search keyword is empty, search log is not entry 
+        if($operation_id == RepositoryConst::LOG_OPERATION_SEARCH && strlen($search_keyword) === 0){
+            return 0;
+        }
         
         // host
         // when host is null, host eq ip address
@@ -197,14 +201,17 @@ class Repository_Components_Business_Logmanager extends BusinessBase
                  "WHERE MASTER.robotlist_id = DATAS.robotlist_id ". 
                  "AND MASTER.del_column = ? ". 
                  "AND DATAS.word = ? ". 
+                 "AND DATAS.status != ? ". 
                  "AND MASTER.is_delete = ? ". 
-                 "AND DATAS.is_delete = ? ; ";
+                 "AND DATAS.is_delete = ? ".
+                 "LIMIT 0,1 ;";
         
         $params = array();
-        $params[] = "ip_address";
-        $params[] = $ipAddr;
-        $params[] = 0;
-        $params[] = 0;
+        $params[] = "ip_address"; // del_column
+        $params[] = $ipAddr;      // word
+        $params[] = "-1";         // status
+        $params[] = 0;            // is_delete(robotlist_master)
+        $params[] = 0;            // is_delete(robotlist_data)
         
         $result = $this->Db->execute($query, $params);
         if($result === false || count($result) > 1)
@@ -258,20 +265,20 @@ class Repository_Components_Business_Logmanager extends BusinessBase
      */
     private function isEntryLogByUserAgent($userAgent)
     {
+        // ロボットリストテーブルから有効なユーザーエージェント情報を全て取得する
         $query = "SELECT * ". 
                  "FROM ". DATABASE_PREFIX. "repository_robotlist_master AS MASTER, ". DATABASE_PREFIX. "repository_robotlist_data AS DATAS ".
                  "WHERE MASTER.robotlist_id = DATAS.robotlist_id ". 
                  "AND MASTER.del_column = ? ". 
-                 "AND DATAS.word = ? ". 
+                 "AND DATAS.status != ? ". 
                  "AND MASTER.is_delete = ? ". 
                  "AND DATAS.is_delete = ? ; ";
         
         $params = array();
-        $params[] = "user_agent";
-        $params[] = $userAgent;
-        $params[] = 0;
-        $params[] = 0;
-        
+        $params[] = "user_agent"; // del_column
+        $params[] = "-1";         // status
+        $params[] = 0;            // is_delete(robotlist_master)
+        $params[] = 0;            // is_delete(robotlist_data)
         $result = $this->Db->execute($query, $params);
         if($result === false)
         {
@@ -281,6 +288,7 @@ class Repository_Components_Business_Logmanager extends BusinessBase
         
         for($cnt = 0; $cnt < count($result); $cnt++)
         {
+            // ユーザーエージェントとロボットリストを部分一致で照合する
             if(is_numeric(strpos($userAgent, $result[$cnt]['word'])))
             {
                 return false;

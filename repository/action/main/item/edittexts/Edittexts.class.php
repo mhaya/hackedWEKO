@@ -1,7 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-// $Id: Edittexts.class.php 54835 2015-06-25 04:10:46Z keiya_sugimoto $
+// $Id: Edittexts.class.php 58457 2015-10-06 02:18:19Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -706,6 +706,9 @@ class Repository_Action_Main_Item_Edittexts extends RepositoryAction
                         $author_id = 0;
                         $language = $item_attr_type[$ii]['display_lang_type'];
                         $external_author_id = array();
+                        // Bug Fix WEKO-2015-029 2015/07/30 K.Sugimoto --start--
+                        $no_mail_external_author_id = array();
+                        // Bug Fix WEKO-2015-029 2015/07/30 K.Sugimoto --end--
                         
                         // 空白チェック
                         if($this->item_attr_name_family[$cnt_name]!=' ') {
@@ -723,17 +726,17 @@ class Repository_Action_Main_Item_Edittexts extends RepositoryAction
                             }
                         }
                         
+                        // 外部著者ID群を作成 --start--
                         if($this->item_attr_name_email[$cnt_name]!=' ') {
                             $email = $this->item_attr_name_email[$cnt_name];
+                            // Bug Fix WEKO-2015-029 2015/07/31 K.Sugimoto --start--
+                            array_push($external_author_id, array('prefix_id'=>0, 
+                                                                  'suffix'=>$this->item_attr_name_email[$cnt_name], 
+                                                                  'old_prefix_id'=>0, 
+                                                                  'old_suffix'=>$item_attr_old[$ii][$jj]["email"], 
+                                                                  'prefix_name'=>$NameAuthority->getExternalAuthorIdPrefixName(0)));
+                            // Bug Fix WEKO-2015-029 2015/06/31 K.Sugimoto --end--
                         }
-                        
-                        // Bug Fix WEKO-2015-001 2015/06/15 K.Sugimoto --start--
-                        array_push($merge_external_author_id, array('prefix_id'=>0, 
-                                                                    'suffix'=>$this->item_attr_name_email[$cnt_name], 
-                                                                    'old_prefix_id'=>0, 
-                                                                    'old_suffix'=>$item_attr_old[$ii][$jj]["email"], 
-                                                                    'prefix_name'=>$NameAuthority->getExternalAuthorIdPrefixName(0)));
-                        // Bug Fix WEKO-2015-001 2015/06/15 K.Sugimoto --end--
                         
                         for($kk=0; $kk<count($item_attr_old[$ii][$jj]["external_author_id"]); $kk++){
                             $external_author_id_prefix = '';
@@ -750,18 +753,12 @@ class Repository_Action_Main_Item_Edittexts extends RepositoryAction
                             if(strlen($external_author_id_prefix) > 0 && strlen($external_author_id_suffix) > 0)
                             {
                                 array_push($external_author_id, array('prefix_id'=>$external_author_id_prefix, 'suffix'=>$external_author_id_suffix, 'old_prefix_id'=>$item_attr_old[$ii][$jj]["external_author_id"][$kk]["prefix_id"], 'old_suffix'=>$item_attr_old[$ii][$jj]["external_author_id"][$kk]["suffix"], 'prefix_name'=>$external_author_id_prefix_name));
+                                // Bug Fix WEKO-2015-029 2015/07/30 K.Sugimoto --start--
+                                array_push($no_mail_external_author_id, array('prefix_id'=>$external_author_id_prefix, 'suffix'=>$external_author_id_suffix, 'old_prefix_id'=>$item_attr_old[$ii][$jj]["external_author_id"][$kk]["prefix_id"], 'old_suffix'=>$item_attr_old[$ii][$jj]["external_author_id"][$kk]["suffix"], 'prefix_name'=>$external_author_id_prefix_name));
+                                // Bug Fix WEKO-2015-029 2015/07/30 K.Sugimoto --end--
                             }
                         }
-                        
-                        // Add external_author_id merge 2011/02/24 A.Suzuki --start--
-                        if(count($external_author_id)!=0 && $saveFlag && (strlen($family)!=0 || strlen($given)!=0 || strlen($email)!=0) )
-                        {
-                            // Bug Fix WEKO-2015-001 2015/06/15 K.Sugimoto --start--
-                            array_push($merge_external_author_id, $external_author_id);
-                            $result = $NameAuthority->mergeExtAuthorId($merge_external_author_id, $item_attr_old[$ii][$jj]["author_id"], true);
-                            // Bug Fix WEKO-2015-001 2015/06/15 K.Sugimoto --end--
-                        }
-                        // Add external_author_id merge 2011/02/24 A.Suzuki --end--
+                        // 外部著者ID群を作成--end--
                         
                         $cnt_author_id = $cnt_author_id + $kk;
                         
@@ -769,8 +766,8 @@ class Repository_Action_Main_Item_Edittexts extends RepositoryAction
                         // author_id をチェック(author_id == 0 : 新規, author_id > 0: 既存)
                         if(intval($item_attr_old[$ii][$jj]["author_id"])==0 && $saveFlag && (strlen($family)!=0 || strlen($given)!=0 || strlen($email)!=0) )
                         {
-                            // author_id 発番
-                            $author_id = $NameAuthority->getNewAuthorId();
+                            // 著者IDを仮登録(実際の更新に関してはItemRegister内で実施する)
+                            $author_id = 0;
                         } else {
                             // 既存のauthor_id
                             $author_id = intval($item_attr_old[$ii][$jj]["author_id"]);
@@ -785,16 +782,9 @@ class Repository_Action_Main_Item_Edittexts extends RepositoryAction
                                 'email' => $email,
                                 'author_id' => $author_id,
                                 'language' => $language,
-                                'external_author_id' => $external_author_id
+                                'external_author_id' => $no_mail_external_author_id // こちらはセッションに保存するデータであるので、外部著者ID群にメールアドレスを入れてはいけない
                             )
                         );
-                        
-                        // Add e-person 2013/11/07 R.Matsuura --start--
-                        if(strlen($email)>0)
-                        {
-                            array_push($external_author_id, array('prefix_id'=>'0', 'suffix'=>$this->item_attr_name_email[$cnt_name], 'old_prefix_id'=>'0', 'old_suffix'=>$item_attr_old[$ii][$jj]["email"], 'prefix_name'=>'e_mail_address'));
-                        }
-                        // Add e-person 2013/11/07 R.Matsuura --end--
                         
                         $metadata["family"] = $family;
                         $metadata["name"] = $given;
@@ -1070,6 +1060,12 @@ class Repository_Action_Main_Item_Edittexts extends RepositoryAction
                                 throw $exception;
                             }
                             $nCnt_attr_flg = $nCnt_attr;
+                            
+                            // 著者IDに更新が入ったので、entryMetadataで
+                            // 更新したデータから著者IDを持ってくる
+                            if($item_attr_type[$ii]['input_type'] === 'name'){
+                                $attr_elm[count($attr_elm) - 1]['author_id'] = $metadata['author_id'];
+                            }
                         }
                     }
                 }
@@ -1432,150 +1428,222 @@ class Repository_Action_Main_Item_Edittexts extends RepositoryAction
      */
     private function getUserIdForContributor($handle, $name, $email, &$outContributorUserId)
     {
-        $outContributorUserId = "";
+        $userIdByHandle = null;
+        $userIdsByName = null;
+        $userIdsByEmail = null;
         
-        // Check handle
         if(strlen($handle) > 0)
         {
-            // Execute select
-            $query = "SELECT user_id ".
-                     "FROM ".DATABASE_PREFIX."users ".
-                     "WHERE handle = ? ;";
-            $params = array();
-            $params[] = $handle;
-            $result = $this->Db->execute($query, $params);
-            if($result == false || count($result) < 1 || !array_key_exists("user_id", $result[0]))
+            $userIdByHandle = $this->searchContributorByHandle($handle);
+            // 見つからなかった場合はNotExistを返却
+            if(!isset($userIdByHandle))
             {
-                // Return "NotExist"
-                $outContributorUserId = "";
                 return RepositoryConst::ITEM_CONTRIBUTOR_STATUS_NOTEXIST;
             }
-            else if(count($result) != 1)
-            {
-                // Return "Conflict"
-                $outContributorUserId = "";
-                return RepositoryConst::ITEM_CONTRIBUTOR_STATUS_CONFLICT;
-            }
-            
-            // Get user_id
-            $outContributorUserId = $result[0]["user_id"];
         }
-        
-        // Check name
         if(strlen($name) > 0)
         {
-            // Execute select
-            $query = "SELECT user_id ".
-                     "FROM ".DATABASE_PREFIX."users_items_link ".
-                     "WHERE item_id = ? ".
-                     "AND content = ? ;";
-            $params = array();
-            $params[] = 4;
-            $params[] = $name;
-            $result = $this->Db->execute($query, $params);
-            if($result == false || count($result) < 1 || !array_key_exists("user_id", $result[0]))
+            $userIdsByName = $this->searchContributorByName($name);
+            // 見つからなかった場合はNotExistを返却
+            if(!isset($userIdsByName))
             {
-                // Return "NotExist"
-                $outContributorUserId = "";
                 return RepositoryConst::ITEM_CONTRIBUTOR_STATUS_NOTEXIST;
             }
-            else if(count($result) != 1 && strlen($outContributorUserId) <= 0)
-            {
-                // Return "Conflict"
-                $outContributorUserId = "";
-                return RepositoryConst::ITEM_CONTRIBUTOR_STATUS_CONFLICT;
-            }
-            else if(count($result) != 1 && strlen($outContributorUserId) > 0)
-            {
-                $isMatch = false;
-                for($ii=0; $ii<count($result); $ii++)
-                {
-                    if($result[$ii]["user_id"] == $outContributorUserId)
-                    {
-                        $isMatch = true;
-                        break;
-                    }
-                }
-                
-                if(!$isMatch)
-                {
-                    // Return "Conflict"
-                    $outContributorUserId = "";
-                    return RepositoryConst::ITEM_CONTRIBUTOR_STATUS_CONFLICT;
-                }
-            }
-            else if(count($result) == 1)
-            {
-                $tmpUserId = $result[0]["user_id"];
-                if($outContributorUserId > 0 && $outContributorUserId != $tmpUserId)
-                {
-                    // Return "Conflict"
-                    $outContributorUserId = "";
-                    return RepositoryConst::ITEM_CONTRIBUTOR_STATUS_CONFLICT;
-                }
-                else
-                {
-                    // Get user_id
-                    $outContributorUserId = $tmpUserId;
-                }
-            }
         }
-        
-        // Check email
         if(strlen($email) > 0)
         {
-        // Execute select
-            $query = "SELECT user_id ".
-                     "FROM ".DATABASE_PREFIX."users_items_link ".
-                     "WHERE item_id = ? ".
-                     "AND content = ? ;";
-            $params = array();
-            $params[] = 5;
-            $params[] = $email;
-            $result = $this->Db->execute($query, $params);
-            if($result == false || count($result) < 1 || !array_key_exists("user_id", $result[0]))
+            $userIdsByEmail = $this->searchContributorByEmail($email);
+            // 見つからなかった場合はNotExistを返却
+            if(!isset($userIdsByEmail))
             {
-                // Return "NotExist"
-                $outContributorUserId = "";
                 return RepositoryConst::ITEM_CONTRIBUTOR_STATUS_NOTEXIST;
-            }
-            else if(count($result) != 1 && strlen($outContributorUserId) <= 0)
-            {
-                // Return "Conflict"
-                $outContributorUserId = "";
-                return RepositoryConst::ITEM_CONTRIBUTOR_STATUS_CONFLICT;
-            }
-            
-            // Get user_id
-            $tmpUserId = $result[0]["user_id"];
-            if($outContributorUserId != $tmpUserId)
-            {
-                // Return "Conflict"
-                $outContributorUserId = "";
-                return RepositoryConst::ITEM_CONTRIBUTOR_STATUS_CONFLICT;
             }
         }
         
-        if(strlen($outContributorUserId) > 0)
+        return $this->narrowDownContributor($userIdByHandle, $userIdsByName, $userIdsByEmail, $outContributorUserId);
+    }
+    // Add Contributor(Posted agency) A.Suzuki 2011/12/13 --start--
+    
+    /**
+     * Search contributor's user_id by handle
+     *
+     * @param string $handle
+     * @return string
+     * @access private
+     */
+    private function searchContributorByHandle($handle)
+    {
+        // Execute select
+        $query = "SELECT user_id ".
+                 "FROM ".DATABASE_PREFIX."users ".
+                 "WHERE handle = ? ;";
+        $params = array();
+        $params[] = $handle;
+        $result = $this->Db->execute($query, $params);
+        if($result == false || count($result) != 1 || !array_key_exists("user_id", $result[0]))
         {
-            $authId = $this->getRoomAuthorityID($outContributorUserId);
-            if($authId >= REPOSITORY_ITEM_REGIST_AUTH)
+            return null;
+        }
+        
+        return $result[0]["user_id"];
+    }
+
+    /**
+     * Search contributor's user_id by name
+     *
+     * @param string $name
+     * @return array()
+     * @access private
+     */
+    private function searchContributorByName($name)
+    {
+        // Execute select
+        $query = "SELECT user_id ".
+                 "FROM ".DATABASE_PREFIX."users_items_link ".
+                 "WHERE item_id = ? ".
+                 "AND content = ? ;";
+        $params = array();
+        $params[] = 4;
+        $params[] = $name;
+        $result = $this->Db->execute($query, $params);
+        if($result == false || count($result) < 1 || !array_key_exists("user_id", $result[0]))
+        {
+            return null;
+        }
+        
+        $contributors = array();
+        
+        for($ii = 0; $ii < count($result); $ii++)
+        {
+            $contributors[] = $result[$ii]["user_id"];
+        }
+        
+        return $contributors;
+    }
+
+    /**
+     * Search contributor's user_id by email
+     *
+     * @param string $email
+     * @return array()
+     * @access private
+     */
+    private function searchContributorByEmail($email)
+    {
+        // Execute select
+        $query = "SELECT user_id ".
+                 "FROM ".DATABASE_PREFIX."users_items_link ".
+                 "WHERE item_id = ? ".
+                 "AND content = ? ;";
+        $params = array();
+        $params[] = 5;
+        $params[] = $email;
+        $result = $this->Db->execute($query, $params);
+        if($result == false || count($result) < 1 || !array_key_exists("user_id", $result[0]))
+        {
+            return null;
+        }
+        
+        $contributors = array();
+        
+        for($ii = 0; $ii < count($result); $ii++)
+        {
+            $contributors[] = $result[$ii]["user_id"];
+        }
+        
+        return $contributors;
+    }
+
+    /**
+     * Find Unique Contributor
+     *
+     * @param string $userIdsByHandle
+     * @param array() $userIdsByName
+     * @param array() $userIdsByEmail
+     * @param string &$outContributor
+     * @return string "Success", "NotExist", "Conflict"
+     * @access private
+     */
+    private function narrowDownContributor($userIdByHandle, $userIdsByName, $userIdsByEmail, &$outContributor)
+    {
+        // ハンドルが存在する場合
+        if(isset($userIdByHandle))
+        {
+            // 氏名リストの中にハンドルが存在するか調べる
+            $resultInName = $this->existContributorInMetaList($userIdByHandle, $userIdsByName);
+            // メールリストの中にハンドルが存在するか調べる
+            $resultInEmail = $this->existContributorInMetaList($userIdByHandle, $userIdsByEmail);
+            
+            // 双方のリストいずれかにハンドルが存在しない場合はNotExistを返却
+            if(!$resultInName || !$resultInEmail)
             {
-                // Return "Success"
-                return RepositoryConst::ITEM_CONTRIBUTOR_STATUS_SUCCESS;
+                $outContributor = "";
+                return RepositoryConst::ITEM_CONTRIBUTOR_STATUS_NOTEXIST;
+            }
+            $outContributor = $userIdByHandle;
+        }
+        // ハンドルが存在しない場合
+        else
+        {
+            // 氏名リストとメールリストの重複リストを作成する
+            if(isset($userIdsByName) && isset($userIdsByEmail))
+            {
+                $result = array_intersect($userIdsByName, $userIdsByEmail);
+            }
+            else if(!isset($userIdsByName) && isset($userIdsByEmail))
+            {
+                $result = $userIdsByEmail;
+            }
+            else if(isset($userIdsByName) && !isset($userIdsByEmail))
+            {
+                $result = $userIdsByName;
             }
             else
             {
-                // Return "NoAuth"
-                return RepositoryConst::ITEM_CONTRIBUTOR_STATUS_NOAUTH;
+                $outContributor = "";
+                return RepositoryConst::ITEM_CONTRIBUTOR_STATUS_NOTEXIST;
             }
+            
+            $hitCount = count($result);
+            // 重複リストが0件の場合はNotExistを返却
+            if($hitCount == 0)
+            {
+                $outContributor = "";
+                return RepositoryConst::ITEM_CONTRIBUTOR_STATUS_NOTEXIST;
+            }
+            // 重複リストが2件以上の場合はConflictを返却
+            else if($hitCount >= 2)
+            {
+                $outContributor = "";
+                return RepositoryConst::ITEM_CONTRIBUTOR_STATUS_CONFLICT;
+            }
+            
+            // 取得されるリストは氏名リストとメールリストを比較し、
+            // 重複する要素を取得している
+            // 重複要素を取得する際、array_intersectの第一引数から
+            // KeyとValueを取得するため、$resultの0番要素に入っている保証がない
+            // そのため、一時的に現存するKeyを全て取出し、ContributorのユーザIDとしている
+            $retArr = array_values($result);
+            
+            $outContributor = $retArr[0];
+       }
+       // Successを返却
+       return RepositoryConst::ITEM_CONTRIBUTOR_STATUS_SUCCESS;
+    }
+    
+    private function existContributorInMetaList($searchKey, $candidateList)
+    {
+        if(isset($candidateList))
+        {
+            $result = in_array($searchKey, $candidateList);
         }
         else
         {
-            // Return "NotExist"
-            return RepositoryConst::ITEM_CONTRIBUTOR_STATUS_NOTEXIST;
+            // candidateListが未指定の場合はtrue
+            $result = true;
         }
+        
+        return $result;
     }
-    // Add Contributor(Posted agency) A.Suzuki 2011/12/13 --start--
 }
 ?>

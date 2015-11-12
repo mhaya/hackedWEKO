@@ -1,7 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-// $Id: RepositoryFileUpload.class.php 53594 2015-05-28 05:25:53Z kaede_matsushita $
+// $Id: RepositoryFileUpload.class.php 56711 2015-08-19 13:21:44Z tomohiro_ichikawa $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics,
 // Research and Development Center for Scientific Information Resources
@@ -11,6 +11,7 @@
 //
 // --------------------------------------------------------------------
 require_once WEBAPP_DIR. '/modules/repository/components/util/MultipartStreamDecoder.class.php';
+require_once WEBAPP_DIR. '/modules/repository/components/util/CreateWorkDirectory.class.php';
 require_once WEBAPP_DIR.'/modules/repository/components/FW/AppException.class.php';
 require_once WEBAPP_DIR.'/modules/repository/components/FW/IO/IOException.class.php';
 require_once WEBAPP_DIR.'/modules/repository/components/FW/IO/FileStream.class.php';
@@ -50,12 +51,14 @@ class RepositoryFileUpload
      *
      * @return RepositoryFileUpload
      */
-    public function RepositoryFileUpload()
+    public function __construct()
     {
         $this->init();
-        $this->uploadDir = WEBAPP_DIR.DIRECTORY_SEPARATOR.
-                           "uploads".DIRECTORY_SEPARATOR.
-                           "repository";
+        
+        $this->uploadDir = Repository_Components_Util_CreateWorkDirectory::create(WEBAPP_DIR.DIRECTORY_SEPARATOR."uploads".DIRECTORY_SEPARATOR."repository".DIRECTORY_SEPARATOR);
+        if($this->uploadDir === false) {
+            $this->uploadDir = WEBAPP_DIR.DIRECTORY_SEPARATOR."uploads".DIRECTORY_SEPARATOR."repository".DIRECTORY_SEPARATOR;
+        }
         
         // Create log file
         if($this->isCreateLog)
@@ -100,9 +103,9 @@ class RepositoryFileUpload
             }
 
             if( strlen($this->uploadDir)>0 && strlen($this->physicalFileName)>0 &&
-                file_exists($this->uploadDir.DIRECTORY_SEPARATOR.$this->physicalFileName))
+                file_exists($this->uploadDir.$this->physicalFileName))
             {
-                unlink($this->uploadDir.DIRECTORY_SEPARATOR.$this->physicalFileName);
+                unlink($this->uploadDir.$this->physicalFileName);
             }
         }
         
@@ -271,7 +274,7 @@ class RepositoryFileUpload
         try {
             $readFileStream = FileStream::open("php://input", "rb");
             $this->writeLog("[decode]:");
-            $fileList = Repository_Components_Util_MultipartStreamDecoder::decodeMultiPartFile($readFileStream, $this->uploadDir.DIRECTORY_SEPARATOR.$this->physicalFileName);
+            $fileList = Repository_Components_Util_MultipartStreamDecoder::decodeMultiPartFile($readFileStream, $this->uploadDir.$this->physicalFileName);
             $this->writeLog("Success\n");
             $this->writeLog("[UPLODE FILE]"."\n");
             foreach ($fileList as $fileName){
@@ -285,7 +288,7 @@ class RepositoryFileUpload
 
             // マルチパートでない場合のzipファイル出力処理
             $readFileStream = FileStream::open("php://input", "rb");
-            $outputFileStream = FileStream::open($this->uploadDir.DIRECTORY_SEPARATOR.$this->physicalFileName, "w");
+            $outputFileStream = FileStream::open($this->uploadDir.$this->physicalFileName, "w");
             while ($data = $readFileStream->read(1024))
             {
                 $outputFileStream->write($data);
@@ -302,7 +305,7 @@ class RepositoryFileUpload
             return false;
         }
 
-        $this->fileSize = filesize($this->uploadDir.DIRECTORY_SEPARATOR.$this->physicalFileName);
+        $this->fileSize = filesize($this->uploadDir.$this->physicalFileName);
 
         return true;
     }

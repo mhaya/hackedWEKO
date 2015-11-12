@@ -1,7 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-// $Id: ItemtypeManager.class.php 53594 2015-05-28 05:25:53Z kaede_matsushita $
+// $Id: ItemtypeManager.class.php 55395 2015-07-10 01:06:00Z keiya_sugimoto $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics,
 // Research and Development Center for Scientific Information Resources
@@ -180,15 +180,22 @@ class Repository_Components_Itemtypemanager extends RepositoryLogicBase
      * @param int $user_room_auth_id
      * @return array
      */
-    public function getItemtypeDataByUserAuth($user_role_id, $user_room_auth_id) {
+    public function getItemtypeDataByUserAuth($user_role_id, $user_room_auth_id, $isReturnDeleted = false) {
         // ユーザー権限で使用可能なアイテムタイプの一覧を返す
         $query = "SELECT * ".
                  "FROM ". DATABASE_PREFIX. "repository_item_type ".
                  "WHERE item_type_id NOT IN (SELECT item_type_id FROM ". DATABASE_PREFIX. "repository_item_type_exclusive_base_auth ".
                                             "WHERE exclusive_base_auth_id = ? AND is_delete = ?) ".
                  "AND item_type_id NOT IN (SELECT item_type_id FROM ". DATABASE_PREFIX. "repository_item_type_exclusive_room_auth ".
-                                          "WHERE exclusive_room_auth_id >= ? AND is_delete = ?) ".
-                 "AND is_delete = 0 ;";
+                                          "WHERE exclusive_room_auth_id >= ? AND is_delete = ?) ";
+        if(!$isReturnDeleted)
+        {
+                 $query .= "AND is_delete = 0 ;";
+        }
+        else
+        {
+                 $query .= ";";
+        }
         $params = array();
         $params[] = $user_role_id;
         $params[] = 0;

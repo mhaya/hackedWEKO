@@ -1,7 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-// $Id: Detail.class.php 53594 2015-05-28 05:25:53Z kaede_matsushita $
+// $Id: Detail.class.php 58676 2015-10-10 12:33:17Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -195,7 +195,13 @@ class Repository_Action_Main_Item_Detail extends RepositoryAction
                     $repositoryHandleManager = new RepositoryHandleManager($this->Session, $this->Db, $this->TransStartDate);
                     
                     // register y handle suffix and insert to database
-                    $repositoryHandleManager->registerYhandleSuffix("", $item_id, $item_no);
+                    try{
+                        $repositoryHandleManager->registerYhandleSuffix("", $item_id, $item_no);
+                    } catch(AppException $ex){
+                        // ID取得ボタン押下時にIDサーバーのsuffixが取得できなかった場合、
+                        // エラーとして扱わず、処理を続行する
+                        $this->debugLog($ex->getMessage(), __FILE__, __CLASS__, __LINE__);
+                    }
                     // insert new selfdoi metadata to selfdoi index table
                     $searchTableProcessing->updateSelfDoiSearchTable($item_id, $item_no);
                     // get suffix from database

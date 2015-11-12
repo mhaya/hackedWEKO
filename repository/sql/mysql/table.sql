@@ -1228,6 +1228,14 @@ CREATE TABLE `repository_target_search_item` (
   `is_delete` INT(1),
   PRIMARY KEY  (`search_item_id`)
 ) ENGINE=InnoDb;
+CREATE TABLE `repository_cover_delete_status` (
+  `item_id` INT,
+  `item_no` INT,
+  `attribute_id` INT,
+  `file_no` INT,
+  `status` INT(1),
+  PRIMARY KEY  (`item_id`, `item_no`, `attribute_id`, `file_no`)
+) ENGINE=MyISAM;
 INSERT INTO `repository_external_author_id_prefix_seq_id` VALUE ('3');
 INSERT INTO `repository_external_author_id_prefix` (`prefix_id`, `prefix_name`, `block_id`, `room_id`, `ins_user_id`, `mod_user_id`, `del_user_id`, `ins_date`, `mod_date`, `del_date`, `is_delete`) VALUES
     (1, 'CiNii ID', 0, 0, '1', '1', '0', '2008-03-12 00:00:00.000', '2008-03-12 00:00:00.000', '', 0),
@@ -1361,7 +1369,7 @@ INSERT INTO `repository_parameter` VALUE
     ('AWSSecretAccessKey','3DhXSBYKMnma7PR3fP5i3fk/LHZzeqyKHXfg8E90','Amazon AWSSecretAccessKey','1','1','0','2008-03-18 00:00:00.000','2008-03-18 00:00:00.000','',0),
     ('ranking_disp_setting','0','ランキングの表示設定(0:リアルタイムに更新する, 1:DB保存情報を表示する)','1','1','0','2008-03-18 00:00:00.000','2008-03-18 00:00:00.000','',0),
     ('default_disp_type','0','トップページ右側の初期表示設定(0:指定インデックス検索結果, 1:ランキング)','1','1','0','2008-03-18 00:00:00.000','2008-03-18 00:00:00.000','',0),
-    ('WEKO_version','2.2.0','現在稼働中のWEKOバージョン情報','1','1','0','2008-03-18 00:00:00.000','2008-03-18 00:00:00.000','',0),
+    ('WEKO_version','2.2.3','現在稼働中のWEKOバージョン情報','1','1','0','2008-03-18 00:00:00.000','2008-03-18 00:00:00.000','',0),
     ('sort_disp','1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16|17|18','検索結果表示で表示するソート条件','1','1','0','2008-03-18 00:00:00.000','2008-03-18 00:00:00.000','',0),
     ('sort_not_disp','','検索結果表示で表示しないソート条件','1','1','0','2008-03-18 00:00:00.000','2008-03-18 00:00:00.000','',0),
     ('sort_disp_default','7|16','検索結果表示のデフォルトソート条件(index検索|keyword検索)','1','1','0','2008-03-18 00:00:00.000','2008-03-18 00:00:00.000','',0),

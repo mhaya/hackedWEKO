@@ -10,6 +10,7 @@
  */
 require_once WEBAPP_DIR. '/modules/repository/components/FW/BusinessBase.class.php';
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
+require_once WEBAPP_DIR. '/modules/repository/components/business/Logbase.class.php';
 
 class Repository_Components_Business_Usagestatistics extends BusinessBase
 {
@@ -20,6 +21,14 @@ class Repository_Components_Business_Usagestatistics extends BusinessBase
      */
     public function aggregateUsageStatistics() {
         $this->debugLog(__FUNCTION__ , __FILE__, __CLASS__, __LINE__);
+        
+        $removingLogFlag = $this->isExecuteRemovingLog();
+        if($removingLogFlag)
+        {
+            $exception = new AppException("repository_log_excluding", Repository_Components_Business_Logbase::APP_EXCEPTION_KEY_REMOVING_LOG);
+            $exception->addError("repository_log_excluding");
+            throw $exception;
+        }
         
         // ログテーブルから最も古いログの日付を取得する
         $oldestDate = $this->getOldestDateAtLogTable();
@@ -728,5 +737,35 @@ class Repository_Components_Business_Usagestatistics extends BusinessBase
         
         return count($result);
     }
+    
+    /**
+     * ロボットリストログ削除中かどうか判定する
+     *
+     * @return bool
+    */
+    private function isExecuteRemovingLog() {
+        // check removing log process
+        $query = "SELECT status ". 
+                 " FROM ". DATABASE_PREFIX. "repository_lock ". 
+                 " WHERE process_name = ? ;";
+        $params = array();
+        $params[] = 'Repository_Action_Common_Robotlist';
+        $result = $this->Db->execute($query, $params);
+        if($result === false){
+            $this->errorLog($this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+            throw new AppException($this->Db->ErrorMsg());
+        }
+        
+        // when execute removing log, throw exception
+        for($cnt = 0; $cnt < count($result); $cnt++)
+        {
+            if(intval($result[$cnt]['status']) > 0){
+                return true;
+            }
+        }
+        
+        return false;
+    }
+
 }
 ?>

@@ -1,7 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-// $Id: RepositorySearchTableProcessing.class.php 54835 2015-06-25 04:10:46Z keiya_sugimoto $
+// $Id: RepositorySearchTableProcessing.class.php 56819 2015-08-21 04:26:34Z tomohiro_ichikawa $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics,
 // Research and Development Center for Scientific Information Resources
@@ -705,16 +705,11 @@ class RepositorySearchTableProcessing extends RepositoryAction
         ////////////////////////////////////////////////////////////
         // ファイルから文字列を抽出し、検索用文字列を作成する
         ////////////////////////////////////////////////////////////
-        // 作業dir作成
-        //$date = date('YmdHis') . substr(microtime(), 1, 4);
-        $query = "SELECT DATE_FORMAT(NOW(), '%Y%m%d%H%i%s') AS now_date;";
-        $result = $this->dbAccess->executeQuery($query);
-        if($result === false || count($result) != 1){
-            return false;
-        }
-        $date = $result[0]['now_date'];
-        $dir_path = WEBAPP_DIR."/uploads/repository/_".$date;
-        mkdir($dir_path, 0777 );
+        // 作業用ディレクトリ作成
+        $this->infoLog("businessWorkdirectory", __FILE__, __CLASS__, __LINE__);
+        $businessWorkdirectory = BusinessFactory::getFactory()->getBusiness("businessWorkdirectory");
+        
+        $dir_path = $businessWorkdirectory->create();
         
         // Fix processing order correcting. 2014/03/15 Y.Nakao --start--
         // ファイルをコピーする
@@ -725,8 +720,6 @@ class RepositorySearchTableProcessing extends RepositoryAction
         }
         // check directory exists
         if( !(file_exists($contents_path)) ){
-            // delete tmp directory
-            $this->removeDirectory($dir_path);
             return false;
         }
         $file_name = $itemMetaData['item_id'].'_'.
@@ -734,10 +727,8 @@ class RepositorySearchTableProcessing extends RepositoryAction
                     $itemMetaData['file_no'].'.'.
                     $itemMetaData['extension'];
         $copyResult = copy( $contents_path.DIRECTORY_SEPARATOR.$file_name,
-                            $dir_path. DIRECTORY_SEPARATOR.$file_name);
+                            $dir_path.$file_name);
         if(!$copyResult){
-            // delete tmp directory
-            $this->removeDirectory($dir_path);
             return false;
         }
         // Fix processing order correcting. 2014/03/15 Y.Nakao --end--
@@ -787,46 +778,46 @@ class RepositorySearchTableProcessing extends RepositoryAction
             $cmd = null;
             // pdfの場合
             if ($itemMetaData['mime_type'] == 'application/pdf' || $itemMetaData['mime_type'] == 'text/pdf') {
-                $cmd = "\"". $path_poppler. "pdftotext\" -enc UTF-8 ". $dir_path. DIRECTORY_SEPARATOR.$file_name. " ". $dir_path. DIRECTORY_SEPARATOR. "pdf.txt";
+                $cmd = "\"". $path_poppler. "pdftotext\" -enc UTF-8 ". $dir_path.$file_name. " ". $dir_path. "pdf.txt";
                 //print($cmd. "<br>");
                 exec($cmd);
-                if (file_exists($dir_path. DIRECTORY_SEPARATOR. "pdf.txt")) {
-                    $txt = file($dir_path. DIRECTORY_SEPARATOR. "pdf.txt");
+                if (file_exists($dir_path. "pdf.txt")) {
+                    $txt = file($dir_path. "pdf.txt");
                     //$txt = implode("", $txt);
                     $strFullText = implode("", $txt);
-                    unlink($dir_path. DIRECTORY_SEPARATOR. "pdf.txt");
+                    unlink($dir_path. "pdf.txt");
                 }
             }
             // xlsの場合
             else if ($itemMetaData['mime_type'] == 'application/vnd.ms-excel') {
-                $cmd = "\"". $path_xlhtml. "xlhtml\" ". $dir_path. DIRECTORY_SEPARATOR.$file_name. " > ". $dir_path. DIRECTORY_SEPARATOR. "xls.html";
+                $cmd = "\"". $path_xlhtml. "xlhtml\" ". $dir_path.$file_name. " > ". $dir_path. "xls.html";
                 //print($cmd. "<br>");
                 exec($cmd);
-                if (file_exists($dir_path. DIRECTORY_SEPARATOR. "xls.html")) {
-                    $txt = file($dir_path. DIRECTORY_SEPARATOR. "xls.html");
+                if (file_exists($dir_path. "xls.html")) {
+                    $txt = file($dir_path. "xls.html");
                     $txt = implode("", $txt);
                     //$txt = strip_tags($txt);
                     $strFullText = strip_tags($txt);
-                    unlink($dir_path. DIRECTORY_SEPARATOR. "xls.html");
+                    unlink($dir_path. "xls.html");
                 }
             }
             // docの場合
             else if ($itemMetaData['mime_type'] == 'application/msword') {
-                $cmd = "\"". $path_wvWare. "wvHtml\" ". $dir_path. DIRECTORY_SEPARATOR.$file_name. " ". $dir_path. DIRECTORY_SEPARATOR. "doc.html";
+                $cmd = "\"". $path_wvWare. "wvHtml\" ". $dir_path.$file_name. " ". $dir_path. "doc.html";
                 //print($cmd. "<br>");
                 exec($cmd);
-                if (file_exists($dir_path. DIRECTORY_SEPARATOR. "doc.html")) {
-                    $txt = file($dir_path. DIRECTORY_SEPARATOR. "doc.html");
+                if (file_exists($dir_path. "doc.html")) {
+                    $txt = file($dir_path. "doc.html");
                     $txt = implode("", $txt);
                     //$txt = strip_tags($txt);
                     $strFullText = strip_tags($txt);
-                    unlink($dir_path. DIRECTORY_SEPARATOR. "doc.html");
+                    unlink($dir_path. "doc.html");
                 }
             }
         }
         // ファイルがテキスト類の場合
         else if ( is_numeric(strpos($itemMetaData['mime_type'], "text")) ) {
-            $fp = fopen($dir_path. DIRECTORY_SEPARATOR.$file_name, "r");
+            $fp = fopen($dir_path.$file_name, "r");
             if($fp == null){
                 return;
             }
@@ -841,45 +832,45 @@ class RepositorySearchTableProcessing extends RepositoryAction
             }
             fclose($fp);
             $strFullText = $txt;
-            unlink($dir_path. DIRECTORY_SEPARATOR.$file_name);
+            unlink($dir_path.$file_name);
         }
         // ppt
         else if($itemMetaData['mime_type'] == 'application/vnd.ms-powerpoint'){
-            $cmd = "\"". $path_xlhtml. "ppthtml\" ". $dir_path. DIRECTORY_SEPARATOR.$file_name. " > ". $dir_path. DIRECTORY_SEPARATOR. "ppt.html";
+            $cmd = "\"". $path_xlhtml. "ppthtml\" ". $dir_path.$file_name. " > ". $dir_path. "ppt.html";
             exec($cmd);
-            if (file_exists($dir_path. DIRECTORY_SEPARATOR. "ppt.html")) {
-                $txt = file($dir_path. DIRECTORY_SEPARATOR. "ppt.html");
+            if (file_exists($dir_path. "ppt.html")) {
+                $txt = file($dir_path. "ppt.html");
                 $txt = implode("", $txt);
                 $strFullText = strip_tags($txt);
-                unlink($dir_path. DIRECTORY_SEPARATOR. "ppt.html");
+                unlink($dir_path. "ppt.html");
             }
         }
         // docx
         else if($itemMetaData['mime_type'] == 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'){
             // docx to zip rename
-            copy( $dir_path. DIRECTORY_SEPARATOR.$file_name, $dir_path. DIRECTORY_SEPARATOR. "docx.zip" );
+            copy( $dir_path.$file_name, $dir_path. "docx.zip" );
             $tag_val_list = array();
-            if (file_exists($dir_path. DIRECTORY_SEPARATOR. "docx.zip")) {
+            if (file_exists($dir_path. "docx.zip")) {
                 $this->zipDecompress($dir_path, "docx.zip");
                 // document.xml get value
-                $xml_path = $dir_path. DIRECTORY_SEPARATOR."docx". DIRECTORY_SEPARATOR."word";
+                $xml_path = $dir_path."docx". DIRECTORY_SEPARATOR."word";
                 $getTagResult = $this->getOfficeXMLText($xml_path, "document.xml");
                 if($getTagResult !== false){
                     $strFullText = $getTagResult;
                 }
-                $this->removeDirectory($dir_path. DIRECTORY_SEPARATOR."docx");
+                $this->removeDirectory($dir_path."docx");
             }
         }
         // xlsx
         else if($itemMetaData['mime_type'] == 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'){
             // xlsx to zip
-            copy( $dir_path. DIRECTORY_SEPARATOR.$file_name, $dir_path. DIRECTORY_SEPARATOR. "xlsx.zip" );
+            copy( $dir_path.$file_name, $dir_path. "xlsx.zip" );
             $tag_val_list = array();
-            if (file_exists($dir_path. DIRECTORY_SEPARATOR. "xlsx.zip")) {
+            if (file_exists($dir_path. "xlsx.zip")) {
 
                 $this->zipDecompress($dir_path, "xlsx.zip");
                 // workbook.xml
-                $xml_path = $dir_path. DIRECTORY_SEPARATOR."xlsx". DIRECTORY_SEPARATOR."xl";
+                $xml_path = $dir_path."xlsx". DIRECTORY_SEPARATOR."xl";
                 $getTagResult = $this->getOfficeXMLAttributes($xml_path, "workbook.xml");
                 if($getTagResult !== false){
                     $strFullText = $getTagResult;
@@ -890,17 +881,17 @@ class RepositorySearchTableProcessing extends RepositoryAction
                 if($getTagResult !== false){
                     $strFullText = $strFullText.",". $getTagResult;
                 }
-                $this->removeDirectory($dir_path. DIRECTORY_SEPARATOR."xlsx");
+                $this->removeDirectory($dir_path."xlsx");
             }
         }
         // pptx
         else if($itemMetaData['mime_type'] == 'application/vnd.openxmlformats-officedocument.presentationml.presentation'){
             // pptx to zip
-            copy( $dir_path. DIRECTORY_SEPARATOR.$file_name, $dir_path. DIRECTORY_SEPARATOR. "pptx.zip" );
+            copy( $dir_path.$file_name, $dir_path. "pptx.zip" );
             $tag_val_list = array();
-            if (file_exists($dir_path. DIRECTORY_SEPARATOR. "pptx.zip")) {
+            if (file_exists($dir_path. "pptx.zip")) {
                 $this->zipDecompress($dir_path, "pptx.zip");
-                $xml_path = $dir_path. DIRECTORY_SEPARATOR."pptx". DIRECTORY_SEPARATOR."ppt". DIRECTORY_SEPARATOR."slides";
+                $xml_path = $dir_path."pptx". DIRECTORY_SEPARATOR."ppt". DIRECTORY_SEPARATOR."slides";
 
                 $noCnt = 1;
                 foreach (glob($xml_path. DIRECTORY_SEPARATOR.'slide*.xml') as $sheet) {
@@ -910,7 +901,7 @@ class RepositorySearchTableProcessing extends RepositoryAction
                         $noCnt++;
                     }
                 }
-                $this->removeDirectory($dir_path. DIRECTORY_SEPARATOR."pptx");
+                $this->removeDirectory($dir_path."pptx");
             }
         }
         // MySQLは4バイト文字に対応していないため4バイト文字を削除
@@ -922,8 +913,6 @@ class RepositorySearchTableProcessing extends RepositoryAction
 	    // Extend Search Keyword 2015/02/23 K.Sugimoto --end--
 
         $this->setTextData($searchItemInfo, self::FILEDATA, $strFullText);
-        //一時dir削除
-        $this->removeDirectory($dir_path);
     }
 
     /**

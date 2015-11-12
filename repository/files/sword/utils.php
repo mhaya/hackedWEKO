@@ -1,7 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-// $Id: utils.php 43165 2014-10-22 10:48:15Z tomohiro_ichikawa $
+// $Id: utils.php 56714 2015-08-19 13:30:20Z tomohiro_ichikawa $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics,
 // Research and Development Center for Scientific Information Resources
@@ -367,6 +367,10 @@ function process_headers($request)
                 $filename = preg_replace("/^\"|^\'/", "", $filename);
                 $filename = preg_replace("/\"$|\'$/", "", $filename);
                 // BugFix single cotation Y.Nakao 2013/06/07 --end--
+                
+                // Bugfix support multi-byte string T.Koyasu 2015/08/12 --start--
+                $filename = rawurldecode($filename);
+                // Bugfix support multi-byte string T.Koyasu 2015/08/12 --end--
                 break;
             }
         }
@@ -539,9 +543,7 @@ function generateEntryDocument($infos, &$response)
     # Header
     $response = "<?xml version=\"1.0\" encoding=\"utf-8\"?>" . "\n";
     # ENTRY
-    //$response.= "<entry xmlns=\"http://www.w3.org/2005/Atom\" xmlns:sword=\"http://purl.org/net/sword/\">" . "\n";
-    //http://swordapp.github.io/SWORDv2-Profile/SWORDProfile.html#namespaces_sword
-    $response.= "<entry xmlns=\"http://www.w3.org/2005/Atom\" xmlns:sword=\"http://purl.org/net/sword/terms/\">" . "\n";
+    $response.= "<entry xmlns=\"http://www.w3.org/2005/Atom\" xmlns:sword=\"http://purl.org/net/sword/\">" . "\n";
     # TITLE
     $response.= "  <title>" . $infos['collectionName'] . "</title>" . "\n";
     # ID    ( or SLUG => at the mo, the Slug value is kept in the db, but not shown in the answer )
@@ -684,18 +686,10 @@ function generateErrorDocument($infos, &$response)
     # Header
     $response = "<?xml version=\"1.0\" encoding=\"utf-8\"?>" . "\n";
     # ERROR
-    /*
     $response.= "<sword:error xmlns=\"". htmlspecialchars_self("http://www.w3.org/2005/Atom").
                 "\" xmlns:sword=\""    . htmlspecialchars_self("http://purl.org/net/sword/") .
                 "\" xmlns:arxiv=\""    . htmlspecialchars_self("http://arxiv.org/schemas/atom") .
                 "\" href=\""           . htmlspecialchars_self("http://example.org/errors/BadManifest"). "\">" . "\n";
-    */
-    //http://swordapp.github.io/SWORDv2-Profile/SWORDProfile.html#namespaces_sword
-    $response.= "<sword:error xmlns=\"". htmlspecialchars_self("http://www.w3.org/2005/Atom").
-                "\" xmlns:sword=\""    . htmlspecialchars_self("http://purl.org/net/sword/terms/") .
-                "\" xmlns:arxiv=\""    . htmlspecialchars_self("http://arxiv.org/schemas/atom") .
-                "\" href=\""           . htmlspecialchars_self("http://example.org/errors/BadManifest"). "\">" . "\n";
-
     # TITLE (const string)
     $response.= "  <title>" . "ERROR" . "</title>" . "\n";
     # UPDATED

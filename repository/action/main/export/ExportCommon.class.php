@@ -1,7 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-// $Id: ExportCommon.class.php 53594 2015-05-28 05:25:53Z kaede_matsushita $
+// $Id: ExportCommon.class.php 57287 2015-08-28 07:15:27Z keiya_sugimoto $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -511,6 +511,7 @@ class ExportCommon extends RepositoryAction
         
         // when not file at export, not file download.
         $this->getAdminParam("export_is_include_files", $export_is_include_files, $error);
+        // 全てのファイルについて同意しない場合でも、管理者、登録ユーザはファイルをダウンロードできる
         if( ($has_license != "true" || $export_is_include_files == 0) && !$adminUser && !$insUser)
         {
             // not license OR repository_parameter is not file export => can't file download
@@ -572,6 +573,7 @@ class ExportCommon extends RepositoryAction
         if($Result_List["item_attr_type"][$attribute_id]["plural_enable"] != 1) {
             array_splice($result, 1);
         }
+        
         // ファイルが複数不可属性だった場合２つ目以降を削除 T.Ichikawa 2013/9/17 --end--
         // Modify Price method move validator K.Matsuo 2011/10/18 --start--
         for($ii=0; $ii<count($result);$ii++)
@@ -665,13 +667,20 @@ class ExportCommon extends RepositoryAction
                             $result[$ii]["attribute_id"].'_'.
                             $result[$ii]["file_no"].'.'.
                             $result[$ii]["extension"];
-                $output_file = $tmp_dir.DIRECTORY_SEPARATOR;
+                $output_file = $tmp_dir;
                 
                 // Add encode charset 2009/11/27 A.Suzuki --start--
                 $output_file .= mb_convert_encoding($result[$ii]["file_name"], $this->encode, "auto");
                 // Add encode charset 2009/11/27 A.Suzuki --end--
                 copy($file_path, $output_file);
                 // Add separate file from DB 2009/04/22 Y.Nakao --end--
+                if($result[$ii]["extension"] == "pdf") {
+                    $this->addPdfCover($output_file, 
+                                       $result[$ii]["item_id"], 
+                                       $result[$ii]["item_no"], 
+                                       $result[$ii]["attribute_id"], 
+                                       $result[$ii]["file_no"]);
+                }
                 
                 // Mod entryLog T.Koyasu 2015/03/06 --start--
                 $this->infoLog("businessLogmanager", __FILE__, __CLASS__, __LINE__);
@@ -892,6 +901,24 @@ class ExportCommon extends RepositoryAction
         return $result;
     }
     // Add e-person 2013/10/23 R.Matsuura --end--
+    
+    /**
+     * PDFカバーページを付与する
+     *
+     * @param  string $file_path
+     */
+    private function addPdfCover($file_path, $itemId, $itemNo, $attributeId, $fileNo) {
+        // 一時ファイル作成先ディレクトリ
+        $this->infoLog("businessWorkdirectory", __FILE__, __CLASS__, __LINE__);
+        $businessWorkdirectory = BusinessFactory::getFactory()->getBusiness("businessWorkdirectory");
+        $tmpDirPath = $businessWorkdirectory->create();
+        
+        // PDFカバーページ作成クラス
+        $this->infoLog("businessPdfcover", __FILE__, __CLASS__, __LINE__);
+        $pdfCover = BusinessFactory::getFactory()->getBusiness("businessPdfcover");
+        $newFile = $pdfCover->grantPdfCover($itemId, $itemNo, $attributeId, $fileNo, $tmpDirPath);
+        copy($newFile, $file_path);
+    }
 }
 // Add xml escape string 2008/10/15 Y.Nakao --end--
 ?>

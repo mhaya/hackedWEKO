@@ -1,7 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-// $Id: RepositoryAction.class.php 54835 2015-06-25 04:10:46Z keiya_sugimoto $
+// $Id: RepositoryAction.class.php 56715 2015-08-19 13:48:23Z tomohiro_ichikawa $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics,
 // Research and Development Center for Scientific Information Resources
@@ -2353,7 +2353,7 @@ class RepositoryAction extends ActionBase
                   " file_prev_name=VALUES(`file_prev_name`), ".
                   " license_id=VALUES(`license_id`), license_notation=VALUES(`license_notation`), ".
                   " pub_date=VALUES(`pub_date`), item_type_id=VALUES(`item_type_id`), ".
-                  " browsing_flag=VALUES(`browsing_flag`), mod_user_id=VALUES(`mod_user_id`), ".
+                  " browsing_flag=VALUES(`browsing_flag`), cover_created_flag=0, mod_user_id=VALUES(`mod_user_id`), ".
                   " del_user_id=VALUES(`del_user_id`), mod_date=VALUES(`mod_date`), ".
                   " del_date=VALUES(`del_date`), is_delete=VALUES(`is_delete`); ";
         //INSERT実行

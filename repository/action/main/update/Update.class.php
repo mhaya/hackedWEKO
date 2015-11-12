@@ -1,7 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-// $Id: Update.class.php 54835 2015-06-25 04:10:46Z keiya_sugimoto $
+// $Id: Update.class.php 58278 2015-09-30 09:33:47Z tomohiro_ichikawa $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics,
 // Research and Development Center for Scientific Information Resources
@@ -3816,6 +3816,12 @@ class Repository_Action_Main_Update extends RepositoryAction
                 case 218:
                     $this->updateWekoVersion218To220();
                 // Add Gakunin 2015/01/16 T.Ichikawa --end--
+                case 220:
+                    $this->updateWekoVersion220To221();
+                case 221:
+                    $this->updateWekoVersion221To222();
+                case 222:
+                    $this->updateWekoVersion222To223();
                 default :
                     break;
             }
@@ -6888,5 +6894,47 @@ class Repository_Action_Main_Update extends RepositoryAction
         return $result;
     }
     // ImproveLog 2015/06/17 K.Sugimoto --end--
+    
+    /**
+     * update Weko Version 2.2.0 To 2.2.1
+     *
+     */
+    private function updateWekoVersion220To221()
+    {
+        // version up to 2.2.1
+        $this->versionUp('2.2.1');
+    }
+    
+    /**
+     * update Weko Version 2.2.1 To 2.2.2
+     *
+     */
+    private function updateWekoVersion221To222()
+    {
+        // Add CoverDeleteStatusTable
+        $this->addCoverDeleteStatusTable();
+        
+        // version up to 2.2.2
+        $this->versionUp('2.2.2');
+    }
+    
+    private function addCoverDeleteStatusTable()
+    {
+        $query = "CREATE TABLE {repository_cover_delete_status} (".
+            "`item_id` INT, ".
+            "`item_no` INT, ".
+            "`attribute_id` INT, ".
+            "`file_no` INT, ".
+            "`status` INT(1), ".
+            "PRIMARY KEY(`item_id`, `item_no`, `attribute_id`, `file_no`)".
+            ") ENGINE=MyISAM;";
+        $this->dbAccess->executeQuery($query);
+    }
+    
+    private function updateWekoVersion222To223()
+    {
+        // version up to 2.2.3
+        $this->versionUp('2.2.3');
+    }
 }
 ?>

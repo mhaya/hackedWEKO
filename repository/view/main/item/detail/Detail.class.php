@@ -1,7 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-// $Id: Detail.class.php 53594 2015-05-28 05:25:53Z kaede_matsushita $
+// $Id: Detail.class.php 58616 2015-10-09 11:16:04Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -208,6 +208,8 @@ class Repository_View_Main_Item_Detail extends RepositoryAction
                 $user_error_msg = 'initで既に・・・';
                 throw $exception;
             }
+            
+            $this->item_no = $this->modificateInvalidItemNo($this->item_no);
             
             // Add for display shown_status only login user K.Matsushita 2014/12/12 --start--
             $this->user_id = $this->Session->getParameter("_user_id");
@@ -1382,12 +1384,15 @@ class Repository_View_Main_Item_Detail extends RepositoryAction
                         // Add smartPhone support T.Koyasu 2012/04/09 -end-
                     }
                     
-                    // Add pdf url to metatag
-                    $output = $this->createTags(
-                        RepositoryConst::TAG_NAME_META,
-                        array( RepositoryConst::TAG_ATTR_KEY_NAME => RepositoryConst::GOOGLESCHOLAR_DISSERTATION_INSTITUTION,
-                               RepositoryConst::TAG_ATTR_KEY_CONTENT => $result[0][RepositoryConst::DBCOL_REPOSITORY_PARAMETER_PARAM_VALUE]));
-                    $this->commonMain->addHeader($output);
+                    // 管理画面―サーバ設定の機関名称をメタタグ出力する
+                    // 機関名称が空文字の場合出力しない
+                    if(strlen($result[0][RepositoryConst::DBCOL_REPOSITORY_PARAMETER_PARAM_VALUE]) > 0){
+                        $output = $this->createTags(
+                            RepositoryConst::TAG_NAME_META,
+                            array( RepositoryConst::TAG_ATTR_KEY_NAME => RepositoryConst::GOOGLESCHOLAR_DISSERTATION_INSTITUTION,
+                                   RepositoryConst::TAG_ATTR_KEY_CONTENT => $result[0][RepositoryConst::DBCOL_REPOSITORY_PARAMETER_PARAM_VALUE]));
+                        $this->commonMain->addHeader($output);
+                    }
                     // Add metadata pdf url 2014/12/19 S.Suzuki --end--
                     
                     // Add item type multi-language 2013/07/25 K.Matsuo --start--
@@ -2190,21 +2195,25 @@ class Repository_View_Main_Item_Detail extends RepositoryAction
         
         // pdfファイル
         // Add pdf url to metatag
-        $output = $this->createTags(
-                        RepositoryConst::TAG_NAME_META,
-                        array( RepositoryConst::TAG_ATTR_KEY_NAME => RepositoryConst::GOOGLESCHOLAR_PDF_URL,
-                        RepositoryConst::TAG_ATTR_KEY_CONTENT => $pdfData["url"]) );
-        
-        $this->commonMain->addHeader($output);
+        // pdfファイルのURLが空文字ならば出力しない
+        if(strlen($pdfData["url"])> 0){
+            $output = $this->createTags(
+                            RepositoryConst::TAG_NAME_META,
+                            array( RepositoryConst::TAG_ATTR_KEY_NAME => RepositoryConst::GOOGLESCHOLAR_PDF_URL,
+                            RepositoryConst::TAG_ATTR_KEY_CONTENT => $pdfData["url"]) );
+            $this->commonMain->addHeader($output);
+        }
         
         // pdfファイル以外
         // Add fulltext url to metatag
-        $output = $this->createTags(
-                        RepositoryConst::TAG_NAME_META,
-                        array( RepositoryConst::TAG_ATTR_KEY_NAME => RepositoryConst::GOOGLESCHOLAR_FULLTEXT_HTML_URL,
-                        RepositoryConst::TAG_ATTR_KEY_CONTENT => $otherData["url"]) );
-        
-        $this->commonMain->addHeader($output);
+        // pdfファイル以外のURLが空文字ならば出力しない
+        if(strlen($otherData["url"]) > 0){
+            $output = $this->createTags(
+                            RepositoryConst::TAG_NAME_META,
+                            array( RepositoryConst::TAG_ATTR_KEY_NAME => RepositoryConst::GOOGLESCHOLAR_FULLTEXT_HTML_URL,
+                            RepositoryConst::TAG_ATTR_KEY_CONTENT => $otherData["url"]) );
+            $this->commonMain->addHeader($output);
+        }
     }
     
     // Add Convert Date Format for Google Scholar 2011/12/06 A.Suzuki --start--
@@ -2871,5 +2880,19 @@ class Repository_View_Main_Item_Detail extends RepositoryAction
         return $isShow;
     }
     // Add for entry SuppleContents Y.Yamazawa 2015/03/30 --end--
+    
+    /**
+     * アイテムNOがNULLかゼロのとき、1に修正する
+     * if item_no is null or zero, modificate item_no to one
+     *
+     */
+    private function modificateInvalidItemNo($itemNo)
+    {
+        // アイテムNOがNULLまたは空だった場合、1に修正する
+        if(!isset($itemNo) || strlen($itemNo) === 0){
+            return 1;
+        }
+        return $itemNo;
+    }
 }
 ?>

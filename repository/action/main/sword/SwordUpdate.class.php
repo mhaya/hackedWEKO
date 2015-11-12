@@ -1,7 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-// $Id: SwordUpdate.class.php 53594 2015-05-28 05:25:53Z kaede_matsushita $
+// $Id: SwordUpdate.class.php 58676 2015-10-10 12:33:17Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics,
 // Research and Development Center for Scientific Information Resources
@@ -487,7 +487,7 @@ class SwordUpdate extends RepositoryAction
 
         // ItemRegisterの更新処理実行
         $this->writeLog("  Call executeUpdateByItemRegister.\n");
-        $result = $this->executeUpdateByItemRegister($irBasic, $irMetadataArray, $indexInfo, $userId, $detailUrl, $errorMsg, $reviewStatus);
+        $result = $this->executeUpdateByItemRegister($irBasic, $irMetadataArray, $indexInfo, $userId, $detailUrl, $errorMsg, $reviewStatus, $warningMsg);
         if(strlen($errorMsg) > 0)
         {
             $this->writeLog("\n  ".$errorMsg."\n");
@@ -686,7 +686,12 @@ class SwordUpdate extends RepositoryAction
     {
         // Extract zip file
         $xmlData = array();
-        $tmpDir = $filedata["upload_dir"].DIRECTORY_SEPARATOR."_".str_replace(".".$filedata["extension"], "", $filedata["physical_file_name"]);
+        
+        $this->infoLog("businessWorkdirectory", __FILE__, __CLASS__, __LINE__);
+        $businessWorkdirectory = BusinessFactory::getFactory()->getBusiness('businessWorkdirectory');
+        $tmpDir = $businessWorkdirectory->create();
+        $tmpDir = substr($tmpDir, 0, -1);
+        
         $filePath = $filedata["upload_dir"].DIRECTORY_SEPARATOR.$filedata["physical_file_name"];
         if(!$this->extraction($filePath, $tmpDir))
         {
@@ -735,7 +740,7 @@ class SwordUpdate extends RepositoryAction
             $result = $this->executeUpdate(
                                 $xmlData['item'][$nCnt], $xmlData['item_type'][$nCnt], $tmpDir,
                                 $userId, $itemId, $itemNo, $itemInfo, $insIndexArray, $item_type_info[$nCnt], $detailUrl, $errorMsg, $warningMsg);
-            if($result && strlen($errorMsg)==0)
+            if($result && strlen($errorMsg)==0 && strlen($warningMsg)==0)
             {
                 $updateFlag = true;
                 $this->writeLog("  Success update and no error.\n");
@@ -743,7 +748,7 @@ class SwordUpdate extends RepositoryAction
             }
             else if($result && strlen($warningMsg) > 0){
                 $updateFlag = true;
-                array_push($error_list, $errorMsg);
+                array_push($error_list, $warningMsg);
                 $this->writeLog("  Success update and error.\n");
                 break;
             }
@@ -1789,9 +1794,10 @@ class SwordUpdate extends RepositoryAction
      * @param string $detailUrl
      * @param string $errorMsg
      * @param int $reviewStatus
+     * @param string $warningMsg
      * @return bool
      */
-    private function executeUpdateByItemRegister($irBasic, $irMetadataArray, $indexInfo, $userId, &$detailUrl, &$errorMsg, &$reviewStatus)
+    private function executeUpdateByItemRegister($irBasic, $irMetadataArray, $indexInfo, $userId, &$detailUrl, &$errorMsg, &$reviewStatus, &$warningMsg)
     {
         $this->writeLog("-- Start executeUpdateByItemRegister (".date("Y/m/d H:i:s").") --\n");
 
@@ -1821,7 +1827,7 @@ class SwordUpdate extends RepositoryAction
 
         // アイテム基本情報更新 / Update item data
         $this->writeLog("  Call updateItem at itemRegister.");
-        $result = $this->itemRegister_->updateItem($irBasic, $tmpErrorMsg);
+        $result = $this->itemRegister_->updateItem($irBasic, $tmpErrorMsg, $warningMsg);
         if($result === false)
         {
             // [Error]
@@ -1941,7 +1947,16 @@ class SwordUpdate extends RepositoryAction
         // BugFix when before and after update, assignment doi is failed T.Koyasu 2015/03/09 --start--
         // must check self_doi when after update item metadatas
         $this->writeLog("  Check self doi and Add self doi");
-        $this->itemRegister_->updateSelfDoi($irBasic);
+        try{
+            $this->itemRegister_->updateSelfDoi($irBasic);
+        } catch(AppException $ex){
+            $smartyAssign = $this->Session->getParameter('smartyAssign');
+            if(strlen($warningMsg) > 0){
+                $warningMsg .= "/";
+            }
+            $warningMsg .= $smartyAssign->getLang($ex->getMessage());
+            $this->debugLog($ex->getMessage(). "::itemId=". $itemId, __FILE__, __CLASS__, __LINE__);
+        }
         // BugFix when before and after update, assignment doi is failed T.Koyasu 2015/03/09 --end--
 
         // attribute_no 振り直し
@@ -2000,19 +2015,27 @@ class SwordUpdate extends RepositoryAction
             // suffix更新
             $this->writeLog("  Call setSuffix at importCommon.");
             $this->getRepositoryHandleManager();
-            if(!$this->repositoryHandleManager->setSuffix($irBasic[self::KEY_TITLE], $itemId, $itemNo))
+            
+            try{
+                $isGetSuffix = $this->repositoryHandleManager->setSuffix($irBasic[self::KEY_TITLE], $itemId, $itemNo);
+            } catch(AppException $ex){
+                $smartyAssign = $this->Session->getParameter('smartyAssign');
+                if(strlen($warningMsg) > 0){
+                    $warningMsg .= "/";
+                }
+                $this->debugLog($ex->getMessage(). "::itemId=". $itemId, __FILE__, __CLASS__, __LINE__);
+                $warningMsg .= $smartyAssign->getLang($ex->getMessage());
+                $isGetSuffix = false;
+            }
+            
+            if(!$isGetSuffix)
             {
                 // [Warning]
                 $errorMsg = "UPDATE WARNING: Failed to setSuffix.";
                 $this->writeLog("\n  ".$errorMsg."\n");
             }
             $this->writeLog("  ...complete.\n");
-
-            // PDFカバーページ作成
-            $this->writeLog("  Call executeCreatePdfCover.");
-            $this->importCommon_->executeCreatePdfCover($indexIds, $itemId, $itemNo, $userId, $errorMsg);
-            $this->writeLog("  ...complete.\n");
-
+            
             // ファイルFlash化
             $this->writeLog("  Call convertToFlash.");
             if(!$this->importCommon_->convertToFlash($itemId, $itemNo, $errorMsg))
@@ -2344,13 +2367,7 @@ class SwordUpdate extends RepositoryAction
         if(!file_exists($filePath)){
             return false;
         }
-
-        // make dir for extract
-        if(file_exists($tmpDirPath)){
-            $this->removeDirectory($tmpDirPath);
-        }
-        mkdir($tmpDirPath, 0777);
-
+        
         // Update SuppleContentsEntry Y.Yamazawa 2015/04/07 --satrt--
         // extract zip file
         $result = Repository_Components_Util_ZipUtility::extract($filePath, $tmpDirPath);
@@ -2529,9 +2546,7 @@ class SwordUpdate extends RepositoryAction
         // XML
         // -------------------------
         $ret_xml = '<?xml version="1.0" encoding="UTF-8" ?>'."\n";
-        //$ret_xml .= '<sword:error xmlns="http://www.w3.org/2005/Atom" xmlns:sword="http://purl.org/net/sword/" xmlns:arxiv="http://arxiv.org/schemas/atom" href="http://example.org/errors/BadManifest">'."\n";
-        //http://swordapp.github.io/SWORDv2-Profile/SWORDProfile.html#namespaces_sword
-        $ret_xml .= '<sword:error xmlns="http://www.w3.org/2005/Atom" xmlns:sword="http://purl.org/net/sword/terms/" xmlns:arxiv="http://arxiv.org/schemas/atom" href="http://example.org/errors/BadManifest">'."\n";
+        $ret_xml .= '<sword:error xmlns="http://www.w3.org/2005/Atom" xmlns:sword="http://purl.org/net/sword/" xmlns:arxiv="http://arxiv.org/schemas/atom" href="http://example.org/errors/BadManifest">'."\n";
         $ret_xml .= '<title>ERROR</title>'."\n";
         $ret_xml .= '<version>2.0</version>'."\n";
         $ret_xml .= '<updated>2013-08-20JST16:46:0432400</updated>'."\n";

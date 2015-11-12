@@ -2,7 +2,7 @@
 require_once WEBAPP_DIR.'/modules/repository/components/FW/AppLogger.class.php';
 require_once WEBAPP_DIR.'/modules/repository/components/FW/AppException.class.php';
 /**
- * $Id: BusinessBase.class.php 48455 2015-02-16 10:53:40Z atsushi_suzuki $
+ * $Id: BusinessBase.class.php 56711 2015-08-19 13:21:44Z tomohiro_ichikawa $
  * 
  * ビジネスロジック基底クラス
  * 
@@ -73,10 +73,25 @@ abstract class BusinessBase
     }
     
     /**
+     * 終了処理
+     *
+     */
+    final function finalizeBusiness()
+    {
+        $this->onFinalize();
+    }
+    
+    /**
      * インスタンス生成時に実行する処理
      * 
      */
     protected function onInitialize(){}
+    
+    /**
+     * インスタンス破棄時に実行する処理
+     * 
+     */
+    protected function onFinalize(){}
     
     /**
      * Exeption時のログ出力

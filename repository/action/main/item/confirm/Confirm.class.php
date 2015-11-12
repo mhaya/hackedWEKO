@@ -1,7 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-// $Id: Confirm.class.php 53594 2015-05-28 05:25:53Z kaede_matsushita $
+// $Id: Confirm.class.php 56999 2015-08-24 12:32:56Z tomohiro_ichikawa $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -15,10 +15,10 @@
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
 require_once WEBAPP_DIR. '/modules/repository/components/IDServer.class.php';
 require_once WEBAPP_DIR. '/modules/repository/components/ItemRegister.class.php';
-require_once WEBAPP_DIR. '/modules/repository/components/RepositoryPdfCover.class.php';
 require_once WEBAPP_DIR. '/modules/repository/components/RepositorySearchTableProcessing.class.php';
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryCheckFileTypeUtility.class.php';
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryHandleManager.class.php';
+require_once WEBAPP_DIR. '/modules/repository/components/util/OperateFileSystem.class.php';
 
 /**
  * アイテム登録：リンク設定画面からの入力処理アクション
@@ -297,33 +297,33 @@ class Repository_Action_Main_Item_Confirm extends RepositoryAction
                     {
                         // Add PDF Cover page 2012/06/15 A.Suzuki --start--
                         // Mod PDF Cover page timing 2015/01/26 K.Matsushita --start--
-                        $coverCreatedFlag = false;
                         if(strtolower($item_attr_session[$ii][$jj]["upload"]["extension"])=="pdf")
                         {
-                            $pdfCover = new RepositoryPdfCover(
-                                                $this->Session,
-                                                $this->Db,
-                                                $this->TransStartDate,
-                                                $user_id,
-                                                $item_attr_session[$ii][$jj]["item_id"],
-                                                $item_attr_session[$ii][$jj]["item_no"],
-                                                $item_attr_session[$ii][$jj]["attribute_id"],
-                                                $item_attr_session[$ii][$jj]["file_no"],
-                                                null
-                                            );
-                            if( $pdfCover->deleteCoverPage() )
-                            {
+                            // 作業用ディレクトリ作成
+                            $tmpDirPath = "";
+                            $this->infoLog("businessWorkdirectory", __FILE__, __CLASS__, __LINE__);
+                            $businessWorkdirectory = BusinessFactory::getFactory()->getBusiness("businessWorkdirectory");
+                            $tmpDirPath = $businessWorkdirectory->create();
+                            
+                            // PDFカバーページ削除
+                            $this->infoLog("businessPdfcover", __FILE__, __CLASS__, __LINE__);
+                            $pdfCover = BusinessFactory::getFactory()->getBusiness("businessPdfcover");
+                            $deletedFile = "";
+                            $ret = $pdfCover->deleteCoverPage($item_attr_session[$ii][$jj]["item_id"], 
+                                                              $item_attr_session[$ii][$jj]["item_no"], 
+                                                              $item_attr_session[$ii][$jj]["attribute_id"],
+                                                              $item_attr_session[$ii][$jj]["file_no"],
+                                                              $tmpDirPath,
+                                                              $deletedFile);
+                            if(strlen($deletedFile) > 0) {
                                 // Delete this file's flash
-                                $this->removeDirectory(
-                                    $this->getFlashFolder(
-                                            $item_attr_session[$ii][$jj]["item_id"],
-                                            $item_attr_session[$ii][$jj]["attribute_id"],
-                                            $item_attr_session[$ii][$jj]["file_no"]
-                                        )
-                                    );
-                            }
-                            else
-                            {
+                                $flashFolder = $this->getFlashFolder($item_attr_session[$ii][$jj]["item_id"],
+                                                                     $item_attr_session[$ii][$jj]["attribute_id"],
+                                                                     $item_attr_session[$ii][$jj]["file_no"]);
+                                if(strlen($flashFolder) > 0) {
+                                    Repository_Components_Util_OperateFileSystem::removeDirectory($flashFolder);
+                                }
+                            } else {
                                 $cover_error_flg = "true";
                                 $cover_error = $pdfCover->getErrorMsg();
                             }

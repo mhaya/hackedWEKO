@@ -25,7 +25,7 @@ class AppLogger
         
         if(!defined('LOG_LEVEL'))
         {
-            define('LOG_LEVEL', LEVEL_INFO);
+            define('LOG_LEVEL', LEVEL_WARN);
         }
     }
     /**

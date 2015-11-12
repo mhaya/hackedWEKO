@@ -1,7 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-// $Id: Editlinks.class.php 53594 2015-05-28 05:25:53Z kaede_matsushita $
+// $Id: Editlinks.class.php 56595 2015-08-18 01:44:06Z keiya_sugimoto $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -89,7 +89,7 @@ class Repository_View_Main_Item_Editlinks extends WekoAction
         {
             for($ii=0; $ii<count($indice); $ii++){
                 $parent_index = array();
-                $this->getParentIndex($indice[$ii]["index_id"], $parent_index);
+                $repositoryAction->getParentIndex($indice[$ii]["index_id"], $parent_index);
                 for($jj=0; $jj<count($parent_index); $jj++){
                     if(!is_numeric(strpos($open_ids, ",".$parent_index[$jj]["index_id"].","))){
                         if(substr_count($open_ids, ",".$parent_index[$jj]["index_id"].",")==0 &&

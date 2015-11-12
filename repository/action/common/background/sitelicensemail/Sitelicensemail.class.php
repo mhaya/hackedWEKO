@@ -1,7 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-// $Id: Sitelicensemail.class.php 53621 2015-05-28 12:02:01Z tomohiro_ichikawa $
+// $Id: Sitelicensemail.class.php 56700 2015-08-19 12:30:34Z tomohiro_ichikawa $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -76,7 +76,19 @@ class Repository_Action_Common_Background_Sitelicensemail extends BackgroundProc
      * @var Object
      */
     public $smartyAssign = null;
-
+    /**
+     * year
+     *
+     * @var int
+     */
+    public $year = null;
+    
+    /**
+     * month
+     *
+     * @var int
+     */
+    public $month = null;
     /**
      * constructer
      */
@@ -91,6 +103,8 @@ class Repository_Action_Common_Background_Sitelicensemail extends BackgroundProc
      * @param fileList deleted file
      */
     protected function prepareBackgroundProcess(&$sl_user_info) {
+        $this->debugLog(__FUNCTION__, __FILE__, __CLASS__, __LINE__);
+        
         // check login
         $return = $this->checkExecuteAuthority();
         if($return == false){
@@ -123,6 +137,8 @@ class Repository_Action_Common_Background_Sitelicensemail extends BackgroundProc
      * @param Array $sl_user_info
      */
     protected function executeBackgroundProcess($sl_user_info) {
+        $this->debugLog(__FUNCTION__, __FILE__, __CLASS__, __LINE__);
+        
         if(strlen($sl_user_info[0]["mail_address"]) > 0) {
             $send_zip_name = "";
             
@@ -149,8 +165,9 @@ class Repository_Action_Common_Background_Sitelicensemail extends BackgroundProc
         
         // レポート作成に必要なパラメータを作成する
         // サイトライセンスログの範囲を指定する
-        $start_date = date("Y-m-d", mktime(0, 0, 0, date("m") - 1, 1, date("Y"))). " 00:00:00.000";
-        $finish_date = date("Y-m-d", mktime(0, 0, 0, date("m"), 0, date("Y"))). " 23:59:59:999";
+        $start_date = $this->createStartYearMonthStringFormatYmdhis($this->year, $this->month);
+        $finish_date = $this->createFinishYearMonthStringFormatYmdhis($this->year, $this->month);
+        
         // サイト名を取得する
         $language = $this->Session->getParameter("_lang");
         $query = "SELECT conf_value FROM ". DATABASE_PREFIX. "config_language ".
@@ -188,13 +205,14 @@ class Repository_Action_Common_Background_Sitelicensemail extends BackgroundProc
         // 指定した機関のサイトライセンスユーザーによる検索ログの件数を取得する
         $result = $sendSitelicense->getLogCountBySitelicenseId($start_date, $finish_date, $sitelicense_id, RepositoryConst::LOG_OPERATION_SEARCH);
         if(isset($result) && count($result) > 0) {
-            $search_count = $result[0]["COUNT(LOG.record_date)"];
+            $search_count = $result[0]["CNT"];
         }
         // レポート文面の作成
-        $log_file = "SearchReport_".date("Ym", mktime(0, 0, 0, date("m") - 1, 1, date("Y"))).".tsv";
+        $log_file = "SearchReport_".$this->createYearMonthStringFormatYm($this->year, $this->month).".tsv";
+        
         $report_header = $this->smartyAssign->getLang("repository_sitelicense_mail_body_title")."\t".$organization_name."\r\n".
                          $this->smartyAssign->getLang("repository_sitelicense_mail_body_create_date")."\t".date("Y-m-d")."\r\n".
-                         $this->smartyAssign->getLang("repository_sitelicense_mail_body_month")."\t".date("Y-m", mktime(0, 0, 0, date("m") - 1, 1, date("Y")))."\r\n".
+                         $this->smartyAssign->getLang("repository_sitelicense_mail_body_month")."\t".$this->createYearMonthStringFormatYmAddHyphen($this->year, $this->month)."\r\n".
                          "\t".
                          $this->smartyAssign->getLang("repository_sitelicense_mail_body_interface_name")."\t".
                          $this->smartyAssign->getLang("repository_sitelicense_mail_body_search_keyword")."\r\n";
@@ -225,10 +243,10 @@ class Repository_Action_Common_Background_Sitelicensemail extends BackgroundProc
         for($ii = 0; $ii < count($result["index_info"]);  $ii++) {
             $sum_download += intval($result["index_info"][$ii]["download"]);
         }
-        $log_file = "DownloadReport_".date("Ym", mktime(0, 0, 0, date("m") - 1, 1, date("Y"))).".tsv";
+        $log_file = "DownloadReport_".$this->createYearMonthStringFormatYm($this->year, $this->month).".tsv";
         $report_header = $this->smartyAssign->getLang("repository_sitelicense_mail_body_title")."\t".$organization_name."\r\n".
                          $this->smartyAssign->getLang("repository_sitelicense_mail_body_create_date")."\t".date("Y-m-d")."\r\n".
-                         $this->smartyAssign->getLang("repository_sitelicense_mail_body_month")."\t".date("Y-m", mktime(0, 0, 0, date("m") - 1, 1, date("Y")))."\r\n".
+                         $this->smartyAssign->getLang("repository_sitelicense_mail_body_month")."\t".$this->createYearMonthStringFormatYmAddHyphen($this->year, $this->month)."\r\n".
                          "\t".
                          $this->smartyAssign->getLang("repository_sitelicense_mail_body_setspec")."\t".
                          $this->smartyAssign->getLang("repository_sitelicense_mail_body_interface_name")."\t".
@@ -274,10 +292,10 @@ class Repository_Action_Common_Background_Sitelicensemail extends BackgroundProc
         $result = $this->getUsagePerJournalPerMonthly($start_date, $finish_date, $sitelicense_id);
         
         // レポート文面の作成
-        $log_file = "UsagestatisticsReport_".date("Ym", mktime(0, 0, 0, date("m") - 1, 1, date("Y"))).".tsv";
+        $log_file = "UsagestatisticsReport_".$this->createYearMonthStringFormatYm($this->year, $this->month).".tsv";
         $report_header = $this->smartyAssign->getLang("repository_sitelicense_mail_body_title")."\t".$organization_name."\r\n".
                          $this->smartyAssign->getLang("repository_sitelicense_mail_body_create_date")."\t".date("Y-m-d")."\r\n".
-                         $this->smartyAssign->getLang("repository_sitelicense_mail_body_month")."\t".date("Y-m", mktime(0, 0, 0, date("m") - 1, 1, date("Y")))."\r\n".
+                         $this->smartyAssign->getLang("repository_sitelicense_mail_body_month")."\t".$this->createYearMonthStringFormatYmAddHyphen($this->year, $this->month)."\r\n".
                          "\t".
                          $this->smartyAssign->getLang("repository_sitelicense_mail_body_setspec")."\t".
                          $this->smartyAssign->getLang("repository_sitelicense_mail_body_interface_name")."\t".
@@ -347,7 +365,7 @@ class Repository_Action_Common_Background_Sitelicensemail extends BackgroundProc
             $statistics["index_info"][$ii]["download"] = 0;
             for($jj = 0; $jj < count($download_result); $jj++) {
                 if($download_result[$jj]["online_issn"] == $statistics["index_info"][$ii]["issn"]) {
-                    $statistics["index_info"][$ii]["download"] = $download_result[$jj]["COUNT(DISTINCT LOG.record_date)"];
+                    $statistics["index_info"][$ii]["download"] = $download_result[$jj]["CNT"];
                 }
             }
         }
@@ -359,7 +377,7 @@ class Repository_Action_Common_Background_Sitelicensemail extends BackgroundProc
             $statistics["index_info"][$ii]["view"] = 0;
             for($jj = 0; $jj < count($view_result); $jj++) {
                 if($view_result[$jj]["online_issn"] == $statistics["index_info"][$ii]["issn"]) {
-                    $statistics["index_info"][$ii]["view"] = $view_result[$jj]["COUNT(DISTINCT LOG.record_date)"];
+                    $statistics["index_info"][$ii]["view"] = $view_result[$jj]["CNT"];
                 }
             }
         }
@@ -374,7 +392,7 @@ class Repository_Action_Common_Background_Sitelicensemail extends BackgroundProc
      */
     private function compressFile(&$zip_file) {
         // set zip file name
-        $zip_file = "SiteLicenseUserReport_". date("Ym", mktime(0, 0, 0, date("m") - 1, 1, date("Y"))). ".zip";
+        $zip_file = "SiteLicenseUserReport_". $this->createYearMonthStringFormatYm($this->year, $this->month). ".zip";
         
         // サイトライセンスメール用のビジネスクラス取得
         $this->infoLog("businessSendsitelicensemail", __FILE__, __CLASS__, __LINE__);
@@ -412,13 +430,13 @@ class Repository_Action_Common_Background_Sitelicensemail extends BackgroundProc
         
         // タイトル
         $sub = "[". $site_name[0]["conf_value"]. "] ".
-               date("Y-m", mktime(0, 0, 0, date("m") - 1, 1, date("Y"))).
+               $this->createYearMonthStringFormatYmAddHyphen($this->year, $this->month).
                " ".$this->smartyAssign->getLang("repository_sitelicense_mail_subject");
         $this->mailMain->setSubject($sub);
         // 本文
         $body = sprintf($this->smartyAssign->getLang("repository_sitelicense_mail_body_dear"), $organization_name)."\n\n".
                 sprintf($this->smartyAssign->getLang("repository_sitelicense_mail_body_thank"), $site_name[0]["conf_value"])."\n".
-                sprintf($this->smartyAssign->getLang("repository_sitelicense_mail_body_announcement"), date("Y-m", mktime(0, 0, 0, date("m") - 1, 1, date("Y"))))."\n\n".
+                sprintf($this->smartyAssign->getLang("repository_sitelicense_mail_body_announcement"), $this->createYearMonthStringFormatYmAddHyphen($this->year, $this->month))."\n\n".
                 sprintf($this->smartyAssign->getLang("repository_sitelicense_mail_body_unnecessary"), $admin_mail[0]["conf_value"])."\n\n\n".
                 $this->smartyAssign->getLang("repository_sitelicense_mail_body_explain_rule_1")."\n".
                 $this->smartyAssign->getLang("repository_sitelicense_mail_body_explain_rule_2")."\n\n".
@@ -510,6 +528,58 @@ class Repository_Action_Common_Background_Sitelicensemail extends BackgroundProc
         }
         
         return true;
+    }
+    
+    private function createStartYearMonthStringFormatYmdhis($requestYear, $requestMonth){
+        if( isset($requestYear) && 
+            isset($requestMonth) && 
+            intval($requestYear) > 0 && 
+            intval($requestMonth) > 0 && 
+            12 >= intval($requestMonth)){
+            
+            return date("Y-m-d", mktime(0, 0, 0, intval($requestMonth), 1, intval($requestYear))). " 00:00:00.000";
+        } else {
+            return date("Y-m-d", mktime(0, 0, 0, date("m") - 1, 1, date("Y"))). " 00:00:00.000";
+        }
+    }
+    
+    private function createFinishYearMonthStringFormatYmdhis($requestYear, $requestMonth){
+        if( isset($requestYear) && 
+            isset($requestMonth) && 
+            intval($requestYear) > 0 && 
+            intval($requestMonth) > 0 && 
+            12 >= intval($requestMonth)){
+            
+            return date("Y-m-d", mktime(0, 0, 0, intval($requestMonth) + 1, 0, intval($requestYear))). " 23:59:59:999";
+        } else {
+            return date("Y-m-d", mktime(0, 0, 0, date("m"), 0, date("Y"))). " 23:59:59:999";
+        }
+    }
+    
+    private function createYearMonthStringFormatYm($requestYear, $requestMonth){
+        if( isset($requestYear) && 
+            isset($requestMonth) && 
+            intval($requestYear) > 0 && 
+            intval($requestMonth) > 0 && 
+            12 >= intval($requestMonth)){
+            
+            return date("Ym", mktime(0, 0, 0, intval($requestMonth), 1, intval($requestYear)));
+        } else {
+            return date("Ym", mktime(0, 0, 0, date("m") - 1, 1, date("Y")));
+        }
+    }
+    
+    private function createYearMonthStringFormatYmAddHyphen($requestYear, $requestMonth){
+    if( isset($requestYear) && 
+            isset($requestMonth) && 
+            intval($requestYear) > 0 && 
+            intval($requestMonth) > 0 && 
+            12 >= intval($requestMonth)){
+            
+            return date("Y-m", mktime(0, 0, 0, intval($requestMonth), 1, intval($requestYear)));
+        } else {
+            return date("Y-m", mktime(0, 0, 0, date("m") - 1, 1, date("Y")));
+        }
     }
 }
 ?>

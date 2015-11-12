@@ -124,9 +124,7 @@ class Repository_Action_Main_Sword_Servicedocument extends RepositoryAction
         //   Full level 1 compliance REQUIRES implementation of the full set of extension elements and compliance with APP [ATOMPUB] as indicated by the SWORD profile of APP specified in this document.
         //  sword:verbose (true or false): Verbose Supported
         //  sword:noOp (true or false)   : no-Op Supported
-        //$str .="<service xmlns:dcterms=\"http://purl.org/dc/terms/\" xmlns=\"http://www.w3.org/2007/app\" xmlns:atom=\"http://www.w3.org/2005/Atom\" xmlns:sword=\"http://purl.org/net/sword/\">" . "\n";
-        //http://swordapp.github.io/SWORDv2-Profile/SWORDProfile.html#namespaces_sword
-        $str .="<service xmlns:dcterms=\"http://purl.org/dc/terms/\" xmlns=\"http://www.w3.org/2007/app\" xmlns:atom=\"http://www.w3.org/2005/Atom\" xmlns:sword=\"http://purl.org/net/sword/terms/\">" . "\n";
+        $str .="<service xmlns:dcterms=\"http://purl.org/dc/terms/\" xmlns=\"http://www.w3.org/2007/app\" xmlns:atom=\"http://www.w3.org/2005/Atom\" xmlns:sword=\"http://purl.org/net/sword/\">" . "\n";
         // V1.2 => V1.3 : <sword:level> removed.
 //      $str .="  <sword:level>" . $workspace['workspace']['level']  ."</sword:level>\n";
         // V1.2 => V1.3 : <sword:version> added.

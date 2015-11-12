@@ -1,7 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-// $Id: Sitelicensemail.class.php 53594 2015-05-28 05:25:53Z kaede_matsushita $
+// $Id: Sitelicensemail.class.php 57108 2015-08-26 01:03:29Z keiya_sugimoto $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -13,6 +13,7 @@
 
 require_once WEBAPP_DIR. '/modules/repository/components/common/WekoAction.class.php';
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
+require_once WEBAPP_DIR. '/modules/repository/components/business/Logbase.class.php';
 
 /**
  * Sitelicensemail
@@ -57,6 +58,19 @@ class Repository_Action_Common_Sitelicensemail extends WekoAction
      * @var string
      */
     public $user_id = "";
+    /**
+     * year
+     *
+     * @var int
+     */
+    public $year = null;
+    
+    /**
+     * month
+     *
+     * @var int
+     */
+    public $month = null;
     
     /**
      * サイトライセンスメール送信処理開始
@@ -66,6 +80,14 @@ class Repository_Action_Common_Sitelicensemail extends WekoAction
         // ログインチェック
         if(!$this->checkExecuteAuthority()) {
             return "error";
+        }
+        
+        $removingLogFlag = $this->isExecuteRemovingLog();
+        if($removingLogFlag)
+        {
+            $exception = new AppException("repository_log_excluding", Repository_Components_Business_Logbase::APP_EXCEPTION_KEY_REMOVING_LOG);
+            $exception->addError("repository_log_excluding");
+            throw $exception;
         }
         
         // サイトライセンスメール用のビジネスクラス取得
@@ -109,6 +131,14 @@ class Repository_Action_Common_Sitelicensemail extends WekoAction
         $lang = $this->Session->getParameter("_lang");
         $nextRequest = BASE_URL."/?action=repository_action_common_background_sitelicensemail".
                        "&login_id=".$this->login_id."&password=".$this->password. "&lang=". $lang;
+        if( isset($this->year) && 
+            isset($this->month) && 
+            intval($this->year) > 0 && 
+            intval($this->month) > 0 && 
+            12 >= intval($this->month)){
+            
+            $nextRequest .= "&year=". $this->year. "&month=". $this->month;
+        }
         $url = parse_url($nextRequest);
         $nextRequest = str_replace($url["scheme"]."://".$url["host"], "",  $nextRequest);
         
@@ -169,6 +199,35 @@ class Repository_Action_Common_Sitelicensemail extends WekoAction
         }
         
         return true;
+    }
+    
+    /**
+     * ロボットリストログ削除中かどうか判定する
+     *
+     * @return bool
+     */
+    private function isExecuteRemovingLog() {
+        // check removing log process
+        $query = "SELECT status ". 
+                 " FROM ". DATABASE_PREFIX. "repository_lock ". 
+                 " WHERE process_name = ? ;";
+        $params = array();
+        $params[] = 'Repository_Action_Common_Robotlist';
+        $result = $this->Db->execute($query, $params);
+        if($result === false){
+            $this->errorLog($this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+            throw new AppException($this->Db->ErrorMsg());
+        }
+        
+        // when execute removing log, throw exception
+        for($cnt = 0; $cnt < count($result); $cnt++)
+        {
+            if(intval($result[$cnt]['status']) > 0){
+                return true;
+            }
+        }
+        
+        return false;
     }
 }
 

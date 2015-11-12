@@ -1,7 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-// $Id: Ranking.class.php 53594 2015-05-28 05:25:53Z kaede_matsushita $
+// $Id: Ranking.class.php 57108 2015-08-26 01:03:29Z keiya_sugimoto $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -33,8 +33,7 @@ class Repository_Action_Common_Ranking extends WekoAction
 	var $user_authority_id = "";
 	
 	// Add log reset ranking refer 2010/02/18 K.Ando --start--
-	var $ranking_num = 5;
-	var $ranking_term_date = "";
+	private $rank_num = 5;
 	// Add log reset ranking refer 2010/02/18 K.Ando --end--
 	
 	// Add config management authority 2010/02/23 Y.Nakao --start--
