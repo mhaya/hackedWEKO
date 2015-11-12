@@ -1,7 +1,11 @@
 <?php
 // --------------------------------------------------------------------
 //
+<<<<<<< HEAD
 // $Id: RepositoryHandleManager.class.php 58745 2015-10-13 05:55:10Z tatsuya_koyasu $
+=======
+// $Id: RepositoryHandleManager.class.php 43083 2014-10-20 06:45:58Z keiya_sugimoto $
+>>>>>>> 79feb9270c7c677534f19fc1f5ec8b3c86ef213a
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics,
 // Research and Development Center for Scientific Information Resources

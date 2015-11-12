@@ -1,7 +1,11 @@
 <?php
 // --------------------------------------------------------------------
 //
+<<<<<<< HEAD
 // $Id: define.inc.php 57337 2015-08-29 06:00:09Z yuko_nakao $
+=======
+// $Id: define.inc.php 41399 2014-09-11 08:24:43Z yuma_kouyama $
+>>>>>>> 79feb9270c7c677534f19fc1f5ec8b3c86ef213a
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics,
 // Research and Development Center for Scientific Information Resources

@@ -1,7 +1,11 @@
 <?php
 // --------------------------------------------------------------------
 //
+<<<<<<< HEAD
 // $Id: utils.php 56714 2015-08-19 13:30:20Z tomohiro_ichikawa $
+=======
+// $Id: utils.php 43165 2014-10-22 10:48:15Z tomohiro_ichikawa $
+>>>>>>> 79feb9270c7c677534f19fc1f5ec8b3c86ef213a
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics,
 // Research and Development Center for Scientific Information Resources
@@ -360,7 +364,12 @@ function process_headers($request)
         $filename = "deposit";
         $token = split('[;]', $deposition);
         foreach($token as $value) {
+<<<<<<< HEAD
             $filename = split('[=]', $value);
+=======
+            $value = trim($value);
+	    $filename = split('[=]', $value);
+>>>>>>> 79feb9270c7c677534f19fc1f5ec8b3c86ef213a
             if(!strcmp($filename[0],'filename')) {
                 $filename = $filename[1];
                 // BugFix single cotation Y.Nakao 2013/06/07 --start--

@@ -1,6 +1,10 @@
 <!--// ---------------------------------------------------------------------->
 <!--//                                                                     -->
+<<<<<<< HEAD
 <!--// $Id: repository_import_select.html 53594 2015-05-28 05:25:53Z kaede_matsushita $          -->
+=======
+<!--// $Id: repository_import_select.html 43921 2014-11-13 07:23:18Z keiya_sugimoto $          -->
+>>>>>>> 79feb9270c7c677534f19fc1f5ec8b3c86ef213a
 <!--//                                                                     -->
 <!--// Copyright (c) 2007 - 2008, National Institute of Informatics,        -->
 <!--// Research and Development Center for Scientific Information Resources -->
@@ -41,7 +45,11 @@
 <form id="attachment_form<{$id}>" target="attachment_form<{$id}>" enctype="multipart/form-data">
 <div class="mt10">
 	<div class="comp_tabset"></div>
+<<<<<<< HEAD
 	<div class="comp_tabset_content" style="border-bottom: none; border-left: none; border-right: none; width: 900px;">
+=======
+	<div class="comp_tabset_content" style="border-bottom: none; border-left: none; border-right: none;">
+>>>>>>> 79feb9270c7c677534f19fc1f5ec8b3c86ef213a
 		<{* タブ1：コンテンツ tab1:contents *}>
 		<div class="th_classic_content content text_color" id="import_tab_1" align="center" >
        <{* show error massage list 2014/11/04 T.Koyasu --start-- *}>
@@ -104,8 +112,11 @@
                                         <{$lang.repository_import_error_msg_edit_item_url}>
                                     <{elseif $error_list.error_no == 19}>
                                         <{$lang.repository_import_error_msg_edit_item_num}>
+<<<<<<< HEAD
                                     <{elseif $error_list.error_no == 20}>
                                         <{$lang.repository_import_error_msg_can_not_use_item_type}>
+=======
+>>>>>>> 79feb9270c7c677534f19fc1f5ec8b3c86ef213a
                                     <{/if}>
                                 </td>
                                 <td>
@@ -148,6 +159,10 @@
 						<th class="item_edit_list"><{$lang.repository_import_index}></th>
 						<td class="item_edit_list al">
 							<{$lang.repository_import_select_index}><br />
+<<<<<<< HEAD
+=======
+							<form name="import_select" method="post" enctype="multipart/form-data">
+>>>>>>> 79feb9270c7c677534f19fc1f5ec8b3c86ef213a
 								<{* Add specialized support for open.repo "auto affiliation in private tree" Y.Nakao 2013/06/26 --start-- *}>
 								<{strip}>
 								<label class="pl10" id="selected_index">
@@ -160,6 +175,10 @@
 								<br/>
 								<input type="hidden" id="check_insert_idx" value="<{$action.selectedIndexIds}>" readonly />
 								<{* Add specialized support for open.repo "auto affiliation in private tree" Y.Nakao 2013/06/26 --end-- *}>
+<<<<<<< HEAD
+=======
+							</form>
+>>>>>>> 79feb9270c7c677534f19fc1f5ec8b3c86ef213a
 						</td>
 					</tr>
 				</table>

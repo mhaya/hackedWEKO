@@ -1,7 +1,11 @@
 <?php
 // --------------------------------------------------------------------
 //
+<<<<<<< HEAD
 // $Id: Addmetadata.class.php 53594 2015-05-28 05:25:53Z kaede_matsushita $
+=======
+// $Id: Addmetadata.class.php 41322 2014-09-10 11:56:44Z tomohiro_ichikawa $
+>>>>>>> 79feb9270c7c677534f19fc1f5ec8b3c86ef213a
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources

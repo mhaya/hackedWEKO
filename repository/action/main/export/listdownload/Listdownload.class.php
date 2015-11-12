@@ -1,7 +1,11 @@
 <?php
 // --------------------------------------------------------------------
 //
+<<<<<<< HEAD
 // $Id: Listdownload.class.php 56716 2015-08-19 14:05:15Z tomohiro_ichikawa $
+=======
+// $Id: Listdownload.class.php 40577 2014-08-28 00:43:12Z tatsuya_koyasu $
+>>>>>>> 79feb9270c7c677534f19fc1f5ec8b3c86ef213a
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources

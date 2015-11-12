@@ -1,7 +1,11 @@
 <?php
 // --------------------------------------------------------------------
 //
+<<<<<<< HEAD
 // $Id: Mapping.class.php 53594 2015-05-28 05:25:53Z kaede_matsushita $
+=======
+// $Id: Mapping.class.php 36229 2014-05-26 05:49:55Z satoshi_arata $
+>>>>>>> 79feb9270c7c677534f19fc1f5ec8b3c86ef213a
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources

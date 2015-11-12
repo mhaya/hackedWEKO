@@ -1,7 +1,11 @@
 <?php
 // --------------------------------------------------------------------
 //
+<<<<<<< HEAD
 // $Id: Linkact.class.php 45650 2014-12-24 09:40:34Z keiya_sugimoto $
+=======
+// $Id: Linkact.class.php 30197 2013-12-19 09:55:45Z rei_matsuura $
+>>>>>>> 79feb9270c7c677534f19fc1f5ec8b3c86ef213a
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources

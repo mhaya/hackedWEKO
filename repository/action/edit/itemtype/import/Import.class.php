@@ -1,7 +1,11 @@
 <?php
 // --------------------------------------------------------------------
 //
+<<<<<<< HEAD
 // $Id: Import.class.php 56708 2015-08-19 13:08:03Z tomohiro_ichikawa $
+=======
+// $Id: Import.class.php 42307 2014-09-29 06:18:07Z tomohiro_ichikawa $
+>>>>>>> 79feb9270c7c677534f19fc1f5ec8b3c86ef213a
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
