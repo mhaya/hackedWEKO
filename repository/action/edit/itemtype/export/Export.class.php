@@ -1,11 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-<<<<<<< HEAD
 // $Id: Export.class.php 56708 2015-08-19 13:08:03Z tomohiro_ichikawa $
-=======
-// $Id: Export.class.php 22784 2013-05-22 02:59:13Z yuko_nakao $
->>>>>>> 79feb9270c7c677534f19fc1f5ec8b3c86ef213a
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources

@@ -1,11 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-<<<<<<< HEAD
 // $Id: Edittexts.class.php 54835 2015-06-25 04:10:46Z keiya_sugimoto $
-=======
-// $Id: Edittexts.class.php 41057 2014-09-05 08:49:54Z tomohiro_ichikawa $
->>>>>>> 79feb9270c7c677534f19fc1f5ec8b3c86ef213a
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources

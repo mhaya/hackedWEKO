@@ -1,11 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-<<<<<<< HEAD
 // $Id: RepositoryConst.class.php 56711 2015-08-19 13:21:44Z tomohiro_ichikawa $
-=======
-// $Id: RepositoryConst.class.php 41856 2014-09-22 07:49:40Z keiya_sugimoto $
->>>>>>> 79feb9270c7c677534f19fc1f5ec8b3c86ef213a
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources

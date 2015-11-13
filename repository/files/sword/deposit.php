@@ -1,11 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-<<<<<<< HEAD
 // $Id: deposit.php 56954 2015-08-24 04:17:54Z keiya_sugimoto $
-=======
-// $Id: deposit.php 42307 2014-09-29 06:18:07Z tomohiro_ichikawa $
->>>>>>> 79feb9270c7c677534f19fc1f5ec8b3c86ef213a
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics,
 // Research and Development Center for Scientific Information Resources

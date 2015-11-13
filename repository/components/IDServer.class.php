@@ -1,11 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-<<<<<<< HEAD
 // $Id: IDServer.class.php 57182 2015-08-26 12:57:40Z tatsuya_koyasu $
-=======
-// $Id: IDServer.class.php 31621 2014-02-13 02:06:16Z tomohiro_ichikawa $
->>>>>>> 79feb9270c7c677534f19fc1f5ec8b3c86ef213a
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources

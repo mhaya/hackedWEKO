@@ -1,11 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-<<<<<<< HEAD
 // $Id: Detail.class.php 58616 2015-10-09 11:16:04Z tatsuya_koyasu $
-=======
-// $Id: Detail.class.php 42605 2014-10-03 01:02:01Z keiya_sugimoto $
->>>>>>> 79feb9270c7c677534f19fc1f5ec8b3c86ef213a
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources

@@ -1,11 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-<<<<<<< HEAD
 // $Id: Editlinks.class.php 56595 2015-08-18 01:44:06Z keiya_sugimoto $
-=======
-// $Id: Editlinks.class.php 39149 2014-07-28 08:37:06Z rei_matsuura $
->>>>>>> 79feb9270c7c677534f19fc1f5ec8b3c86ef213a
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources

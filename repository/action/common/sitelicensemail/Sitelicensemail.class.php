@@ -1,11 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-<<<<<<< HEAD
 // $Id: Sitelicensemail.class.php 57108 2015-08-26 01:03:29Z keiya_sugimoto $
-=======
-// $Id: Sitelicensemail.class.php 35484 2014-05-09 10:54:58Z tomohiro_ichikawa $
->>>>>>> 79feb9270c7c677534f19fc1f5ec8b3c86ef213a
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -135,7 +131,6 @@ class Repository_Action_Common_Sitelicensemail extends WekoAction
         $lang = $this->Session->getParameter("_lang");
         $nextRequest = BASE_URL."/?action=repository_action_common_background_sitelicensemail".
                        "&login_id=".$this->login_id."&password=".$this->password. "&lang=". $lang;
-<<<<<<< HEAD
         if( isset($this->year) && 
             isset($this->month) && 
             intval($this->year) > 0 && 
@@ -146,8 +141,6 @@ class Repository_Action_Common_Sitelicensemail extends WekoAction
         }
         $url = parse_url($nextRequest);
         $nextRequest = str_replace($url["scheme"]."://".$url["host"], "",  $nextRequest);
-=======
->>>>>>> 79feb9270c7c677534f19fc1f5ec8b3c86ef213a
         
         // Call oneself by async
         $host = array();
@@ -156,17 +149,20 @@ class Repository_Action_Common_Sitelicensemail extends WekoAction
         if($hostName == "localhost"){
             $hostName = gethostbyname($_SERVER['SERVER_NAME']);
         }
+        $hostSock = $hostName;
         if($_SERVER["SERVER_PORT"] == 443)
         {
-            $hostName = "ssl://".$hostName;
+            $hostSock = "ssl://".$hostName;
         }
-        $handle = fsockopen($hostName, $_SERVER["SERVER_PORT"]);
+        
+        $handle = fsockopen($hostSock, $_SERVER["SERVER_PORT"]);
         if (!$handle)
         {
             return false;
         }
+        
         stream_set_blocking($handle, false);
-        fwrite($handle, "GET ".$nextRequest." HTTP/1.0\r\n\r\n");
+        fwrite($handle, "GET ".$nextRequest." HTTP/1.1\r\nHost: ". $hostName."\r\n\r\n");
         fclose ($handle);
         
         return true;

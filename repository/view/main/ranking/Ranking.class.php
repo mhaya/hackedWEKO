@@ -1,11 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-<<<<<<< HEAD
 // $Id: Ranking.class.php 57108 2015-08-26 01:03:29Z keiya_sugimoto $
-=======
-// $Id: Ranking.class.php 44305 2014-11-21 08:22:24Z keiya_sugimoto $
->>>>>>> 79feb9270c7c677534f19fc1f5ec8b3c86ef213a
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -234,7 +230,6 @@ class Repository_View_Main_Ranking extends WekoAction
      */
     private function downloadRanking()
     {
-<<<<<<< HEAD
         $this->infoLog("businessRanking", __FILE__, __CLASS__, __LINE__);
         $ranking = BusinessFactory::getFactory()->getBusiness("businessRanking");
         $items = $ranking->getDownloadRanking();
@@ -244,33 +239,6 @@ class Repository_View_Main_Ranking extends WekoAction
             $disp_flg = false;
             if($ii < 3){
                 $disp_flg = true;
-=======
-        $repositoryIndexAuthorityManager = new RepositoryIndexAuthorityManager($this->Session, $this->dbAccess, $this->TransStartDate);
-        $public_index_query = $repositoryIndexAuthorityManager->getPublicIndexQuery(false, $this->repository_admin_base, $this->repository_admin_room);
-        // Make TmpTable 2014/11/07 T.Ichikawa --start--
-        $now = date("YmdHis", strtotime($this->TransStartDate));
-        $public_index_query = $this->replaceQueryForTemporaryTable($public_index_query, $now);
-        
-        $sqlCmd=" 
-            SELECT item.item_id, item.item_no, item.title, item.title_english,count(*)
-              FROM ". DATABASE_PREFIX ."repository_log LEFT JOIN ". DATABASE_PREFIX ."repository_item item
-              ON ". DATABASE_PREFIX ."repository_log.item_id = item.item_id
-              INNER JOIN ". DATABASE_PREFIX ."repository_position_index pos ON item.item_id = pos.item_id AND item.item_no = pos.item_no AND pos.is_delete = 0
-              INNER JOIN (".$public_index_query.") pub ON pos.index_id = pub.index_id
-              WHERE ". DATABASE_PREFIX ."repository_log.operation_id='3' 
-                AND item.shown_date<=NOW()
-                AND ". DATABASE_PREFIX ."repository_log.record_date>='".$this->ranking_term_date."' ".
-                $this->log_exception.// Add log exception from ip address 2008.11.10 Y.Nakao
-                " AND item.shown_status = 1 ".
-                " AND item.is_delete = 0 ".
-              "  GROUP BY ". DATABASE_PREFIX ."repository_log.item_id 
-              ORDER BY count(*) desc; ";
-        $result = $this->Db->execute($sqlCmd);
-        
-        $this->dropTemporaryTable($now);
-        // Make TmpTable 2014/11/07 T.Ichikawa --end--
-        return $result;
->>>>>>> 79feb9270c7c677534f19fc1f5ec8b3c86ef213a
             }
           
             // check thumbnail
@@ -297,58 +265,6 @@ class Repository_View_Main_Ranking extends WekoAction
         }
         $this->count_download = count($this->download_ranking);
     }
-<<<<<<< HEAD
-=======
-        
-    // Add ranking acquisition portion is made into a function K.Matsuo 2011/11/18 --start--
-    /**
-     * ログDBから閲覧回数を取得
-     *
-     * @param unknown_type $log_exception
-     * @param unknown_type $ranking_term_date
-     * @return unknown
-     */
-    public function getDownloadRankingData()
-    {
-        // Mod OpenDepo 2014/01/31 S.Arata --start--
-        $repositoryIndexAuthorityManager = new RepositoryIndexAuthorityManager($this->Session, $this->dbAccess, $this->TransStartDate);
-        $public_index_query = $repositoryIndexAuthorityManager->getPublicIndexQuery(false, $this->repository_admin_base, $this->repository_admin_room);
-        // Make TmpTable 2014/11/07 T.Ichikawa --start--
-        $now = date("YmdHis", strtotime($this->TransStartDate));
-        $public_index_query = $this->replaceQueryForTemporaryTable($public_index_query, $now);
-        // Modify for remove IE Continuation log K.Matsuo 2011/11/17 --start-- 
-        $sqlCmd=" 
-            SELECT item.item_id,item.item_no,item.title,item.title_english,". DATABASE_PREFIX ."repository_file.file_name,". DATABASE_PREFIX ."repository_file.file_no,count(*)
-            FROM (
-                SELECT DISTINCT DATE_FORMAT( record_date, '%Y-%m-%d %H:%i' ) AS record_date,
-                    ip_address, item_id, item_no, attribute_id, file_no, user_id, operation_id, user_agent
-                    FROM ". DATABASE_PREFIX ."repository_log
-                    WHERE operation_id='2' ) AS ". DATABASE_PREFIX ."repository_log, 
-            ". DATABASE_PREFIX ."repository_item item 
-            INNER JOIN ". DATABASE_PREFIX ."repository_position_index pos ON item.item_id = pos.item_id AND item.item_no = pos.item_no AND pos.is_delete = 0
-            INNER JOIN (".$public_index_query.") pub ON pos.index_id = pub.index_id,
-            ". DATABASE_PREFIX ."repository_file
-            WHERE ". DATABASE_PREFIX ."repository_log.operation_id='2' 
-              AND ". DATABASE_PREFIX ."repository_log.item_id = ". DATABASE_PREFIX ."repository_file.item_id 
-              AND ". DATABASE_PREFIX ."repository_log.file_no = ". DATABASE_PREFIX ."repository_file.file_no 
-              AND item.item_id = ". DATABASE_PREFIX ."repository_file.item_id
-              AND ". DATABASE_PREFIX ."repository_log.attribute_id = ". DATABASE_PREFIX ."repository_file.attribute_id 
-              AND item.shown_date<=NOW()
-              AND ". DATABASE_PREFIX ."repository_log.record_date>='".$this->ranking_term_date."' ".
-              $this->log_exception.// Add log exception from ip address 2008.11.10 Y.Nakao
-              " AND item.shown_status = 1 ".
-              " AND item.is_delete = 0 ".
-              " GROUP BY ". DATABASE_PREFIX ."repository_log.item_id, ". DATABASE_PREFIX ."repository_log.attribute_id, ". DATABASE_PREFIX ."repository_log.file_no 
-            ORDER BY count(*) desc;     ";
-        $result = $this->Db->execute($sqlCmd);
-        $this->dropTemporaryTable($now);
-        // Make TmpTable 2014/11/07 T.Ichikawa --end--
-        return $result;
-        // Mod OpenDepo 2014/01/31 S.Arata --end--
-            }
-    // Add ranking acquisition portion is made into a function K.Matsuo 2011/11/18 --end--
-    
->>>>>>> 79feb9270c7c677534f19fc1f5ec8b3c86ef213a
 
     /**
      * create regist users ranking data
@@ -434,47 +350,6 @@ class Repository_View_Main_Ranking extends WekoAction
         $this->count_recent = count($this->newitem_ranking);
     }
     
-<<<<<<< HEAD
-=======
-        
-    // Add ranking acquisition portion is made into a function K.Matsuo 2011/11/18 --start--
-    /**
-     * アイテムDBから新着アイテムを取得
-     *
-     * @param unknown_type $log_exception
-     * @param unknown_type $ranking_term_date
-     * @return unknown
-     */
-    public function getRecentRankingData(){
-        // Mod OpenDepo 2014/01/31 S.Arata --start--
-        $repositoryIndexAuthorityManager = new RepositoryIndexAuthorityManager($this->Session, $this->dbAccess, $this->TransStartDate);
-        $public_index_query = $repositoryIndexAuthorityManager->getPublicIndexQuery(false, $this->repository_admin_base, $this->repository_admin_room);
-        // Make TmpTable 2014/11/07 T.Ichikawa --start--
-        $now = date("YmdHis", strtotime($this->TransStartDate));
-        $public_index_query = $this->replaceQueryForTemporaryTable($public_index_query, $now);
-        
-        $sqlCmd=" 
-            SELECT DISTINCT item.item_id,item.item_no,item.title,item.title_english,item.shown_date
-              FROM ". DATABASE_PREFIX ."repository_item item
-              INNER JOIN ".DATABASE_PREFIX."repository_position_index pos
-              ON item.item_id = pos.item_id AND item.item_no = pos.item_no AND pos.is_delete = 0
-              INNER JOIN (".$public_index_query.") pub
-              ON pos.index_id = pub.index_id
-              WHERE item.shown_date >= '".$this->ranking_term_date."'
-                AND item.shown_date<=NOW() ".
-               " AND item.shown_status = 1 ".
-               " AND item.is_delete = 0 ".
-             " ORDER BY item.shown_date desc, item.item_id desc;
-        ";
-        $result = $this->Db->execute($sqlCmd);
-        $this->dropTemporaryTable($now);
-        // Make TmpTable 2014/11/07 T.Ichikawa --end--
-        return $result;
-        // Mod OpenDepo 2014/01/31 S.Arata --end--
-            }
-    // Add ranking acquisition portion is made into a function K.Matsuo 2011/11/18 --end--
-    
->>>>>>> 79feb9270c7c677534f19fc1f5ec8b3c86ef213a
     // modify show thubnail all rank 2011/10/20 K.Matsuo --start--
     /**
      * ファイルダウンロード可否チェック
@@ -546,7 +421,6 @@ class Repository_View_Main_Ranking extends WekoAction
      * @param string $paramName
      * @return param_value
      */
-<<<<<<< HEAD
     private function getAdminParamByName($paramName)
     {
         $query = "SELECT param_value FROM ". DATABASE_PREFIX ."repository_parameter WHERE param_name=?";
@@ -556,30 +430,6 @@ class Repository_View_Main_Ranking extends WekoAction
         if($result === false || count($result) === 0){
             $this->errorLog($this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
             throw new AppException($this->Db->ErrorMsg());
-=======
-     private function replaceQueryForTemporaryTable($mod_query, $date) {
-        // 一時テーブル作成
-        $query = "CREATE TEMPORARY TABLE ". DATABASE_PREFIX. "repository_index_browsing_authority_".$date." ".
-                 "( PRIMARY KEY (`index_id`), ".
-                   "KEY `index_browsing_authority` (`exclusive_acl_role_id`,`exclusive_acl_room_auth`,`public_state`,`pub_date`,`is_delete`), ".
-                   "KEY `index_public_state` (`public_state`,`pub_date`,`is_delete`) ) ".
-                 "SELECT * FROM ". DATABASE_PREFIX. "repository_index_browsing_authority ;";
-        $result = $this->Db->execute($query);
-        
-        // Bug Fix temporary table can read only once 2014/11/20 T.Koyasu --start--
-        // repository_index_browsing_groups is multiple exist in $mod_query
-        // temporary table can read only once in query
-        // therefore, create temporary table more than once
-        // 一時テーブルを一つのクエリ内で複数回参照するとエラーとなる
-        // $mod_query内にはrepository_index_browsing_groupsの記述が複数回(1~2)含まれているため、
-        // $mod_query内の出現回数を調べ、その分ユニークな一時テーブルを作成している
-        $word_num = mb_substr_count($mod_query, DATABASE_PREFIX. "repository_index_browsing_groups");
-        for($temp_table_num = 0; $temp_table_num < $word_num; $temp_table_num++){
-            $query = "CREATE TEMPORARY TABLE ". DATABASE_PREFIX. "repository_index_browsing_groups_".$date."_". $temp_table_num. " ".
-                     "( PRIMARY KEY (`index_id`,`exclusive_acl_group_id`) ) ".
-                     "SELECT * FROM ". DATABASE_PREFIX. "repository_index_browsing_groups ;";
-            $result = $this->Db->execute($query);
->>>>>>> 79feb9270c7c677534f19fc1f5ec8b3c86ef213a
         }
         
         return $result[0]['param_value'];
@@ -860,7 +710,6 @@ class Repository_View_Main_Ranking extends WekoAction
     }
     
     /**
-<<<<<<< HEAD
      * get item_id, item_no, attribute_id and file_no of download file when download file after login
      *
      */
@@ -910,19 +759,5 @@ class Repository_View_Main_Ranking extends WekoAction
         
         $this->showIndexListForTopPage();
     }
-=======
-     * ランキング処理用の一時テーブルを削除する
-     * 
-     * @param string $date
-     */
-     private function dropTemporaryTable($date) {
-        $this->Db->execute("DROP TABLE IF EXISTS ".DATABASE_PREFIX ."repository_index_browsing_authority_".$date.";");
-        // Bug Fix temporary table can read only once 2014/11/20 T.Koyasu --start--
-        // drop table to all temporary table "repository_index_browsing_groups_YYYYMMDD_?" by wild card
-        $this->Db->execute("DROP TABLE IF EXISTS ".DATABASE_PREFIX ."repository_index_browsing_groups_".$date."_%;");
-        // Bug Fix temporary table can read only once 2014/11/20 T.Koyasu --end--
-        $this->Db->execute("DROP TABLE IF EXISTS ".DATABASE_PREFIX ."pages_users_link_".$date.";");
-     }
->>>>>>> 79feb9270c7c677534f19fc1f5ec8b3c86ef213a
 }
 ?>

@@ -1,11 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-<<<<<<< HEAD
 // $Id: RepositorySearch.class.php 53594 2015-05-28 05:25:53Z kaede_matsushita $
-=======
-// $Id: RepositorySearch.class.php 43337 2014-10-29 04:59:45Z tomohiro_ichikawa $
->>>>>>> 79feb9270c7c677534f19fc1f5ec8b3c86ef213a
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -203,21 +199,28 @@ class RepositorySearch extends RepositorySearchRequestParameter
         
         $query = "SHOW ENGINES";
         $engines = $this->dbAccess->executeQuery($query);
-        for($ii = 0; $ii < count($engines); $ii++) {
-            if($engines[$ii]["Engine"] == "Mroonga" || $engines[$ii]["Engine"] == "mroonga") {
+        for($ii = 0; $ii < count($engines); $ii++)
+        {
+            // check search engine is Mroonga
+            if($engines[$ii]["Engine"] == "Mroonga" || $engines[$ii]["Engine"] == "mroonga")
+            {
                 $searchEngine = "mroonga";
-            } else {
-                // Bug Fix: using LIKE mysql-command in search on centos5 2014/10/27 T.Koyasu --start--
-                // check search engine is senna
-                try {
-                    $sennaStatus = $this->dbAccess->executeQuery("SHOW SENNA STATUS;");
-                    $searchEngine = "senna";
-                } catch (RepositoryException $Exception){
-                    $searchEngine = "";
-                }
-                // Bug Fix: using LIKE mysql-command in search on centos5 2014/10/27 T.Koyasu --end--
+                break;
             }
         }
+        // Bug Fix: using LIKE mysql-command in search on centos5 2014/10/27 T.Koyasu --start--
+        if(strlen($searchEngine) == 0)
+        {
+            // check search engine is senna
+            try
+            {
+                $sennaStatus = $this->dbAccess->executeQuery("SHOW SENNA STATUS;");
+                $searchEngine = "senna";
+            } catch (RepositoryException $Exception){
+                $searchEngine = "";
+            }
+        }
+        // Bug Fix: using LIKE mysql-command in search on centos5 2014/10/27 T.Koyasu --end--
         // グループID取得
         $groupList = null;
         $this->RepositoryAction->getUsersGroupList($groupList, $errMsg);

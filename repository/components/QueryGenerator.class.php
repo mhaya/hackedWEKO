@@ -1,11 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-<<<<<<< HEAD
 // $Id: QueryGenerator.class.php 53594 2015-05-28 05:25:53Z kaede_matsushita $
-=======
-// $Id: QueryGenerator.class.php 42605 2014-10-03 01:02:01Z keiya_sugimoto $
->>>>>>> 79feb9270c7c677534f19fc1f5ec8b3c86ef213a
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -901,8 +897,12 @@ class Repository_Components_Querygenerator implements Repository_Components_Quer
             if($count > 0){
                 $tmpTermQuery .= $innerAndor." ";
             }
-            if($isFulltext){
+            // Add Senna judge T.Ichikawa 2014/12/01 --start--
+            if($this->searchEngine == "mroonga") {
                 $tmpTermQuery .= "MATCH(".$shortName.".metadata) AGAINST(mroonga_escape(?, '()~><-*`\"\\\') IN BOOLEAN MODE) ";
+                $connectQueryParam[] = "+".$searchStringList[$ii];
+            } else if($this->searchEngine == "senna") {
+                $tmpTermQuery .= "MATCH(".$shortName.".metadata) AGAINST(? IN BOOLEAN MODE) ";
                 $connectQueryParam[] = "+".$searchStringList[$ii];
             } else {
                 // \は4重にする必要あり
@@ -913,6 +913,7 @@ class Repository_Components_Querygenerator implements Repository_Components_Quer
                 $tmpTermQuery .= $shortName.".metadata LIKE ? ";
                 $connectQueryParam[] = "%".$searchStringList[$ii]."%";
             }
+            // Add Senna judge T.Ichikawa 2014/12/01 --end--
             $count++;
         }
         $tmpTermQuery .= ") ";

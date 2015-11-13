@@ -1,11 +1,7 @@
 <?php
 // --------------------------------------------------------------------
 //
-<<<<<<< HEAD
 // $Id: Ranking.class.php 57108 2015-08-26 01:03:29Z keiya_sugimoto $
-=======
-// $Id: Ranking.class.php 38124 2014-07-01 06:56:02Z rei_matsuura $
->>>>>>> 79feb9270c7c677534f19fc1f5ec8b3c86ef213a
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
