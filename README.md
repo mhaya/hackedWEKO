@@ -1,7 +1,7 @@
 hackedWEKO
 ==========
 
-[WEKO](http://weko.at.nii.ac.jp/)の改造版。
+[WEKO](http://weko.at.nii.ac.jp/)の改造版
 
 
 ##本家(ver.2.2.3)からの変更点
