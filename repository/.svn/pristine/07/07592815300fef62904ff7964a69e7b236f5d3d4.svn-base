@@ -1,9 +1,0 @@
-[Action]
-Session = "ref:Session"
-Db = "ref:DbObject"
-
-[DIContainer]
-filename = "dicon.ini"
-
-[RequestCheck]
-request = GET

@@ -902,7 +902,9 @@ class Repository_Action_Main_Sword_Import extends RepositoryAction
         // XML
         // -------------------------
         $ret_xml = '<?xml version="1.0" encoding="UTF-8" ?>'."\n";
-        $ret_xml .= '<sword:error xmlns="http://www.w3.org/2005/Atom" xmlns:sword="http://purl.org/net/sword/" xmlns:arxiv="http://arxiv.org/schemas/atom" href="http://example.org/errors/BadManifest">'."\n";
+        // change sword ns 20151113 mhaya
+        //$ret_xml .= '<sword:error xmlns="http://www.w3.org/2005/Atom" xmlns:sword="http://purl.org/net/sword/" xmlns:arxiv="http://arxiv.org/schemas/atom" href="http://example.org/errors/BadManifest">'."\n";
+        $ret_xml .= '<sword:error xmlns="http://www.w3.org/2005/Atom" xmlns:sword="http://purl.org/net/sword/terms/" xmlns:arxiv="http://arxiv.org/schemas/atom" href="http://example.org/errors/BadManifest">'."\n";
         $ret_xml .= '<title>ERROR</title>'."\n";
         $ret_xml .= '<version>2.0</version>'."\n";
         $ret_xml .= '<updated>2013-08-20JST16:46:0432400</updated>'."\n";
@@ -949,7 +951,9 @@ class Repository_Action_Main_Sword_Import extends RepositoryAction
         // XML
         // -------------------------
         $ret_xml = '<?xml version="1.0" encoding="UTF-8" ?>'."\n";
-        $ret_xml .= '<entry xmlns="http://www.w3.org/2005/Atom" xmlns:sword="http://purl.org/net/sword/">'."\n";
+        // change sword ns 20151113 mhaya
+        //$ret_xml .= '<entry xmlns="http://www.w3.org/2005/Atom" xmlns:sword="http://purl.org/net/sword/">'."\n";
+        $ret_xml .= '<entry xmlns="http://www.w3.org/2005/Atom" xmlns:sword="http://purl.org/net/sword/terms/">'."\n";
         $ret_xml .= '<title>Repository Review</title>'."\n";
         $ret_xml .= '<version>2.0</version>'."\n";
         $ret_xml .= '<id>'.$start_item_id.'-'.$end_item_id.'</id>'."\n";
