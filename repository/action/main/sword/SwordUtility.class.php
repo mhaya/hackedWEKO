@@ -127,7 +127,9 @@ class SwordUtility extends RepositoryAction
 		// V1.2 => V1.3 : <sword:level> removed...
 //	    $root['level']           = '1';								// Server Level	
 		// V1.2 => V1.3 : <sword:version> added.(mandately)
-	    $root['version']         = 2.0;								// Server Version
+        // change 2.0 > '2.0' 2015/11/13 mhaya
+        // V2.0 : The SWORD server MUST specify the sword:version element with a value of 2.0
+	    $root['version']         = '2.0';								// Server Version
 	    // V1.2 => V1.3 : <sword:maxUploadSize> added.(option)
 	    $root['maxUploadSize']   = intval($upload_max_capacity_group)/1024;	// maxUploadSize (KB)	
 		

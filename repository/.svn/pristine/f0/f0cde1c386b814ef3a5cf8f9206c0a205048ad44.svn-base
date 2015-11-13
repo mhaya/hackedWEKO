@@ -1,8 +1,0 @@
-;[Convert]
-;*.trim =
-
-[Action]
-session = "ref:Session"
-
-[View]
-success = "action:repository_view_main_item_selecttype"

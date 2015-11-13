@@ -1323,11 +1323,11 @@
 
 -->
 <{if $item_attr[i][j].attribute_value[1] != "" && (strstr(strtolower($item_attr[i][0].attribute_value[1]),"iframe"))==true}>
-       <iframe src="<{$item_attr[i][j].attribute_value[0]}>" height="700" width="100%" scrolling="auto">Sorry. This content use IFrame</iframe>
+       <iframe src="<{$item_attr[i][j].attribute_value[0]}>" height="480" width="100%" scrolling="auto">Sorry. This content use IFrame</iframe>
 <{elseif strstr(strtolower($item_attr[i][j].attribute_value[0]),".jpg")==true||strstr(strtolower($item_attr[i][j].attribute_value[0]),".jpg")==true}>
 <!-- 
        <img src="<{$item_attr[i][j].attribute_value[0]}>" alt="<{$item_attr[i][j].attribute_value[1]}>" width=200px height=200px />
-+-->
+-->
        <img src="<{$item_attr[i][j].attribute_value[0]}>" alt="<{$item_attr[i][j].attribute_value[1]}>" width=200px /><br/>
 <{else}>
        <a target="_blank" href="<{$item_attr[i][j].attribute_value[0]}>">

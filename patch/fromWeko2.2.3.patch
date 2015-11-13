@@ -1,0 +1,644 @@
+Binary files ../repository/.DS_Store and repository/.DS_Store differ
+diff -uprN ../repository/action/main/sword/SwordUpdate.class.php repository/action/main/sword/SwordUpdate.class.php
+--- ../repository/action/main/sword/SwordUpdate.class.php	2015-10-10 21:33:17.000000000 +0900
++++ repository/action/main/sword/SwordUpdate.class.php	2015-11-13 10:16:25.000000000 +0900
+@@ -2546,7 +2546,9 @@ class SwordUpdate extends RepositoryActi
+         // XML
+         // -------------------------
+         $ret_xml = '<?xml version="1.0" encoding="UTF-8" ?>'."\n";
+-        $ret_xml .= '<sword:error xmlns="http://www.w3.org/2005/Atom" xmlns:sword="http://purl.org/net/sword/" xmlns:arxiv="http://arxiv.org/schemas/atom" href="http://example.org/errors/BadManifest">'."\n";
++        // change sword ns 20151113 mhaya
++        //$ret_xml .= '<sword:error xmlns="http://www.w3.org/2005/Atom" xmlns:sword="http://purl.org/net/sword/" xmlns:arxiv="http://arxiv.org/schemas/atom" href="http://example.org/errors/BadManifest">'."\n";
++        $ret_xml .= '<sword:error xmlns="http://www.w3.org/2005/Atom" xmlns:sword="http://purl.org/net/sword/terms/" xmlns:arxiv="http://arxiv.org/schemas/atom" href="http://example.org/errors/BadManifest">'."\n";
+         $ret_xml .= '<title>ERROR</title>'."\n";
+         $ret_xml .= '<version>2.0</version>'."\n";
+         $ret_xml .= '<updated>2013-08-20JST16:46:0432400</updated>'."\n";
+@@ -2590,7 +2592,9 @@ class SwordUpdate extends RepositoryActi
+         // XML
+         // -------------------------
+         $ret_xml = '<?xml version="1.0" encoding="UTF-8" ?>'."\n";
+-        $ret_xml .= '<entry xmlns="http://www.w3.org/2005/Atom" xmlns:sword="http://purl.org/net/sword/">'."\n";
++        // change sword ns 20151113 mhaya
++        //$ret_xml .= '<entry xmlns="http://www.w3.org/2005/Atom" xmlns:sword="http://purl.org/net/sword/">'."\n";
++        $ret_xml .= '<entry xmlns="http://www.w3.org/2005/Atom" xmlns:sword="http://purl.org/net/sword/terms/">'."\n";
+         $ret_xml .= '<title>Repository Review</title>'."\n";
+         $ret_xml .= '<version>2.0</version>'."\n";
+         $ret_xml .= '<id>'.$item_id.'-'.$item_id.'</id>'."\n";
+diff -uprN ../repository/action/main/sword/SwordUtility.class.php repository/action/main/sword/SwordUtility.class.php
+--- ../repository/action/main/sword/SwordUtility.class.php	2013-08-20 16:31:46.000000000 +0900
++++ repository/action/main/sword/SwordUtility.class.php	2015-11-13 10:09:28.000000000 +0900
+@@ -127,7 +127,9 @@ class SwordUtility extends RepositoryAct
+ 		// V1.2 => V1.3 : <sword:level> removed...
+ //	    $root['level']           = '1';								// Server Level	
+ 		// V1.2 => V1.3 : <sword:version> added.(mandately)
+-	    $root['version']         = 2.0;								// Server Version
++        // change 2.0 > '2.0' 2015/11/13 mhaya
++        // V2.0 : The SWORD server MUST specify the sword:version element with a value of 2.0
++	    $root['version']         = '2.0';								// Server Version
+ 	    // V1.2 => V1.3 : <sword:maxUploadSize> added.(option)
+ 	    $root['maxUploadSize']   = intval($upload_max_capacity_group)/1024;	// maxUploadSize (KB)	
+ 		
+diff -uprN ../repository/action/main/sword/import/Import.class.php repository/action/main/sword/import/Import.class.php
+--- ../repository/action/main/sword/import/Import.class.php	2015-10-10 17:13:31.000000000 +0900
++++ repository/action/main/sword/import/Import.class.php	2015-11-13 10:15:53.000000000 +0900
+@@ -902,7 +902,9 @@ class Repository_Action_Main_Sword_Impor
+         // XML
+         // -------------------------
+         $ret_xml = '<?xml version="1.0" encoding="UTF-8" ?>'."\n";
+-        $ret_xml .= '<sword:error xmlns="http://www.w3.org/2005/Atom" xmlns:sword="http://purl.org/net/sword/" xmlns:arxiv="http://arxiv.org/schemas/atom" href="http://example.org/errors/BadManifest">'."\n";
++        // change sword ns 20151113 mhaya
++        //$ret_xml .= '<sword:error xmlns="http://www.w3.org/2005/Atom" xmlns:sword="http://purl.org/net/sword/" xmlns:arxiv="http://arxiv.org/schemas/atom" href="http://example.org/errors/BadManifest">'."\n";
++        $ret_xml .= '<sword:error xmlns="http://www.w3.org/2005/Atom" xmlns:sword="http://purl.org/net/sword/terms/" xmlns:arxiv="http://arxiv.org/schemas/atom" href="http://example.org/errors/BadManifest">'."\n";
+         $ret_xml .= '<title>ERROR</title>'."\n";
+         $ret_xml .= '<version>2.0</version>'."\n";
+         $ret_xml .= '<updated>2013-08-20JST16:46:0432400</updated>'."\n";
+@@ -949,7 +951,9 @@ class Repository_Action_Main_Sword_Impor
+         // XML
+         // -------------------------
+         $ret_xml = '<?xml version="1.0" encoding="UTF-8" ?>'."\n";
+-        $ret_xml .= '<entry xmlns="http://www.w3.org/2005/Atom" xmlns:sword="http://purl.org/net/sword/">'."\n";
++        // change sword ns 20151113 mhaya
++        //$ret_xml .= '<entry xmlns="http://www.w3.org/2005/Atom" xmlns:sword="http://purl.org/net/sword/">'."\n";
++        $ret_xml .= '<entry xmlns="http://www.w3.org/2005/Atom" xmlns:sword="http://purl.org/net/sword/terms/">'."\n";
+         $ret_xml .= '<title>Repository Review</title>'."\n";
+         $ret_xml .= '<version>2.0</version>'."\n";
+         $ret_xml .= '<id>'.$start_item_id.'-'.$end_item_id.'</id>'."\n";
+diff -uprN ../repository/action/main/sword/servicedocument/Servicedocument.class.php repository/action/main/sword/servicedocument/Servicedocument.class.php
+--- ../repository/action/main/sword/servicedocument/Servicedocument.class.php	2015-05-28 14:25:53.000000000 +0900
++++ repository/action/main/sword/servicedocument/Servicedocument.class.php	2015-11-13 10:16:30.000000000 +0900
+@@ -124,7 +124,9 @@ class Repository_Action_Main_Sword_Servi
+         //   Full level 1 compliance REQUIRES implementation of the full set of extension elements and compliance with APP [ATOMPUB] as indicated by the SWORD profile of APP specified in this document.
+         //  sword:verbose (true or false): Verbose Supported
+         //  sword:noOp (true or false)   : no-Op Supported
+-        $str .="<service xmlns:dcterms=\"http://purl.org/dc/terms/\" xmlns=\"http://www.w3.org/2007/app\" xmlns:atom=\"http://www.w3.org/2005/Atom\" xmlns:sword=\"http://purl.org/net/sword/\">" . "\n";
++        // change sword ns 20151113 mhaya
++        //$str .="<service xmlns:dcterms=\"http://purl.org/dc/terms/\" xmlns=\"http://www.w3.org/2007/app\" xmlns:atom=\"http://www.w3.org/2005/Atom\" xmlns:sword=\"http://purl.org/net/sword/\">" . "\n";
++        $str .="<service xmlns:dcterms=\"http://purl.org/dc/terms/\" xmlns=\"http://www.w3.org/2007/app\" xmlns:atom=\"http://www.w3.org/2005/Atom\" xmlns:sword=\"http://purl.org/net/sword/terms/\">" . "\n";
+         // V1.2 => V1.3 : <sword:level> removed.
+ //      $str .="  <sword:level>" . $workspace['workspace']['level']  ."</sword:level>\n";
+         // V1.2 => V1.3 : <sword:version> added.
+diff -uprN ../repository/oaipmh/format/Lido.class.php repository/oaipmh/format/Lido.class.php
+--- ../repository/oaipmh/format/Lido.class.php	2014-05-28 13:03:47.000000000 +0900
++++ repository/oaipmh/format/Lido.class.php	2015-11-13 01:44:06.000000000 +0900
+@@ -129,6 +129,9 @@ class Repository_Oaipmh_Lido extends Rep
+         {
+             return '';
+         }
++
++        // mhaya
++        $this->fixOutputFormat();
+         
+         // convert DOMDocument to XML string
+         $xml = $this->domDocument->saveXML();
+@@ -1157,4 +1160,231 @@ class Repository_Oaipmh_Lido extends Rep
+         }
+     }
+ }
++
++
++//mhaya
++     /**
++     *
++     * LODO Schemaの妥当性検証パスするための暫定対応
++     *
++     **/
++    private function fixOutputFormat(){
++        $this->domDocument->normalizeDocument();
++
++        // sequence暫定対応(lido:descriptiveMetadata)
++        $descmeta = $this->domDocument->getElementsByTagName(RepositoryConst::LIDO_TAG_NAMESPACE.RepositoryConst::LIDO_TAG_DESCRIPTIVE_METADATA);
++        if($descmeta->length===1){
++            $descmeta = $descmeta->item(0);
++
++            $obj_cls_wrap = $descmeta->getElementsByTagName(RepositoryConst::LIDO_TAG_NAMESPACE.RepositoryConst::LIDO_TAG_OBJECT_CLASSIFICATION_WRAP)->item(0);
++            $obj_ident_wrap = $descmeta->getElementsByTagName(RepositoryConst::LIDO_TAG_NAMESPACE.RepositoryConst::LIDO_TAG_OBJECT_IDENTIFICATION_WRAP)->item(0);
++            $event_wrap = $descmeta->getElementsByTagName(RepositoryConst::LIDO_TAG_NAMESPACE.RepositoryConst::LIDO_TAG_EVENT_WRAP)->item(0);
++            $obj_rel_wrap = $descmeta->getElementsByTagName(RepositoryConst::LIDO_TAG_NAMESPACE.RepositoryConst::LIDO_TAG_OBJECT_RELATION_WRAP)->item(0);
++
++            $descmeta->removeChild($obj_cls_wrap);
++            $descmeta->removeChild($obj_ident_wrap);
++            $descmeta->removeChild($event_wrap);
++            $descmeta->removeChild($obj_rel_wrap);
++
++            $descmeta->appendChild($obj_cls_wrap);
++            $descmeta->appendChild($obj_ident_wrap);
++            $descmeta->appendChild($event_wrap);
++            $descmeta->appendChild($obj_rel_wrap);
++        }
++
++        // sequence暫定対応(lido:objectIdentificationWrap)
++        $obj_ident_wrap = $this->domDocument->getElementsByTagName(RepositoryConst::LIDO_TAG_NAMESPACE.RepositoryConst::LIDO_TAG_OBJECT_IDENTIFICATION_WRAP);
++        if($obj_ident_wrap->length ===1 ){
++            $obj_ident_wrap = $obj_ident_wrap->item(0);
++
++            $title_wrap = $obj_ident_wrap->getElementsByTagName(RepositoryConst::LIDO_TAG_NAMESPACE.RepositoryConst::LIDO_TAG_TITLE_WRAP)->item(0);
++            $repo_wrap = $obj_ident_wrap->getElementsByTagName(RepositoryConst::LIDO_TAG_NAMESPACE.RepositoryConst::LIDO_TAG_REPOSITORY_WRAP)->item(0);
++            $obj_desc_wrap =  $obj_ident_wrap->getElementsByTagName(RepositoryConst::LIDO_TAG_NAMESPACE.RepositoryConst::LIDO_TAG_OBJECT_DESCRIPTION_WRAP)->item(0);
++            $obj_mesure_wrap = $obj_ident_wrap->getElementsByTagName(RepositoryConst::LIDO_TAG_NAMESPACE.RepositoryConst::LIDO_TAG_OBJECT_MEASUREMENTS_WRAP)->item(0);
++            /*
++            $obj_ident_wrap->removeChild($title_wrap);
++            $obj_ident_wrap->removeChild($repo_wrap);
++            $obj_ident_wrap->removeChild($obj_desc_wrap);
++            $obj_ident_wrap->removeChild($obj_mesure_wrap);
++            */
++            $obj_ident_wrap->appendChild($title_wrap);
++            $obj_ident_wrap->appendChild($repo_wrap);
++            $obj_ident_wrap->appendChild($obj_desc_wrap);
++            $obj_ident_wrap->appendChild($obj_mesure_wrap);
++        }
++
++        // sequence暫定対応(lido:objectWorkType)
++        $obj_work_type = $this->domDocument->getElementsByTagName(RepositoryConst::LIDO_TAG_NAMESPACE.RepositoryConst::LIDO_TAG_OBJECT_WORK_TYPE);
++        foreach($obj_work_type as $node){
++            //$id = $node->getElementsByTagName(RepositoryConst::LIDO_TAG_NAMESPACE.RepositoryConst::LIDO_TAG_CONCEPT_ID);
++            $term = $node->getElementsByTagName(RepositoryConst::LIDO_TAG_NAMESPACE.RepositoryConst::LIDO_TAG_TERM);
++            if($term->length >0 ){
++                foreach($term as $node2){
++                    //       $node->removeChild($node2);
++                    $node->appendChild($node2);
++                }
++            }
++        }
++
++
++        //eventID 0..*            
++        //eventType 
++        //roleInEvent 0..*
++        //eventName 0..*
++        //eventActor 0..*
++        //culture 0..*
++        //eventDate 0..*
++        //periodName 0..*
++        //eventPlace 0..*
++        //eventMethod 0..*
++        //eventMaterialsTech 0..*
++        //thingPresent 0..*
++        //relatedEventSet 0..*
++        //eventDescriptionSet 0..*
++        $eventTag = $this->domDocument->getElementsByTagName(RepositoryConst::LIDO_TAG_NAMESPACE.RepositoryConst::LIDO_TAG_EVENT);
++        if($eventTag->length === 1){
++            $tmp = $eventTag->item(0);
++            //            $event_id = $tmp->getElementsByTagName(RepositoryConst::LIDO_TAG_NAMESPACE.RepositoryConst::LIDO_TAG_EVENT_ID);
++            $event_type = $tmp->getElementsByTagName(RepositoryConst::LIDO_TAG_NAMESPACE.RepositoryConst::LIDO_TAG_EVENT_TYPE);
++            $event_actorTag = $tmp->getElementsByTagName(RepositoryConst::LIDO_TAG_NAMESPACE.RepositoryConst::LIDO_TAG_EVENT_ACTOR);
++            $event_date = $tmp->getElementsByTagName(RepositoryConst::LIDO_TAG_NAMESPACE.RepositoryConst::LIDO_TAG_EVENT_DATE);
++            $period_name = $tmp->getElementsByTagName(RepositoryConst::LIDO_TAG_NAMESPACE.RepositoryConst::LIDO_TAG_PERIOD_NAME);
++            $event_place = $tmp->getElementsByTagName(RepositoryConst::LIDO_TAG_NAMESPACE.RepositoryConst::LIDO_TAG_EVENT_PLACE); 
++            $event_materialstech = $tmp->getElementsByTagName(RepositoryConst::LIDO_TAG_NAMESPACE.RepositoryConst::LIDO_TAG_EVENT_MATERIALS_TECH);
++            
++            /*
++            foreach($event_id as $node) {
++                $tmp->appendChild($node);
++            }
++            */
++            // lido:event_type は lido:eventでは必須
++            if($event_type->length === 0 ){
++                $node = $this->domDocument->createElement(RepositoryConst::LIDO_TAG_NAMESPACE.RepositoryConst::LIDO_TAG_EVENT_TYPE);
++                $tmp->appendChild($node);
++            }
++            foreach($event_type as $node) {
++                $tmp->appendChild($node);
++            }           
++            foreach($event_actorTag as $node) {
++                $tmp->appendChild($node);
++            }
++            foreach($event_date as $node) {
++                $tmp->appendChild($node);
++            }
++            foreach($period_name as $node) {
++                $tmp->appendChild($node);
++            }
++            foreach($event_place as $node) {
++                $tmp->appendChild($node);
++            }
++            foreach($event_materialstech as $node) {
++                $tmp->appendChild($node);
++            }
++        }
++        
++        // RecordWrap
++        $record_wrap = $this->domDocument->getElementsByTagName(RepositoryConst::LIDO_TAG_NAMESPACE.RepositoryConst::LIDO_TAG_RECORD_WRAP);
++        if($record_wrap->length === 1 ){
++            $tmp = $record_wrap->item(0);
++            // recordID 1..*            
++            $rec_id = $tmp->getElementsByTagName(RepositoryConst::LIDO_TAG_NAMESPACE.RepositoryConst::LIDO_TAG_RECORD_ID);
++            // recordType            
++            $rec_type = $tmp->getElementsByTagName(RepositoryConst::LIDO_TAG_NAMESPACE.RepositoryConst::LIDO_TAG_RECORD_TYPE);
++            // recordSource 1..*
++            $rec_src = $tmp->getElementsByTagName(RepositoryConst::LIDO_TAG_NAMESPACE.RepositoryConst::LIDO_TAG_RECORD_SOURCE);
++            // recordRights 0..*
++            //$rec_right = $tmp->getElementsByTagName(RepositoryConst::LIDO_TAG_NAMESPACE.RepositoryConst::LIDO_TAG_RECORD_);
++
++            // recordInfoSet 0..*
++            $rec_infoset = $tmp->getElementsByTagName(RepositoryConst::LIDO_TAG_NAMESPACE.RepositoryConst::LIDO_TAG_RECORD_INFO_SET);
++
++            if($rec_id->length === 0 ){
++                $node = $this->domDocument->createElement(RepositoryConst::LIDO_TAG_NAMESPACE.RepositoryConst::LIDO_TAG_RECORD_ID);
++                $tmp->appendChild($node);
++            }
++
++            if($rec_type->length === 0){
++                $node = $this->domDocument->createElement(RepositoryConst::LIDO_TAG_NAMESPACE.RepositoryConst::LIDO_TAG_RECORD_TYPE);
++                $tmp->appendChild($node);
++            }
++
++            if($rec_src->length === 0 ){
++                $node = $this->domDocument->createElement(RepositoryConst::LIDO_TAG_NAMESPACE.RepositoryConst::LIDO_TAG_RECORD_SOURCE);
++                $tmp->appendChild($node);
++            }
++            
++            $newDoc = new DOMDocument();
++            $root = $newDoc->createElement(RepositoryConst::LIDO_TAG_NAMESPACE.RepositoryConst::LIDO_TAG_RECORD_WRAP);
++            $newDoc->appendChild($root);
++            foreach($rec_id as $node){
++                $root->appendChild($newDoc->importNode($node,true));
++            }
++            foreach($rec_type as $node){
++                $root->appendChild($newDoc->importNode($node,true));
++            }
++            foreach($rec_src as $node){
++                $root->appendChild($newDoc->importNode($node,true));
++            }
++            
++            foreach($rec_infoset as $node){
++                $root->appendChild($newDoc->importNode($node,true));
++            }
++            $this->deleteChildren($record_wrap->item(0));
++            $newNode = $this->domDocument->importNode($root,true);
++            $record_wrap->item(0)->parentNode->replaceChild($newNode,$record_wrap->item(0));
++            
++            
++        }
++
++        //resourceSet
++        //resourceID 0..1
++        //resourceRepresentation 0..*
++        //resourceType 0..1
++        //resourceRelType 0..*
++        //resourcePerspective 0..*
++        //resourceDescription 0..*
++        //resourceDateTaken 0..1
++        //resourceSource 0..*
++        //rightsResource 0..*
++        $resourceSet = $this->domDocument->getElementsByTagName(RepositoryConst::LIDO_TAG_NAMESPACE.RepositoryConst::LIDO_TAG_RESOURCE_SET);
++        foreach($resourceSet as $node){
++            $res_rep = $node->getElementsByTagName(RepositoryConst::LIDO_TAG_NAMESPACE.RepositoryConst::LIDO_TAG_RESOURCE_REPRESENTATION);
++            $res_desc = $node->getElementsByTagName(RepositoryConst::LIDO_TAG_NAMESPACE.RepositoryConst::LIDO_TAG_RESOURCE_DESCRIPTION);
++            $res_src = $node->getElementsByTagName(RepositoryConst::LIDO_TAG_NAMESPACE.RepositoryConst::LIDO_TAG_RESOURCE_SOURCE);
++            $res_right = $node->getElementsByTagName(RepositoryConst::LIDO_TAG_NAMESPACE.RepositoryConst::LIDO_TAG_RIGHT_RESOURCE);
++            
++            foreach($res_rep as $n) {
++                $node->appendChild($n);
++            }
++            foreach($res_desc as $n){
++                $node->appendChild($n);
++            }
++            foreach($res_src as $n){
++                $node->appendChild($n);
++            }
++            foreach($res_right as $n){
++                $node->appendChild($n);
++            }
++        }
++        
++              
++    }
++
++    private function deleteNode($node) { 
++        $this->deleteChildren($node); 
++        $parent = $node->parentNode; 
++        $oldnode = $parent->removeChild($node); 
++    } 
++
++    private function deleteChildren($node) {
++        while (isset($node->firstChild)) { 
++            $this->deleteChildren($node->firstChild); 
++            $node->removeChild($node->firstChild); 
++        } 
++    } 
++
++// end mhaya 
++
++
++
+ ?>
+\ No newline at end of file
+diff -uprN ../repository/opensearch/Opensearch.class.php repository/opensearch/Opensearch.class.php
+--- ../repository/opensearch/Opensearch.class.php	2015-05-28 14:25:53.000000000 +0900
++++ repository/opensearch/Opensearch.class.php	2015-11-13 01:44:06.000000000 +0900
+@@ -164,7 +164,11 @@ class Repository_Opensearch extends Repo
+             case RepositorySearchRequestParameter::FORMAT_ATOM:
+                 // output ATOM
+                 require_once WEBAPP_DIR.'/modules/repository/opensearch/format/Atom.class.php';
+-                $outputClass = new Repository_OpenSearch_Atom($this->Session, $this->Db);
++                /* start Repository_OpenSearch_Atomにblockidを渡す mhaya  */
++                //$outputClass = new Repository_OpenSearch_Atom($this->Session, $this->Db);
++                $blockid = $this->RepositoryAction->getBlockPageId();
++                $outputClass = new Repository_OpenSearch_Atom($this->Session, $this->Db,$blockid);
++                /* end mhaya*/
+                 $searchResult = $this->search();
+                 $requestParam = $this->getRequestParameter();
+                 $requestParam[self::REQUEST_LOG_TERM] = $this->log_term;
+diff -uprN ../repository/opensearch/format/Atom.class.php repository/opensearch/format/Atom.class.php
+--- ../repository/opensearch/format/Atom.class.php	2015-05-28 14:25:53.000000000 +0900
++++ repository/opensearch/format/Atom.class.php	2015-11-13 01:44:06.000000000 +0900
+@@ -23,14 +23,26 @@ class Repository_OpenSearch_Atom extends
+     const XMLNS_PRISM       = "http://prismstandard.org/namespaces/basic/2.0/";
+     const XMLNS_OPEN_SEARCH = "http://a9.com/-/spec/opensearch/1.1/";
+     const XMLNS_WEKO_LOG    = "/wekolog/";
+-    
++
++    /** blockid保持用 mhaya **/
++    private $blockid = array();
++
++    // start blockidを引数として受け取るように変更 mhaya
+     /**
+      * コンストラクタ
+      */
++    /*
+     public function __construct($session, $db)
+     {
+         parent::__construct($session, $db);
+     }
++    */
++    public function __construct($session, $db,$blockid)
++    {
++        parent::__construct($session, $db);
++        $this->blockid = $blockid;
++     }
++    // end mhaya
+     
+     /**
+      * make ATOM XML for open search 
+@@ -245,6 +257,19 @@ class Repository_OpenSearch_Atom extends
+             for($jj=0; $jj<count($itemData[self::DATA_FILE_URI]); $jj++)
+             {
+                 $xml .= '       <dc:identifier>'.$this->RepositoryAction->forXmlChange("file_id:".$itemData[self::DATA_FILE_URI][$jj]).'</dc:identifier>'.self::LF;
++
++                //start enclosure file link を追加する変更 mhaya
++                //リダイレクト後のURLを作成する
++                $url = $itemData[self::DATA_FILE_URI][$jj];
++                $url = str_replace("/?","/index.php?",$url);
++                $url = str_replace("action=repository_uri","action=pages_view_main&active_action=repository_action_common_download",$url);
++                $url = str_replace("file_id","attribute_id",$url);
++                $url .= '&item_no='.$searchResult[0]['item_no'];
++                $url .= '&page_id='.$this->blockid['page_id'].'&block_id='.$this->blockid['block_id'];
++                //enclosure要素の作成
++                $xml .= '       <link rel="enclosure" title="'.$this->RepositoryAction->forXmlChange($itemData[self::DATA_FILE_NAME][$jj]).'" type="'.$this->RepositoryAction->forXmlChange($itemData[self::DATA_MIME_TYPE][$jj]).'" href="'.$this->RepositoryAction->forXmlChange($url).'" />'.self::LF;
++
++                //end mhaya
+             }
+             
+             // creator
+diff -uprN ../repository/opensearch/format/FormatAbstract.class.php repository/opensearch/format/FormatAbstract.class.php
+--- ../repository/opensearch/format/FormatAbstract.class.php	2015-05-28 14:25:53.000000000 +0900
++++ repository/opensearch/format/FormatAbstract.class.php	2015-11-13 01:44:06.000000000 +0900
+@@ -31,6 +31,9 @@ class Repository_Opensearch_FormatAbstra
+     const DATA_ITEM_TYPE_NAME = "item_type_name";
+     const DATA_MIME_TYPE = "mime_type";
+     const DATA_FILE_URI = "file_uri";
++    // start mhaya
++    const DATA_FILE_NAME = "file_name";
++    // end mhaya
+     const DATA_CREATOR = "creator";
+     const DATA_PUBLISHER = "publisher";
+     const DATA_INDEX_PATH = "index_path";
+@@ -242,6 +245,9 @@ class Repository_Opensearch_FormatAbstra
+                         self::DATA_ITEM_TYPE_NAME => "",
+                         self::DATA_MIME_TYPE => array(),
+                         self::DATA_FILE_URI => array(),
++                        // start mhaya
++                        self::DATA_FILE_NAME => array(),
++                        // end mhaya
+                         self::DATA_URL => array(),
+                         self::DATA_CREATOR => array(),
+                         self::DATA_CREATOR_LANG => array(),
+@@ -396,6 +402,9 @@ class Repository_Opensearch_FormatAbstra
+                                    "&file_id=".$itemAttr[$ii][$jj][RepositoryConst::DBCOL_REPOSITORY_FILE_ATTRIBUTE_ID].
+                                    "&file_no=".$itemAttr[$ii][$jj][RepositoryConst::DBCOL_REPOSITORY_FILE_FILE_NO];
+                         array_push($itemData[self::DATA_FILE_URI], $fileUri);
++                        // start ファイル名を取得 mhaya
++                        array_push($itemData[self::DATA_FILE_NAME],$itemAttr[$ii][$jj][RepositoryConst::DBCOL_REPOSITORY_FILE_FILE_NAME]);
++                        // end mhaya
+                     }
+                 }
+                 
+diff -uprN ../repository/templates/default/repository_item_detail.html repository/templates/default/repository_item_detail.html
+--- ../repository/templates/default/repository_item_detail.html	2015-08-20 10:16:27.000000000 +0900
++++ repository/templates/default/repository_item_detail.html	2015-11-13 10:23:27.000000000 +0900
+@@ -1,6 +1,6 @@
+ <!--// ---------------------------------------------------------------------->
+ <!--//                                                                     -->
+-<!--// $Id: repository_item_detail.html 56721 2015-08-20 01:16:27Z tatsuya_koyasu $          -->
++<!--// $Id: repository_item_detail.html 53594 2015-05-28 05:25:53Z kaede_matsushita $          -->
+ <!--//                                                                     -->
+ <!--// Copyright (c) 2007 - 2008, National Institute of Informatics,        -->
+ <!--// Research and Development Center for Scientific Information Resources -->
+@@ -292,8 +292,6 @@
+ 														<{$lang.repository_item_file_license_notation_by_nc_sa}>
+ 													<{elseif $item_attr[i][j].license_id == 106}>
+ 														<{$lang.repository_item_file_license_notation_by_nc_nd}>
+-													<{else}>
+-														<{$item_attr[i][j].license_notation_array[k]}>
+ 													<{/if}>
+ 													<{if count($item_attr[i][j].license_notation_array)!=0}>
+ 														<br />
+@@ -525,8 +523,6 @@
+ 															<{$lang.repository_item_file_license_notation_by_nc_sa}>
+ 														<{elseif $item_attr[i][j].license_id == 106}>
+ 															<{$lang.repository_item_file_license_notation_by_nc_nd}>
+-														<{else}>
+-															<{$item_attr[i][j].license_notation_array[k]}>
+ 														<{/if}>
+ 														<{if count($item_attr[i][j].license_notation_array)!=0}>
+ 															<br />
+@@ -793,8 +789,6 @@
+ 														<{$lang.repository_item_file_license_notation_by_nc_sa}>
+ 													<{elseif $item_attr[i][j].license_id == 106}>
+ 														<{$lang.repository_item_file_license_notation_by_nc_nd}>
+-													<{else}>
+-														<{$item_attr[i][j].license_notation_array[k]}>
+ 													<{/if}>
+ 													<{if count($item_attr[i][j].license_notation_array)!=0}>
+ 														<br />
+@@ -1315,7 +1309,10 @@
+ 											<tr class="tr_detail_line_repos" <{ if $attr_type[i].hidden == '1' }>style="color: #808080;"<{/if}>>
+ 												<th class="th_detail_line_repos vt al w20 ws"><{$attr_type[i].attribute_name}></th>
+ 												<td class="td_detail_line_repos w80">
+-													<{section name=j loop=$item_attr[i]}>
++												  <{section name=j loop=$item_attr[i]}>
++
++                                                                                                  <!-- using iframe/img tag 2012/09/20 by mhaya start -->
++<!--                                                                                                  
+ 														<a target="_blank" href="<{$item_attr[i][j].attribute_value[0]}>">
+ 															<{if $item_attr[i][j].attribute_value[1] != ""}>
+ 																<{$item_attr[i][j].attribute_value[1]}>
+@@ -1323,7 +1320,28 @@
+ 																<{$item_attr[i][j].attribute_value[0]}>
+ 															<{/if}>
+ 														</a><br>
+-													<{/section}>
++
++-->
++<{if $item_attr[i][j].attribute_value[1] != "" && (strstr(strtolower($item_attr[i][0].attribute_value[1]),"iframe"))==true}>
++       <iframe src="<{$item_attr[i][j].attribute_value[0]}>" height="480" width="100%" scrolling="auto">Sorry. This content use IFrame</iframe>
++<{elseif strstr(strtolower($item_attr[i][j].attribute_value[0]),".jpg")==true||strstr(strtolower($item_attr[i][j].attribute_value[0]),".jpg")==true}>
++<!-- 
++       <img src="<{$item_attr[i][j].attribute_value[0]}>" alt="<{$item_attr[i][j].attribute_value[1]}>" width=200px height=200px />
++-->
++       <img src="<{$item_attr[i][j].attribute_value[0]}>" alt="<{$item_attr[i][j].attribute_value[1]}>" width=200px /><br/>
++<{else}>
++       <a target="_blank" href="<{$item_attr[i][j].attribute_value[0]}>">
++       <{if $item_attr[i][j].attribute_value[1] != ""}>
++               <{$item_attr[i][j].attribute_value[1]}>
++       <{else}>
++               <{$item_attr[i][j].attribute_value[0]}>
++       <{/if}>
++        </a><br/>
++<{/if}>
++<!-- using iframe/img tag 2012/09/20 by mhaya end -->
++        
++
++                                                                                                  <{/section}>
+ 												</td>
+ 											</tr>
+ 										<{/if}>
+@@ -1722,21 +1740,7 @@
+ 							<{section name=i loop=$smarty.session.reference}>
+ 								<{assign var="reference" value=$smarty.session.reference}>
+ 								<{* Modify Directory specification BASE_URL K.Matsuo 2011/9/5 *}>
+-								<a href="<{$smarty.const.BASE_URL}>/?action=repository_uri&item_id=<{$reference[i].item_id}>">
+-									<{if $smarty.session._lang=="japanese"}>
+-										<{if $reference[i].title != ""}>
+-											<{$reference[i].title}>
+-										<{else}>
+-											<{$reference[i].title_english}>
+-										<{/if}>
+-									<{else}>
+-										<{if $reference[i].title_english != ""}>
+-											<{$reference[i].title_english}>
+-										<{else}>
+-											<{$reference[i].title}>
+-										<{/if}>
+-									<{/if}>
+-								</a>
++								<a href="<{$smarty.const.BASE_URL}>/?action=repository_uri&item_id=<{$reference[i].item_id}>"><{$reference[i].title}></a>
+ 								<br>
+ 							<{/section}>
+ 						</td>
+diff -uprN ../repository/templates/default/repository_mobile_item_detail.html repository/templates/default/repository_mobile_item_detail.html
+--- ../repository/templates/default/repository_mobile_item_detail.html	2015-02-02 16:33:54.000000000 +0900
++++ repository/templates/default/repository_mobile_item_detail.html	2015-11-13 01:44:07.000000000 +0900
+@@ -626,7 +626,9 @@
+                         <{$attr_type[i].attribute_name}>
+                     </div>
+                     <div style="text-align:left; padding-left:20px;">
+-                        <{if count($item_attr[i])==1}>
++                      <{if count($item_attr[i])==1}>
++                      <!-- using iframe/img tag 2012/09/20 by mhaya start -->
++                      <!--
+                              <a target="_blank" href="<{$item_attr[i][0].attribute_value[0]}>">
+                                  <{if $item_attr[i][0].attribute_value[1] != ""}>
+                                      <{$item_attr[i][0].attribute_value[1]}>
+@@ -634,7 +636,27 @@
+                                      <{$item_attr[i][0].attribute_value[0]}>
+                                  <{/if}>
+                              </a>
+-                        <{else}>
++-->
++                             
++<{if $item_attr[i][j].attribute_value[1] != "" && (strstr(strtolower($item_attr[i][0].attribute_value[1]),"iframe"))==true}>
++       <iframe src="<{$item_attr[i][j].attribute_value[0]}>" height="700" width="100%" scrolling="auto">Sorry. This content use IFrame</iframe>
++
++<{elseif strstr(strtolower($item_attr[i][j].attribute_value[0]),".jpg")==true||strstr(strtolower($item_attr[i][j].attribute_value[0]),".jpg")==true}>
++       <img src="<{$item_attr[i][j].attribute_value[0]}>" alt="<{$item_attr[i][j].attribute_value[1]}>" width=200px height=200px />
++<{else}>
++
++
++                              <a target="_blank" href="<{$item_attr[i][0].attribute_value[0]}>">
++                                  <{if $item_attr[i][0].attribute_value[1] != ""}>
++                                      <{$item_attr[i][0].attribute_value[1]}>
++@@ -634,6 +642,8 @@
++                                      <{$item_attr[i][0].attribute_value[0]}>
++                                  <{/if}>
++                              </a>
++<{/if}>
+++<!-- using iframe/img tag 2012/09/20 by mhaya end -->
++                              
++                             <{else}>
+                             <table width="100%">
+                                 <{section name=j loop=$item_attr[i]}>
+                                     <tr>
+@@ -642,6 +664,9 @@
+                                             <{$smarty.section.j.index_next}>.
+                                         </td>
+                                         <td style="width:100%; padding-top: 5px;">
++                                            <!-- using iframe/img tag 2012/09/20 by mhaya start -->
++                                          
++                                          <!--
+                                             <a target="_blank" href="<{$item_attr[i][j].attribute_value[0]}>">
+                                                 <{if $item_attr[i][j].attribute_value[1] != ""}>
+                                                     <{$item_attr[i][j].attribute_value[1]}>
+@@ -649,6 +674,25 @@
+                                                     <{$item_attr[i][j].attribute_value[0]}>
+                                                 <{/if}>
+                                             </a>
++                                          -->
++
++<{if $item_attr[i][j].attribute_value[1] != "" && (strstr(strtolower($item_attr[i][0].attribute_value[1]),"iframe"))==true}>
++       <iframe src="<{$item_attr[i][j].attribute_value[0]}>" height="700" width="100%" scrolling="auto">Sorry. This content use IFrame</iframe>
++<{elseif strstr(strtolower($item_attr[i][j].attribute_value[0]),".jpg")==true||strstr(strtolower($item_attr[i][j].attribute_value[0]),".jpg")==true}>
++       <img src="<{$item_attr[i][j].attribute_value[0]}>" alt="<{$item_attr[i][j].attribute_value[1]}>" width=200px height=200px />
++<{else}>
++
++
++                                             <a target="_blank" href="<{$item_attr[i][j].attribute_value[0]}>">
++                                                 <{if $item_attr[i][j].attribute_value[1] != ""}>
++                                                     <{$item_attr[i][j].attribute_value[1]}>
++
++                                                     <{$item_attr[i][j].attribute_value[0]}>
++                                                 <{/if}>
++                                             </a>
++
++<{/if}>
++<!-- using iframe/img tag 2012/09/20 by mhaya end -->
+                                         </td>
+                                     </tr>
+                                 <{/section}>
+diff -uprN ../repository/templates/default/smartphone/repository_item_detail.html repository/templates/default/smartphone/repository_item_detail.html
+--- ../repository/templates/default/smartphone/repository_item_detail.html	2015-05-28 14:25:53.000000000 +0900
++++ repository/templates/default/smartphone/repository_item_detail.html	2015-11-13 01:44:07.000000000 +0900
+@@ -894,7 +894,9 @@
+                                             <tr class="tr_detail_line_repos" <{ if $attr_type[i].hidden == '1' }>style="color: #808080;"<{/if}>>
+                                                 <th class="th_detail_line_repos vt al w20 ws"><{$attr_type[i].attribute_name}></th>
+                                                 <td class="td_detail_line_repos w80">
+-                                                    <{section name=j loop=$item_attr[i]}>
++                                                  <{section name=j loop=$item_attr[i]}>
++<!-- using iframe/img tag 2012/09/20 by mhaya start -->
++                                                  <!--
+                                                         <a target="_blank" href="<{$item_attr[i][j].attribute_value[0]}>">
+                                                             <{if $item_attr[i][j].attribute_value[1] != ""}>
+                                                                 <{$item_attr[i][j].attribute_value[1]}>
+@@ -902,6 +904,22 @@
+                                                                 <{$item_attr[i][j].attribute_value[0]}>
+                                                             <{/if}>
+                                                         </a><br>
++                                                    -->
++                                                    <{if $item_attr[i][j].attribute_value[1] != "" && (strstr(strtolower($item_attr[i][0].attribute_value[1]),"iframe"))==true}>
++       <iframe src="<{$item_attr[i][j].attribute_value[0]}>" height="700" width="100%" scrolling="auto">Sorry. This content use IFrame</iframe>
++<{elseif strstr(strtolower($item_attr[i][j].attribute_value[0]),".jpg")==true||strstr(strtolower($item_attr[i][j].attribute_value[0]),".jpg")==true}>
++       <img src="<{$item_attr[i][j].attribute_value[0]}>" alt="<{$item_attr[i][j].attribute_value[1]}>" width=200px height=200px />
++<{else}>
++       <a target="_blank" href="<{$item_attr[i][j].attribute_value[0]}>">
++       <{if $item_attr[i][j].attribute_value[1] != ""}>
++               <{$item_attr[i][j].attribute_value[1]}>
++       <{else}>
++               <{$item_attr[i][j].attribute_value[0]}>
++       <{/if}>
++       </a><br>
++<{/if}>
++       <!-- using iframe/img tag 2012/09/20 by mhaya end -->
++       
+                                                     <{/section}>
+                                                 </td>
+                                             </tr>

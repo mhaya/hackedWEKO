@@ -1,5 +1,0 @@
-[SmartyAssign]
-module = main.ini
-
-[Include]
-filename = "/modules/repository/config/define.inc.php"
