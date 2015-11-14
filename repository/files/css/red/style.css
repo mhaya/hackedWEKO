@@ -2541,3 +2541,13 @@ img.draganddrop {
 .galleryViewLink a:active{
 	color: #FFEEFF;
 }
+
+// hackedWeko
+ifame.hackedWekoItem{
+    width: 100%;
+    height: 320px;
+}
+img.hackedWekoItem{
+    width: 100%;
+    height: 200px;
+}

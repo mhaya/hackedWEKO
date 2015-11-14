@@ -3,21 +3,28 @@ hackedWEKO
 
 [WEKO](http://weko.at.nii.ac.jp/)の改造版
 
+改造の仕方も残していけるといいな。
+
 
 ##本家(ver.2.2.3)からの変更点
-色々試したいけど、いまのところしょぼい。
+色々試したいけど、いまのところしょぼい改造しかできていない。
 
-###アイテム詳細画面の変更点
+パッチは以下
+
+patch/fromWeko2.2.3.patch
+
+###アイテム詳細画面
 - リンク属性のURLの末尾がjpgだったらURLをimgタグで表示
-	- size固定。できればユーザが変更できるようにしたい。cssを使うか。
+	- sizeはcss指定。
 - リンク属性の表示名に「iframe」がある場合はURLをiframeで表示
-	- size固定。できればユーザが変更できるようにしたい。cssを使うか。
+	- sizeはcss指定。
 
 repository/templates/default/repository\_item\_detail.html
 repository/templates/default/repository\_mobile\_item\_detail.html
 repository/templates/default/smartphone/repository\_item\_detail.html
+repository/files/css以下のstyle.css
 	
-###OpenSearchの変更点
+###OpenSearch
 - OpenSearch(Atom形式)でファイルコンテンツのURLを提供
 	- link rel="enclosure" で
 

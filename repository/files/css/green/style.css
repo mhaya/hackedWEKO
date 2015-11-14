@@ -2544,3 +2544,12 @@ img.draganddrop {
 	color: #FFEEFF;
 }
 
+// hackedWeko
+iframe.hackedWekoItem{
+    width: 100%;
+    height: 320px;
+}
+img.hackedWekoItem{
+    width: 100%;
+    height: 200px;
+}

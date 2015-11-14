@@ -1311,24 +1311,11 @@
 												<td class="td_detail_line_repos w80">
 												  <{section name=j loop=$item_attr[i]}>
 
-                                                                                                  <!-- using iframe/img tag 2012/09/20 by mhaya start -->
-<!--                                                                                                  
-														<a target="_blank" href="<{$item_attr[i][j].attribute_value[0]}>">
-															<{if $item_attr[i][j].attribute_value[1] != ""}>
-																<{$item_attr[i][j].attribute_value[1]}>
-															<{else}>
-																<{$item_attr[i][j].attribute_value[0]}>
-															<{/if}>
-														</a><br>
-
--->
+<!-- using iframe/img tag 2012/09/20 by mhaya start -->
 <{if $item_attr[i][j].attribute_value[1] != "" && (strstr(strtolower($item_attr[i][0].attribute_value[1]),"iframe"))==true}>
-       <iframe src="<{$item_attr[i][j].attribute_value[0]}>" height="480" width="100%" scrolling="auto">Sorry. This content use IFrame</iframe>
+       <iframe src="<{$item_attr[i][j].attribute_value[0]}>" class="hackedWekoItem" scrolling="auto">Sorry. This content use IFrame</iframe>
 <{elseif strstr(strtolower($item_attr[i][j].attribute_value[0]),".jpg")==true||strstr(strtolower($item_attr[i][j].attribute_value[0]),".jpg")==true}>
-<!-- 
-       <img src="<{$item_attr[i][j].attribute_value[0]}>" alt="<{$item_attr[i][j].attribute_value[1]}>" width=200px height=200px />
--->
-       <img src="<{$item_attr[i][j].attribute_value[0]}>" alt="<{$item_attr[i][j].attribute_value[1]}>" width=200px /><br/>
+       <img src="<{$item_attr[i][j].attribute_value[0]}>" class="hackedWekoItem" alt="<{$item_attr[i][j].attribute_value[1]}>"/><br/>
 <{else}>
        <a target="_blank" href="<{$item_attr[i][j].attribute_value[0]}>">
        <{if $item_attr[i][j].attribute_value[1] != ""}>
