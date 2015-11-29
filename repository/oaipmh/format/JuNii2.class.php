@@ -250,7 +250,6 @@ class Repository_Oaipmh_JuNii2 extends Repository_Oaipmh_FormatAbstract
     private function outputMetadta($itemAttrType, $itemAttr)
     {
         $xml = '';
-        
         $value = '';
         for($ii=0; $ii<count($itemAttrType); $ii++)
         {
@@ -328,8 +327,11 @@ class Repository_Oaipmh_JuNii2 extends Repository_Oaipmh_FormatAbstract
                     // Add for Bug No.1 Fixes R.Matsuura 2013/09/24 --end--
                     else
                     {
+                        // Add description tag mhaya 2015/11/30 --start--
+                        $attr_name = $itemAttrType[$ii][RepositoryConst::DBCOL_REPOSITORY_ITEM_ATTR_TYPE_ATTRIBUTE_NAME];
                         // when is value, output. 値があれば出力
-                        $xml .= $this->outputAttributeValue($junii2Map, $value, $lang);
+                        $xml .= $this->outputAttributeValue($junii2Map, $value, $lang,array(),$attr_name);
+                        // Add description tag mhaya 2015/11/30 --end--
                     }
                 }
             }
@@ -345,9 +347,10 @@ class Repository_Oaipmh_JuNii2 extends Repository_Oaipmh_FormatAbstract
      * @param string $value
      * @param string $lang
      * @param array $authorIdArray
+     * @param string $attr_name
      * @return string
      */
-    private function outputAttributeValue($mapping, $value, $lang="", $authorIdArray=array())
+    private function outputAttributeValue($mapping, $value, $lang="", $authorIdArray=array(),$attr_name="")
     {
         $xml = '';
         // Add JuNii2 ver3 R.Matsuura 2013/09/24 --start--
@@ -401,7 +404,13 @@ class Repository_Oaipmh_JuNii2 extends Repository_Oaipmh_FormatAbstract
                 $xml = $this->outputLCSH($value);
                 break;
             case RepositoryConst::JUNII2_DESCRIPTION:
-                $xml = $this->outputDescription($value);
+                // Add description tag  mhaya 2015/11/30 --start--
+                if($attr_name != ""){
+                    $xml = $this->outputDescription($value,$attr_name);
+                }else{
+                    $xml = $this->outputDescription($value);
+                }
+                // Add description tag mhaya 2015/11/30 --end--
                 break;
                 // Update JuNii2 ver3 R.Matsuura 2013/09/24 --start--
             case RepositoryConst::JUNII2_PUBLISHER:
@@ -862,11 +871,17 @@ class Repository_Oaipmh_JuNii2 extends Repository_Oaipmh_FormatAbstract
      *   minOccurs = 0, maxOccurs = unbounded
      * 
      * @param string $description
+     $ @param string $attr_name
      * @return string
      */
-    private function outputDescription($description)
+    private function outputDescription($description,$attr_name="")
     {
         $tag = RepositoryConst::JUNII2_DESCRIPTION;
+        // Add description tag mhaya 2015/11/30 --start --
+        if($attr_name != ""){
+            return $this->outputElement($tag,$attr_name.":".$description);
+        }
+        // Add description tag mhaya 2015/11/30 --end--
         return $this->outputElement($tag, $description);
     }
     
