@@ -1,5 +1,5 @@
 diff -uprN repository/action/main/sword/SwordUpdate.class.php hackedWEKO/repository/action/main/sword/SwordUpdate.class.php
---- repository/action/main/sword/SwordUpdate.class.php	2015-10-10 21:33:17.000000000 +0900
+--- repository/action/main/sword/SwordUpdate.class.php	2015-11-14 09:33:08.000000000 +0900
 +++ hackedWEKO/repository/action/main/sword/SwordUpdate.class.php	2015-11-13 17:26:56.000000000 +0900
 @@ -2546,7 +2546,9 @@ class SwordUpdate extends RepositoryActi
          // XML
@@ -24,7 +24,7 @@ diff -uprN repository/action/main/sword/SwordUpdate.class.php hackedWEKO/reposit
          $ret_xml .= '<version>2.0</version>'."\n";
          $ret_xml .= '<id>'.$item_id.'-'.$item_id.'</id>'."\n";
 diff -uprN repository/action/main/sword/SwordUtility.class.php hackedWEKO/repository/action/main/sword/SwordUtility.class.php
---- repository/action/main/sword/SwordUtility.class.php	2013-08-20 16:31:46.000000000 +0900
+--- repository/action/main/sword/SwordUtility.class.php	2015-11-14 09:33:08.000000000 +0900
 +++ hackedWEKO/repository/action/main/sword/SwordUtility.class.php	2015-11-13 17:26:56.000000000 +0900
 @@ -127,7 +127,9 @@ class SwordUtility extends RepositoryAct
  		// V1.2 => V1.3 : <sword:level> removed...
@@ -38,7 +38,7 @@ diff -uprN repository/action/main/sword/SwordUtility.class.php hackedWEKO/reposi
  	    $root['maxUploadSize']   = intval($upload_max_capacity_group)/1024;	// maxUploadSize (KB)	
  		
 diff -uprN repository/action/main/sword/import/Import.class.php hackedWEKO/repository/action/main/sword/import/Import.class.php
---- repository/action/main/sword/import/Import.class.php	2015-10-10 17:13:31.000000000 +0900
+--- repository/action/main/sword/import/Import.class.php	2015-11-14 09:33:08.000000000 +0900
 +++ hackedWEKO/repository/action/main/sword/import/Import.class.php	2015-11-13 17:26:56.000000000 +0900
 @@ -902,7 +902,9 @@ class Repository_Action_Main_Sword_Impor
          // XML
@@ -63,7 +63,7 @@ diff -uprN repository/action/main/sword/import/Import.class.php hackedWEKO/repos
          $ret_xml .= '<version>2.0</version>'."\n";
          $ret_xml .= '<id>'.$start_item_id.'-'.$end_item_id.'</id>'."\n";
 diff -uprN repository/action/main/sword/servicedocument/Servicedocument.class.php hackedWEKO/repository/action/main/sword/servicedocument/Servicedocument.class.php
---- repository/action/main/sword/servicedocument/Servicedocument.class.php	2015-05-28 14:25:53.000000000 +0900
+--- repository/action/main/sword/servicedocument/Servicedocument.class.php	2015-11-14 09:33:08.000000000 +0900
 +++ hackedWEKO/repository/action/main/sword/servicedocument/Servicedocument.class.php	2015-11-13 17:26:56.000000000 +0900
 @@ -124,7 +124,9 @@ class Repository_Action_Main_Sword_Servi
          //   Full level 1 compliance REQUIRES implementation of the full set of extension elements and compliance with APP [ATOMPUB] as indicated by the SWORD profile of APP specified in this document.
@@ -76,9 +76,21 @@ diff -uprN repository/action/main/sword/servicedocument/Servicedocument.class.ph
          // V1.2 => V1.3 : <sword:level> removed.
  //      $str .="  <sword:level>" . $workspace['workspace']['level']  ."</sword:level>\n";
          // V1.2 => V1.3 : <sword:version> added.
+diff -uprN repository/config/define.inc.php hackedWEKO/repository/config/define.inc.php
+--- repository/config/define.inc.php	2015-08-29 15:00:09.000000000 +0900
++++ hackedWEKO/repository/config/define.inc.php	2015-11-30 09:03:20.000000000 +0900
+@@ -92,4 +92,8 @@ define("_REPOSITORY_JALC_DOI", false);
+ define("_REPOSITORY_JALC_CROSSREF_DOI", false);
+ define("_REPOSITORY_JALC_DATACITE_DOI", false);
+ 
++//------------repon.org設定----------
++// default value false
++define("_REPOSITORY_REPON_JUNII2_EXDESCRIPTION",true)
++
+ ?>
 diff -uprN repository/files/css/blue/style.css hackedWEKO/repository/files/css/blue/style.css
---- repository/files/css/blue/style.css	2015-03-05 09:45:00.000000000 +0900
-+++ hackedWEKO/repository/files/css/blue/style.css	2015-11-14 09:15:31.000000000 +0900
+--- repository/files/css/blue/style.css	2015-11-14 09:33:08.000000000 +0900
++++ hackedWEKO/repository/files/css/blue/style.css	2015-11-24 13:37:50.000000000 +0900
 @@ -2548,3 +2548,13 @@ img.draganddrop {
  .galleryViewLink a:active{
  	color: #FFEEFF;
@@ -86,17 +98,16 @@ diff -uprN repository/files/css/blue/style.css hackedWEKO/repository/files/css/b
 +
 +// hackedWeko
 +iframe.hackedWekoItem{
-+    width: 100%;
-+    height: 320px;
++    width: 60%;
++    //height: 320px;
 +}
 +img.hackedWekoItem{
-+    width: 100%;
-+    height: 200px;
++    width: 60%;
++    //height: 200px;
 +}
-\ No newline at end of file
 diff -uprN repository/files/css/default/style.css hackedWEKO/repository/files/css/default/style.css
---- repository/files/css/default/style.css	2015-03-05 09:45:00.000000000 +0900
-+++ hackedWEKO/repository/files/css/default/style.css	2015-11-14 08:41:42.000000000 +0900
+--- repository/files/css/default/style.css	2015-11-14 09:33:08.000000000 +0900
++++ hackedWEKO/repository/files/css/default/style.css	2015-11-24 13:37:30.000000000 +0900
 @@ -2416,3 +2416,13 @@ img.draganddrop {
  .galleryViewLink a:active{
  	color: #FFEEFF;
@@ -104,34 +115,32 @@ diff -uprN repository/files/css/default/style.css hackedWEKO/repository/files/cs
 +
 +// hackedWeko
 +iframe.hackedWekoItem{
-+    width: 100%;
-+    height: 320px;
++    width: 60%;
++    //height: 320px;
 +}
 +img.hackedWekoItem{
-+    width: 100%;
-+    height: 200px;
++    width: 60%;
++    //height: 200px;
 +}
-\ No newline at end of file
 diff -uprN repository/files/css/green/style.css hackedWEKO/repository/files/css/green/style.css
---- repository/files/css/green/style.css	2015-03-05 09:45:00.000000000 +0900
-+++ hackedWEKO/repository/files/css/green/style.css	2015-11-14 08:41:57.000000000 +0900
+--- repository/files/css/green/style.css	2015-11-14 09:33:08.000000000 +0900
++++ hackedWEKO/repository/files/css/green/style.css	2015-11-24 13:38:14.000000000 +0900
 @@ -2544,3 +2544,12 @@ img.draganddrop {
  	color: #FFEEFF;
  }
  
 +// hackedWeko
 +iframe.hackedWekoItem{
-+    width: 100%;
-+    height: 320px;
++    width: 60%;
++    //height: 320px;
 +}
 +img.hackedWekoItem{
-+    width: 100%;
-+    height: 200px;
++    width: 60%;
++    //height: 200px;
 +}
-\ No newline at end of file
 diff -uprN repository/files/css/orange/style.css hackedWEKO/repository/files/css/orange/style.css
---- repository/files/css/orange/style.css	2015-03-05 09:45:00.000000000 +0900
-+++ hackedWEKO/repository/files/css/orange/style.css	2015-11-14 08:41:26.000000000 +0900
+--- repository/files/css/orange/style.css	2015-11-14 09:33:08.000000000 +0900
++++ hackedWEKO/repository/files/css/orange/style.css	2015-11-24 13:38:35.000000000 +0900
 @@ -2542,3 +2542,13 @@ img.draganddrop {
  .galleryViewLink a:active{
  	color: #FFEEFF;
@@ -139,17 +148,16 @@ diff -uprN repository/files/css/orange/style.css hackedWEKO/repository/files/css
 +
 +// hackedWeko
 +iframe.hackedWekoItem {
-+    width: 100%;
-+    height: 320px;
++    width: 60%;
++    //height: 320px;
 +}
 +img.hackedWekoItem{
-+    width: 100%;
-+    height: 200px;
++    width: 60%;
++    //height: 200px;
 +}
-\ No newline at end of file
 diff -uprN repository/files/css/pink/style.css hackedWEKO/repository/files/css/pink/style.css
---- repository/files/css/pink/style.css	2015-03-05 09:45:00.000000000 +0900
-+++ hackedWEKO/repository/files/css/pink/style.css	2015-11-14 08:41:09.000000000 +0900
+--- repository/files/css/pink/style.css	2015-11-14 09:33:08.000000000 +0900
++++ hackedWEKO/repository/files/css/pink/style.css	2015-11-24 13:38:55.000000000 +0900
 @@ -2556,3 +2556,13 @@ img.draganddrop {
  .galleryViewLink a:active{
  	color: #FFEEFF;
@@ -157,17 +165,16 @@ diff -uprN repository/files/css/pink/style.css hackedWEKO/repository/files/css/p
 +
 +// hackedWeko
 +iframe.hackedWekoItem{
-+    width: 100%;
-+    height: 320px;
++    width: 60%;
++    //height: 320px;
 +}
 +img.hackedWekoItem{
-+    width: 100%;
-+    height: 200px;
++    width: 60%;
++    //height: 200px;
 +}
-\ No newline at end of file
 diff -uprN repository/files/css/red/style.css hackedWEKO/repository/files/css/red/style.css
---- repository/files/css/red/style.css	2015-03-05 09:45:00.000000000 +0900
-+++ hackedWEKO/repository/files/css/red/style.css	2015-11-14 08:40:46.000000000 +0900
+--- repository/files/css/red/style.css	2015-11-14 09:33:08.000000000 +0900
++++ hackedWEKO/repository/files/css/red/style.css	2015-11-24 13:39:13.000000000 +0900
 @@ -2541,3 +2541,13 @@ img.draganddrop {
  .galleryViewLink a:active{
  	color: #FFEEFF;
@@ -175,16 +182,90 @@ diff -uprN repository/files/css/red/style.css hackedWEKO/repository/files/css/re
 +
 +// hackedWeko
 +ifame.hackedWekoItem{
-+    width: 100%;
-+    height: 320px;
++    width: 60%;
++    //height: 320px;
 +}
 +img.hackedWekoItem{
-+    width: 100%;
-+    height: 200px;
++    width: 60%;
++    //height: 200px;
 +}
-\ No newline at end of file
+diff -uprN repository/oaipmh/format/JuNii2.class.php hackedWEKO/repository/oaipmh/format/JuNii2.class.php
+--- repository/oaipmh/format/JuNii2.class.php	2015-03-03 21:15:32.000000000 +0900
++++ hackedWEKO/repository/oaipmh/format/JuNii2.class.php	2015-11-30 09:05:45.000000000 +0900
+@@ -250,7 +250,6 @@ class Repository_Oaipmh_JuNii2 extends R
+     private function outputMetadta($itemAttrType, $itemAttr)
+     {
+         $xml = '';
+-        
+         $value = '';
+         for($ii=0; $ii<count($itemAttrType); $ii++)
+         {
+@@ -328,8 +327,15 @@ class Repository_Oaipmh_JuNii2 extends R
+                     // Add for Bug No.1 Fixes R.Matsuura 2013/09/24 --end--
+                     else
+                     {
+-                        // when is value, output. 値があれば出力
+-                        $xml .= $this->outputAttributeValue($junii2Map, $value, $lang);
++                        if(_REPOSITORY_REPON_JUNII2_EXDESCRIPTION==true){
++                        // Add description tag mhaya 2015/11/30 --start--
++                            $attr_name = $itemAttrType[$ii][RepositoryConst::DBCOL_REPOSITORY_ITEM_ATTR_TYPE_ATTRIBUTE_NAME];
++                            $xml .= $this->outputAttributeValue($junii2Map, $value, $lang,array(),$attr_name);
++                        }else{
++                            // when is value, output. 値があれば出力
++                            $xml .= $this->outputAttributeValue($junii2Map, $value, $lang,array());
++                        }
++                        // Add description tag mhaya 2015/11/30 --end--
+                     }
+                 }
+             }
+@@ -345,9 +351,10 @@ class Repository_Oaipmh_JuNii2 extends R
+      * @param string $value
+      * @param string $lang
+      * @param array $authorIdArray
++     * @param string $attr_name
+      * @return string
+      */
+-    private function outputAttributeValue($mapping, $value, $lang="", $authorIdArray=array())
++    private function outputAttributeValue($mapping, $value, $lang="", $authorIdArray=array(),$attr_name="")
+     {
+         $xml = '';
+         // Add JuNii2 ver3 R.Matsuura 2013/09/24 --start--
+@@ -401,7 +408,13 @@ class Repository_Oaipmh_JuNii2 extends R
+                 $xml = $this->outputLCSH($value);
+                 break;
+             case RepositoryConst::JUNII2_DESCRIPTION:
+-                $xml = $this->outputDescription($value);
++                // Add description tag  mhaya 2015/11/30 --start--
++                if(_REPOSITORY_REPON_JUNII2_EXDESCRIPTION==true){
++                    $xml = $this->outputDescription($value,$attr_name);
++                }else{
++                    $xml = $this->outputDescription($value);
++                }
++                // Add description tag mhaya 2015/11/30 --end--
+                 break;
+                 // Update JuNii2 ver3 R.Matsuura 2013/09/24 --start--
+             case RepositoryConst::JUNII2_PUBLISHER:
+@@ -862,11 +875,17 @@ class Repository_Oaipmh_JuNii2 extends R
+      *   minOccurs = 0, maxOccurs = unbounded
+      * 
+      * @param string $description
++     $ @param string $attr_name
+      * @return string
+      */
+-    private function outputDescription($description)
++    private function outputDescription($description,$attr_name="")
+     {
+         $tag = RepositoryConst::JUNII2_DESCRIPTION;
++        // Add description tag mhaya 2015/11/30 --start --
++        if(_REPOSITORY_REPON_JUNII2_EXDESCRIPTION==true){
++            return $this->outputElement($tag,$attr_name.":".$description);
++        }
++        // Add description tag mhaya 2015/11/30 --end--
+         return $this->outputElement($tag, $description);
+     }
+     
 diff -uprN repository/oaipmh/format/Lido.class.php hackedWEKO/repository/oaipmh/format/Lido.class.php
---- repository/oaipmh/format/Lido.class.php	2014-05-28 13:03:47.000000000 +0900
+--- repository/oaipmh/format/Lido.class.php	2015-11-14 09:33:08.000000000 +0900
 +++ hackedWEKO/repository/oaipmh/format/Lido.class.php	2015-11-13 17:26:56.000000000 +0900
 @@ -129,6 +129,9 @@ class Repository_Oaipmh_Lido extends Rep
          {
@@ -430,7 +511,7 @@ diff -uprN repository/oaipmh/format/Lido.class.php hackedWEKO/repository/oaipmh/
  ?>
 \ No newline at end of file
 diff -uprN repository/opensearch/Opensearch.class.php hackedWEKO/repository/opensearch/Opensearch.class.php
---- repository/opensearch/Opensearch.class.php	2015-05-28 14:25:53.000000000 +0900
+--- repository/opensearch/Opensearch.class.php	2015-11-14 09:33:08.000000000 +0900
 +++ hackedWEKO/repository/opensearch/Opensearch.class.php	2015-11-13 17:26:56.000000000 +0900
 @@ -164,7 +164,11 @@ class Repository_Opensearch extends Repo
              case RepositorySearchRequestParameter::FORMAT_ATOM:
@@ -446,7 +527,7 @@ diff -uprN repository/opensearch/Opensearch.class.php hackedWEKO/repository/open
                  $requestParam = $this->getRequestParameter();
                  $requestParam[self::REQUEST_LOG_TERM] = $this->log_term;
 diff -uprN repository/opensearch/format/Atom.class.php hackedWEKO/repository/opensearch/format/Atom.class.php
---- repository/opensearch/format/Atom.class.php	2015-05-28 14:25:53.000000000 +0900
+--- repository/opensearch/format/Atom.class.php	2015-11-14 09:33:08.000000000 +0900
 +++ hackedWEKO/repository/opensearch/format/Atom.class.php	2015-11-13 17:26:56.000000000 +0900
 @@ -23,14 +23,26 @@ class Repository_OpenSearch_Atom extends
      const XMLNS_PRISM       = "http://prismstandard.org/namespaces/basic/2.0/";
@@ -497,7 +578,7 @@ diff -uprN repository/opensearch/format/Atom.class.php hackedWEKO/repository/ope
              
              // creator
 diff -uprN repository/opensearch/format/FormatAbstract.class.php hackedWEKO/repository/opensearch/format/FormatAbstract.class.php
---- repository/opensearch/format/FormatAbstract.class.php	2015-05-28 14:25:53.000000000 +0900
+--- repository/opensearch/format/FormatAbstract.class.php	2015-11-14 09:33:08.000000000 +0900
 +++ hackedWEKO/repository/opensearch/format/FormatAbstract.class.php	2015-11-13 17:26:56.000000000 +0900
 @@ -31,6 +31,9 @@ class Repository_Opensearch_FormatAbstra
      const DATA_ITEM_TYPE_NAME = "item_type_name";
@@ -530,8 +611,8 @@ diff -uprN repository/opensearch/format/FormatAbstract.class.php hackedWEKO/repo
                  }
                  
 diff -uprN repository/templates/default/repository_item_detail.html hackedWEKO/repository/templates/default/repository_item_detail.html
---- repository/templates/default/repository_item_detail.html	2015-08-20 10:16:27.000000000 +0900
-+++ hackedWEKO/repository/templates/default/repository_item_detail.html	2015-11-14 08:52:44.000000000 +0900
+--- repository/templates/default/repository_item_detail.html	2015-11-14 09:33:08.000000000 +0900
++++ hackedWEKO/repository/templates/default/repository_item_detail.html	2015-11-14 10:27:07.000000000 +0900
 @@ -1,6 +1,6 @@
  <!--// ---------------------------------------------------------------------->
  <!--//                                                                     -->
@@ -627,8 +708,8 @@ diff -uprN repository/templates/default/repository_item_detail.html hackedWEKO/r
  							<{/section}>
  						</td>
 diff -uprN repository/templates/default/repository_mobile_item_detail.html hackedWEKO/repository/templates/default/repository_mobile_item_detail.html
---- repository/templates/default/repository_mobile_item_detail.html	2015-02-02 16:33:54.000000000 +0900
-+++ hackedWEKO/repository/templates/default/repository_mobile_item_detail.html	2015-11-14 08:53:49.000000000 +0900
+--- repository/templates/default/repository_mobile_item_detail.html	2015-11-14 09:33:08.000000000 +0900
++++ hackedWEKO/repository/templates/default/repository_mobile_item_detail.html	2015-11-24 10:47:08.000000000 +0900
 @@ -626,15 +626,25 @@
                          <{$attr_type[i].attribute_name}>
                      </div>
@@ -676,9 +757,9 @@ diff -uprN repository/templates/default/repository_mobile_item_detail.html hacke
 -                                            </a>
 +<!-- using iframe/img tag 2012/09/20 by mhaya start -->
 +<{if $item_attr[i][j].attribute_value[1] != "" && (strstr(strtolower($item_attr[i][0].attribute_value[1]),"iframe"))==true}>
-+       <iframe class="hackedWekoItem" src="<{$item_attr[i][j].attribute_value[0]}>" height="700" width="100%" scrolling="auto">Sorry. This content use IFrame</iframe>
++       <iframe style="width: 60%;" src="<{$item_attr[i][j].attribute_value[0]}>" height="700" width="100%" scrolling="auto">Sorry. This content use IFrame</iframe>
 +<{elseif strstr(strtolower($item_attr[i][j].attribute_value[0]),".jpg")==true||strstr(strtolower($item_attr[i][j].attribute_value[0]),".jpg")==true}>
-+       <img class="hackedWekoItem" src="<{$item_attr[i][j].attribute_value[0]}>" alt="<{$item_attr[i][j].attribute_value[1]}>"/>
++       <img style="width: 60%;" src="<{$item_attr[i][j].attribute_value[0]}>" alt="<{$item_attr[i][j].attribute_value[1]}>"/>
 +<{else}>
 +
 +
@@ -696,8 +777,8 @@ diff -uprN repository/templates/default/repository_mobile_item_detail.html hacke
                                      </tr>
                                  <{/section}>
 diff -uprN repository/templates/default/smartphone/repository_item_detail.html hackedWEKO/repository/templates/default/smartphone/repository_item_detail.html
---- repository/templates/default/smartphone/repository_item_detail.html	2015-05-28 14:25:53.000000000 +0900
-+++ hackedWEKO/repository/templates/default/smartphone/repository_item_detail.html	2015-11-14 08:55:02.000000000 +0900
+--- repository/templates/default/smartphone/repository_item_detail.html	2015-11-14 09:33:08.000000000 +0900
++++ hackedWEKO/repository/templates/default/smartphone/repository_item_detail.html	2015-11-24 10:47:47.000000000 +0900
 @@ -894,14 +894,23 @@
                                              <tr class="tr_detail_line_repos" <{ if $attr_type[i].hidden == '1' }>style="color: #808080;"<{/if}>>
                                                  <th class="th_detail_line_repos vt al w20 ws"><{$attr_type[i].attribute_name}></th>
@@ -713,9 +794,9 @@ diff -uprN repository/templates/default/smartphone/repository_item_detail.html h
 +                                                  <{section name=j loop=$item_attr[i]}>
 +<!-- using iframe/img tag 2012/09/20 by mhaya start -->
 +                                                    <{if $item_attr[i][j].attribute_value[1] != "" && (strstr(strtolower($item_attr[i][0].attribute_value[1]),"iframe"))==true}>
-+       <iframe class="hackedWekoItem" src="<{$item_attr[i][j].attribute_value[0]}>" scrolling="auto">Sorry. This content use IFrame</iframe>
++       <iframe style="width: 60%;" src="<{$item_attr[i][j].attribute_value[0]}>" scrolling="auto">Sorry. This content use IFrame</iframe>
 +<{elseif strstr(strtolower($item_attr[i][j].attribute_value[0]),".jpg")==true||strstr(strtolower($item_attr[i][j].attribute_value[0]),".jpg")==true}>
-+       <img class="hackedWekoItem" src="<{$item_attr[i][j].attribute_value[0]}>" alt="<{$item_attr[i][j].attribute_value[1]}>"/>
++       <img style="width: 60%;" src="<{$item_attr[i][j].attribute_value[0]}>" alt="<{$item_attr[i][j].attribute_value[1]}>"/>
 +<{else}>
 +       <a target="_blank" href="<{$item_attr[i][j].attribute_value[0]}>">
 +       <{if $item_attr[i][j].attribute_value[1] != ""}>
@@ -730,3 +811,10 @@ diff -uprN repository/templates/default/smartphone/repository_item_detail.html h
                                                      <{/section}>
                                                  </td>
                                              </tr>
+@@ -1503,4 +1512,4 @@ showMetadata = function(type){
+ <script type="text/javascript">
+     function getUserID() { return "<{$action.annoteaUser}>"; }
+ </script>
+-<{* for Flash Annotation --end-- *}>
+\ No newline at end of file
++<{* for Flash Annotation --end-- *}>
