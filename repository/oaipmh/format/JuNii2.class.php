@@ -327,10 +327,14 @@ class Repository_Oaipmh_JuNii2 extends Repository_Oaipmh_FormatAbstract
                     // Add for Bug No.1 Fixes R.Matsuura 2013/09/24 --end--
                     else
                     {
+                        if(_REPOSITORY_REPON_JUNII2_EXDESCRIPTION==true){
                         // Add description tag mhaya 2015/11/30 --start--
-                        $attr_name = $itemAttrType[$ii][RepositoryConst::DBCOL_REPOSITORY_ITEM_ATTR_TYPE_ATTRIBUTE_NAME];
-                        // when is value, output. 値があれば出力
-                        $xml .= $this->outputAttributeValue($junii2Map, $value, $lang,array(),$attr_name);
+                            $attr_name = $itemAttrType[$ii][RepositoryConst::DBCOL_REPOSITORY_ITEM_ATTR_TYPE_ATTRIBUTE_NAME];
+                            $xml .= $this->outputAttributeValue($junii2Map, $value, $lang,array(),$attr_name);
+                        }else{
+                            // when is value, output. 値があれば出力
+                            $xml .= $this->outputAttributeValue($junii2Map, $value, $lang,array());
+                        }
                         // Add description tag mhaya 2015/11/30 --end--
                     }
                 }
@@ -405,7 +409,7 @@ class Repository_Oaipmh_JuNii2 extends Repository_Oaipmh_FormatAbstract
                 break;
             case RepositoryConst::JUNII2_DESCRIPTION:
                 // Add description tag  mhaya 2015/11/30 --start--
-                if($attr_name != ""){
+                if(_REPOSITORY_REPON_JUNII2_EXDESCRIPTION==true){
                     $xml = $this->outputDescription($value,$attr_name);
                 }else{
                     $xml = $this->outputDescription($value);
@@ -878,7 +882,7 @@ class Repository_Oaipmh_JuNii2 extends Repository_Oaipmh_FormatAbstract
     {
         $tag = RepositoryConst::JUNII2_DESCRIPTION;
         // Add description tag mhaya 2015/11/30 --start --
-        if($attr_name != ""){
+        if(_REPOSITORY_REPON_JUNII2_EXDESCRIPTION==true){
             return $this->outputElement($tag,$attr_name.":".$description);
         }
         // Add description tag mhaya 2015/11/30 --end--

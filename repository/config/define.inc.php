@@ -92,4 +92,8 @@ define("_REPOSITORY_JALC_DOI", false);
 define("_REPOSITORY_JALC_CROSSREF_DOI", false);
 define("_REPOSITORY_JALC_DATACITE_DOI", false);
 
+//------------repon.org設定----------
+// default value false
+define("_REPOSITORY_REPON_JUNII2_EXDESCRIPTION",true)
+
 ?>
