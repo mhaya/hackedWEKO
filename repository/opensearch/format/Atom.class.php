@@ -259,19 +259,22 @@ class Repository_OpenSearch_Atom extends Repository_Opensearch_FormatAbstract
                 $xml .= '       <dc:identifier>'.$this->RepositoryAction->forXmlChange("file_id:".$itemData[self::DATA_FILE_URI][$jj]).'</dc:identifier>'.self::LF;
 
                 //start enclosure file link を追加する変更 mhaya
+                
                 //リダイレクト後のURLを作成する
                 $url = $itemData[self::DATA_FILE_URI][$jj];
                 $url = str_replace("/?","/index.php?",$url);
                 $url = str_replace("action=repository_uri","action=pages_view_main&active_action=repository_action_common_download",$url);
                 $url = str_replace("file_id","attribute_id",$url);
-                $url .= '&item_no='.$searchResult[0]['item_no'];
-                $url .= '&page_id='.$this->blockid['page_id'].'&block_id='.$this->blockid['block_id'];
+                if(stristr($url,"repository_action_common_download")){
+                        $url .= '&item_no='.$searchResult[0]['item_no'];
+                        $url .= '&page_id='.$this->blockid['page_id'].'&block_id='.$this->blockid['block_id'];
+                }
                 //enclosure要素の作成
                 $xml .= '       <link rel="enclosure" title="'.$this->RepositoryAction->forXmlChange($itemData[self::DATA_FILE_NAME][$jj]).'" type="'.$this->RepositoryAction->forXmlChange($itemData[self::DATA_MIME_TYPE][$jj]).'" href="'.$this->RepositoryAction->forXmlChange($url).'" />'.self::LF;
 
                 //end mhaya
             }
-            
+
             // creator
             for($jj=0;$jj<count($itemData[self::DATA_CREATOR]);$jj++)
             {

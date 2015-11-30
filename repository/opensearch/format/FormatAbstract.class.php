@@ -312,7 +312,7 @@ class Repository_Opensearch_FormatAbstract
                 $itemData[self::DATA_TITLE] = $item[RepositoryConst::DBCOL_REPOSITORY_ITEM_TITLE_ENGLISH];
             }
         }
-        
+
         ///// setting uri /////
         //if(strlen($item[RepositoryConst::DBCOL_REPOSITORY_ITEM_URI]) > 0)
         //{
@@ -486,6 +486,39 @@ class Repository_Opensearch_FormatAbstract
                     array_push($itemData[self::DATA_DESCRIPTION], $value);
                     array_push($itemData[self::DATA_DESCRIPTION_LANG], $itemAttrType[$ii]["display_lang_type"]);
                 }
+                // Add link rel="enclosure" element 2015/11/30 mhaya start
+                else if($mapping == RepositoryConst::JUNII2_FULL_TEXT_URL)
+                {
+                    if(array_search($value,$itemData)===FALSE){
+                        if(preg_match('/.*\/((.+)\.(.+))$/',$value,$match)){
+                            if(preg_match('/jpg$/i',$match[3]))
+                            {
+                                array_push($itemData[self::DATA_FILE_URI],$value);
+                                array_push($itemData[self::DATA_FILE_NAME],basename($value));
+                                array_push($itemData[self::DATA_MIME_TYPE],"image/jpeg");
+                            }
+                            else if(preg_match('/png$/i',$match[3]))
+                            {
+                                array_push($itemData[self::DATA_FILE_URI],$value);
+                                array_push($itemData[self::DATA_FILE_NAME],basename($value));
+                                array_push($itemData[self::DATA_MIME_TYPE],"image/png");
+                            }
+                            else if(preg_match('/[tiff|tif]$/i',$match[3]))
+                            {
+                                array_push($itemData[self::DATA_FILE_URI],$value);
+                                array_push($itemData[self::DATA_FILE_NAME],basename($value));
+                                array_push($itemData[self::DATA_MIME_TYPE],"image/tiff");
+                            }
+                            else if(preg_match('/bmp$/i',$match[3]))
+                            {
+                                array_push($itemData[self::DATA_FILE_URI],$value);
+                                array_push($itemData[self::DATA_FILE_NAME],basename($value));
+                                array_push($itemData[self::DATA_MIME_TYPE],"image/bmp");
+                            }
+                        }
+                    }
+                }
+                // Add link rel="enclosure" element 2015/11/30 mhaya end
             }
         }
 
