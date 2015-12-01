@@ -31,12 +31,14 @@ repository/files/css以下のstyle.css
 ###OpenSearch
 - OpenSearch(Atom形式)でファイルコンテンツのURLを提供
 	- link rel="enclosure" で
+- countパラメータが無効になっているのを修正
 
 修正箇所：
 
 repository/opensearch/Opensearch.class.php
 repository/opensearch/format/Atom.class.php
 repository/opensearch/format/FormatAbstract.class.php
+
 
 ###SWORDv2
 - [python-client-sword2](https://github.com/swordapp/python-client-sword2)の妥当性検証を通過できるよう修正

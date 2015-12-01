@@ -528,7 +528,7 @@ diff -uprN repository/opensearch/Opensearch.class.php hackedWEKO/repository/open
                  $requestParam[self::REQUEST_LOG_TERM] = $this->log_term;
 diff -uprN repository/opensearch/format/Atom.class.php hackedWEKO/repository/opensearch/format/Atom.class.php
 --- repository/opensearch/format/Atom.class.php	2015-11-14 09:33:08.000000000 +0900
-+++ hackedWEKO/repository/opensearch/format/Atom.class.php	2015-11-13 17:26:56.000000000 +0900
++++ hackedWEKO/repository/opensearch/format/Atom.class.php	2015-11-30 15:06:21.000000000 +0900
 @@ -23,14 +23,26 @@ class Repository_OpenSearch_Atom extends
      const XMLNS_PRISM       = "http://prismstandard.org/namespaces/basic/2.0/";
      const XMLNS_OPEN_SEARCH = "http://a9.com/-/spec/opensearch/1.1/";
@@ -557,29 +557,35 @@ diff -uprN repository/opensearch/format/Atom.class.php hackedWEKO/repository/ope
      
      /**
       * make ATOM XML for open search 
-@@ -245,6 +257,19 @@ class Repository_OpenSearch_Atom extends
+@@ -245,8 +257,24 @@ class Repository_OpenSearch_Atom extends
              for($jj=0; $jj<count($itemData[self::DATA_FILE_URI]); $jj++)
              {
                  $xml .= '       <dc:identifier>'.$this->RepositoryAction->forXmlChange("file_id:".$itemData[self::DATA_FILE_URI][$jj]).'</dc:identifier>'.self::LF;
 +
 +                //start enclosure file link を追加する変更 mhaya
++                
 +                //リダイレクト後のURLを作成する
 +                $url = $itemData[self::DATA_FILE_URI][$jj];
 +                $url = str_replace("/?","/index.php?",$url);
 +                $url = str_replace("action=repository_uri","action=pages_view_main&active_action=repository_action_common_download",$url);
 +                $url = str_replace("file_id","attribute_id",$url);
-+                $url .= '&item_no='.$searchResult[0]['item_no'];
-+                $url .= '&page_id='.$this->blockid['page_id'].'&block_id='.$this->blockid['block_id'];
++                if(stristr($url,"repository_action_common_download")){
++                        $url .= '&item_no='.$searchResult[0]['item_no'];
++                        $url .= '&page_id='.$this->blockid['page_id'].'&block_id='.$this->blockid['block_id'];
++                }
 +                //enclosure要素の作成
 +                $xml .= '       <link rel="enclosure" title="'.$this->RepositoryAction->forXmlChange($itemData[self::DATA_FILE_NAME][$jj]).'" type="'.$this->RepositoryAction->forXmlChange($itemData[self::DATA_MIME_TYPE][$jj]).'" href="'.$this->RepositoryAction->forXmlChange($url).'" />'.self::LF;
 +
 +                //end mhaya
              }
-             
+-            
++
              // creator
+             for($jj=0;$jj<count($itemData[self::DATA_CREATOR]);$jj++)
+             {
 diff -uprN repository/opensearch/format/FormatAbstract.class.php hackedWEKO/repository/opensearch/format/FormatAbstract.class.php
 --- repository/opensearch/format/FormatAbstract.class.php	2015-11-14 09:33:08.000000000 +0900
-+++ hackedWEKO/repository/opensearch/format/FormatAbstract.class.php	2015-11-13 17:26:56.000000000 +0900
++++ hackedWEKO/repository/opensearch/format/FormatAbstract.class.php	2015-11-30 15:37:39.000000000 +0900
 @@ -31,6 +31,9 @@ class Repository_Opensearch_FormatAbstra
      const DATA_ITEM_TYPE_NAME = "item_type_name";
      const DATA_MIME_TYPE = "mime_type";
@@ -600,6 +606,15 @@ diff -uprN repository/opensearch/format/FormatAbstract.class.php hackedWEKO/repo
                          self::DATA_URL => array(),
                          self::DATA_CREATOR => array(),
                          self::DATA_CREATOR_LANG => array(),
+@@ -306,7 +312,7 @@ class Repository_Opensearch_FormatAbstra
+                 $itemData[self::DATA_TITLE] = $item[RepositoryConst::DBCOL_REPOSITORY_ITEM_TITLE_ENGLISH];
+             }
+         }
+-        
++
+         ///// setting uri /////
+         //if(strlen($item[RepositoryConst::DBCOL_REPOSITORY_ITEM_URI]) > 0)
+         //{
 @@ -396,6 +402,9 @@ class Repository_Opensearch_FormatAbstra
                                     "&file_id=".$itemAttr[$ii][$jj][RepositoryConst::DBCOL_REPOSITORY_FILE_ATTRIBUTE_ID].
                                     "&file_no=".$itemAttr[$ii][$jj][RepositoryConst::DBCOL_REPOSITORY_FILE_FILE_NO];
@@ -610,6 +625,46 @@ diff -uprN repository/opensearch/format/FormatAbstract.class.php hackedWEKO/repo
                      }
                  }
                  
+@@ -477,6 +486,39 @@ class Repository_Opensearch_FormatAbstra
+                     array_push($itemData[self::DATA_DESCRIPTION], $value);
+                     array_push($itemData[self::DATA_DESCRIPTION_LANG], $itemAttrType[$ii]["display_lang_type"]);
+                 }
++                // Add link rel="enclosure" element 2015/11/30 mhaya start
++                else if($mapping == RepositoryConst::JUNII2_FULL_TEXT_URL)
++                {
++                    if(array_search($value,$itemData)===FALSE){
++                        if(preg_match('/.*\/((.+)\.(.+))$/',$value,$match)){
++                            if(preg_match('/jpg$/i',$match[3]))
++                            {
++                                array_push($itemData[self::DATA_FILE_URI],$value);
++                                array_push($itemData[self::DATA_FILE_NAME],basename($value));
++                                array_push($itemData[self::DATA_MIME_TYPE],"image/jpeg");
++                            }
++                            else if(preg_match('/png$/i',$match[3]))
++                            {
++                                array_push($itemData[self::DATA_FILE_URI],$value);
++                                array_push($itemData[self::DATA_FILE_NAME],basename($value));
++                                array_push($itemData[self::DATA_MIME_TYPE],"image/png");
++                            }
++                            else if(preg_match('/[tiff|tif]$/i',$match[3]))
++                            {
++                                array_push($itemData[self::DATA_FILE_URI],$value);
++                                array_push($itemData[self::DATA_FILE_NAME],basename($value));
++                                array_push($itemData[self::DATA_MIME_TYPE],"image/tiff");
++                            }
++                            else if(preg_match('/bmp$/i',$match[3]))
++                            {
++                                array_push($itemData[self::DATA_FILE_URI],$value);
++                                array_push($itemData[self::DATA_FILE_NAME],basename($value));
++                                array_push($itemData[self::DATA_MIME_TYPE],"image/bmp");
++                            }
++                        }
++                    }
++                }
++                // Add link rel="enclosure" element 2015/11/30 mhaya end
+             }
+         }
+ 
 diff -uprN repository/templates/default/repository_item_detail.html hackedWEKO/repository/templates/default/repository_item_detail.html
 --- repository/templates/default/repository_item_detail.html	2015-11-14 09:33:08.000000000 +0900
 +++ hackedWEKO/repository/templates/default/repository_item_detail.html	2015-11-14 10:27:07.000000000 +0900

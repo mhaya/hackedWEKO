@@ -29,7 +29,8 @@ class Repository_Opensearch extends RepositorySearch
     
     const REQUEST_OUTPUT_FORMAT="format";
     const REQUEST_RECURSIVE="recursive";
-    
+    // add 2015/12/1 mhaya
+    const REQUEST_COUNT = "count";
     /**
      * outuput type
      * when isset this parameter, return "text"
@@ -81,7 +82,7 @@ class Repository_Opensearch extends RepositorySearch
         
         // validate request parameter.
         $this->setRequestParameter();
-        
+
         // Add index recursive search. 2014/08/12 Y.Nakao --start--
         // When recursive and index not set, recursive is not run.再帰検索でもインデックス未指定の場合は再帰検索をしない
         if($this->recursive == 1 && isset($this->search_term[self::REQUEST_IDX]) && strlen($this->search_term[self::REQUEST_IDX]) > 0)
@@ -141,6 +142,11 @@ class Repository_Opensearch extends RepositorySearch
         // switch format.
         $outputXml = "";
         $redirectUrl = "";
+
+        // Fix count paramter bug 2015/12/1 mhaya ---start
+        $this->list_view_num = isset($this->_request[self::REQUEST_COUNT]) ? $this->_request[self::REQUEST_COUNT] : $this->list_view_num;
+        // Fix count paramter bug 2015/12/1 mhaya ---end
+
         switch($this->format)
         {
             case RepositorySearchRequestParameter::FORMAT_DESCRIPTION:
