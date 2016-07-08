@@ -2856,16 +2856,20 @@ class Repository_Action_Main_Update extends RepositoryAction
                     }
                     // Add file download status to log 2012/11/09 A.Suzuki --end--
 
+		    $query ="SHOW COLUMNS FROM ".DATABASE_PREFIX."repository_position_index like 'custom_sort_order';";
+		    $retRef = $this->Db->execute($query);
+		    if($retRef === false || count($retRef)!=1){
                     // Add display custom order 2013/01/08 A.Jin --start--
                     $query = "ALTER TABLE ".DATABASE_PREFIX."repository_position_index".
                             " ADD custom_sort_order INT NOT NULL DEFAULT 0 AFTER index_id;";
                     $retRef = $this->Db->execute($query);
                     if($retRef === false){
                         $errMsg = $this->Db->ErrorMsg();
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
-                    }
+				// Rollback
+				$this->failTrans();
+				throw $exception;
+                    	}
+		    }
                     // Update custom_sort_order all
                     $query = "SELECT index_id, item_id, item_no ".
                              " FROM ".DATABASE_PREFIX."repository_position_index ".
@@ -3478,30 +3482,39 @@ class Repository_Action_Main_Update extends RepositoryAction
                     }
                     // Fix default item type for JuNii2 ver3.0 Y.Nakao 2013/05/23 --end--
 
+		   
                     $this->versionUp('2.0.5');
                 case 205:
                     // Add owner_user_id to repository_index
-                    $query = "ALTER TABLE ".DATABASE_PREFIX."repository_index ".
-                             "ADD owner_user_id VARCHAR(40) NOT NULL default '' ".
-                             "AFTER create_cover_flag;";
+		    $query = "SHOW COLUMNS FROM ".DATABASE_PREFIX."repository_index like 'owner_user_id'";
+		    $retRef = $this->Db->execute($query);
+                    if($retRef === false || count($retRef)!=1){
+			$query = "ALTER TABLE ".DATABASE_PREFIX."repository_index ".
+			"ADD owner_user_id VARCHAR(40) NOT NULL default '' ".
+			"AFTER create_cover_flag;";
+                    	     $retRef = $this->Db->execute($query);
+                    	    if($retRef === false || count($retRef)!=1){
+                               $errMsg = $this->Db->ErrorMsg();
+                        	// Rollback
+                          	$this->failTrans();
+				throw $exception;
+                    	}
+		    }
+                    // Add private_contents to repository_index
+		    $query = "SHOW COLUMNS FROM ".DATABASE_PREFIX."repository_index like 'contents';";
                     $retRef = $this->Db->execute($query);
                     if($retRef === false || count($retRef)!=1){
-                        $errMsg = $this->Db->ErrorMsg();
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
-                    }
-                    // Add private_contents to repository_index
-                    $query = "ALTER TABLE ".DATABASE_PREFIX."repository_index ".
+                    	       $query = "ALTER TABLE ".DATABASE_PREFIX."repository_index ".
                              "ADD private_contents INT NOT NULL default 0 ".
                              "AFTER contents;";
-                    $retRef = $this->Db->execute($query);
-                    if($retRef === false || count($retRef)!=1){
-                        $errMsg = $this->Db->ErrorMsg();
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
-                    }
+                    	     $retRef = $this->Db->execute($query);
+                    	     if($retRef === false || count($retRef)!=1){
+                             		$errMsg = $this->Db->ErrorMsg();
+                        		// Rollback
+                        		$this->failTrans();
+                        		throw $exception;
+                    	}
+		    }
 
                     // set edit tree
                     // for update and insert
@@ -3516,7 +3529,11 @@ class Repository_Action_Main_Update extends RepositoryAction
                     $this->editTree->recountPrivateContents();
 
                     // Add privatetree Parameter 2013/04/04 K.Matsuo --start--
-                    $query = "INSERT INTO ". DATABASE_PREFIX. "repository_parameter ".
+		    $query = "SELECT param_name FROM ".DATABASE_PREFIX."repository_parameter where param_name='is_make_privatetree';";
+		    $retRef = $this->Db->execute($query);
+                    if($retRef === false || count($retRef)!=1){
+
+		                        $query = "INSERT INTO ". DATABASE_PREFIX. "repository_parameter ".
                              "(param_name, param_value, explanation, ins_user_id, mod_user_id, ".
                              " del_user_id, ins_date, mod_date, del_date, is_delete) ".
                              "VALUES('is_make_privatetree', '0', 'プライベートツリーの自動作成を行うか否か(1:自動作成する, 0:自動作成しない)', ?, ?, '0', ?, ?, '', 0);";
@@ -3533,6 +3550,11 @@ class Repository_Action_Main_Update extends RepositoryAction
                         $this->failTrans();
                         throw $exception;
                     }
+}
+		$query = "SELECT param_name FROM ".DATABASE_PREFIX."repository_parameter where param_name='privatetree_sort_order'";
+		$retRef = $this->Db->execute($query);
+if($retRef === false || count($retRef)!=1){
+
                     $query = "INSERT INTO ". DATABASE_PREFIX. "repository_parameter ".
                              "(param_name, param_value, explanation, ins_user_id, mod_user_id, ".
                              " del_user_id, ins_date, mod_date, del_date, is_delete) ".
@@ -3550,6 +3572,10 @@ class Repository_Action_Main_Update extends RepositoryAction
                         $this->failTrans();
                         throw $exception;
                     }
+}
+		$query = "SELECT param_name FROM ".DATABASE_PREFIX."repository_parameter where param_name='privatetree_parent_indexid'";
+		$retRef = $this->Db->execute($query);
+if($retRef === false || count($retRef)!=1){
 
                     $query = "INSERT INTO ". DATABASE_PREFIX. "repository_parameter ".
                              "(param_name, param_value, explanation, ins_user_id, mod_user_id, ".
@@ -3568,6 +3594,7 @@ class Repository_Action_Main_Update extends RepositoryAction
                         $this->failTrans();
                         throw $exception;
                     }
+}
                     // Add privatetree Parameter 2013/04/04 K.Matsuo --end--
 
                     // delete file_download_type 2013/05/08 --start--
@@ -3589,6 +3616,9 @@ class Repository_Action_Main_Update extends RepositoryAction
                 case 206:
                     // Add harvest public parameter 2013/07/03 K.Matsuo --start--
                     // Add owner_user_id to repository_index
+		    $query = "SHOW COLUMNS FROM ".DATABASE_PREFIX."repository_index like 'harvest_public_state';";
+		    $retRef = $this->Db->execute($query);
+                    if($retRef === false || count($retRef)!=1){
                     $query = "ALTER TABLE ".DATABASE_PREFIX."repository_index ".
                              "ADD harvest_public_state INT(1) NOT NULL default 1 ".
                              "AFTER create_cover_flag;";
@@ -3599,9 +3629,15 @@ class Repository_Action_Main_Update extends RepositoryAction
                         $this->failTrans();
                         throw $exception;
                     }
+}
                     // Add harvest public parameter 2013/07/03 K.Matsuo --end--
                     // Add itemtype multi language 2013/07/22 K.Matsuo --start--
-                    $query = "CREATE TABLE ".DATABASE_PREFIX."repository_item_type_name_multilanguage ( ".
+		    $query = "SHOW TABLES LIKE '".DATABASE_PREFIX."repository_item_type_name_multilanguage';";
+
+		    $result = $this->Db->execute($query);
+                    if($result === false||count($result)!=1){
+
+                    	       $query = "CREATE TABLE ".DATABASE_PREFIX."repository_item_type_name_multilanguage ( ".
                              " `item_type_id` INT NOT NULL default 0, ".
                              " `attribute_id` INT NOT NULL default 0, ".
                              " `language` VARCHAR(64) NOT NULL default '', ".
@@ -3615,15 +3651,17 @@ class Repository_Action_Main_Update extends RepositoryAction
                              " `is_delete` INT(1), ".
                              " PRIMARY KEY(`item_type_id`, `attribute_id`, `language`) ".
                              " ) ENGINE=innodb; ";
-                    $result = $this->Db->execute($query);
-                    if($result === false){
-                        $errMsg = $this->Db->ErrorMsg();
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
-                    }
+                    	     $result = $this->Db->execute($query);
+                    	     if($result === false){
+                       	      $errMsg = $this->Db->ErrorMsg();
+                        	// Rollback
+                           	$this->failTrans();
+				throw $exception;
+                    		}
+		    }
                     // Add itemtype multi language 2013/07/22 K.Matsuo --end--
                     // Add LOM Mapping Name Change 2013/08/22 K.Matsuo --start--
+
                     $preLomMapping = array('lifeCycleContributeAuthor', 'lifeCycleContributePublisher', 'lifeCycleContributePublishDate', 'lifeCycleContributeInitiator',
                                            'lifeCycleContributeTerminator', 'lifeCycleContributeValidator', 'lifeCycleContributeEditor', 'lifeCycleContributeGraphicalDesigner',
                                            'lifeCycleContributeTechnicalImplementer', 'lifeCycleContributeContentProvider', 'lifeCycleContributeTechnicalValidator', 'lifeCycleContributeEducationalValidator',
@@ -3685,26 +3723,35 @@ class Repository_Action_Main_Update extends RepositoryAction
                     // Add LOM Mapping Name Change 2013/08/22 K.Matsuo --end--
 
                     // Add harvest parameter 2013/08/14 K.Matsuo --start--
-                    $query = "ALTER TABLE ".DATABASE_PREFIX."repository_harvesting ".
-                             "ADD from_date VARCHAR(20) default NULL ".
-                             "AFTER base_url;";
+		    $query = "SHOW COLUMNS FROM ".DATABASE_PREFIX."repository_harvesting like 'from_date';";
                     $retRef = $this->Db->execute($query);
                     if($retRef === false || count($retRef)!=1){
-                        $errMsg = $this->Db->ErrorMsg();
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
-                    }
-                    $query = "ALTER TABLE ".DATABASE_PREFIX."repository_harvesting ".
-                             "ADD until_date VARCHAR(20) default NULL ".
-                             "AFTER from_date;";
-                    $retRef = $this->Db->execute($query);
+		    	$query = "ALTER TABLE ".DATABASE_PREFIX."repository_harvesting "."ADD from_date VARCHAR(20) default NULL "."AFTER base_url;";
+                        $retRef = $this->Db->execute($query);
+                        if($retRef === false || count($retRef)!=1){
+                        	   $errMsg = $this->Db->ErrorMsg();
+                       		    // Rollback
+                        	    $this->failTrans();
+                        	    throw $exception;
+                    	}
+		    }
+
+		    $query ="SHOW COLUMNS FROM ".DATABASE_PREFIX."repository_harvesting like 'until_date';";
+ 		    $retRef = $this->Db->execute($query);
                     if($retRef === false || count($retRef)!=1){
-                        $errMsg = $this->Db->ErrorMsg();
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
-                    }
+		    	       $query = "ALTER TABLE ".DATABASE_PREFIX."repository_harvesting "."ADD until_date VARCHAR(20) default NULL "."AFTER from_date;";
+                    	       $retRef = $this->Db->execute($query);
+                    	    if($retRef === false || count($retRef)!=1){
+                               $errMsg = $this->Db->ErrorMsg();
+                        	// Rollback
+                           $this->failTrans();
+				throw $exception;
+                    		}
+		    }
+		    $query = "SHOW COLUMNS FROM ".DATABASE_PREFIX."repository_harvesting like 'set_param'";
+
+		    $retRef = $this->Db->execute($query);
+                    if($retRef === false || count($retRef)!=1){
                     $query = "ALTER TABLE ".DATABASE_PREFIX."repository_harvesting ".
                              "ADD set_param TEXT ".
                              "AFTER until_date;";
@@ -3715,7 +3762,13 @@ class Repository_Action_Main_Update extends RepositoryAction
                         $this->failTrans();
                         throw $exception;
                     }
-                    $query = "ALTER TABLE ".DATABASE_PREFIX."repository_harvesting ".
+}
+                    
+		    $query = "SHOW COLUMNS FROM ".DATABASE_PREFIX."repository_harvesting like 'execution_date';";
+		    $retRef = $this->Db->execute($query);
+		    if($retRef === false || count($retRef)!=1){
+
+		    $query = "ALTER TABLE ".DATABASE_PREFIX."repository_harvesting ".
                              "ADD execution_date VARCHAR(20) default NULL ".
                              "AFTER automatic_sorting;";
                     $retRef = $this->Db->execute($query);
@@ -3725,6 +3778,7 @@ class Repository_Action_Main_Update extends RepositoryAction
                         $this->failTrans();
                         throw $exception;
                     }
+		    }
                     // Add harvest parameter 2013/08/14 K.Matsuo --end--
 
                     // Add 学位名を選択肢から自由入力に変更 2013/8/20 A.jin --start--
@@ -3758,10 +3812,15 @@ class Repository_Action_Main_Update extends RepositoryAction
                     // Add 学位名を選択肢から自由入力に変更 2013/8/20 A.jin --end--
 
 
+		    $query = "SELECT item_type_id FROM ".DATABASE_PREFIX."repository_item_type_name_multilanguage WHERE item_type_id='20016';";
+		    $result = $this->Db->execute($query);
+                    if($result ===false || count($retRef)!=258)
+                    {
+		    
                     // Add set LOM Multi-Language 2013/08/22 K.Matsuo --start--
-                    $this->setLOMMultiLang($user_id);
+                       $this->setLOMMultiLang($user_id);
                     // Add set LOM Multi-Language 2013/08/22 K.Matsuo --end--
-
+		    }
                     $this->versionUp('2.0.7');
 
                 // Add JuNii2 revision 2013/09/17 R.Matsuura --start--
@@ -3997,6 +4056,10 @@ class Repository_Action_Main_Update extends RepositoryAction
      */
     private function setLOMMultiLang($user_id)
     {
+    
+      $query = "SELECT COUNT(item_type_id) FROM ".DATABASE_PREFIX."repository_item_type_name_multilanguage WHERE item_type_id='20016' and language='japansese';";
+      $result = $this->Db->execute($query);
+      if($result === false || count($result)!=1){
        $japaneseArray =
            array('1' => 'URI' , '2' => 'ISSN' , '3' => 'NCID' , '4' => '書誌情報' , '5' => '著者版フラグ' ,
                  '6' => 'その他の識別子' , '7' => '言語' , '8' => '内容記述' , '9' => '適用範囲' , '10' => '構成' ,
@@ -4040,10 +4103,18 @@ class Repository_Action_Main_Update extends RepositoryAction
         $result = $this->Db->execute($query, $params);
         if($result === false)
         {
+		$errMsg = $this->Db->ErrorMsg();
             // Rollback
             $this->failTrans();
             throw $exception;
         }
+}
+
+
+      $query = "SELECT COUNT(item_type_id) FROM ".DATABASE_PREFIX."repository_item_type_name_multilanguage WHERE item_type_id='20016' and language='english';";
+      $result = $this->Db->execute($query);
+      if($result === false || count($result)!=1){
+
         $englishArray =
             array('1' => 'URI' , '2' => 'ISSN' , '3' => 'NCID' , '4' => 'Bibliographic information' , '5' => 'Author version flag' ,
                   '6' => 'Other identifiers' , '7' => 'Language' , '8' => 'Description' , '9' => 'Coverage' , '10' => 'Structure' ,
@@ -4092,6 +4163,11 @@ class Repository_Action_Main_Update extends RepositoryAction
             $this->failTrans();
             throw $exception;
         }
+}
+
+      $query = "SELECT COUNT(item_type_id) FROM ".DATABASE_PREFIX."repository_item_type_name_multilanguage WHERE item_type_id='20016' and language='chinese';";
+      $result = $this->Db->execute($query);
+      if($result === false || count($result)!=1){
 
         $chineseArray =
             array('1' => 'URI' , '2' => 'ISSN' , '3' => 'NCID' , '4' => '书目信息' , '5' => '作者版本标志' , '6' => '其他标识符' , '7' => '语言' , 
@@ -4135,7 +4211,9 @@ class Repository_Action_Main_Update extends RepositoryAction
             $this->failTrans();
             throw $exception;
         }
+	}
     }
+
     // Add set LOM Multi-Language 2013/08/22 K.Matsuo --end--
 
     // Add JuNii2 revision 2013/09/17 R.Matsuura --start--
@@ -4164,11 +4242,19 @@ class Repository_Action_Main_Update extends RepositoryAction
      */
     private function updateJuNii2Version2To3()
     {
+
         // add new attr that added revision of JuNii2Ver3 to harvest default item type
         for($itemTypeId = 20002; $itemTypeId <= 20015; $itemTypeId++)
         {
             $this->insertNewAttrForJuNii2Ver3($itemTypeId);
         }
+
+	$query = "SELECT id FROM ".DATABASE_PREFIX."repository_element_cd where id=30";
+	$result = $this->Db->execute($query);
+	if(count($result)===1){
+		return;
+	}
+	
         // add new element for JuNii2Ver3
         $query = "UPDATE ".DATABASE_PREFIX ."repository_element_cd ".
                 " SET id = id + ?, ".
@@ -4176,6 +4262,7 @@ class Repository_Action_Main_Update extends RepositoryAction
                 " WHERE id = ?;";
         for($elementId = 560; $elementId >= 250; $elementId -= 10)
         {
+
             $params = array();
             if($elementId >= 380)
             {
@@ -4188,15 +4275,21 @@ class Repository_Action_Main_Update extends RepositoryAction
                 $params[] = 1;
             }
             $params[] = $elementId;
-            $result = $this->Db->execute($query, $params);
-            if($result === false)
+
+
+	$result = $this->Db->execute($query, $params);
+	    if($result === false)
             {
                 $exception = new RepositoryException( "ERR_MSG_xxx-xxx1", "xxx-xxx1" );
+		$errMsg = $this->Db->ErrorMsg();
+
                 // Rollback
                 $this->failTrans();
                 throw $exception;
             }
-        }
+	   }
+        
+
 
         $params_array = array();
         $params_array[] = array('id' => 250, 'seq' => 25, 'data' => 'isbn', 'minoccur' => 0,
@@ -4453,6 +4546,11 @@ class Repository_Action_Main_Update extends RepositoryAction
      */
     private function addPrivateTreeCompositionToParameter()
     {
+	$query = "SELECT param_name FROM ".DATABASE_PREFIX."repository_parameter where param_name='private_tree_composition';";
+	$result = $this->Db->execute($query);
+	if(count($result)===1){
+		return;
+		}
         // get user ID from Session
         $user_id = $this->Session->getParameter("_user_id");
         $query = "INSERT INTO ". DATABASE_PREFIX. "repository_parameter ".
@@ -4482,6 +4580,11 @@ class Repository_Action_Main_Update extends RepositoryAction
      */
     private function addShorOrderToFileAndThumbnail()
     {
+	$query = "SHOW COLUMNS ".DATABASE_PREFIX."repository_file like 'show_order';";
+	$result = $this->Db->execute($query);
+	if(count($result)===1){
+		return;
+	}
         //The item of ShowOrder is added to a repository_file
         // "show_order" 追加
         $query = "ALTER TABLE ". DATABASE_PREFIX ."repository_file ".
@@ -4542,6 +4645,13 @@ class Repository_Action_Main_Update extends RepositoryAction
         $referenceURL_param_value = "";
         $referenceURL_explanation = "引用情報のベースURL";
         $user_id = $this->Session->getParameter("_user_id");
+
+	$query = "SELECT param_name FROM ".DATABASE_PREFIX."repository_parameter param_name='referenceURL';";
+	$result = $this->Db->execute($query);
+	if(count($result)===1){
+	 return;
+	 }
+
         $query = "INSERT INTO " . DATABASE_PREFIX . "repository_parameter " .
                  " (param_name, param_value, explanation, ins_user_id, mod_user_id, " .
                  "del_user_id, ins_date, mod_date, del_date, is_delete) ".
@@ -4561,6 +4671,8 @@ class Repository_Action_Main_Update extends RepositoryAction
         $retRef = $this->Db->execute($query, $params);
         if($retRef === false || count($retRef)!=1){
             $exception = new RepositoryException( "ERR_MSG_xxx-xxx1", "xxx-xxx1" );
+
+	    
             // Rollback
             $this->failTrans();
             throw $exception;
@@ -4575,6 +4687,12 @@ class Repository_Action_Main_Update extends RepositoryAction
      */
     private function updateWekoVersion208To209()
     {
+        $query = "SELECT prefix_id FROM ". DATABASE_PREFIX.RepositoryConst::DBTABLE_REPOSITORY_EXTERNAL_AUTHOR_ID_PREFIX." WHERE ".
+RepositoryConst::DBCOL_EXTERNAL_AUTHOR_ID_PREFIX_PREFIX_ID."=0;";
+	$result = $this->Db->execute($query);
+	if($result===false || count($result)!=1){
+		
+	
         // insert record 'e_mail_address' into external_author_id_prefix table
         $query = "INSERT INTO ". DATABASE_PREFIX. RepositoryConst::DBTABLE_REPOSITORY_EXTERNAL_AUTHOR_ID_PREFIX.
                              " (".RepositoryConst::DBCOL_EXTERNAL_AUTHOR_ID_PREFIX_PREFIX_ID.", ".RepositoryConst::DBCOL_EXTERNAL_AUTHOR_ID_PREFIX_PREFIX_NAME.", ".
@@ -4591,17 +4709,24 @@ class Repository_Action_Main_Update extends RepositoryAction
             $this->failTrans();
             throw $exception;
         }
-        
+        }
+
         // get E-Mail Address from name_authority table and insert into external_author_id_suffix table
         $query = "INSERT INTO ".DATABASE_PREFIX. RepositoryConst::DBTABLE_REPOSITORY_EXTERNAL_AUTHOR_ID_SUFFIX.
                  " ( author_id, prefix_id, suffix, ins_user_id, mod_user_id, del_user_id, ins_date, mod_date, del_date, is_delete) ".
                  "SELECT author_id, 0, e_mail_address, ins_user_id, mod_user_id, del_user_id, ins_date, mod_date, del_date, is_delete ".
                  "FROM ".DATABASE_PREFIX. RepositoryConst::DBTABLE_REPOSITORY_NAME_AUTHORITY." ".
                  "WHERE e_mail_address != ? AND e_mail_address IS NOT NULL GROUP BY author_id ;";
+
         $params = array();
         $params[] = "";
-        $result = $this->dbAccess->executeQuery($query, $params);
-        
+        //$result = $this->dbAccess->executeQuery($query, $params);
+        $result = $this->Db->execute($query, $params);
+
+	$query = "SHOW COLUMNS FROM ". DATABASE_PREFIX. RepositoryConst::DBTABLE_REPOSITORY_NAME_AUTHORITY." like 'e_mail_address';";
+	$result = $this->Db->execute($query);
+	if($result===false || count($result)!=0){
+	
         // delete 'e_mail_address' column from name_authority table
         $query = "ALTER TABLE ". DATABASE_PREFIX. RepositoryConst::DBTABLE_REPOSITORY_NAME_AUTHORITY." DROP e_mail_address;";
         $result = $this->Db->execute($query);
@@ -4611,7 +4736,11 @@ class Repository_Action_Main_Update extends RepositoryAction
             $this->failTrans();
             throw $exception;
         }
+}
 
+	$query = "SHOW TABLES like '".DATABASE_PREFIX. RepositoryConst::DBTABLE_REPOSITORY_SEND_FEEDBACKMAIL_AUTHOR_ID."';";
+	$result = $this->Db->execute($query);
+	if($result ===false||count($result)!=1){
         // create 'repository_send_feedbackmail_author_id' table
         $query = "CREATE TABLE ".DATABASE_PREFIX. RepositoryConst::DBTABLE_REPOSITORY_SEND_FEEDBACKMAIL_AUTHOR_ID." ( ".
                 " `item_id` int(11) NOT NULL default 0, ".
@@ -4622,13 +4751,13 @@ class Repository_Action_Main_Update extends RepositoryAction
                 " ) ENGINE=MyISAM; ";
         $params = array();
         $retRef = $this->Db->execute($query, $params);
-        if($retRef === false || count($retRef)!=1){
+        	if($retRef === false || count($retRef)!=1){
             $errMsg = $this->Db->ErrorMsg();
             // Rollback
             $this->failTrans();
             throw $exception;
-        }
-
+            }
+	}
         // version up to 2.0.9
         $this->versionUp('2.0.9');
     }
@@ -4786,7 +4915,8 @@ class Repository_Action_Main_Update extends RepositoryAction
         {
             $query .= " ) ENGINE=MyISAM; ";
         }
-        $this->dbAccess->executeQuery($query);
+//        $this->dbAccess->executeQuery($query);
+        $this->Db->execute($query);
     }
 
     /**
@@ -4796,6 +4926,9 @@ class Repository_Action_Main_Update extends RepositoryAction
      */
     private function createDateSearchTable($tableName)
     {
+	$query ="SHOW TABLES LIKE '".DATABASE_PREFIX. $tableName."';";
+	$result = $this->Db->execute($query);
+	if($result===false||count($result)!=1){
         $query = "CREATE TABLE ".DATABASE_PREFIX. $tableName. " ( ".
                 " `item_id` int NOT NULL default 0, ".
                 " `item_no` int NOT NULL default 0, ".
@@ -4805,6 +4938,7 @@ class Repository_Action_Main_Update extends RepositoryAction
                 " INDEX `metadata` (`metadata`) ".
                 " ) ENGINE=MyISAM; ";
         $this->dbAccess->executeQuery($query);
+}
     }
 
     /**
@@ -4813,6 +4947,10 @@ class Repository_Action_Main_Update extends RepositoryAction
      */
     private function updateWekoVersion209To2010()
     {
+
+	$query = "SHOW TABLES like '".DATABASE_PREFIX."repository_search_update_item';";
+	$result = $this->Db->execute($query);
+	if($result===false || count($result)!=1){
         $this->createSearchTables();
         $this->insertSearchItemSetup();
         $this->insertLockTable('Repository_Action_Common_Search_Update', 0);
@@ -4822,7 +4960,7 @@ class Repository_Action_Main_Update extends RepositoryAction
         // delete fulltext_data table
         $query = "DROP TABLE IF EXISTS ". DATABASE_PREFIX. "repository_fulltext_data ;";
         $this->dbAccess->executeQuery($query);
-
+}
         // version up to 2.0.10
         $this->versionUp('2.0.10');
     }
@@ -4869,6 +5007,9 @@ class Repository_Action_Main_Update extends RepositoryAction
      */
     private function updateWekoVersion2010To2011()
     {
+	$query ="SHOW INDEX FROM ".DATABASE_PREFIX. RepositoryConst::DBTABLE_REPOSITORY_INDEX." WHERE key_name='".RepositoryConst::DBCOL_REPOSITORY_INDEX_OWNER_USER_ID."';";
+	$result = $this->Db->execute($query);
+	if($result===false || count($result)!=1){
         // Add index
         $query = "ALTER TABLE ".DATABASE_PREFIX. RepositoryConst::DBTABLE_REPOSITORY_INDEX. " ".
                  "ADD INDEX ". RepositoryConst::DBCOL_REPOSITORY_INDEX_OWNER_USER_ID. " (".
@@ -4879,6 +5020,11 @@ class Repository_Action_Main_Update extends RepositoryAction
                  RepositoryConst::DBCOL_REPOSITORY_INDEX_PUB_DATE. "); ";
         $this->dbAccess->executeQuery($query);
 
+}
+
+	$query = "SHOW TABLES LIKE '".DATABASE_PREFIX."repository_index_browsing_authority';";
+	$result = $this->Db->execute($query);
+	if($result===false || count($query)!=1){
         // create new table
         $query = "CREATE TABLE ". DATABASE_PREFIX. "repository_index_browsing_authority ( ".
                  "`index_id` int NOT NULL default 0, ".
@@ -4898,6 +5044,12 @@ class Repository_Action_Main_Update extends RepositoryAction
                  "INDEX `index_browsing_authority` (`index_id`, `exclusive_acl_role_id`, `exclusive_acl_room_auth`) ".
                  " ) ENGINE=MyISAM; ";
         $this->dbAccess->executeQuery($query);
+	}
+	
+	$query = "SHOW TABLES LIKE '". DATABASE_PREFIX. "repository_index_browsing_groups';";
+	$result = $this->Db->execute($query);
+	if($result===false||count($result)!=1){
+	
         $query = "CREATE TABLE ". DATABASE_PREFIX. "repository_index_browsing_groups ( ".
                  "`index_id` int NOT NULL default 0, ".
                  "`exclusive_acl_group_id` int NOT NULL default 0, ".
@@ -4911,9 +5063,10 @@ class Repository_Action_Main_Update extends RepositoryAction
                  "PRIMARY KEY  (`index_id`, `exclusive_acl_group_id`) ".
                  " ) ENGINE=MyISAM; ";
         $this->dbAccess->executeQuery($query);
+}
 
         $this->recursiveProcessingFlgList[self::KEY_REPOSITORY_INDEX_MANAGER] = true;
-
+	
         // version up to 2.0.11
         $this->versionUp('2.0.11');
     }
@@ -4924,6 +5077,9 @@ class Repository_Action_Main_Update extends RepositoryAction
      */
     private function updateWekoVersion2011To2012()
     {
+	$query = "SHOW TABLES LIKE '".DATABASE_PREFIX."repository_prefix'";
+	$result = $this->Db->execute($query);
+	if($result === false || count($result)!=1){
         // create new table
         $query = "CREATE TABLE ". DATABASE_PREFIX. "repository_prefix ( ".
                  "`id` int NOT NULL default 0, ".
@@ -4939,6 +5095,10 @@ class Repository_Action_Main_Update extends RepositoryAction
                  "PRIMARY KEY  (`id`) ".
                  " ) ENGINE=innodb; ";
         $this->dbAccess->executeQuery($query);
+}
+	$query = "SHOW TABLES LIKE '".DATABASE_PREFIX."repository_suffix'";
+	$result	 = $this->Db->execute($query);
+	if($result === false ||	count($result)!=1){
         $query = "CREATE TABLE ". DATABASE_PREFIX. "repository_suffix ( ".
                  "`item_id` int NOT NULL default 0, ".
                  "`item_no` int NOT NULL default 0, ".
@@ -4954,7 +5114,8 @@ class Repository_Action_Main_Update extends RepositoryAction
                  "PRIMARY KEY  (`item_id`, `item_no`, `id`) ".
                  " ) ENGINE=innodb; ";
         $this->dbAccess->executeQuery($query);
-        
+        }
+
         $user_id = $this->Session->getParameter("_user_id");
         $date = $this->TransStartDate;
 
@@ -4982,25 +5143,32 @@ class Repository_Action_Main_Update extends RepositoryAction
         $params[] = $user_id;
         $params[] = $date;
         $params[] = $date;
-        $this->dbAccess->executeQuery($query, $params);
+        //$this->dbAccess->executeQuery($query, $params);
+        $this->dbAccess->execute($query, $params);
         
+
         $query = "SELECT param_value".
                  " FROM ". DATABASE_PREFIX. "repository_parameter".
                  " WHERE param_name = 'prefixID'".
                  " AND is_delete = 0 ;";
         $YHandlePrefixParam = $this->dbAccess->executeQuery($query);
         $prefix = $YHandlePrefixParam[0]["param_value"];
-        
+
+
         $query = "UPDATE ". DATABASE_PREFIX. "repository_prefix".
                  " SET prefix_id = '". $YHandlePrefixParam[0]["param_value"]."'".
                  " WHERE id = 10 ;";
         $this->dbAccess->executeQuery($query);
-        
+
+	$query = "SHOW COLUMNS FROM ".DATABASE_PREFIX."repository_index LIKE 'jalc_doi';";
+	$result = $this->Db->execute($query);
+	if($result===false||count($result)!=1){
         //JaLC DOI設定値をインデックスに追加する処理
         $query = "ALTER TABLE ". DATABASE_PREFIX ."repository_index ".
                  "ADD `jalc_doi` INT NOT NULL default 0 AFTER `harvest_public_state`;";
         $this->dbAccess->executeQuery($query);
-        
+        }
+
         $query = "INSERT INTO ". DATABASE_PREFIX. "repository_suffix".
                  " (item_id, item_no, id, suffix, ins_user_id, mod_user_id, del_user_id, ins_date, mod_date, del_date, is_delete) ".
                  "  SELECT ITEM.item_id, ITEM.item_no, PREFIX.id, REPLACE(".
@@ -5015,7 +5183,7 @@ class Repository_Action_Main_Update extends RepositoryAction
         $params[] = $date;
         $params[] = $date;
         $this->dbAccess->executeQuery($query, $params);
-        
+
         $query = "UPDATE ". DATABASE_PREFIX. "repository_item".
                  " SET uri=concat('". BASE_URL. "/?action=repository_uri&item_id=', item_id)".
                  "  WHERE uri LIKE 'http://id.nii.ac.jp/". $prefix. "/%';";
@@ -5181,6 +5349,7 @@ class Repository_Action_Main_Update extends RepositoryAction
      */
     private function updateWekoVersion210To211()
     {
+
         $this->createDateSearchTable("repository_search_dateofissued_ymd");
         $this->remakeIndexForAcceleration();
         $this->recursiveProcessingFlgList[self::KEY_REPOSITORY_SEARCH_TABLE_PROCESSING] = true;
@@ -5208,6 +5377,9 @@ class Repository_Action_Main_Update extends RepositoryAction
      */
     private function insertLockTable($process_name, $status)
     {
+	$query = "SELECT process_name FROM ". DATABASE_PREFIX. "repository_lock WHERE process_name='".$process_name."';";
+	$result = $this->Db->execute($query);
+	if($result===false||count($result)!=1){
         $query = "INSERT INTO ". DATABASE_PREFIX. "repository_lock ".
                 "(`process_name`, `status`, `comment`) ".
                 "VALUES (?, ?, ?); ";
@@ -5216,6 +5388,7 @@ class Repository_Action_Main_Update extends RepositoryAction
         $params[] = $status;
         $params[] = "";
         $this->dbAccess->executeQuery($query, $params);
+}
         return true;
     }
     
@@ -5260,12 +5433,14 @@ class Repository_Action_Main_Update extends RepositoryAction
         $query = "ALTER TABLE ". DATABASE_PREFIX. "repository_index ".
                  "ADD biblio_flag INT(1) NOT NULL DEFAULT 0 ".
                  "AFTER owner_user_id; ";
-        $this->dbAccess->executeQuery($query);
+        //$this->dbAccess->executeQuery($query);
+	$this->Db->execute($query);
 
         $query = "ALTER TABLE ". DATABASE_PREFIX. "repository_index ".
                  "ADD online_issn VARCHAR(9) DEFAULT '' ".
                  "AFTER biblio_flag; ";
-        $this->dbAccess->executeQuery($query);
+        //$this->dbAccess->executeQuery($query);
+	$this->Db->execute($query);
         return true;
     }
     
@@ -5282,7 +5457,8 @@ class Repository_Action_Main_Update extends RepositoryAction
                   " `mail_address` TEXT NOT NULL, ".
                   " PRIMARY KEY(`no`) ".
                   ") ENGINE=innodb;";
-         $result = $this->dbAccess->executeQuery($query);
+//         $result = $this->dbAccess->executeQuery($query);
+         $result = $this->Db->execute($query);
      }
      
     /**
@@ -5304,43 +5480,58 @@ class Repository_Action_Main_Update extends RepositoryAction
                   " `is_delete` INT(1), ".
                   " PRIMARY KEY(`issn`) ".
                   ") ENGINE=innodb;";
-         $result = $this->dbAccess->executeQuery($query);
+//         $result = $this->dbAccess->executeQuery($query);
+         $result = $this->Db->execute($query);
      }
 
     private function remakeIndexForAcceleration()
     {
+
         $query = "ALTER TABLE ".DATABASE_PREFIX. RepositoryConst::DBTABLE_REPOSITORY_INDEX. " ".
                 "ADD INDEX ". RepositoryConst::DBCOL_REPOSITORY_INDEX_SELECT_INDEX_LIST_DISPLAY. " (".
                 RepositoryConst::DBCOL_REPOSITORY_INDEX_SELECT_INDEX_LIST_DISPLAY. "); ";
-        $this->dbAccess->executeQuery($query);
+        //$this->dbAccess->executeQuery($query);
+	$this->Db->execute($query);
+
         $query = "ALTER TABLE ".DATABASE_PREFIX. RepositoryConst::DBTABLE_REPOSITORY_INDEX. " ".
                 "ADD INDEX ". RepositoryConst::DBCOL_REPOSITORY_INDEX_PARENT_INDEX_ID. " (".
                 RepositoryConst::DBCOL_REPOSITORY_INDEX_PARENT_INDEX_ID. "); ";
-        $this->dbAccess->executeQuery($query);
-        $query = "ALTER TABLE ".DATABASE_PREFIX. RepositoryConst::DBTABLE_REPOSITORY_INDEX. " ".
+        //$this->dbAccess->executeQuery($query);
+	$this->Db->execute($query);
+
+	$query = "ALTER TABLE ".DATABASE_PREFIX. RepositoryConst::DBTABLE_REPOSITORY_INDEX. " ".
                 "ADD INDEX ". RepositoryConst::DBCOL_REPOSITORY_INDEX_CREATE_COVER_FLAG. " (".
                 RepositoryConst::DBCOL_REPOSITORY_INDEX_CREATE_COVER_FLAG. "); ";
-        $this->dbAccess->executeQuery($query);
+        //$this->dbAccess->executeQuery($query);
+	$this->Db->execute($query);
+
         $query = "ALTER TABLE ".DATABASE_PREFIX. RepositoryConst::DBTABLE_REPOSITORY_ITEM. " ".
                 "ADD INDEX ". RepositoryConst::DBCOL_REPOSITORY_ITEM_TITLE. " (".
                 RepositoryConst::DBCOL_REPOSITORY_ITEM_TITLE. "(10), ".RepositoryConst::DBCOL_REPOSITORY_ITEM_TITLE_ENGLISH. "(10)); ";
-        $this->dbAccess->executeQuery($query);
+        //$this->dbAccess->executeQuery($query);
+	$this->Db->execute($query);
+
+
         $query = "ALTER TABLE ".DATABASE_PREFIX. RepositoryConst::DBTABLE_REPOSITORY_ITEM. " ".
                 "ADD INDEX ". RepositoryConst::DBCOL_COMMON_IS_DELETE. " (".
                 RepositoryConst::DBCOL_COMMON_IS_DELETE. "); ";
-        $this->dbAccess->executeQuery($query);
-        
+        //$this->dbAccess->executeQuery($query);
+        $this->Db->execute($query);
+
         $query = "ALTER TABLE ".DATABASE_PREFIX. "repository_index_browsing_authority ".
                 "DROP INDEX `index_browsing_authority` ; ";
-        $this->dbAccess->executeQuery($query);
+        //$this->dbAccess->executeQuery($query);
+	$this->Db->execute($query);
         $query = "ALTER TABLE ".DATABASE_PREFIX. "repository_index_browsing_authority ".
                 "ADD INDEX `index_browsing_authority` (".
                 "`exclusive_acl_role_id`, `exclusive_acl_room_auth`, `public_state`, `pub_date`, `is_delete`); ";
-        $this->dbAccess->executeQuery($query);
+        //$this->dbAccess->executeQuery($query);
+	$this->Db->execute($query);
         $query = "ALTER TABLE ".DATABASE_PREFIX. "repository_index_browsing_authority ".
                 "ADD INDEX `index_public_state` (".
                 "`public_state`, `pub_date`, `is_delete`); ";
-        $this->dbAccess->executeQuery($query);
+        //$this->dbAccess->executeQuery($query);
+	$this->Db->execute($query);
     }
     // Add OpenDepo 2014/01/31 S.Arata --end--
     
@@ -5355,7 +5546,8 @@ class Repository_Action_Main_Update extends RepositoryAction
                   "WHERE param_name = ? ;";
          $params = array();
          $params[] = "site_license";
-         $retRef = $this->dbAccess->executeQuery($query, $params);
+         //$retRef = $this->dbAccess->executeQuery($query, $params);
+         $retRef = $this->Db->execute($query, $params);
 
          // fix site license value
          $site_license = "";
@@ -5376,7 +5568,9 @@ class Repository_Action_Main_Update extends RepositoryAction
              $params = array();
              $params[] = $site_license;
              $params[] = "site_license";
-             $this->dbAccess->executeQuery($query, $params);
+
+//             $this->dbAccess->executeQuery($query, $params);
+             $this->Db->execute($query, $params);
          }
      }
      
@@ -5388,12 +5582,14 @@ class Repository_Action_Main_Update extends RepositoryAction
         $query = "ALTER TABLE ". DATABASE_PREFIX. "repository_log ".
                  "ADD numeric_ip_address BIGINT NOT NULL DEFAULT -1 ".
                  "AFTER ip_address; ";
-        $this->dbAccess->executeQuery($query);
+        //$this->dbAccess->executeQuery($query);
+		$this->Db->execute($query);
         // Add referer
         $query = "ALTER TABLE ". DATABASE_PREFIX. "repository_log ".
                  "ADD referer TEXT NOT NULL ".
                  "AFTER user_agent; ";
-        $this->dbAccess->executeQuery($query);
+        //$this->dbAccess->executeQuery($query);
+	$this->Db->execute($query);
      }
     // add biblio flag to index 2014/04/15 T.Ichikawa --end--
     
@@ -5422,8 +5618,9 @@ class Repository_Action_Main_Update extends RepositoryAction
          $params[] = $this->Session->getParameter("_user_id");   // mod_user_id
          $params[] = $this->TransStartDate;  // ins_date
          $params[] = $this->TransStartDate;  // mod_date
-         $this->dbAccess->executeQuery($query, $params);
-     }
+//         $this->dbAccess->executeQuery($query, $params);
+	$this->Db->execute($query,$params); 
+    }
      
     /**
      * update Weko Version 2.1.2 To 2.1.3
@@ -5455,7 +5652,9 @@ class Repository_Action_Main_Update extends RepositoryAction
         $query = "ALTER TABLE ".DATABASE_PREFIX."repository_item_attr_type ".
                  "ADD `lido_mapping` TEXT NOT NULL ".
                  "AFTER `lom_mapping` ;";
-        $this->dbAccess->executeQuery($query);
+//        $this->dbAccess->executeQuery($query);
+        $this->Db->execute($query);
+
     }
     
     /**
@@ -5478,7 +5677,8 @@ class Repository_Action_Main_Update extends RepositoryAction
             $query = "INSERT INTO ".DATABASE_PREFIX."repository_item_type ".
                      "VALUE".
                     "(20017, 'LIDO', 'LIDO', 'harvesting item type', 'Others', '', '', '', '', '1', '1', '0', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0);";
-            $retRef = $this->dbAccess->executeQuery($query);
+//            $retRef = $this->dbAccess->executeQuery($query);
+            $retRef = $this->Db->execute($query);
         }
         
         $query = "SELECT item_type_id ".
@@ -5570,7 +5770,8 @@ class Repository_Action_Main_Update extends RepositoryAction
             $params[] = RepositoryConst::LIDO_TAG_ADMINISTRATIVE_METADATA.".".RepositoryConst::LIDO_TAG_RESOURCE_WRAP.".".RepositoryConst::LIDO_TAG_RESOURCE_SET.".".RepositoryConst::LIDO_TAG_RESOURCE_SOURCE.".".RepositoryConst::LIDO_TAG_LEGAL_BODY_NAME.".".RepositoryConst::LIDO_TAG_APPELLATION_VALUE;
             $params[] = RepositoryConst::LIDO_TAG_ADMINISTRATIVE_METADATA.".".RepositoryConst::LIDO_TAG_RESOURCE_WRAP.".".RepositoryConst::LIDO_TAG_RESOURCE_SET.".".RepositoryConst::LIDO_TAG_RIGHT_RESOURCE.".".RepositoryConst::LIDO_TAG_CREDIT_LINE;
             
-            $retRef = $this->dbAccess->executeQuery($query, $params);
+//            $retRef = $this->dbAccess->executeQuery($query, $params);
+            $retRef = $this->Db->execute($query, $params);
         }
     }
     
@@ -5605,7 +5806,8 @@ class Repository_Action_Main_Update extends RepositoryAction
         $params[] = $user_id;   // mod_user_id
         $params[] = $this->TransStartDate;  // ins_date
         $params[] = $this->TransStartDate;  // mod_date
-        $this->dbAccess->executeQuery($query, $params);
+//        $this->dbAccess->executeQuery($query, $params);
+        $this->Db->execute($query, $params);
     }
     
     /**
@@ -5629,7 +5831,8 @@ class Repository_Action_Main_Update extends RepositoryAction
                  " `is_delete` INT(1), ".
                  " PRIMARY KEY(`item_id`, `item_no`, `word`) ".
                  ") ENGINE=MYISAM;";
-        $this->dbAccess->executeQuery($query);
+//        $this->dbAccess->executeQuery($query);
+        $this->Db->execute($query);
         
         // create external searchword for search table
         // search mroonga
@@ -5661,7 +5864,8 @@ class Repository_Action_Main_Update extends RepositoryAction
                  " `is_delete` INT(1), ".
                  " PRIMARY KEY(`engine_id`) ".
                  ") ENGINE=MYISAM;";
-        $this->dbAccess->executeQuery($query);
+//        $this->dbAccess->executeQuery($query);
+        $this->Db->execute($query);
         // add default search engines
         $engine_data = array();
         $engine_data['YAHOO! JAPAN'] = array('domain' => 'search.yahoo.co.jp', 'search_word' => 'p', 'delimiter' => '/[+\\s]+/');
@@ -5689,7 +5893,8 @@ class Repository_Action_Main_Update extends RepositoryAction
                  " `is_delete` INT(1), ".
                  " PRIMARY KEY(`stop_word`, `part_of_speech`) ".
                  ") ENGINE=MYISAM;";
-        $this->dbAccess->executeQuery($query);
+//        $this->dbAccess->executeQuery($query);
+        $this->Db->execute($query);
         // add default stop words
         // 日本語
         // 接続詞(順接, 逆説, 並列・追加, 対比・選択, 説明・補足, 転換)
@@ -5799,7 +6004,8 @@ class Repository_Action_Main_Update extends RepositoryAction
             $engine_id++;
         }
         $query .= ";";
-        $this->dbAccess->executeQuery($query, $params);
+//        $this->dbAccess->executeQuery($query, $params);
+        $this->Db->execute($query, $params);
     }
     
     /**
@@ -5967,6 +6173,9 @@ class Repository_Action_Main_Update extends RepositoryAction
      */
     private function addOutputOaipmhParameter()
     {
+	$query = "SELECT param_name FROM ". DATABASE_PREFIX. "repository_parameter WHERE param_name='output_oaipmh';";
+	$result = $this->Db->execute($query);
+	if($result===false||count($result)!=1){
         $query = "INSERT INTO ". DATABASE_PREFIX. "repository_parameter ".
                  "(param_name, param_value, explanation, ".
                  " ins_user_id, mod_user_id, del_user_id, ins_date, mod_date, del_date, is_delete) ".
@@ -5983,6 +6192,7 @@ class Repository_Action_Main_Update extends RepositoryAction
         $params[] = 0; // is delete
         $query .= ";";
         $this->dbAccess->executeQuery($query, $params);
+}
     }
     
     /**

@@ -899,7 +899,9 @@ class Repository_Components_Querygenerator implements Repository_Components_Quer
             }
             // Add Senna judge T.Ichikawa 2014/12/01 --start--
             if($this->searchEngine == "mroonga") {
-                $tmpTermQuery .= "MATCH(".$shortName.".metadata) AGAINST(mroonga_escape(?, '()~><-*`\"\\\') IN BOOLEAN MODE) ";
+		// temporary fix
+                $tmpTermQuery .= "MATCH(".$shortName.".metadata) AGAINST(? IN BOOLEAN MODE) ";
+		//$tmpTermQuery .= "MATCH(".$shortName.".metadata) AGAINST(mroonga_escape(?, '()~><-*`\"\\\') IN BOOLEAN MODE) ";
                 $connectQueryParam[] = "+".$searchStringList[$ii];
             } else if($this->searchEngine == "senna") {
                 $tmpTermQuery .= "MATCH(".$shortName.".metadata) AGAINST(? IN BOOLEAN MODE) ";
