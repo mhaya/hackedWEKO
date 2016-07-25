@@ -23,10 +23,10 @@ patch/fromWeko2.2.3.patch
 
 修正箇所：
 
-repository/templates/default/repository\_item\_detail.html
-repository/templates/default/repository\_mobile\_item\_detail.html
-repository/templates/default/smartphone/repository\_item\_detail.html
-repository/files/css以下のstyle.css
+- repository/templates/default/repository\_item\_detail.html
+- repository/templates/default/repository\_mobile\_item\_detail.html
+- repository/templates/default/smartphone/repository\_item\_detail.html
+- repository/files/css以下のstyle.css
 
 
 	
@@ -37,9 +37,9 @@ repository/files/css以下のstyle.css
 
 修正箇所：
 
-repository/opensearch/Opensearch.class.php
-repository/opensearch/format/Atom.class.php
-repository/opensearch/format/FormatAbstract.class.php
+- repository/opensearch/Opensearch.class.php
+- repository/opensearch/format/Atom.class.php
+- repository/opensearch/format/FormatAbstract.class.php
 
 
 ###SWORDv2
@@ -47,10 +47,10 @@ repository/opensearch/format/FormatAbstract.class.php
 
 修正箇所：
 
-repository/action/main/sword/SwordUpdate.class.php
-repository/action/main/sword/SwordUtility.class.php
-repository/action/main/sword/import/Import.class.php
-repository/action/main/sword/servicedocument/Servicedocument.class.php
+- repository/action/main/sword/SwordUpdate.class.php
+- repository/action/main/sword/SwordUtility.class.php
+- repository/action/main/sword/import/Import.class.php
+- repository/action/main/sword/servicedocument/Servicedocument.class.php
 
 
 ###LIDO
@@ -59,7 +59,7 @@ repository/action/main/sword/servicedocument/Servicedocument.class.php
 
 修正箇所：
 
-repository/oaipmh/format/Lido.class.php
+- repository/oaipmh/format/Lido.class.php
 
 ###JuNII2
 - JuNII2マッピングによる意味欠落を要素名で補ってみる
@@ -67,8 +67,8 @@ repository/oaipmh/format/Lido.class.php
 
 修正箇所：
 
-repository/config/define.inc.php
-repository/oaipmh/format/JuNii2.class.php
+- repository/config/define.inc.php
+- repository/oaipmh/format/JuNii2.class.php
 
 ###IIIFマニフェストファイル生成機能
 - IIIFマニフェストファイルのエキスポート機能を実装してみる(2016/07/25)．
@@ -79,8 +79,8 @@ repository/oaipmh/format/JuNii2.class.php
 
 修正箇所：
 
-repository/config/define.inc.php
-repository/iiif/
-repository/templates/default/repository\_item\_detail.html
-repository/view/common/item/detail/Detail.class.php
-repository/view/main/item/detail/Detail.class.php
+- repository/config/define.inc.php
+- repository/iiif/
+- repository/templates/default/repository\_item\_detail.html
+- repository/view/common/item/detail/Detail.class.php
+- repository/view/main/item/detail/Detail.class.php
