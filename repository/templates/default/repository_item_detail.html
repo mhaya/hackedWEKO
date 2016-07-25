@@ -1088,6 +1088,11 @@
 					<td><a href="<{$smarty.session.bibtex_uri}>" target="_blank"><img src="<{$smarty.const.CORE_BASE_URL}>/images/repository/default/bibtex.png" alt="BIBTEX" /></a></td>
 					<td><a href="<{$smarty.session.swrc_uri}>" target="_blank"><img src="<{$smarty.const.CORE_BASE_URL}>/images/repository/default/swrc.png" alt="SWRC"/></a></td>
 					<td><a href="#" onclick="repositoryCls['<{$id}>'].repositoryGoMainExportDetailConfirm('<{$smarty.session.prev_page_uri}>'); return false;"><img src="<{$smarty.const.CORE_BASE_URL}>/images/repository/default/export.png" alt="WEKO EXPORT"/></a></td>
+<!--add 2016/07/25 mhaya-->
+<{if _REPOSITORY_REPON_IIIF_SUPPORT==true}>
+<td><a href="<{$smarty.session.iiif_uri}>" target="_blank"><img src="<{$smarty.const.CORE_BASE_URL}>/images/repository/default/iiif.png" alt="IIIF" /></a></td>
+<{/if}>
+<!--2016/07/25 mhaya end  -->
 					<td><a href="#" onclick="repositoryCls['<{$id}>'].repositoryGoDetailPrint('<{$smarty.const.BASE_URL}>/index.php?action=repository_action_main_print'); return false;"><img src="<{$smarty.const.CORE_BASE_URL}>/images/repository/default/print.png" alt="PRINT PREVIEW"/></a></td>
 				</tr>
 				<{* Modify Directory specification BASE_URL K.Matsuo 2011/9/5 --end-- *}>
@@ -1311,11 +1316,13 @@
 												<td class="td_detail_line_repos w80">
 												  <{section name=j loop=$item_attr[i]}>
 
-<!-- using iframe/img tag 2012/09/20 by mhaya start -->
+<!-- using iframe/img tag 2016/07/25 by mhaya start -->
 <{if $item_attr[i][j].attribute_value[1] != "" && (strstr(strtolower($item_attr[i][0].attribute_value[1]),"iframe"))==true}>
        <iframe src="<{$item_attr[i][j].attribute_value[0]}>" class="hackedWekoItem" scrolling="auto">Sorry. This content use IFrame</iframe>
 <{elseif strstr(strtolower($item_attr[i][j].attribute_value[0]),".jpg")==true||strstr(strtolower($item_attr[i][j].attribute_value[0]),".jpg")==true}>
-       <img src="<{$item_attr[i][j].attribute_value[0]}>" class="hackedWekoItem" alt="<{$item_attr[i][j].attribute_value[1]}>"/><br/>
+       <a target="_blank" href="<{$item_attr[i][j].attribute_value[0]}>">
+       <img src="<{$item_attr[i][j].attribute_value[0]}>" class="hackedWekoItem" alt="<{$item_attr[i][j].attribute_value[1]}>"/></a>
+<br/>
 <{else}>
        <a target="_blank" href="<{$item_attr[i][j].attribute_value[0]}>">
        <{if $item_attr[i][j].attribute_value[1] != ""}>
@@ -1325,7 +1332,7 @@
        <{/if}>
         </a><br/>
 <{/if}>
-<!-- using iframe/img tag 2012/09/20 by mhaya end -->
+<!-- using iframe/img tag 2016/07/25 by mhaya end -->
         
 
                                                                                                   <{/section}>

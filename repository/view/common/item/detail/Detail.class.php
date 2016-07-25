@@ -117,6 +117,8 @@ class Repository_View_Common_Item_Detail extends RepositoryAction
             $this->Session->removeParameter("oaipmh_uri");
             $this->Session->removeParameter("bibtex_uri");
             $this->Session->removeParameter("swrc_uri");
+            // Add iiif presentation api support mhaya 2016/08/25
+            $this->Session->removeParameter("iiif_uri");
             
             // Add smartPhone support T.Koyasu 2012/04/09 -start-
             $mainDetail = new Repository_View_Main_Item_Detail($this->Session, $this->Db, $this->item_id, $this->item_no, $this->getData, $this->languagesView, $this->block_id, $this->commonMain, true);

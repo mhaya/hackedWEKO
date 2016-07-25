@@ -895,11 +895,13 @@
                                                 <th class="th_detail_line_repos vt al w20 ws"><{$attr_type[i].attribute_name}></th>
                                                 <td class="td_detail_line_repos w80">
                                                   <{section name=j loop=$item_attr[i]}>
-<!-- using iframe/img tag 2012/09/20 by mhaya start -->
+<!-- using iframe/img tag 2016/07/25 by mhaya start -->
                                                     <{if $item_attr[i][j].attribute_value[1] != "" && (strstr(strtolower($item_attr[i][0].attribute_value[1]),"iframe"))==true}>
        <iframe style="width: 60%;" src="<{$item_attr[i][j].attribute_value[0]}>" scrolling="auto">Sorry. This content use IFrame</iframe>
 <{elseif strstr(strtolower($item_attr[i][j].attribute_value[0]),".jpg")==true||strstr(strtolower($item_attr[i][j].attribute_value[0]),".jpg")==true}>
+       <a target="_blank" href="<{$item_attr[i][j].attribute_value[0]}>">
        <img style="width: 60%;" src="<{$item_attr[i][j].attribute_value[0]}>" alt="<{$item_attr[i][j].attribute_value[1]}>"/>
+</a>
 <{else}>
        <a target="_blank" href="<{$item_attr[i][j].attribute_value[0]}>">
        <{if $item_attr[i][j].attribute_value[1] != ""}>
@@ -909,7 +911,7 @@
        <{/if}>
        </a><br>
 <{/if}>
-       <!-- using iframe/img tag 2012/09/20 by mhaya end -->
+       <!-- using iframe/img tag 2016/07/25 by mhaya end -->
        
                                                     <{/section}>
                                                 </td>

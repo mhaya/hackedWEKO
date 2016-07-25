@@ -406,7 +406,12 @@ class Repository_View_Main_Item_Detail extends RepositoryAction
             // Add Output SWRC feed on detail page 2008/11/12 A.Suzuki --start--
             $this->Session->setParameter("swrc_uri", BASE_URL."/?action=repository_swrc&itemId=".$this->item_id."&itemNo=".$this->item_no);
             // Add Output SWRC feed on detail page 2008/11/12 A.Suzuki --end--
-             
+
+            // Add Output IIIF manifest on detail page 2016/07/25 mhaya --start--
+            $this->Session->setParameter("iiif_uri", BASE_URL."/?action=repository_iiif&itemId=".$this->item_id."&itemNo=".$this->item_no);
+            // Add Output IIIF manifest on detail page 2016/07/25 mhaya --end--
+            
+            
             // 通貨単位設定
             $money_units = null;
             $money_units = $this->getMoneyUnit();
