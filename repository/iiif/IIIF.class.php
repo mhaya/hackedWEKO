@@ -904,6 +904,14 @@ class Repository_IIIF extends RepositoryAction
         if(isset($this->iiif_fields['description'])){
             $data += array("description"=>$this->iiif_fields['description']); 
         }
+
+        // set metadata
+        $metadata = [];
+        if(isset($this->iiif_fields['author'])){
+            $metadata[] = array("label"=>"Author","value"=>$this->iiif_fields['author']);
+        }
+        $data += array("metadata"=>$metadata);
+        
         // set image url
 
         $canvases =[];
@@ -922,76 +930,9 @@ class Repository_IIIF extends RepositoryAction
               }
         }
         $sequences[]= array("@id"=>$url."/sequence/normal","@type"=>"sc:Sequence","canvases"=>$canvases);
-        //$sequnces +=array("canvases"=>$canvases);
-         $data +=array("sequences"=>$sequences);
 
-
-       
+        $data +=array("sequences"=>$sequences);
         $feed = json_encode($data);
-        /**
-    	// 文献種類、引用キー
-    	$feed = '@misc{weko_'.$this->itemId.'_'.$this->itemNo.','.$this->LF;
-    	
-    	// author(OPT)
-    	if(isset($this->iiif_fields['author'])){
-    		$feed .= '   author'.$this->TAB_SHIFT.' = "'.$this->iiif_fields['author'].'"';
-    	}
-    	
-    	// title(OPT)
-    	if(isset($this->iiif_fields['title'])){
-    		if($this->iiif_fields['author'] != null){
-    			$feed .= ','.$this->LF;
-    		}
-    		$feed .= '   title'.$this->TAB_SHIFT.' = "'.$this->iiif_fields['title'].'"';
-    	}
-    	// howpublished(OPT)
-    	if(isset($this->iiif_fields['howpublished'])){
-    		if($this->iiif_fields['author'] != null 
-    		|| $this->iiif_fields['title']){
-    			$feed .= ','.$this->LF;
-    		}
-    		$feed .= '   howpublished'.$this->TAB_SHIFT.' = "'.$this->iiif_fields['howpublished'].'"';
-    	}
-    	// month(OPT)
-    	if(isset($this->iiif_fields['month'])){
-    		if($this->iiif_fields['author'] != null 
-    		|| $this->iiif_fields['title'] 
-    		|| $this->iiif_fields['howpublished']){
-    			$feed .= ','.$this->LF;
-    		}
-    		$feed .= '   month'.$this->TAB_SHIFT.' = "'.$this->iiif_fields['month'].'"';
-    	}
-    	// year(OPT)
-    	if(isset($this->iiif_fields['year'])){
-    		if($this->iiif_fields['author'] != null 
-    		|| $this->iiif_fields['title'] 
-    		|| $this->iiif_fields['howpublished']
-    		|| $this->iiif_fields['month']){
-    			$feed .= ','.$this->LF;
-    		}
-    		$feed .= '   year '.$this->TAB_SHIFT.' = "'.$this->iiif_fields['year'].'"';
-    	}
-    	// note(OPT)
-    	if(isset($this->iiif_fields['note'])){
-    		if($this->iiif_fields['author'] != null 
-    		|| $this->iiif_fields['title'] 
-    		|| $this->iiif_fields['howpublished']
-    		|| $this->iiif_fields['month']
-    		|| $this->iiif_fields['year']){
-    			$feed .= ','.$this->LF;
-    		}
-    		$feed .= '   note '.$this->TAB_SHIFT.' = "';
-    		for($ii=0;$ii<count($this->iiif_fields['note']);$ii++){
-    			if($ii != 0){
-    				$feed .= ','.$this->LF.$this->TAB_SHIFT.$this->TAB_SHIFT.'    ';
-    			}
-    			$feed .= $this->iiif_fields['note'][$ii]['attribute_name'].':'.$this->iiif_fields['note'][$ii]['attribute_value'];
-    		}
-    		$feed .= '"';
-    	}
-    	$feed .= $this->LF.'}'.$this->LF;
-    	return $feed;
-        */
         return $feed;
     }
 

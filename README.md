@@ -73,9 +73,9 @@ repository/oaipmh/format/JuNii2.class.php
 ###IIIFマニフェストファイル生成機能
 - IIIFマニフェストファイルのエキスポート機能を実装してみる(2016/07/25)．
 	- 機能を有効にする場合は，「\_REPOSITORY\_REPON\_IIIF\_SUPPORT」をtrueにする．
-	- junii2マッピングのtitle, description, fullTextURLを使ってmanifestを生成する．
+	- junii2マッピングのtitle, description, author, fullTextURLを使ってmanifestを生成する．
 	- fullTextURLに指定可能なのはImage API Level 1で提供されている画像URL．いまのところ，URLパターンは「xxxx/full/full/0/default.jpg」のみに限定している．
-	- もう少し汎用的な処理が必要．iiif:ImageProfile を参照するようにする？
+	- もう少し汎用的な処理が必要．ImageProfile を参照するようにする？
 
 修正箇所：
 
