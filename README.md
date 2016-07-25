@@ -15,11 +15,11 @@ patch/fromWeko2.2.3.patch
 
 ###アイテム詳細画面
 - リンク属性のURLの末尾がjpgだったらURLをimgタグで表示
--- sizeはcss指定（mobile, smartphoneは上記cssを読み込まないようなのでPC版のみ）
--- hyper linkも有効にする (2016/07/25)
+	- sizeはcss指定（mobile, smartphoneは上記cssを読み込まないようなのでPC版のみ）
+	- hyper linkも有効にする (2016/07/25)
 
 - リンク属性の表示名に「iframe」がある場合はURLをiframeで表示
--- sizeはcss指定（mobile, smartphoneは上記cssを読み込まないようなのでPC版のみ）
+	- sizeはcss指定（mobile, smartphoneは上記cssを読み込まないようなのでPC版のみ）
 
 修正箇所：
 
@@ -72,15 +72,15 @@ repository/oaipmh/format/JuNii2.class.php
 
 ###IIIFマニフェストファイル生成機能
 - IIIFマニフェストファイルのエキスポート機能を実装してみる(2016/07/25)．
--- 機能を有効にする場合は，「\_REPOSITORY\_REPON\_IIIF\_SUPPORT」をtrueにする．
--- junii2マッピングのtitle, description, fullTextURLを使ってmanifestを生成する．
--- fullTextURLに指定可能なのはImage API Level 1で提供されている画像URL．いまのところ，URLパターンは「xxxx/full/full/0/default.jpg」のみに限定している．
--- もう少し汎用的な処理が必要．iiif:ImageProfile を参照するようにする？
+	- 機能を有効にする場合は，「\_REPOSITORY\_REPON\_IIIF\_SUPPORT」をtrueにする．
+	- junii2マッピングのtitle, description, fullTextURLを使ってmanifestを生成する．
+	- fullTextURLに指定可能なのはImage API Level 1で提供されている画像URL．いまのところ，URLパターンは「xxxx/full/full/0/default.jpg」のみに限定している．
+	- もう少し汎用的な処理が必要．iiif:ImageProfile を参照するようにする？
 
 修正箇所：
 
-- repository/config/define.inc.php
-- repository/iiif/
-- repository/templates/default/repository\_item\_detail.html
-- repository/view/common/item/detail/Detail.class.php
-- repository/view/main/item/detail/Detail.class.php
+repository/config/define.inc.php
+repository/iiif/
+repository/templates/default/repository\_item\_detail.html
+repository/view/common/item/detail/Detail.class.php
+repository/view/main/item/detail/Detail.class.php
