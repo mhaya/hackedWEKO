@@ -71,18 +71,23 @@ patch/fromWeko2.2.3.patch
 - repository/oaipmh/format/JuNii2.class.php
 
 ###IIIFマニフェストファイル生成機能
-- IIIFマニフェストファイルのエキスポート機能を実装(2016/07/25)．
+- IIIFマニフェストファイルのエキスポート機能を簡易的に実装(2016/07/25)．
 	- 機能を有効にする場合は，「\_REPOSITORY\_REPON\_IIIF\_SUPPORT」をtrueにする．
-	- WEKOのマッピング機能を使い「junii2」の「title」, 「description」, 「author」, 「fullTextURL」にマッピングする．
-	- repository/iiif/config.ini にてIIIF ImageサーバのベースURLを「IIIF\_IMG\_SRV\_BASE\_URL」にImageサーバのプロファイルレベルを「IIIF\_IMG\_SRV\_PROFILE」に設定する．設定例は以下のとおり．
-	  - fullTextURLとして http://weko/iiif/test.tif/full/full/0/default.jpg を指定する場合は config.ini は以下の設定とする．
-	    - IIIF\_IMG\_SRV\_BASE\_URL[]= http://weko/iiif/
-	    - IIIF\_IMG\_SRV\_PROFILE[] = http://iiif.io/api/image/2/level1.json
+	- WEKOのマッピング機能で「junii2」の「title」, 「description」, 「author」, 「fullTextURL」と対応する要素をマッピングする．
+	- repository/iiif/config.ini でイメージサーバの設定をする．
+		- IIIF\_IMG\_SRV\_BASE\_URL[] = イメージサーバのベースURL
+		- IIIF\_IMG\_SRV\_PROFILE[] = イメージサーバのプロファイル
+	- fullTextURLとして http://weko/iiif/test.tif/full/full/0/default.jpg を指定する場合は config.ini は以下の設定とする．
+		- IIIF\_IMG\_SRV\_BASE\_URL[]= http://weko/iiif/
+		- IIIF\_IMG\_SRV\_PROFILE[] = http://iiif.io/api/image/2/level1.json
 
 修正箇所：
 
 - repository/config/define.inc.php
-- repository/iiif/
 - repository/templates/default/repository\_item\_detail.html
 - repository/view/common/item/detail/Detail.class.php
 - repository/view/main/item/detail/Detail.class.php
+
+追加：
+
+- - repository/iiif/
