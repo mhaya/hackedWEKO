@@ -96,4 +96,5 @@ define("_REPOSITORY_JALC_DATACITE_DOI", false);
 // default value false
 define("_REPOSITORY_REPON_JUNII2_EXDESCRIPTION",true);
 define("_REPOSITORY_REPON_IIIF_SUPPORT",true);
+
 ?>

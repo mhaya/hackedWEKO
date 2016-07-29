@@ -71,11 +71,13 @@ patch/fromWeko2.2.3.patch
 - repository/oaipmh/format/JuNii2.class.php
 
 ###IIIFマニフェストファイル生成機能
-- IIIFマニフェストファイルのエキスポート機能を実装してみる(2016/07/25)．
+- IIIFマニフェストファイルのエキスポート機能を実装(2016/07/25)．
 	- 機能を有効にする場合は，「\_REPOSITORY\_REPON\_IIIF\_SUPPORT」をtrueにする．
-	- junii2マッピングのtitle, description, author, fullTextURLを使ってmanifestを生成する．
-	- fullTextURLに指定可能なのはImage API Level 1で提供されている画像URL．いまのところ，URLパターンは「xxxx/full/full/0/default.jpg」のみに限定している．
-	- もう少し汎用的な処理が必要．ImageProfile を参照するようにする？
+	- WEKOのマッピング機能を使い「junii2」の「title」, 「description」, 「author」, 「fullTextURL」にマッピングする．
+	- repository/iiif/config.ini にてIIIF ImageサーバのベースURLを「IIIF\_IMG\_SRV\_BASE\_URL」にImageサーバのプロファイルレベルを「IIIF\_IMG\_SRV\_PROFILE」に設定する．設定例は以下のとおり．
+	  - fullTextURLとして http://weko/iiif/test.tif/full/full/0/default.jpg を指定する場合は config.ini は以下の設定とする．
+	    - IIIF\_IMG\_SRV\_BASE\_URL[]= http://weko/iiif/
+	    - IIIF\_IMG\_SRV\_PROFILE[] = http://iiif.io/api/image/2/level1.json
 
 修正箇所：
 

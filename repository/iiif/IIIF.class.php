@@ -44,6 +44,10 @@ class Repository_IIIF extends RepositoryAction
 	// グローバル
 	var $iiif_fields = array();
 
+	//config
+	var $config = array();
+
+
 
      /**
      * for instance of RepositoryHandleManager class
@@ -62,12 +66,13 @@ class Repository_IIIF extends RepositoryAction
     {
     	// 初期処理
     	$this->initAction();
-
+	// 設定読み込み
+	$this->config = parse_ini_file("config.ini");
 
         $this->getRepositoryHandleManager();
         
-		// フィード文字列取得
-		$feed = $this->outputIIIF();
+	// フィード文字列取得
+	$feed = $this->outputIIIF();
     	
     	// 取得結果がfalseでなければ
     	if ( $feed != false ) {
@@ -89,6 +94,10 @@ class Repository_IIIF extends RepositoryAction
 	
     function outputIIIF()
     {
+
+
+
+
     	// アイテム情報の取得
     	$query = 'SELECT ITEMTYPE.mapping_info, '.
     			 '		 ITEM.title, '.
@@ -919,13 +928,38 @@ class Repository_IIIF extends RepositoryAction
               for($jj=0;$jj<count($this->iiif_fields['fullTextURL']);$jj++){
                   $images = [];
                   
-                  list($img,$img_url) = split('\\|',$this->iiif_fields['fullTextURL'][$jj]);
-                  $img_info_url = preg_replace("/\\/full\\/full\\/0\\/default.jpg$/","",$img_url);
-                  $service = array("@context"=>"http://iiif.io/api/image/2/context.json","@id"=>$img_info_url,"profile"=>"http://iiif.io/api/image/2/level1.json");
-                  $resource = array("@id"=>$img_url,"@type"=>"dctypes:Image","format"=>"image/jpeg","service"=>$service);
+                  list($img_url,$imgDesc) = split('\\|',$this->iiif_fields['fullTextURL'][$jj]);
+		  
+		  $tmp = $this->config['IIIF_IMG_SRV_BASE_URL'];
+		  // img_urlからinfoとprofileを取り出す
+		  $profile_level = "";
+		  $img_info_url="";
+		  for($i =0 ;$i < count($tmp);$i++){
+		  	 if(strstr($img_url,$tmp[$i])){
+				$profile_level = $this->config['IIIF_IMG_SRV_PROFILE'][$i];
+				$tmp2=str_replace($tmp[$i],"",$img_url);
+	    			$idx=strpos($tmp2,"/");
+	        		$idx +=strlen($tmp[$i]);
+		    		$img_info_url = substr($img_url,0,$idx);
+				break;
+
+			 }
+		  }
+		  
+
+                  //$img_info_url = preg_replace("/\\/full\\/full\\/0\\/default.jpg$/","",$img_url);
+		  if($profile_level!=""){
+			$service = array("@context"=>"http://iiif.io/api/image/2/context.json","@id"=>$img_info_url,"profile"=>$profile_level);
+                  	$resource = array("@id"=>$img_url,"@type"=>"dctypes:Image","format"=>"image/jpeg","service"=>$service);
+		  }else{
+			$resource = array("@id"=>$img_url,"@type"=>"dctypes:Image","format"=>"image/jpeg");
+}
+
+
                   $canvas_url = $url."/canvaces/p".$jj;
                   $images[] = array("@type"=>"oa:Annotation","motivation"=>"sc:painting","on"=>$canvas_url,"resource"=>$resource);
-                  $canvas = array("@id"=>$canvas_url,"@type"=>"sc:Canvas","images"=>$images,"label"=>"p".$jj,"width"=>100,"height"=>150);
+//                  $canvas = array("@id"=>$canvas_url,"@type"=>"sc:Canvas","images"=>$images,"label"=>"p".$jj,"width"=>100,"height"=>150);
+                  $canvas = array("@id"=>$canvas_url,"@type"=>"sc:Canvas","images"=>$images,"label"=>$imgDesc,"width"=>100,"height"=>150);
               $canvases[]= $canvas;
               }
         }
