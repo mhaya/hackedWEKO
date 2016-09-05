@@ -7,6 +7,8 @@
 
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
 
+error_reporting(0);
+
 include_once MAPLE_DIR.'/includes/pear/File/Archive.php';
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
 require_once WEBAPP_DIR. '/modules/repository/action/main/export/ExportCommon.class.php';

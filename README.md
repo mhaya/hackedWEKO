@@ -90,4 +90,4 @@ patch/fromWeko2.2.3.patch
 
 追加：
 
-- - repository/iiif/
+- repository/iiif/
