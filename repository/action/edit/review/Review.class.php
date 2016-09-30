@@ -1,7 +1,15 @@
 <?php
+
+/**
+ * Action class for peer review and approval of the item
+ * アイテムの査読・承認用アクションクラス
+ * 
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Review.class.php 53594 2015-05-28 05:25:53Z kaede_matsushita $
+// $Id: Review.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -12,41 +20,117 @@
 // --------------------------------------------------------------------
 
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
+
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
 
 /**
- * [[機能説明]]
- *
- * @package     [[package名]]
- * @access      public
+ * Action class for peer review and approval of the item
+ * アイテムの査読・承認用アクションクラス
+ * 
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class Repository_Action_Edit_Review extends RepositoryAction
 {
 	// セッションとデータベースのオブジェクトを受け取る
+    /**
+     * Session management objects
+     * Session管理オブジェクト
+     *
+     * @var Session
+     */
     var $Session = null;
+    /**
+     * Database management objects
+     * データベース管理オブジェクト
+     *
+     * @var DbObject
+     */
     var $Db = null;
+    /**
+     * Object for the language table display
+     * 言語テーブル表示用オブジェクト
+     *
+     * @var Languages_View
+     */
     var $languagesView = null;
     
     // リクエストパラメタ
+    /**
+     * Peer review operation of each item
+     * アイテム毎の査読操作
+     *
+     * @var array[$ii]
+     */
     var $select_review = null;	// 未承認/承認/却下
+    /**
+     * Rejection reason for each item
+     * アイテム毎の却下理由
+     *
+     * @var array[$ii]
+     */
     var $reject_reason = null;	// 却下理由
+    /**
+     * Block ID of arranged WEKO to NC2
+     * NC2に配置されたWEKOのブロックID
+     *
+     * @var int
+     */
     var $block_id = null;		// ブロックID
     
     // Add review mail setting 2009/09/30 Y.Nakao --start--
+    /**
+     * Mail management objects
+     * メール管理オブジェクト
+     *
+     * @var Mail_Main
+     */
     var $mailMain = null;
     // Add review mail setting 2009/09/30 Y.Nakao --end--
 
     // add supple review 2009/009/18 A.Suzuki --start--
+    /**
+     * Peer review operation of each item(supple)
+     * アイテム毎の査読操作(サプリ)
+     *
+     * @var array[$ii]
+     */
     var $select_supple_review = null;	// サプリコンテンツ: 未承認/承認/却下
+    /**
+     * Rejection reason for each item(supple)
+     * アイテム毎の却下理由(サプリ)
+     *
+     * @var array[$ii]
+     */
     var $supple_reject_reason = null;	// サプリコンテンツ: 却下理由
+    /**
+     * Item and supple
+     * アイテムかサプリか
+     *
+     * @var string
+     */
     var $type = null;					// "item" or "supple"
+    /**
+     * Showing tab information
+     * 表示中タブ情報
+     *
+     * @var int
+     */
     var $review_active_tab = null;		// 表示中タブ情報
     // add supple review 2009/009/18 A.Suzuki --end--
     
     /**
-     * [[機能説明]]
+     * Perform a peer review and approval
+     * 査読・承認を行う
      *
      * @access  public
+     * @return string Result 結果
      */
     function execute()
     {
@@ -474,7 +558,7 @@ class Repository_Action_Edit_Review extends RepositoryAction
 				//$exception->setDetailMsg( $DetailMsg );             //詳細メッセージ設定
 				throw $exception;
 			}
-			
+			$this->finalize();
 			// Add update OK message 2009/01/23 A.Suzuki --start--
 	        if($update_count>0){
 	        	$this->Session->setParameter("redirect_flg", "review");
@@ -507,15 +591,15 @@ class Repository_Action_Edit_Review extends RepositoryAction
      * send mail for review result
      * 査読結果通知メール送信処理
      * 
-     * @param array $review_item 査読アイテム
-     * 				[ii]['item_id']
-     * 				[ii]['item_no']
-     * 				[ii]['attribute_id'](supple only)
-     * 				[ii]['supple_id'](supple only)
-     * 				[ii]['ins_user_id']
-     * 				[ii]['mod_user_id']
-     * 				[ii]['review']  : 1->accept, 0->reject
-     * 				[ii]['reject_reason']
+     * @param array $review_item Peer-reviewed items 査読アイテム
+     *                           array[ii]['item_id']
+     *                           array[ii]['item_no']
+     *                           array[ii]['attribute_id'](supple only)
+     *                           array[ii]['supple_id'](supple only)
+     *                           array[ii]['ins_user_id']
+     *                           array[ii]['mod_user_id']
+     *                           array[ii]['review']  : 1->accept, 0->reject
+     *                           array[ii]['reject_reason']
      */
     function sendMailReviewResult($review_item){
     	// 言語リソース取得

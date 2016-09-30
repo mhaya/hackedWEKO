@@ -1,7 +1,15 @@
 <?php
+
+/**
+ * Common classes for creating and updating the search table that holds the metadata and file contents of each item to search speed improvement
+ * 検索速度向上のためアイテム毎のメタデータおよびファイル内容を保持する検索テーブルの作成・更新を行う共通クラス
+ *
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: RepositorySearchTableProcessing.class.php 56819 2015-08-21 04:26:34Z tomohiro_ichikawa $
+// $Id: RepositorySearchTableProcessing.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics,
 // Research and Development Center for Scientific Information Resources
@@ -10,207 +18,517 @@
 // http://creativecommons.org/licenses/BSD/
 //
 // --------------------------------------------------------------------
-/* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
+/**
+ * Db connect class
+ * DB接続クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryDbAccess.class.php';
+/**
+ * Process utility class
+ * 汎用処理クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryProcessUtility.class.php';
+/**
+ * Handle manager class
+ * ハンドル管理クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryHandleManager.class.php';
+/**
+ * Search query generator class
+ * 検索クエリ作成クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/QueryGenerator.class.php';
+/**
+ * Plugin manager class
+ * プラグイン管理クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryPluginManager.class.php';
+/**
+ * Convert multi byte string class
+ * マルチバイト文字変換クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/files/plugin/searchkeywordconverter/Twobytechartohalfsizechar.class.php';
 
 /**
- * class of input data to search table
+ * Common classes for creating and updating the search table that holds the metadata and file contents of each item to search speed improvement
+ * 検索速度向上のためアイテム毎のメタデータおよびファイル内容を保持する検索テーブルの作成・更新を行う共通クラス
+ * 
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class RepositorySearchTableProcessing extends RepositoryAction
 {
-    // all metadata key
+    /**
+     * all metadata key
+     * all metadata key
+     */
     const ALLMETADATA = "allMetaData";
-    // all metadata table name
+    /**
+     * Search table name
+     * 検索テーブル名
+     */
     const ALLMETADATA_TABLE = "repository_search_allmetadata";
-    // filedata key
+    /**
+     * file data key
+     * file data key
+     */
     const FILEDATA = "fileData";
-    // filedata table name
+    /**
+     * Search table name
+     * 検索テーブル名
+     */
     const FILEDATA_TABLE = "repository_search_filedata";
-    // title key
+    /**
+     * title key
+     * title key
+     */
     const TITLE = "title";
-    // title key
+    /**
+     * title alternative key
+     * title alternative key
+     */
     const ALTER_TITLE = "alternative";
-    // title table name
+    /**
+     * Search table name
+     * 検索テーブル名
+     */
     const TITLE_TABLE = "repository_search_title";
-    // author key
+    /**
+     * author key
+     * author key
+     */
     const AUTHOR = "creator";
-    // author table name
+    /**
+     * Search table name
+     * 検索テーブル名
+     */
     const AUTHOR_TABLE = "repository_search_author";
-    // keyword key
+    /**
+     * keyword key
+     * keyword key
+     */
     const KEYWORD = "subject";
-    // keyword table name
+    /**
+     * Search table name
+     * 検索テーブル名
+     */
     const KEYWORD_TABLE = "repository_search_keyword";
-    // NIIsubject key
+    /**
+     * NII subject key
+     * NII subject key
+     */
     const NIISUBJECT = "NIIsubject";
-    // NIIsubject table name
+    /**
+     * Search table name
+     * 検索テーブル名
+     */
     const NIISUBJECT_TABLE = "repository_search_niisubject";
-    // NDC key
+    /**
+     * NDC key
+     * NDC key
+     */
     const NDC = "NDC";
-    // NDC table name
+    /**
+     * Search table name
+     * 検索テーブル名
+     */
     const NDC_TABLE = "repository_search_ndc";
-    // NDLC key
+    /**
+     * NDLC key
+     * NDLC key
+     */
     const NDLC = "NDLC";
-    // NDLC table name
+    /**
+     * Search table name
+     * 検索テーブル名
+     */
     const NDLC_TABLE = "repository_search_ndlc";
-    // BSH key
+    /**
+     * BSH key
+     * BSH key
+     */
     const BSH = "BSH";
-    // BSH table name
+    /**
+     * Search table name
+     * 検索テーブル名
+     */
     const BSH_TABLE = "repository_search_bsh";
-    // NDLSH key
+    /**
+     * NDLSH key
+     * NDLSH key
+     */
     const NDLSH = "NDLSH";
-    // NDLSH table name
+    /**
+     * Search table name
+     * 検索テーブル名
+     */
     const NDLSH_TABLE = "repository_search_ndlsh";
-    // MeSH key
+    /**
+     * MeSH key
+     * MeSH key
+     */
     const MESH = "MeSH";
-    // MeSH table name
+    /**
+     * Search table name
+     * 検索テーブル名
+     */
     const MESH_TABLE = "repository_search_mesh";
-    // DDC key
+    /**
+     * DDC key
+     * DDC key
+     */
     const DDC = "DDC";
-    // DDC table name
+    /**
+     * Search table name
+     * 検索テーブル名
+     */
     const DDC_TABLE = "repository_search_ddc";
-    // LCC key
+    /**
+     * LCC key
+     * LCC key
+     */
     const LCC = "LCC";
-    // LCC table name
+    /**
+     * Search table name
+     * 検索テーブル名
+     */
     const LCC_TABLE = "repository_search_lcc";
-    // UDC key
+    /**
+     * UDC key
+     * UDC key
+     */
     const UDC = "UDC";
-    // UDC table name
+    /**
+     * Search table name
+     * 検索テーブル名
+     */
     const UDC_TABLE = "repository_search_udc";
-    // LCSH key
+    /**
+     * LCSH key
+     * LCSH key
+     */
     const LCSH = "LCSH";
-    // LCSH table name
+    /**
+     * Search table name
+     * 検索テーブル名
+     */
     const LCSH_TABLE = "repository_search_lcsh";
-    // description key
+    /**
+     * description key
+     * description key
+     */
     const DESCTIPTION = "description";
-    // description table name
+    /**
+     * Search table name
+     * 検索テーブル名
+     */
     const DESCTIPTION_TABLE = "repository_search_description";
-    // publisher key
+    /**
+     * publisher key
+     * publisher key
+     */
     const PUBLISHER = "publisher";
-    // publisher table name
+    /**
+     * Search table name
+     * 検索テーブル名
+     */
     const PUBLISHER_TABLE = "repository_search_publisher";
-    // contributor key
+    /**
+     * contributor key
+     * contributor key
+     */
     const CONTRIBUTOR = "contributor";
-    // contributor table name
+    /**
+     * Search table name
+     * 検索テーブル名
+     */
     const CONTRIBUTOR_TABLE = "repository_search_contributor";
-    // date key
+    /**
+     * date key
+     * date key
+     */
     const DATE = "date";
-    // date table name
+    /**
+     * Search table name
+     * 検索テーブル名
+     */
     const DATE_TABLE = "repository_search_date";
-    // type key
+    /**
+     * type key
+     * type key
+     */
     const TYPE = "type";
-    // type table name
+    /**
+     * Search table name
+     * 検索テーブル名
+     */
     const TYPE_TABLE = "repository_search_type";
-    // format key
+    /**
+     * format key
+     * format key
+     */
     const FORMAT = "format";
-    // format table name
+    /**
+     * Search table name
+     * 検索テーブル名
+     */
     const FORMAT_TABLE = "repository_search_format";
-    // identifer key
+    /**
+     * identifier key
+     * identifier key
+     */
     const IDENTIFER = "identifier";
-    // identifer table name
+    /**
+     * Search table name
+     * 検索テーブル名
+     */
     const IDENTIFER_TABLE = "repository_search_identifier";
-    // URI key
+    /**
+     * URI key
+     * URI key
+     */
     const URI = "URI";
-    // URI table name
+    /**
+     * Search table name
+     * 検索テーブル名
+     */
     const URI_TABLE = "repository_search_uri";
-    // fulltextURL key
+    /**
+     * fulltextURL key
+     * fulltextURL key
+     */
     const FULLTEXTURL = "fullTextURL";
-    // fulltextURL table name
+    /**
+     * Search table name
+     * 検索テーブル名
+     */
     const FULLTEXTURL_TABLE = "repository_search_fulltexturl";
-    // selfDOI key
+    /**
+     * selfDOI key
+     * selfDOI key
+     */
     const SELFDOI = "selfDOI";
-    // selfDOI table name
+    /**
+     * Search table name
+     * 検索テーブル名
+     */
     const SELFDOI_TABLE = "repository_search_selfdoi";
-    // ISBN key
+    /**
+     * ISBN key
+     * ISBN key
+     */
     const ISBN = "isbn";
-    // ISBN table name
+    /**
+     * Search table name
+     * 検索テーブル名
+     */
     const ISBN_TABLE = "repository_search_isbn";
-    // ISSN key
+    /**
+     * ISSN key
+     * ISSN key
+     */
     const ISSN = "issn";
-    // ISSN table name
+    /**
+     * Search table name
+     * 検索テーブル名
+     */
     const ISSN_TABLE = "repository_search_issn";
-    // NCID key
+    /**
+     * NCID key
+     * NCID key
+     */
     const NCID = "NCID";
-    // NCID table name
+    /**
+     * Search table name
+     * 検索テーブル名
+     */
     const NCID_TABLE = "repository_search_ncid";
-    // pmid key
+    /**
+     * pmid key
+     * pmid key
+     */
     const PMID = "pmid";
-    // pmid table name
+    /**
+     * Search table name
+     * 検索テーブル名
+     */
     const PMID_TABLE = "repository_search_pmid";
-    // doi key
+    /**
+     * DOI key
+     * DOI key
+     */
     const DOI = "doi";
-    // doi table name
+    /**
+     * Search table name
+     * 検索テーブル名
+     */
     const DOI_TABLE = "repository_search_doi";
-    // NAID key
+    /**
+     * NAID key
+     * NAID key
+     */
     const NAID = "NAID";
-    // NAID table name
+    /**
+     * Search table name
+     * 検索テーブル名
+     */
     const NAID_TABLE = "repository_search_naid";
-    // ichushi key
+    /**
+     * ichushi key
+     * ichushi key
+     */
     const ICHUSHI = "ichushi";
-    // ichushi table name
+    /**
+     * Search table name
+     * 検索テーブル名
+     */
     const ICHUSHI_TABLE = "repository_search_ichushi";
-    // jtitle key
+    /**
+     * jtitle key
+     * jtitle key
+     */
     const JTITLE = "jtitle";
-    // jtitle table name
+    /**
+     * Search table name
+     * 検索テーブル名
+     */
     const JTITLE_TABLE = "repository_search_jtitle";
-    // dateofissued key
+    /**
+     * date of issued key
+     * date of issued key
+     */
     const DATAODISSUED = "dateofissued";
-    // dateofissued table name
+    /**
+     * Search table name
+     * 検索テーブル名
+     */
     const DATAODISSUED_TABLE = "repository_search_dateofissued";
-    // language key
+    /**
+     * language key
+     * language key
+     */
     const LANGUAGE = "language";
-    // language table name
+    /**
+     * Search table name
+     * 検索テーブル名
+     */
     const LANGUAGE_TABLE = "repository_search_language";
-    // relation key
+    /**
+     * relation key
+     * relation key
+     */
     const SPATIAL = "spatial";
-    // relation key
+    /**
+     * relation key
+     * relation key
+     */
     const NIISPATIAL = "NIIspatial";
-    // relation table name
+    /**
+     * Search table name
+     * 検索テーブル名
+     */
     const RELATION_TABLE = "repository_search_relation";
-    // coverage key
+    /**
+     * coverage key
+     * coverage key
+     */
     const TEMPORAL = "temporal";
-    // coverage key
+    /**
+     * coverage key
+     * coverage key
+     */
     const NIITEMPORAL = "NIItemporal";
-    // coverage table name
+    /**
+     * Search table name
+     * 検索テーブル名
+     */
     const COVERAGE_TABLE = "repository_search_coverage";
-    // rights key
+    /**
+     * rights key
+     * rights key
+     */
     const RIGHTS = "rights";
-    // rights table name
+    /**
+     * Search table name
+     * 検索テーブル名
+     */
     const RIGHTS_TABLE = "repository_search_rights";
-    // textversion key
+    /**
+     * textversion key
+     * textversion key
+     */
     const TEXTVERSION = "textversion";
-    // textversion table name
+    /**
+     * Search table name
+     * 検索テーブル名
+     */
     const TEXTVERSION_TABLE = "repository_search_textversion";
-    // grantid key
+    /**
+     * grant id key
+     * grant id key
+     */
     const GRANTID = "grantid";
-    // grantid table name
+    /**
+     * Search table name
+     * 検索テーブル名
+     */
     const GRANTID_TABLE = "repository_search_grantid";
-    // dateofgranted key
+    /**
+     * date of granted key
+     * date of granted key
+     */
     const DATEOFGRANTED = "dateofgranted";
-    // dateofgranted table name
+    /**
+     * Search table name
+     * 検索テーブル名
+     */
     const DATEOFGRANTED_TABLE = "repository_search_dateofgranted";
-    // degreename key
+    /**
+     * degree name key
+     * degree name key
+     */
     const DEGREENAME = "degreename";
-    // degreename table name
+    /**
+     * Search table name
+     * 検索テーブル名
+     */
     const DEGREENAME_TABLE = "repository_search_degreename";
-    // grantor key
+    /**
+     * grantor key
+     * grantor key
+     */
     const GRANTOR = "grantor";
-    // grantor table name
+    /**
+     * Search table name
+     * 検索テーブル名
+     */
     const GRANTOR_TABLE = "repository_search_grantor";
-    // dateofissued key
+    /**
+     * date of issued key
+     * date of issued key
+     */
     const DATAODISSUED_YMD = "shown_date";
-    // dateofissued table name
+    /**
+     * Search table name
+     * 検索テーブル名
+     */
     const DATAODISSUED_YMD_TABLE = "repository_search_dateofissued_ymd";
-    // plugin parameter name
+    /**
+     * Plugin parameter name
+     * 検索プラグインパラメータ名
+     */
     const SEARCH_QUERY_COLUMN = "search_query_plugin";
 
     /**
      * Relation between mapping and a table
+     * マッピングとテーブルの対応付配列
      *
      * @var array
      */
@@ -218,20 +536,23 @@ class RepositorySearchTableProcessing extends RepositoryAction
     
     /**
      * Instance of RepositoryHandleManager
+     * RepositoryHandleManagerオブジェクト
      * 
-     * @var classObject
+     * @var RepositoryHandleManager
      */
     private $repositoryHandleManager = null;
     
     /**
      * Instance of query generator
+     * QueryGeneratorオブジェクト
      * 
-     * @var classObject
+     * @var Repository_Components_Querygeneratorinterface
      */
     private $queryGenerator = null;
     
     /**
      * plugin exist flag
+     * プラグインの存在フラグ
      * 
      * @var bool
      */
@@ -240,14 +561,18 @@ class RepositorySearchTableProcessing extends RepositoryAction
     // Extend Search Keyword 2015/02/26 K.Sugimoto --start--
     /**
      * Instance of SearchKeywordConverter
+     * Repository_Components_Searchkeywordconverterオブジェクト
      * 
-     * @var classObject
+     * @var Repository_Components_Searchkeywordconverter
      */
     private $searchKeywordConverter = null;
     // Extend Search Keyword 2015/02/26 K.Sugimoto --end--
     
     /**
-     * constructer
+     * RepositorySearchTableProcessing constructor.
+     *
+     * @param Session $Session session セッションオブジェクト
+     * @param DbObjectAdodb $db DB object DBオブジェクト
      */
     public function __construct($Session, $db)
     {
@@ -264,10 +589,14 @@ class RepositorySearchTableProcessing extends RepositoryAction
             $this->queryGenerator = new Repository_Components_Querygenerator(DATABASE_PREFIX);
         }
         // Add query manager 2014/08/21 T.Ichikawa --end--
+        
+        // ロガー
+        $this->Logger = WekoBusinessFactory::getFactory()->logger;
     }
 
     /**
-     * update and insert searchtables by all item
+     * update and insert search tables by all item
+     * 全てのアイテムの検索テーブルを更新する
      */
     public function updateSearchTableForAllItem()
     {
@@ -303,9 +632,10 @@ class RepositorySearchTableProcessing extends RepositoryAction
     }
 
     /**
-     * update and insert searchtables the item by which itemtype was changed.
+     * update and insert search tables the item by which item type was changed.
+     * アイテムタイプが変更されたアイテムの検索テーブルを更新する
      *
-     * @param itemtype_id chenged itemtype id
+     * @param int $itemtype_id changed item type ID アイテムタイプID
      */
     public function updateSearchTableForItemtype($itemtype_id)
     {
@@ -324,10 +654,11 @@ class RepositorySearchTableProcessing extends RepositoryAction
     }
 
     /**
-     * update and insert searchtables the item by which item was changed.
+     * update and insert search tables the item by which item was changed.
+     * 更新されたアイテムの検索テーブルを更新する
      *
-     * @param item_id chenged item id
-     * @param item_no chenged item no
+     * @param int $item_id item ID アイテムID
+     * @param int $item_no item number アイテム通番
      */
     public function updateSearchTableForItem($item_id, $item_no)
     {
@@ -343,6 +674,7 @@ class RepositorySearchTableProcessing extends RepositoryAction
 
     /**
      * delete records from search table
+     * 検索テーブルからレコードを削除する
      */
     public function deleteDataFromSearchTable()
     {
@@ -380,6 +712,10 @@ class RepositorySearchTableProcessing extends RepositoryAction
 
     /**
      * delete records from search table
+     * 指定されたアイテムの検索テーブルレコードを削除する
+     *
+     * @param array $itemList item list アイテムリスト
+     *                         array[$ii]["item_id"|"item_no"]
      */
     private function deleteDataFromSearchTableByItemList($itemList)
     {
@@ -417,6 +753,10 @@ class RepositorySearchTableProcessing extends RepositoryAction
     // Add for OpenDepo R.Matsuura 2014/03/28 --start--
     /**
      * delete one record from search table
+     * 指定されたアイテムの検索レコードを削除する
+     *
+     * @param int $item_id item ID アイテムID
+     * @param int $item_no item number アイテム通番
      */
     public function deleteDataFromSearchTableByItemId($item_id, $item_no)
     {
@@ -429,9 +769,13 @@ class RepositorySearchTableProcessing extends RepositoryAction
     // Add for OpenDepo R.Matsuura 2014/03/28 --end--
     
     /**
-     * unsert search table in repository_search_update_item item
+     * insert search table in repository_search_update_item item
+     * テーブルから更新対象を取得して検索テーブルを更新する
      *
-     * @param itemList (item_id, item_no) List
+     * @param array $itemList item list アイテムリスト
+     *                         array[$ii]["item_id"|"item_no"]
+     * @return bool true/false update success/update failed 更新成功/更新失敗
+     * @throws RepositoryException
      */
     public function setDataToSearchTable($itemList)
     {
@@ -479,10 +823,17 @@ class RepositorySearchTableProcessing extends RepositoryAction
 
     /**
      * Item basic information is set as search information
+     * アイテム基本情報を検索テーブルに追加する
      *
-     * @param itemBaseInfo item base infomation
-     * @param searchItemInfo search data
-     * @param sortItemInfo sort data
+     * @param array $itemBaseInfo item base information
+     *                             アイテム基本情報
+     *                             array[$ii]["item_id"|"item_no"|"title"|...]
+     * @param array $searchItemInfo Data for search table
+     *                               検索テーブル挿入用データ
+     *                               array["allMetaData"|"creator"|"publisher"|"contributor"|...]
+     * @param array $sortItemInfo Data for sort table
+     *                             ソートテーブル挿入用データ
+     *                             array["biblio_date"|...]
      */
     private function addBaseData($itemBaseInfo, &$searchItemInfo, &$sortItemInfo)
     {
@@ -544,12 +895,21 @@ class RepositorySearchTableProcessing extends RepositoryAction
     }
 
     /**
-     * Item metadata information is set as search information
+     * Add item metadata information to data for search table
+     * アイテムの各メタデータ情報を検索テーブル挿入用データに追加する
      *
-     * @param itemMetaData item metadata infomation
-     * @param itemTypeMetaData itemtype metadata infomation
-     * @param searchItemInfo search data
-     * @param sortItemInfo sort data
+     * @param array $itemMetaData Item metadata infomation
+     *                            アイテムのメタデータ情報
+     *                            array[$ii]["family"|"name"|"familiy_ruby"|"name_ruby"|...]
+     * @param array $itemTypeMetaData Itemtype metadata infomation
+     *                                アイテムタイプのメタデータ情報
+     *                                array["junii2_mapping"|"dublin_core_mapping"|...]
+     * @param array $searchItemInfo Data for search table
+     *                              検索テーブル挿入用データ
+     *                              array["allMetaData"|"creator"|"publisher"|"contributor"|...]
+     * @param array $sortItemInfo Data for sort table
+     *                            ソートテーブル挿入用データ
+     *                            array["biblio_date"|...]
      */
     private function addInputData($itemMetaData, $itemTypeMetaData, &$searchItemInfo, &$sortItemInfo )
     {
@@ -559,25 +919,7 @@ class RepositorySearchTableProcessing extends RepositoryAction
             switch($itemTypeMetaData["input_type"])
             {
                 case "name":
-                    $addText = $itemMetaData[$ii]["family"].",".$itemMetaData[$ii]["name"].
-                               ",".$itemMetaData[$ii]["family_ruby"].",".$itemMetaData[$ii]["name_ruby"].
-                               ",".$itemMetaData[$ii]["e_mail_address"];
-                    $idList = $this->getSuffixId($itemMetaData[$ii]["author_id"]);
-                    for($jj = 0; $jj < count($idList); $jj++){
-                        $addText .= ",".$idList[$jj]["suffix"];
-                    }
-                    if(isset($itemTypeMetaData["junii2_mapping"]) && strlen($itemTypeMetaData["junii2_mapping"]) > 0){
-                        $addTextJunii2Converted = $this->convertSearchTableKeyword($addText, $itemTypeMetaData["junii2_mapping"], $toSearchKey);
-                        $this->setTextData($searchItemInfo, $itemTypeMetaData["junii2_mapping"], $addTextJunii2Converted);
-                    }
-				    // Extend Search Keyword 2015/02/23 K.Sugimoto --start--
-                    if(isset($itemTypeMetaData["dublin_core_mapping"]) && strlen($itemTypeMetaData["dublin_core_mapping"]) > 0 && $itemTypeMetaData["dublin_core_mapping"] !== $itemTypeMetaData["junii2_mapping"]){
-                        $addTextDublinCoreConverted = $this->convertSearchTableKeyword($addText, $itemTypeMetaData["dublin_core_mapping"], $toSearchKey);
-                        $this->setTextData($searchItemInfo, $itemTypeMetaData["dublin_core_mapping"], $addTextDublinCoreConverted);
-                    }
-				    // Extend Search Keyword 2015/02/23 K.Sugimoto --end--
-                    $addTextAllMetadataConverted = $this->convertSearchTableKeyword($addText, self::ALLMETADATA, $toSearchKey);
-                    $this->setTextData($searchItemInfo, self::ALLMETADATA, $addTextAllMetadataConverted);
+                    $this->createDataForSearchTableFromNameMetadata($itemMetaData[$ii], $itemTypeMetaData, $searchItemInfo);
                     break;
                 case "thumbnail":
                     if(isset($itemTypeMetaData["junii2_mapping"]) && strlen($itemTypeMetaData["junii2_mapping"]) > 0){
@@ -612,8 +954,10 @@ class RepositorySearchTableProcessing extends RepositoryAction
                     
                     // Add free style license to search_rights table T.Koyasu 2014/06/10 --start--
                     if($itemMetaData[$ii]["license_id"] === "0"){
-                        $this->setTextData($searchItemInfo, self::RIGHTS, $itemMetaData[$ii]["license_notation"]);
-                        $this->setTextData($searchItemInfo, self::ALLMETADATA, $itemMetaData[$ii]["license_notation"]);
+                        $licenseNotationRightsConverted = $this->convertSearchTableKeyword($itemMetaData[$ii]["license_notation"], self::RIGHTS, $toSearchKey);
+                        $this->setTextData($searchItemInfo, self::RIGHTS, $licenseNotationRightsConverted);
+                        $licenseNotationAllMetadataConverted = $this->convertSearchTableKeyword($itemMetaData[$ii]["license_notation"], self::ALLMETADATA, $toSearchKey);
+                        $this->setTextData($searchItemInfo, self::ALLMETADATA, $licenseNotationAllMetadataConverted);
                     }
                     // Add free style license to search_rights table T.Koyasu 2014/06/10 --end--
                     
@@ -692,12 +1036,67 @@ class RepositorySearchTableProcessing extends RepositoryAction
             }
         }
     }
+    
+    /**
+     * Create data for search table from name metadata
+     * 氏名属性のメタデータから検索テーブル挿入用データを作成する
+     *
+     * @param array $nameMetadata Name metadata infomation
+     *                            氏名属性のメタデータ情報
+     *                            array["family"|"name"|"familiy_ruby"|"name_ruby"|...]
+     * @param array $itemTypeMetadata Itemtype metadata infomation
+     *                                アイテムタイプのメタデータ情報
+     *                                array["junii2_mapping"|"dublin_core_mapping"|...]
+     * @param array $searchItemInfo Data for search table
+     *                              検索テーブル挿入用データ
+     *                              array["allMetaData"|"creator"|"publisher"|"contributor"|...]
+     */
+    private function createDataForSearchTableFromNameMetadata($nameMetadata, $itemTypeMetadata, &$searchItemInfo)
+    {
+        $toSearchKey = new ToSearchKey();
+        // アイテムに登録された氏名属性のメタデータを下記の形式で検索テーブルに追加するようにする
+        // 姓,名,姓名,名姓,ヨミ(姓),ヨミ(名),ヨミ(姓)ヨミ(名),メールアドレス,外部著者ID_1,外部著者ID_2,……,外部著者ID_N
+        $addText = $nameMetadata["family"].",".$nameMetadata["name"].
+                   ",".$nameMetadata["family"].$nameMetadata["name"].
+                   ",".$nameMetadata["name"].$nameMetadata["family"].
+                   ",".$nameMetadata["family_ruby"].",".$nameMetadata["name_ruby"].
+                   ",".$nameMetadata["family_ruby"].$nameMetadata["name_ruby"].
+                   ",".$nameMetadata["e_mail_address"];
+        $idList = $this->getSuffixId($nameMetadata["author_id"]);
+        for($jj = 0; $jj < count($idList); $jj++){
+            $addText .= ",".$idList[$jj]["suffix"];
+        }
+        
+        // junii2マッピングを参照し、それに対応した検索テーブルに追加するよう検索テーブル挿入用データを更新する
+        if(isset($itemTypeMetadata["junii2_mapping"]) && strlen($itemTypeMetadata["junii2_mapping"]) > 0){
+            // キーワード検索時の揺らぎを吸収するため、全角英数字カナを半角に変換し、検索テーブルに追加するようにする
+            $addTextJunii2Converted = $this->convertSearchTableKeyword($addText, $itemTypeMetadata["junii2_mapping"], $toSearchKey);
+            $this->setTextData($searchItemInfo, $itemTypeMetadata["junii2_mapping"], $addTextJunii2Converted);
+        }
+	    // Extend Search Keyword 2015/02/23 K.Sugimoto --start--
+        // DublinCoreマッピングだけが設定されたメタデータも詳細検索ができるように、DublinCoreマッピングに対応した検索テーブルに追加するよう検索テーブル挿入用データを更新する
+        // (junii2マッピングとDublinCoreマッピングの値が異なるときのみ実施)
+        if(isset($itemTypeMetadata["dublin_core_mapping"]) && strlen($itemTypeMetadata["dublin_core_mapping"]) > 0 && $itemTypeMetadata["dublin_core_mapping"] !== $itemTypeMetadata["junii2_mapping"]){
+            // キーワード検索時の揺らぎを吸収するため、全角英数字カナを半角に変換し、検索テーブルに追加するようにする
+            $addTextDublinCoreConverted = $this->convertSearchTableKeyword($addText, $itemTypeMetadata["dublin_core_mapping"], $toSearchKey);
+            $this->setTextData($searchItemInfo, $itemTypeMetadata["dublin_core_mapping"], $addTextDublinCoreConverted);
+        }
+	    // Extend Search Keyword 2015/02/23 K.Sugimoto --end--
+        // キーワード検索時の揺らぎを吸収するため、全角英数字カナを半角に変換し、検索テーブルに追加するようにする
+        $addTextAllMetadataConverted = $this->convertSearchTableKeyword($addText, self::ALLMETADATA, $toSearchKey);
+        $this->setTextData($searchItemInfo, self::ALLMETADATA, $addTextAllMetadataConverted);
+    }
 
     /**
      * The contents of a file are set as search information
+     * ファイルの中身を検索テーブルに追加する
      *
-     * @param itemMetaData item metadata infomation
-     * @param searchItemInfo search data
+     * @param array $itemMetaData item metadata information
+     *                             アイテムメタデータ情報
+     *                             array[$ii]["item_id"|"item_no"|"title"|...]
+     * @param array $searchItemInfo Data for search table
+     *                              検索テーブル挿入用データ
+     *                              array["allMetaData"|"creator"|"publisher"|"contributor"|...]
      */
     private function addFileData($itemMetaData, &$searchItemInfo)
     {
@@ -711,27 +1110,14 @@ class RepositorySearchTableProcessing extends RepositoryAction
         
         $dir_path = $businessWorkdirectory->create();
         
-        // Fix processing order correcting. 2014/03/15 Y.Nakao --start--
-        // ファイルをコピーする
-        $contents_path = $this->getFileSavePath("file");
-        if(strlen($contents_path) == 0){
-            // default directory
-            $contents_path = BASE_DIR.'/webapp/uploads/repository/files';
-        }
-        // check directory exists
-        if( !(file_exists($contents_path)) ){
-            return false;
-        }
         $file_name = $itemMetaData['item_id'].'_'.
                     $itemMetaData['attribute_id'].'_'.
                     $itemMetaData['file_no'].'.'.
                     $itemMetaData['extension'];
-        $copyResult = copy( $contents_path.DIRECTORY_SEPARATOR.$file_name,
-                            $dir_path.$file_name);
-        if(!$copyResult){
-            return false;
-        }
-        // Fix processing order correcting. 2014/03/15 Y.Nakao --end--
+        // Add File replace T.Koyasu 2016/02/29 --start--
+        $business = BusinessFactory::getFactory()->getBusiness("businessContentfiletransaction");
+        $business->copyTo($itemMetaData['item_id'], $itemMetaData['attribute_id'], $itemMetaData['file_no'], 0, $dir_path.$file_name);
+        // Add File replace T.Koyasu 2016/02/29 --end--
         
         $txt = "";
         // 外部コマンドパス設定読込み追加 2008/08/07 Y.Nakao --start--
@@ -823,7 +1209,7 @@ class RepositorySearchTableProcessing extends RepositoryAction
             }
             while( ! feof( $fp ) ){
                 $line = fgets( $fp );
-                $mojicode = mb_detect_encoding($line);
+                $mojicode = mb_detect_encoding($line, "auto", false);
                 if(strtoupper($mojicode) != 'UTF-8')
                 {
                     $line= mb_convert_encoding($line, "UTF-8", $mojicode);
@@ -916,10 +1302,15 @@ class RepositorySearchTableProcessing extends RepositoryAction
     }
 
     /**
-     * execute
+     * Insert search table
+     * 検索テーブルに追加する
      *
-     * @param searchAllItemInfo all item search data
-     * @param sortAllItemInfo all item sort data
+     * @param array $searchAllItemInfo all item search data
+     *                                  アイテムメタデータ情報
+     *                                  array[$ii]["item_id"|"item_no"|"title"|...]
+     * @param array $sortAllItemInfo all item sort data
+     *                                検索テーブル挿入用データ
+     *                                array[$ii]["allMetaData"|"creator"|"publisher"|"contributor"|...]
      */
     private function insertSearchTable( $searchAllItemInfo, $sortAllItemInfo )
     {
@@ -1076,7 +1467,10 @@ class RepositorySearchTableProcessing extends RepositoryAction
     }
 
     /**
-     * execute
+     * recursive process
+     * 再帰実行
+     *
+     * @return execute result 実行結果
      */
     private function callAsyncProcess()
     {
@@ -1089,7 +1483,8 @@ class RepositorySearchTableProcessing extends RepositoryAction
     }
 
     /**
-     * execute
+     * Set mapping and table relation info
+     * マッピングとテーブルの対応付けを行う
      */
     private function setMappingTableRelation()
     {
@@ -1144,11 +1539,14 @@ class RepositorySearchTableProcessing extends RepositoryAction
     }
 
     /**
-     * regist data
+     * Set text data
+     * テキスト情報を連結する
      *
-     * @param registArray
-     * @param registKey
-     * @param registValue
+     * @param array $registArray text array テキスト配列
+     *                            array[$registKey]
+     * @param string $registKey mapping key マッピングキー
+     * @param string $registValue text テキスト
+     *
      */
     private function setTextData(&$registArray, $registKey, $registValue)
     {
@@ -1164,8 +1562,11 @@ class RepositorySearchTableProcessing extends RepositoryAction
     }
     /**
      * get suffix id for author
+     * 著者のサフィックス情報を取得する
      *
-     * @param auth_id search suffix id
+     * @param int $auth_id author ID 著者ID
+     * @return array author suffix 著者サフィックス
+     *                array[$ii]["author_id"|"suffix"|...]
      */
     private function getSuffixId($auth_id)
     {
@@ -1178,9 +1579,11 @@ class RepositorySearchTableProcessing extends RepositoryAction
         return $result;
     }
     /**
-     * Update SelfDoi searchtable
-     * @param int $item_id
-     * @param int $item_no
+     * Update SelfDoi search table
+     * seld DOIの検索テーブルを更新する
+     *
+     * @param int $item_id item ID アイテムID
+     * @param int $item_no item number アイテム通番
      */
     public function updateSelfDoiSearchTable($item_id, $item_no)
     {
@@ -1233,7 +1636,8 @@ class RepositorySearchTableProcessing extends RepositoryAction
         }
     }
     /**
-     * Get epositoryHandleManager
+     * Get repositoryHandleManager object
+     * ハンドル管理クラスのオブジェクトを取得する
      */
     private function getRepositoryHandleManager()
     {
@@ -1250,9 +1654,11 @@ class RepositorySearchTableProcessing extends RepositoryAction
     }
     /**
      * add external search word
-     * @param int $item_id
-     * @param int $item_no
-     * @param string $search_word
+     * 外部検索キーワードを検索テーブルに追加する
+     *
+     * @param int $item_id item ID アイテムID
+     * @param int $item_no item number アイテム通番
+     * @param string $search_word external search keyword 外部検索キーワード
      */
     public function addExternalSearchWord($item_id, $item_no, $search_word) {
 	    // Extend Search Keyword 2015/02/23 K.Sugimoto --start--
@@ -1276,9 +1682,12 @@ class RepositorySearchTableProcessing extends RepositoryAction
     // Extend Search Keyword 2015/02/26 K.Sugimoto --start--
     /**
      * convert search table keyword
-     * @param string $word
-     * @param string $mapping
-     * @param object $toSearchKey
+     * 検索テーブルに追加する文字列を変換する
+     *
+     * @param string $word word 文字列
+     * @param string $mapping mapping マッピング情報
+     * @param object $toSearchKey search key 検索キーオブジェクト
+     * @return string converted word 変換済文字列
      */
     public function convertSearchTableKeyword($word, $mapping, $toSearchKey=null) {
         if(!isset($this->searchKeywordConverter)) {

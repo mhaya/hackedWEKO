@@ -1,6 +1,6 @@
 <!--// ---------------------------------------------------------------------->
 <!--//                                                                     -->
-<!--// $Id: repository_export_list.html 31571 2014-02-10 10:16:56Z tomohiro_ichikawa $          -->
+<!--// $Id: repository_export_list.html 68946 2016-06-16 09:47:19Z tatsuya_koyasu $          -->
 <!--//                                                                     -->
 <!--// Copyright (c) 2007 - 2008, National Institute of Informatics,        -->
 <!--// Research and Development Center for Scientific Information Resources -->
@@ -160,7 +160,7 @@
 //	}
 
 	if($('export_msg') != null){
-		if(navigator.userAgent.indexOf("MSIE")!=-1 || navigator.userAgent.indexOf("Trident")!=-1){
+		if(navigator.userAgent.indexOf("MSIE")!=-1 || navigator.userAgent.indexOf("Trident")!=-1 || navigator.userAgent.indexOf("Edge")!=-1){
 			if(navigator.userAgent.indexOf("MSIE 8")==-1){
 				$('export_msg').style.position = "relative";
 			}
@@ -200,7 +200,7 @@
 		var userAgent = window.navigator.userAgent.toLowerCase();
 		var appVersion = window.navigator.appVersion.toLowerCase();
 		//IE
-		if (userAgent.indexOf("msie") > -1 || userAgent.indexOf("trident") > -1) {
+		if (userAgent.indexOf("msie") > -1 || userAgent.indexOf("trident") > -1 || userAgent.indexOf("edge") > -1) {
 			loadingIcon(true);
 			$('repositoryListDownload<{$id}>').innerHTML = '<iframe boder="0" name="exportFrame<{$id}>" id="exportFrame<{$id}>" src="'+url+'"></iframe>';
 			$('exportFrame<{$id}>').onreadystatechange = function(){

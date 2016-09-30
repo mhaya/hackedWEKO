@@ -1,36 +1,108 @@
 <?php
+
+/**
+ * Action class for WEKO login confirmation by the SWORD protocol
+ * SWORDプロトコルによるWEKOログイン確認用アクションクラス
+ *
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Login.class.php 36294 2014-05-27 06:29:14Z rei_matsuura $
+// $Id: Login.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
-// Copyright (c) 2007 - 2008, National Institute of Informatics, 
+// Copyright (c) 2007 - 2008, National Institute of Informatics,
 // Research and Development Center for Scientific Information Resources
 //
 // This program is licensed under a Creative Commons BSD Licence
 // http://creativecommons.org/licenses/BSD/
 //
 // --------------------------------------------------------------------
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
 
 /**
- * WEKO login check for SWROD
+ * Action class for WEKO login confirmation by the SWORD protocol
+ * SWORDプロトコルによるWEKOログイン確認用アクションクラス
+ * 
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class Repository_Action_Main_Sword_Login  extends RepositoryAction
 {
     // request parameter
-    var $login_id = null;
-    var $password = null;
+    /**
+     * NC2 Login ID
+     * NC2ログインID
+     *
+     * @var string
+     */
+    public $login_id = null;    // login_id
+    /**
+     * NC2 login password
+     * NC2ログインパスワード
+     *
+     * @var string
+     */
+    public $password = null;    // password
+    /**
+     * SCfW owner
+     * 所有者
+     *
+     * @var string
+     */
     var $sword_owner = null;
     
     // container
+    /**
+     * Session management objects
+     * Session管理オブジェクト
+     *
+     * @var Session
+     */
     var $Session = null;
+    /**
+     * Database management objects
+     * データベース管理オブジェクト
+     *
+     * @var DbObjectAdodb
+     */
     var $Db = null;
     
     // set parameter from login validate
+    /**
+     * User ID
+     * ユーザーID
+     *
+     * @var string
+     */
     var $user_id = "";
+    /**
+     * User authority ID
+     * ユーザーベース権限
+     *
+     * @var string
+     */
     var $user_authority_id = "";
+    /**
+     * Authority ID
+     * ユーザールーム権限
+     *
+     * @var string
+     */
     var $authority_id = "";
-        
+
+    /**
+     * Execute
+     * 実行
+     *
+     * @return string "success"/"error" success/failed 成功/失敗
+     */
     function execute()
     {
         $this->initAction();
@@ -211,10 +283,19 @@ class Repository_Action_Main_Sword_Login  extends RepositoryAction
         print $ret_xml;
         
         $this->exitAction();
+        $this->finalize();
         exit();
         
     }
-    
+
+    /**
+     * Get mail address
+     * メールアドレスを取得する
+     *
+     * @param string $user_id user ID ユーザーID
+     * @param string $email mail address メールアドレス
+     * @return bool true/false get success/get failed 取得成功/取得失敗
+     */
     function getEmailAddress($user_id, &$email){
         // init
         $email = "";
@@ -243,6 +324,10 @@ class Repository_Action_Main_Sword_Login  extends RepositoryAction
 
     /**
      * output error xml
+     * エラーをXML出力する
+     *
+     * @param string $error_msg error message エラーメッセージ
+     * @param string $summary error summary エラーサマリー
      */
     function outputError($error_msg, $summary){
         // header
@@ -260,9 +345,10 @@ class Repository_Action_Main_Sword_Login  extends RepositoryAction
     }
     
     /**
-     * [[アクション初期化処理]]
+     * Initialize
+     * 初期化
      *
-     * @access  public
+     * @return string "success"/"error" success/failed 成功/失敗
      */
     function initAction()
     {
@@ -336,9 +422,10 @@ class Repository_Action_Main_Sword_Login  extends RepositoryAction
     }
     
     /**
-     * [[アクション終了処理]]
+     * finalize
+     * 終了処理
      *
-     * @access  public
+     * @return string "success"/"error" success/failed 成功/失敗
      */
     function exitAction()
     {

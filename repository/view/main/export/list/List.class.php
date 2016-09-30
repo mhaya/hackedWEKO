@@ -1,7 +1,13 @@
 <?php
+/**
+ * View class for item list export confirmation
+ * アイテム一覧エクスポート確認用ビュークラス
+ *
+ * @package WEKO
+ */
 // --------------------------------------------------------------------
 //
-// $Id: List.class.php 53594 2015-05-28 05:25:53Z kaede_matsushita $
+// $Id: List.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -10,27 +16,59 @@
 // http://creativecommons.org/licenses/BSD/
 //
 // --------------------------------------------------------------------
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
 
 /**
- * [[機能説明]]
+ * View class for item list export confirmation
+ * アイテム一覧エクスポート確認用ビュークラス
  *
- * @package     [[package名]]
- * @access      public
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class Repository_View_Main_Export_List extends RepositoryAction
 {
     // Components
+    /**
+     * Session management objects
+     * Session管理オブジェクト
+     *
+     * @var Session
+     */
     var $Session = null;
     
     // member
+    /**
+     * Error message(size over)
+     * エラーメッセージ(サイズオーバー)
+     *
+     * @var string
+     */
     var $size_over_msg = "";
+    /**
+     * Error message (100 over)
+     * エラーメッセージ(100件より大きい)
+     *
+     * @var string
+     */
     var $count_over_msg = "";
+    /**
+     * Maximum export count message
+     * 最大エクスポート数メッセージ
+     *
+     * @var string
+     */
     var $max_export_count_msg = "";
     
     /**
-     * [[機能説明]]
+     * Display item list export confirmation
+     * アイテム一覧エクスポート画面表示
      *
      * @access  public
      */

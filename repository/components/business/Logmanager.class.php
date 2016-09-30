@@ -1,47 +1,171 @@
 <?php
+
 /**
- * $Id: Logmanager.class.php 51833 2015-04-09 05:08:57Z shota_suzuki $
- * 
- * entry log and update log
- * 
- * @author IVIS
+ * Log management common classes
+ * ログ管理共通クラス
  *
+ * @package WEKO
+ */
+
+// --------------------------------------------------------------------
+//
+// $Id: Bibtex.class.php 48455 2015-02-16 10:53:40Z atsushi_suzuki $
+//
+// Copyright (c) 2007 - 2008, National Institute of Informatics, 
+// Research and Development Center for Scientific Information Resources
+//
+// This program is licensed under a Creative Commons BSD Licence
+// http://creativecommons.org/licenses/BSD/
+//
+// --------------------------------------------------------------------
+
+/**
+ * Business logic abstract class
+ * ビジネスロジック基底クラス
  */
 require_once WEBAPP_DIR.'/modules/repository/components/FW/BusinessBase.class.php';
+
+/**
+ * Repository module constant class
+ * WEKO共通定数クラス
+ */
 require_once WEBAPP_DIR.'/modules/repository/components/RepositoryConst.class.php';
 
+/**
+ * Log management common classes
+ * ログ管理共通クラス
+ *
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
+ */
 class Repository_Components_Business_Logmanager extends BusinessBase
 {
+    /**
+     * Operation(Regist item)
+     * 操作(アイテム登録)
+     *
+     * @var int
+     */
     const LOG_OPERATION_ENTRY_ITEM = 1;
+    /**
+     * Operation(Download)
+     * 操作(ダウンロード)
+     *
+     * @var int
+     */
     const LOG_OPERATION_DOWNLOAD_FILE = 2;
+    /**
+     * Operation(Detail access)
+     * 操作(詳細画面)
+     *
+     * @var int
+     */
     const LOG_OPERATION_DETAIL_VIEW = 3;
+    /**
+     * Operation(Search)
+     * 操作(検索)
+     *
+     * @var int
+     */
     const LOG_OPERATION_SEARCH = 4;
+    /**
+     * Operation(Top)
+     * 操作(トップページ)
+     *
+     * @var int
+     */
     const LOG_OPERATION_TOP = 5;
+    /**
+     * Delete record number
+     * 削除ログレコード数
+     *
+     * @var int
+     */
     const REMOVE_LOG_NUM = 100;
+    /**
+     * Sub query type
+     * サブクエリ形式
+     * 
+     * @var int
+     */
     const SUB_QUERY_TYPE_DEFAULT = 0;
+    
+    /**
+     * Sub query type(search)
+     * サブクエリ形式(検索)
+     * 
+     * @var int
+     */
     const SUB_QUERY_TYPE_RANKING = 1;
+    /**
+     * Sub query From
+     * サブクエリFROM句
+     *
+     * @var string
+     */
     const SUB_QUERY_KEY_FROM = "from";
+    /**
+     * Sub query Where
+     * サブクエリWHERE句
+     *
+     * @var string
+     */
     const SUB_QUERY_KEY_WHERE = "where";
+    /**
+     * Elapsed time
+     * 経過時間
+     *
+     * @var int
+     */
     const EXCLUDE_ELAPSED_TIME = 30;
+    /**
+     * The number of access confirmation log record
+     * アクセス確認ログレコード数
+     *
+     * @var int
+     */
     const ACCESS_CHECK_LOG_NUM = 100;
+    /**
+     * Maximum INT
+     * INT最大値
+     *
+     * @var int
+     */
     const INT_MAX_SIZE = 2147483647;
+    
+    /**
+     * Max time that dates back in the elapsed time calculation
+     * 経過時間の計算で遡る最大時間
+     *
+     * @var string
+     */
+    const MAX_TIME_DATE_BACK_ELAPSED_TIME = "31 second";
     
     // Improve Search Log 2015/03/19 K.Sugimoto --start--
     // logNo of search
+    /**
+     * Search log number list
+     * 検索ログ通番一覧
+     *
+     * @var array[$ii]
+     */
     private $searchLogNoList = null;
     // Improve Search Log 2015/03/19 K.Sugimoto --end--
     
     /**
      * enrty log for operate WEKO
+     * ログ登録
      *
-     * @param int $operation_id
-     * @param int $item_id
-     * @param int $item_no
-     * @param int $attr_id
-     * @param int $file_no
-     * @param string $search_keyword
-     * @param int $search_id
-     * @return int: log_no of insert to repository_log
+     * @param int $operation_id Operation id 操作ID
+     * @param int $item_id Item id アイテムID
+     * @param int $item_no Item serial number アイテム通番
+     * @param int $attr_id Attribute id 属性ID
+     * @param int $file_no File number ファイル通番
+     * @param string $search_keyword Search keyword 検索キーワード
+     * @param int $search_id Search id 検索項目ID
+     * @return int Log number ログ通番
      */
     private function entryLog($operation_id, $item_id = 0, $item_no = 0, $attr_id= 0, $file_no = 0, $search_keyword = "", $search_id = -1)
     {
@@ -188,9 +312,11 @@ class Repository_Components_Business_Logmanager extends BusinessBase
     
     /**
      * Check entry log by ip address
+     * ログ登録可能かを確認
      *
-     * @param string $ipAddr
-     * @return boolean true : entry log OK
+     * @param string $ipAddr Ip addoress IPアドレス
+     * @return boolean Result 結果
+     *                 true : entry log OK
      *                 false: is not entry log
      */
     private function isEntryLogByIpAddress($ipAddr)
@@ -258,9 +384,11 @@ class Repository_Components_Business_Logmanager extends BusinessBase
     
     /**
      * Check entry log by user agent
+     * ユーザエージェントからログ登録可能かを確認する
      *
-     * @param string $userAgent
-     * @return boolean true : entry log OK
+     * @param string $userAgent User agent ユーザエージェント
+     * @return boolean Result 結果
+     *                 true : entry log OK
      *                 false: is not entry log
      */
     private function isEntryLogByUserAgent($userAgent)
@@ -299,10 +427,11 @@ class Repository_Components_Business_Logmanager extends BusinessBase
     
     /**
      * remove operation logs from weko
+     * ログレコード削除
      *
-     * @param int $startLogNo
-     * @param string $whereString
-     * @param array $whereParams
+     * @param int $startLogNo Start number 開始番号
+     * @param string $whereString Where string WHERE句
+     * @param array $whereParams Where parameter WHEREパラメータ
      */
     private function removeExclusionLog($startLogNo, $whereString, $whereParams)
     {
@@ -326,7 +455,10 @@ class Repository_Components_Business_Logmanager extends BusinessBase
     /**
      * get sub query for analize log
      * remove same access on 30 seconds
+     * 二重アクセス防止用のサブクエリを取得
      *
+     * @param int $subQueryType Sub query type サブクエリの種類
+     * @return string Subquery for unauthorized access prevention 二重アクセス防止用のサブクエリ
      */
     public static function getSubQueryForAnalyzeLog($subQueryType = self::SUB_QUERY_TYPE_DEFAULT)
     {
@@ -380,8 +512,9 @@ class Repository_Components_Business_Logmanager extends BusinessBase
     
     /**
      * update elapsed log of same log
+     * 経過時間を更新する
      *
-     * @param int $startLogNo
+     * @param int $startLogNo Start number 開始番号
      */
     public function updateElapsedTime($startLogNo)
     {
@@ -419,19 +552,20 @@ class Repository_Components_Business_Logmanager extends BusinessBase
     
     /**
      * search same access, get elasped time from same access and insert elapsed time
+     * ログおよび同アクセスからの経過時間を保存
      *
-     * @param int $operation_id
-     * @param string $date
-     * @param string $ip_address
-     * @param string $user_agent
-     * @param int $item_id
-     * @param int $item_no
-     * @param int $attr_id
-     * @param int $file_no
-     * @param string $user_id
-     * @param int $log_no
-     * @param string $search_keyword
-     * @param int $search_id
+     * @param int $operation_id Operation id 操作ID
+     * @param string $date Date 日付
+     * @param string $ip_address IP address IPアドレス
+     * @param string $user_agent User agent ユーザエージェント
+     * @param int $item_id Item id アイテムID
+     * @param int $item_no Item serial number アイテム通番
+     * @param int $attr_id Attribute id 属性ID
+     * @param int $file_no File number ファイル通番
+     * @param string $user_id User id ユーザID
+     * @param int $log_no Log number ログ通番
+     * @param string $search_keyword Search keyword 検索キーワード
+     * @param int $search_id Search id 検索項目ID
      */
     public function insertElapsedTimeRecord($operation_id, $date, $ip_address, $user_agent, $item_id, $item_no, $attr_id, $file_no, $user_id, $log_no, $search_keyword, $search_id = -1)
     {
@@ -473,17 +607,18 @@ class Repository_Components_Business_Logmanager extends BusinessBase
     
     /**
      * calculate elapsed time on same access
+     * 同アクセスからの経過時間を計算
      *
-     * @param int $operation_id
-     * @param string $date
-     * @param string $ip_address
-     * @param string $user_agent
-     * @param int $item_id
-     * @param int $item_no
-     * @param int $attr_id
-     * @param int $file_no
-     * @param string $user_id
-     * @param int $log_no
+     * @param int $operation_id Operation id 操作ID
+     * @param string $date Date 日付
+     * @param string $ip_address IP address IPアドレス
+     * @param string $user_agent User agent ユーザエージェント
+     * @param int $item_id Item id アイテムID
+     * @param int $item_no Item serial number アイテム通番
+     * @param int $attr_id Attribute id 属性ID
+     * @param int $file_no File number ファイル通番
+     * @param string $user_id User id ユーザID
+     * @param int $log_no Log number ログ通番
      */
     private function calcElapsedTimeOnSameAccess($operation_id, $date, $ip_address, $user_agent, $item_id, $item_no, $attr_id, $file_no, $user_id, $log_no)
     {
@@ -506,7 +641,7 @@ class Repository_Components_Business_Logmanager extends BusinessBase
         $params = array();
         $params[] = $date;
         $params[] = $operation_id;
-        $params[] = date("Y-m-d H:i:s.000", strtotime("$date -1 week"));
+        $params[] = date("Y-m-d H:i:s.000", strtotime("$date -".self::MAX_TIME_DATE_BACK_ELAPSED_TIME));
         $params[] = $date;
         $params[] = $user_id;
         $params[] = $log_no;
@@ -528,19 +663,20 @@ class Repository_Components_Business_Logmanager extends BusinessBase
     
     /**
      * calculate elapsed time on same keyword access
+     * 同アクセスからの経過時間を計算(検索)
      *
-     * @param int $operation_id
-     * @param string $date
-     * @param string $ip_address
-     * @param string $user_agent
-     * @param int $item_id
-     * @param int $item_no
-     * @param int $attr_id
-     * @param int $file_no
-     * @param string $user_id
-     * @param int $log_no
-     * @param string $search_keyword
-     * @param int $search_id
+     * @param int $operation_id Operation id 操作ID
+     * @param string $date Date 日付
+     * @param string $ip_address IP address IPアドレス
+     * @param string $user_agent User agent ユーザエージェント
+     * @param int $item_id Item id アイテムID
+     * @param int $item_no Item serial number アイテム通番
+     * @param int $attr_id Attribute id 属性ID
+     * @param int $file_no File number ファイル通番
+     * @param string $user_id User id ユーザID
+     * @param int $log_no Log number ログ通番
+     * @param string $search_keyword Search keyword 検索キーワード
+     * @param int $search_id Search id 検索項目ID
      */
     private function calcElapsedTimeOnSameKeywordAccess($operation_id, $date, $ip_address, $user_agent, $item_id, $item_no, $attr_id, $file_no, $user_id, $log_no, $search_keyword, $search_id)
     {
@@ -564,7 +700,7 @@ class Repository_Components_Business_Logmanager extends BusinessBase
         $params = array();
         $params[] = $date;
         $params[] = $operation_id;
-        $params[] = date("Y-m-d H:i:s.000", strtotime("$date -1 week"));
+        $params[] = date("Y-m-d H:i:s.000", strtotime("$date -".self::MAX_TIME_DATE_BACK_ELAPSED_TIME));
         $params[] = $date;
         $params[] = $user_id;
         $params[] = $log_no;
@@ -594,9 +730,10 @@ class Repository_Components_Business_Logmanager extends BusinessBase
     
     /**
      * entry log for regist item
+     * アイテム登録のログを保存
      *
-     * @param int $item_id
-     * @param int $item_no
+     * @param int $item_id Item id アイテムID
+     * @param int $item_no Item serial number アイテム通番
      */
     public function entryLogForRegistItem($item_id, $item_no)
     {
@@ -605,11 +742,12 @@ class Repository_Components_Business_Logmanager extends BusinessBase
     
     /**
      * entry log for downlord file
+     * ダウンロードログを保存
      *
-     * @param int $item_id
-     * @param int $item_no
-     * @param int $attr_id
-     * @param int $file_no
+     * @param int $item_id Item id アイテムID
+     * @param int $item_no Item serial number アイテム通番
+     * @param int $attr_id Attribute id 属性ID
+     * @param int $file_no File number ファイル通番
      */
     public function entryLogForDownload($item_id, $item_no, $attr_id, $file_no)
     {
@@ -618,9 +756,10 @@ class Repository_Components_Business_Logmanager extends BusinessBase
     
     /**
      * entry log for view item detail
+     * 詳細画面アクセスログを保存
      *
-     * @param unknown_type $item_id
-     * @param unknown_type $item_no
+     * @param int $item_id Item id アイテムID
+     * @param int $item_no Item serial number アイテム通番
      */
     public function entryLogForDetailView($item_id, $item_no)
     {
@@ -629,9 +768,10 @@ class Repository_Components_Business_Logmanager extends BusinessBase
     
     /**
      * entry log for keyword search
+     * 検索ログを保存
      *
-     * @param string $search_keyword
-     * @param int $search_id
+     * @param string $search_keyword Search keyword 検索キーワード
+     * @param int $search_id Search id 検索項目ID
      */
     public function entryLogForKeywordSearch($search_keyword, $search_id)
     {
@@ -665,7 +805,7 @@ class Repository_Components_Business_Logmanager extends BusinessBase
     
     /**
      * entry log for view top page
-     *
+     * トップページログを保存
      */
     public function entryLogForTopView()
     {
@@ -674,10 +814,11 @@ class Repository_Components_Business_Logmanager extends BusinessBase
     
     // Improve Search Log 2015/03/19 K.Sugimoto --start--
     /**
-     * sample search log exists
+     * Get search log no
+     * 検索ログのログ通番を取得する
      *
-     * @param int $log_no
-     * @param int $end_no
+     * @param int $log_no Start number 開始番号
+     * @param int $end_no End number 終了番号
     */
     public function isInsertDetailSearchAndCalcInsertLog($log_no, &$end_no)
     {
@@ -712,8 +853,8 @@ class Repository_Components_Business_Logmanager extends BusinessBase
     
     /**
      * add detail search item id
-     *
-    */
+     * 詳細検索項目IDを更新
+     */
     public function addDetailSearchItem()
     {
         for($ii = 0; $ii < count($this->searchLogNoList); $ii++)
@@ -743,7 +884,11 @@ class Repository_Components_Business_Logmanager extends BusinessBase
     
     /**
      * robotlist log delete
-    */
+     * ロボットのログを削除する
+     *
+     * @param string $column Column name カラム名
+     * @param string $word Word 検索語句
+     */
     public function removeLogByRobotlistWord($column, $word)
     {
         $query = "DELETE FROM ". DATABASE_PREFIX. "repository_log ". 
@@ -772,6 +917,7 @@ class Repository_Components_Business_Logmanager extends BusinessBase
     
     /**
      * exclusion address log delete
+     * 除外対象アドレスのログを削除する
     */
     public function removeExclusionAddress()
     {
@@ -822,7 +968,9 @@ class Repository_Components_Business_Logmanager extends BusinessBase
     
     /**
      * Add Excluded Ip Address List to repository_parameter table
-     *
+     * 除外対象IPアドレスを追加する
+     * 
+     * @param string $addExcludedIpAddr Excluded Ip Address 除外対象IPアドレス
      */
     public function addExcludedIpAddrToDatabase($addExcludedIpAddr)
     {

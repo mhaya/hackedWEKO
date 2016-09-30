@@ -1,7 +1,15 @@
 <?php
+
+/**
+ * Item authority common classes
+ * アイテム権限共通クラス
+ *
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: RepositoryItemAuthorityManager.class.php 41628 2014-09-17 02:01:48Z tatsuya_koyasu $
+// $Id: RepositoryItemAuthorityManager.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -10,22 +18,38 @@
 // http://creativecommons.org/licenses/BSD/
 //
 // --------------------------------------------------------------------
-
-/* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
-
+/**
+ * Logic abstract class
+ * WEKOロジック基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryLogicBase.class.php';
+/**
+ * Index authority manager class
+ * インデックス権限管理クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryIndexAuthorityManager.class.php';
 
+/**
+ * Item authority common classes
+ * アイテム権限共通クラス
+ *
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
+ */
 class RepositoryItemAuthorityManager extends RepositoryLogicBase
 {
     /**
      * check item public flg
+     * アイテム公開フラグをチェックする
      *
-     * @param int $item_id item_id
-     * @param int $item_no item_no
-     * @param bool $harvest_flg harvest_flg
-     * @return bool when true is public.
-     *              when false is close. 
+     * @param int $item_id item_id アイテムID
+     * @param int $item_no item_no アイテム通番
+     * @param int $adminBaseAuth admin base authority 管理者ベース権限
+     * @param int $adminRoomAuth admin room authority  管理者ルーム権限
+     * @param bool $harvest_flg harvest_flg ハーベスト公開フラグ
+     * @return bool true/false public/close 公開/非公開
      */
     public function checkItemPublicFlg($item_id, $item_no, $adminBaseAuth, $adminRoomAuth, $harvest_flg=null)
     {
@@ -83,11 +107,12 @@ class RepositoryItemAuthorityManager extends RepositoryLogicBase
     }
     
     /**
-     * call superclass' __construct
+     * construct
+     * コンストラクタ
      *
-     * @param var $session Session
-     * @param var $dbAccess Db
-     * @param string $transStartDate TransStartDate
+     * @param Session $session Session object セッションオブジェクト
+     * @param RepositoryDbAccess $dbAccess DB object DBオブジェクト
+     * @param string $transStartDate process start date 処理開始時間
      */
     public function __construct($session, $dbAccess, $transStartDate)
     {

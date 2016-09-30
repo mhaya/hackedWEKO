@@ -1,6 +1,6 @@
 <!--// ---------------------------------------------------------------------->
 <!--//                                                                     -->
-<!--// $Id: tree_edit.html 54835 2015-06-25 04:10:46Z keiya_sugimoto $          -->
+<!--// $Id: tree_edit.html 69071 2016-06-20 06:30:08Z tomohiro_ichikawa $          -->
 <!--//                                                                     -->
 <!--// Copyright (c) 2007 - 2008, National Institute of Informatics,        -->
 <!--// Research and Development Center for Scientific Information Resources -->
@@ -95,12 +95,6 @@
 							</td>
 						</tr>
 						<tr>
-							<td nowrap>JaLCDOIの属性値</td>
-							<td>
-								インデックスにJaLC DOIの属性値を設定します。<br/>
-							</td>
-						</tr>
-						<tr>
 							<td nowrap>ONLINE ISSN</td>
 							<td>
 								インデックスを一つの書籍として扱う設定をします。<br/>
@@ -179,7 +173,7 @@
 						投稿権限についての詳細は<a href="http://www.netcommons.org/nc20/nc20_manual/japanese/admin_manual/chapter3.html#3">NetCommonsのヘルプ</a>をご参照下さい。</li>
 					</ul>
 				</div>
-				<h3>移動<a name="move"></h3>
+				<h3><a name="move">移動</a></h3>
 				<div class="page_list">
 					インデックスのドラッグ&ドロップでインデックスを移動することができます。<br/>
 					インデックスの移動では子インデックスも一緒に移動されます。<br/>
@@ -187,7 +181,7 @@
 					<center><img src="./img/tree_edit_43.png" alt="インデックス移動" border="0"/></center>
 					<br/>
 				</div>
-				<h3>コピー<a name="copy"></h3>
+				<h3><a name="copy">コピー</a></h3>
 				<div class="page_list">
 					コントロールキーを押下しながら、インデックスのドラッグ&ドロップでインデックスをコピーすることができます。<br/>
 					インデックスのコピーでは設定および子インデックスも一緒にコピーされます。<br/>
@@ -199,7 +193,7 @@
 						<li>インデックスに所属するアイテムはコピーされません。</li>
 					</ul>
 				</div>
-				<h3>削除<a name="delete"></h3>
+				<h3><a name="delete">削除</a></h3>
 				<div class="page_list">
 					インデックスを削除することができます。<br/>
 					任意のインデックスをクリックして選択し、「削除」をクリックすると任意のインデックスが削除されます。<br/>
@@ -224,7 +218,33 @@
 					<br/>
 					<center><img src="./img/tree_edit_15.png" alt="処理結果" border="0"/></center>
 					<br/>
+					ルートインデックスを指定またはインデックスが未指定の場合、「削除」をクリックすると削除確認ダイアログが表示されます。<br/>
+					ルートインデックスの削除は登録している全てのインデックスおよびアイテムが削除されるため、チェックボックスにチェックを入れ、「全て削除」をクリックしないと実行されません。<br/>
+					<br/>
+					<center><img src="./img/tree_edit_20.png" alt="削除処理選択(ルート)" border="0"/></center>
+                    <br/>
 				</div>
+				<h3><a name="journal">雑誌情報</a></h3>
+                <div class="page_list">
+                    国立情報学研究所にて運用しているElectronic Resources Database-JAPAN(以下、ERDB-JP)との連携機能です。<br/>
+                    ERDB-JPでは登録された雑誌情報をポータルサイトへ提供し、各機関が刊行した学術文献へのアクセス増加を図っています。<br/>
+                    WEKOリポジトリに登録された雑誌情報を収集することで、ERDB-JPは多くの機関から学術文献情報を得ることができ、WEKOリポジトリへのアクセス増加が期待できます。<br/>
+                    <br/>
+                    <br/>
+                    ツリー編集画面で「雑誌情報」タブをクリックすると雑誌情報編集画面が表示されます。<br/>
+                    インデックス毎の雑誌情報の編集、エクスポート時の出力設定を行うことができます。<br/>
+                    <center><img src="./img/tree_edit_journal_default.png" alt="デフォルト画面" border="0"/></center>
+                    <br/>
+                    雑誌情報を編集します。<br/>
+                    雑誌情報を編集し、「送信」ボタンをクリックすると編集内容が反映されます。<br/>
+                    <center><img src="./img/tree_edit_journal_edit.png" alt="雑誌情報編集" border="0"/></center>
+                    <br/>
+                    入力した雑誌情報をERDB-JPで読込むためのTSVファイルを出力します。<br/>
+                    TSVファイルは<a href="https://erdb-jp.nii.ac.jp/" target="_blank">KBART2拡張形式</a>で記載されます。<br/>
+                    TSVファイルには「出力する」を設定した全てのインデックスの雑誌情報が記載されています。<br/>
+                    <center><img src="./img/tree_edit_journal_export.png" alt="エクスポート" border="0"/></center>
+                    <br/>
+                </div>
 			</div>
 			<p align="center"><font size="2"><a href="./../index.html" target="_top">WEKO Help Top</a></font></p>
 		</div>

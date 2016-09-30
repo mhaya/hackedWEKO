@@ -1,7 +1,15 @@
 <?php
+/**
+ * File download / download permissions check.
+ *
+ * ファイルダウンロード時、ファイルのダウンロードが実施できるユーザであることを確認する。
+ *   repository_action_common_downloadクラス実行前に呼び出される。
+ *   また、一部関数は詳細表示などからファイルのアクセス権限チェックに使用する。
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Validator_DownloadCheck.class.php 53594 2015-05-28 05:25:53Z kaede_matsushita $
+// $Id: Validator_DownloadCheck.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics,
 // Research and Development Center for Scientific Information Resources
@@ -10,36 +18,139 @@
 // http://creativecommons.org/licenses/BSD/
 //
 // --------------------------------------------------------------------
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
+/**
+ * JSON library
+ * JSONライブラリ
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/JSON.php';
+/**
+ * Index rights management common classes
+ * インデックス権限管理共通クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryIndexAuthorityManager.class.php';
+/**
+ * DB object wrapper Class
+ * DBオブジェクトラッパークラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryDbAccess.class.php';
+
+/**
+ * File format confirmed common classes
+ * ファイル形式確認共通クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryCheckFileTypeUtility.class.php';
+
+/**
+ * Handle management common classes
+ * ハンドル管理共通クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryHandleManager.class.php';
+/**
+ * Class that defines the Validator interface
+ * Validatorのインタフェースを規定するクラス
+ */
 require_once MAPLE_DIR. '/validator/Validator.interface.php';
 
 /**
- * validator file download.
+ * Class to make sure that when a file is downloaded, the download of the file, which is the user that can be implemented
+ * ファイルダウンロード時、ファイルのダウンロードが実施できるユーザであることを確認するクラス
  *
+ * @package WEKO
+ * @copyright (c) 2007 - 2008, National Institute of Informatics, Research and Development Center for Scientific Information Resources.
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class Repository_Validator_DownloadCheck extends Validator
 {
+    /**
+     * Current file public situation " public ".
+     * カレントファイル公開状況「オープンアクセス」
+     * 
+     * @var int
+     */
     const ACCESS_OPEN  = 0;
+    
+    /**
+     * Current file public situation " logged in users only .".
+     * カレントファイル公開状況「ログインユーザーのみ」
+     * 
+     * @var int
+     */
     const ACCESS_LOGIN = 1;
+    
+    /**
+     * Current file public situation " does not publish the files ."
+     * カレントファイル公開状況「ファイルを公開しない」
+     * 
+     * @var int
+     */
     const ACCESS_CLOSE = 2;
     
-    // conponents
+    /**
+     * Components/Session Object.
+     * セッション操作クラス
+     * 
+     * @var Session
+     */
     private $Session = null;
+    
+    /**
+     * Components/Database Object.
+     * データベース接続クラス
+     * 
+     * @var DbObject
+     */
     private $Db = null;
+    
+    /**
+     * RepositoryAction class object.
+     * RepositoryActionクラス
+     * 
+     * @var RepositoryAction
+     */
     private $RepositoryAction = null;
+    
+    /**
+     * Unique ID of the modules that are running .
+     * 動作しているモジュールのユニークID
+     * 
+     * @var string
+     */
     private $block_id = "";
+    
+    /**
+     * Unique ID of the page you are viewing.
+     * 表示しているページのユニークID
+     * 
+     * @var string
+     */
     private $page_id = "";
     
     // for index thumbnail download
+    /**
+     * Unique ID of the index you want to download a thumbnail ( image file )
+     * インデックスのユニークID
+     * 指定したインデックスのサムネイル(画像ファイル)をダウンロードする
+     * 
+     * @var string
+     */
     private $index_id = "";
     
     // Add PDF cover page 2012/06/13 A.Suzuki --start--
     // for PDF cover page header image download
+    /**
+     * Parameters to get the header image of PDF cover pages to be displayed on the management screen.
+     * "True" => to get the header image of PDF cover pages to be displayed on the management screen
+     * PDFカバーページのヘッダー画像取得フラグ
+     * "true" => 管理画面にて表示するPDFカバーページのヘッダー画像を取得する
+     * 
+     * @var string
+     */
     private $pdf_cover_header = "";
     // Add PDF cover page 2012/06/13 A.Suzuki --end--
     
@@ -51,41 +162,224 @@ class Repository_Validator_DownloadCheck extends Validator
     // 忘れずに値を取ってくるようにする
     
     // for file download
+    /**
+     * Unique ID of the item
+     * アイテムのユニークID
+     * 
+     * @var int
+     */
     private $item_id = "";
+    
+    /**
+     * Serial number of the item
+     * アイテム通番
+     * 
+     * @var int
+     */
     private $item_no = "";
+    
+    /**
+     * Unique ID of the metadata item (attribute ID).
+     * メタデータ項目のユニークID（属性ID）
+     * 
+     * @var int
+     */
     private $attribute_id = "";
+    
+    /**
+     * File serial number.
+     * ファイル通番
+     * 
+     * @var int
+     */
     private $file_no = "";
     
     // for download content type
+    /**
+     * To request a thumbnail image download of the PDF file.
+     * "true" => To download the thumbnail image file of the PDF file
+     * PDFファイルプレビュー画像ダウンロードフラグ
+     * "true" => PDFファイルのプレビュー画像ファイルをダウンロードする
+     * 
+     * @var string
+     */
     private $file_prev = "";        // downlaod file preview
+    
+    /**
+     * To download the image file registered in the input format " image file ".
+     * "true" => To download the image file registered in the input format "thumbnail"
+     * サムネイル画像ダウンロードフラグ
+     * "true" => 入力形式「サムネイル」に登録した画像ファイルをダウンロードする
+     * 
+     * @var string
+     */
     private $img = "";              // download thumbnail
+    
+    /**
+     * Download of the specified item type icon (image file ) .
+     * アイテムタイプのユニークID
+     * 指定したアイテムタイプのアイコン(画像ファイル)をダウンロードする。
+     * 
+     * @var string
+     */
     private $item_type_id = "";     // download item type icon
+    
+    /**
+     * To download the FLASH file of the specified file .
+     * "true" => To download the FLASH file of the specified file.
+     * FLASHファイルダウンロードフラグ
+     * "true" => 指定したファイルのFLASHファイルをダウンロードする。
+     * 
+     * @var string
+     */
     private $flash = "";            // download flash
+    
+    /**
+     * (Deprecated)To download the image file in the file attributes . unused.
+     * "true" => To download the image file in the file attributes. unused.
+     * (廃止予定)画像ファイルダウンロードフラグ
+     * "true" => ファイル属性の画像ファイルをダウンロードする。未使用。
+     * 
+     * @var string
+     */
     private $image_slide = "";      // download slide_image
+    
+    /**
+     * Access user indicates whether chargeable .
+     *      "false" => charging disabled
+     *      "true" => accounting Allowed
+     * アクセスユーザーが課金可能かを示す。
+     *      "false" => 課金不可
+     *      "true" => 課金可
+     * 
+     * @var string
+     */
     private $pay = "false";         // user agree pay for view file.
     
     // Fix jump to close detail page. 2012/01/30 Y.Nakao --start--
+    /**
+     * Items published situation.
+     *      "0" => private
+     *      "1" => public
+     * アイテム公開状況
+     *      "0" => 非公開
+     *      "1" => 公開
+     * 
+     * @var int
+     */
     private $itemPubFlg = 1;
     // Fix jump to close detail page. 2012/01/30 Y.Nakao --end--
     
     // Fix when this class user else action_common_download, not access idserver 2013/04/10 Y.Nakao --start--
     // action_common_download以外からのアクセスだった場合、課金サーバーにcreateChargeリクエストが飛ばないように対応
+    /**
+     * To determine the confirmation of the download authority checks mere file permissions when a file is downloaded .
+     *      true => Before repository_action_common_download implementation was called from NC2 framework.
+     *      false => 
+     * ファイルダウンロード時のダウンロード権限チェックか単なるファイルアクセス権の確認かを判断する。
+     *      true => repository_action_common_download実施前にNC2フレームワークから呼び出された。
+     *      false => 別クラスから意図的に呼び出された。ダウンロード処理ではない。
+     * 
+     * @var bool
+     */
     private $fromCommonDownload = false;
     // Fix when this class user else action_common_download, not access idserver 2013/04/10 Y.Nakao --end--
     
     // for openaccess download 2013/06/12 K.Matsuo --start--
+    /**
+     * Open access date of the file.
+     * ファイルのオープンアクセス日
+     * （ファイルダウンロードにログイン要求を行う際、この日以降ダウンロード可能というメッセージ表示に使用する）
+     * 
+     * @var string
+     */
     public $openAccessDate = "";
     // for openaccess download 2013/06/12 K.Matsuo --end--
     
+    /**
+     * Database access class.
+     * データベースアクセスクラス
+     * 
+     * @var RepositoryDbAccess
+     */
     private $dbAccess = null;
+    
+    // Add File replace T.Koyasu 2016/02/29 --start--
+    // バージョンファイルダウンロードのためバージョン情報を追加
+    /**
+     * Version of the file that was registered in the file update history
+     * ファイル更新履歴に登録したファイルのバージョン
+     *
+     * @var int
+     */
+    private $ver = 0;
+    
+    /**
+     * Access status indicating that it is a private or you can not find the old version of the file
+     * 古いバージョンファイルが見つからない or 非公開であることを示すアクセスステータス
+     * 
+     * @var string
+     */
+    const ACCESS_STATUS_FILE_IS_NOT_FOUND = "not_found";
+    
+    
+    /**
+     * Status indicating that the check result of file embargo is " available for download for the administrator or registrant ".
+     * ファイルエンバーゴのチェック結果が「管理者または登録者のためダウンロード可能」であることを示すステータス
+     * 
+     * @var string
+     */
+    const ACCESS_STATUS_ADMIN = "admin";
+    
+    /**
+     * Status indicating that the check result of file embargo is " open access ".
+     * ファイルエンバーゴのチェック結果が「オープンアクセス」であることを示すステータス
+     *
+     * @var string
+     */
+    const ACCESS_STATUS_FREE = "free";
+    
+    /**
+     * Status indicating that the check result of file embargo is " Login required".
+     * ファイルエンバーゴのチェック結果が「ログインが必要」であることを示すステータス
+     * 
+     * @var string
+     */
+    const ACCESS_STATUS_LOGIN = "login";
+    
+    /**
+     * Status indicating that the check result of file embargo is a "no download authority" (such as private)
+     * ファイルエンバーゴのチェック結果が「ダウンロード権限なし」（非公開など）であることを示すステータス
+     * 
+     * @var string
+     */
+    const ACCESS_STATUS_CLOSE ="close";
+    
+    /**
+     * Version file public status of " public "
+     * バージョンファイルの公開ステータス「公開」
+     * 
+     * @var int
+     */
+    const VERSION_FILE_SHOWN_STATE_PUBLIC = 1;
+    
+    /**
+     * Version file public status of " private "
+     * バージョンファイルの公開ステータス「非公開」
+     * 
+     * @var int
+     */
+    const VERSION_FILE_SHOWN_STATE_PRIVATE = 0;
+    
+    // Add File replace T.Koyasu 2016/02/29 --end--
     
     /**
      * setting components
+     * 初期値設定
      *
-     * @param SessionObject $session
-     * @param DbObject $db
-     * @param blockId $blockId
-     * @return boolean true / false
+     * @param Session $session Session management objects Session管理オブジェクト
+     * @param Dbobject $db Database management objects データベース管理オブジェクト
+     * @return boolean Result 結果
      */
     public function setComponents($session, $db)
     {
@@ -107,7 +401,18 @@ class Repository_Validator_DownloadCheck extends Validator
     }
     
     /**
-     * file download check
+     * File downloads check
+     * It will be called before the download process implementation.
+     * ファイルダウンロードチェック
+     *      ダウンロード処理実施前に呼び出される。
+     * 
+     * @param string $attributes Arguments that are passed from maple.ini of class you set the Validator. Validatorを設定したクラスのmaple.iniから渡される引数
+     * @param string $errStr Error string that is passed from maple.ini of class you set the Validator. Validatorを設定したクラスのmaple.iniから渡されるエラー文字列
+     * @param string $params Error string of replacement character ( not used). エラー文字列の置換文字（未使用）
+     * @return string Empty => Successful completion. repository_Action_common_download-> execute is called .
+     *                Not Empty => Error message to be passed to the repository_action_common_download_error.html. ":" Pass information separated .
+     *                  空文字 => 正常終了。repository_Action_common_download->executeが呼び出される。
+     *                  文字列 => repository_action_common_download_error.htmlに渡すエラーメッセージ。「:」区切りで情報を渡す。
      * */
     function validate($attributes, $errStr, $params)
     {
@@ -136,8 +441,17 @@ class Repository_Validator_DownloadCheck extends Validator
             return "error:$errorMsg[0]:$this->page_id:$this->block_id";
         }
         
+        // Fix File replace Y.Nakao 2016/05/23 --start--
+        // バージョンファイルダウンロードに必要とな$this->verのチェック
+        // 1以上の整数のみ可能。それ以外の場合は無効とし、エラー扱い。
+        if(preg_match("/[0-9]+/", $this->ver) !== 1)
+        {
+            return "error:$errorMsg[0]:$this->page_id:$this->block_id";
+        }
+        // Fix File replace Y.Nakao 2016/05/23 --end--
+        
         // download request file info.
-        $fileinfo = $this->item_id."_".$this->item_no."_".$this->attribute_id."_".$this->file_no;
+        $fileinfo = $this->item_id."_".$this->item_no."_".$this->attribute_id."_".$this->file_no."_".$this->ver;
         
         // from common_download action
         $this->fromCommonDownload = true;
@@ -173,7 +487,10 @@ class Repository_Validator_DownloadCheck extends Validator
             // ----------------------------------------
             if($this->Session->getParameter("_mobile_flag") == _OFF)
             {
-                $this->Session->setParameter('repository'.$this->block_id.'FileDownloadKey', $this->item_id."_".$this->item_no."_".$this->attribute_id."_".$this->file_no);
+                // Add File replace T.Koyasu 2016/02/29 --start--
+                // バージョンファイルダウンロードのため$this->verをダウンロードキーに追加
+                $this->Session->setParameter('repository'.$this->block_id.'FileDownloadKey', $this->item_id."_".$this->item_no."_".$this->attribute_id."_".$this->file_no."_".$this->ver);
+                // Add File replace T.Koyasu 2016/02/29 --end--
             }
             
             // ----------------------------------------
@@ -190,6 +507,9 @@ class Repository_Validator_DownloadCheck extends Validator
                 $tmpErrMsg = str_replace("DD", $tmpPubDate[2], $tmpErrMsg);
                 return "loginRequest:$tmpErrMsg:$loginInfo:$fileinfo:$this->page_id:$this->block_id:".$this->itemPubFlg;
             }
+        }
+        else if($status == self::ACCESS_STATUS_FILE_IS_NOT_FOUND){
+            return "$status:$errorMsg[2]:$this->page_id:$this->block_id";
         }
         else if($status == "delete")
         {
@@ -237,7 +557,10 @@ class Repository_Validator_DownloadCheck extends Validator
                 }
                 if($this->closeCharge($trade_id_price[0]))
                 {
-                    $this->Session->setParameter('repository'.$this->block_id.'FileDownloadKey', $this->item_id."_".$this->item_no."_".$this->attribute_id."_".$this->file_no);
+                    // Add File replace T.Koyasu 2016/02/29 --start--
+                    // バージョンファイルダウンロードのため$this->verをダウンロードキーに追加
+                    $this->Session->setParameter('repository'.$this->block_id.'FileDownloadKey', $this->item_id."_".$this->item_no."_".$this->attribute_id."_".$this->file_no."_".$this->ver);
+                    // Add File replace T.Koyasu 2016/02/29 --end--
                     
                     $url = BASE_URL.'/?action=pages_view_main'.
                             "&active_action=repository_view_main_item_detail".
@@ -259,15 +582,41 @@ class Repository_Validator_DownloadCheck extends Validator
     
     /**
      * Check File Download Status
+     * ファイルダウンロード状態をチェックする
      *
-     * @return string
+     * @return string File download status. ファイルダウンロードステータス
      */
     private function checkFileDownloadViewStatus()
     {
         $login_id = $this->Session->getParameter("_login_id");
         $user_id = $this->Session->getParameter("_user_id");
-        $user_auth_id = $this->Session->getParameter("_user_auth_id");
-        $auth_id = $this->RepositoryAction->getRoomAuthorityID();
+        
+        // check item exists
+        $itemData = array();
+        $errorMsg = "";
+        $this->RepositoryAction->getItemTableData($this->item_id, $this->item_no, $itemData, $errorMsg);
+        if(strlen($errorMsg) > 0 || count($itemData["item"]) == 0){
+            return "delete";
+        }
+
+        // Add File replace T.Koyasu 2016/02/29 --start--
+        // バージョンファイルのダウンロードリクエストの場合、ダウンロード可能かチェックする
+        if($this->ver > 0)
+        {
+            $status = $this->checkVersionFileAccessStatus(  $this->item_id,
+                                                            $this->item_no,
+                                                            $this->attribute_id,
+                                                            $this->file_no,
+                                                            $this->ver);
+            // バージョンファイルがダウンロード出来ない場合、
+            // カレントファイルの権限チェックはせずに返す
+            if($status != self::ACCESS_STATUS_ADMIN && $status != self::ACCESS_STATUS_FREE)
+            {
+                return $status;
+            }
+        }
+        // Add File replace T.Koyasu 2016/02/29 --end--
+        
         
         // アイテムの公開状況
         $this->itemPubFlg = 1;
@@ -312,8 +661,10 @@ class Repository_Validator_DownloadCheck extends Validator
     
     /**
      * check flash access status
+     * FLASHファイルアクセス状態をチェックする
      *
      * @param array $fileData file table record. count == 1.
+     * @return string File download status. ファイルダウンロードステータス
      */
     public function checkFlashAccessStatus($fileData)
     {
@@ -362,9 +713,11 @@ class Repository_Validator_DownloadCheck extends Validator
     
     /**
      * check file status
+     * ファイルアクセス状態をチェックする
      *
      * @param array $fileData file table record. count == 1.
      * @param boolean $accessChargeFlg default true // Add Charge status is not check by snippet T.Koyasu 2014/09/24 
+     * @return string File download status. ファイルダウンロードステータス
      */
     public function checkFileAccessStatus($fileData, $accessChargeFlg = true)
     {
@@ -377,6 +730,14 @@ class Repository_Validator_DownloadCheck extends Validator
         $itemNo = $fileData[RepositoryConst::DBCOL_REPOSITORY_FILE_ITEM_NO];
         $attributeId = $fileData[RepositoryConst::DBCOL_REPOSITORY_FILE_ATTRIBUTE_ID];
         $fileNo = $fileData[RepositoryConst::DBCOL_REPOSITORY_FILE_FILE_NO];
+        
+        // check item exists
+        $itemData = array();
+        $errorMsg = "";
+        $this->RepositoryAction->getItemTableData($itemId, $itemNo, $itemData, $errorMsg);
+        if(strlen($errorMsg) > 0 || count($itemData["item"]) == 0){
+            return "delete";
+        }
         
         // check site license
         $siteLicense = $this->checkSiteLicense($itemId, $itemNo);
@@ -391,7 +752,7 @@ class Repository_Validator_DownloadCheck extends Validator
         
         // check insert user
         $insUser = false;
-        if( $user_id == $fileData[RepositoryConst::DBCOL_COMMON_INS_USER_ID])
+        if( $user_id == $itemData["item"][0][RepositoryConst::DBCOL_COMMON_INS_USER_ID])
         {
             $insUser = true;
         }
@@ -454,10 +815,15 @@ class Repository_Validator_DownloadCheck extends Validator
         return $priceStatus;
     }
     
-        /**
+    /**
      * check file price
-     *
-     * @return string viewFlag_downloadFlag
+     * ファイルの課金額をチェックする
+     * 
+     * @param int $item_id Item id アイテムのユニークID
+     * @param int $item_no Item no アイテムの通番
+     * @param int $attribute_id Unique ID of metadata items ( attribute value ). メタデータ項目のユニークID(属性ID)
+     * @param int $file_no File no ファイル通番
+     * @return string viewFlag_downloadFlag ダウンロードフラグ
      *                error
      *                free  
      *                unknown
@@ -469,7 +835,7 @@ class Repository_Validator_DownloadCheck extends Validator
     public function checkFilePrice($item_id, $item_no, $attribute_id, $file_no){
         // check input_type (file or file_price)
         // Select 
-        $query = "SELECT pub_date, flash_pub_date, ins_user_id ".
+        $query = "SELECT pub_date, flash_pub_date ".
                  "FROM ". DATABASE_PREFIX ."repository_file ".
                  "WHERE item_id = ? ".
                  "  AND item_no = ? ".
@@ -485,11 +851,20 @@ class Repository_Validator_DownloadCheck extends Validator
         if ($file === null) {
             return "error";
         }
+
+        // Item Data
+        $item = array();
+        $errorMsg = "";
+        $this->RepositoryAction->getItemTableData($item_id, $item_no, $item, $errorMsg);
+        if(strlen($errorMsg) > 0 || count($item["item"]) == 0){
+            return "error";
+        }
+
         $user_auth_id = $this->Session->getParameter("_user_auth_id");
         $auth_id = $this->RepositoryAction->getRoomAuthorityID();
         $user_id = $this->Session->getParameter("_user_id");
 
-        if(($user_auth_id >= $this->RepositoryAction->repository_admin_base && $auth_id >= $this->RepositoryAction->repository_admin_room) || $file[0]['ins_user_id'] === $user_id){
+        if(($user_auth_id >= $this->RepositoryAction->repository_admin_base && $auth_id >= $this->RepositoryAction->repository_admin_room) || $item["item"][0]['ins_user_id'] === $user_id){
             return 'free';    
         }
         $price = $this->getFilePriceTable($item_id, $item_no, $attribute_id, $file_no);
@@ -527,7 +902,10 @@ class Repository_Validator_DownloadCheck extends Validator
      * getFilePriceTable
      * 課金情報を取得する
      * 
-     * @param $file_info ファイル情報
+     * @param int $item_id Item id アイテムのユニークID
+     * @param int $item_no Item no アイテムの通番
+     * @param int $attribute_id Unique ID of metadata items ( attribute value ). メタデータ項目のユニークID(属性ID)
+     * @param int $file_no File no ファイル通番
      * @return $result_file_price_Table 課金ファイル情報
      */
     function getFilePriceTable($item_id, $item_no, $attribute_id, $file_no){
@@ -554,9 +932,11 @@ class Repository_Validator_DownloadCheck extends Validator
     
     /**
      * get access user's file price
+     * ユーザごとの課金情報を取得する
      *
-     * @param string $price room_id,rpice|room_id,price|...
-     * @return string file price
+     * @param string $price Price each group グループごとの課金額
+     *                      room_id,rpice|room_id,price|...
+     * @return string Price 課金額
      */
     public function getFilePrice($price)
     {
@@ -593,9 +973,12 @@ class Repository_Validator_DownloadCheck extends Validator
     
     /**
      * check hidden metadata
+     * 非表示メタデータであるかを確認する
      * 
-     * @param int $itemTypeId
-     * @return bool true:hidden metadata, false:not hidden metadata
+     * @param int $itemTypeId Unique ID of the item typeアイテムタイプのユニークID
+     * @param int $attributeId Unique ID of metadata items ( attribute value ). メタデータ項目のユニークID(属性ID)
+     * @return boolean Is hidden 非表示であるか否か
+     *                 true:hidden metadata, false:not hidden metadata
      */
     private function checkHiddenMetadata($itemTypeId, $attributeId)
     {
@@ -626,11 +1009,13 @@ class Repository_Validator_DownloadCheck extends Validator
     
     /**
      * get filedata
+     * ファイル情報を取得する
      * 
-     * @param int $itemId
-     * @param int $itemNo
-     * @param int $attributeId
-     * @param int $fileNo
+     * @param int $item_id Item id アイテムのユニークID
+     * @param int $item_no Item no アイテムの通番
+     * @param int $attribute_id Unique ID of metadata items ( attribute value ). メタデータ項目のユニークID(属性ID)
+     * @param int $file_no File no ファイル通番
+     * @return array File info. ファイルテーブルのレコード
      */
     private function getFileData($itemId, $itemNo, $attributeId, $fileNo)
     {
@@ -662,12 +1047,14 @@ class Repository_Validator_DownloadCheck extends Validator
     
     /**
      * check flash contents exists
+     * FLASHファイルが存在するかを確認する
      *
-     * @param int $item_id
-     * @param int $item_no
-     * @param int $attribute_id
-     * @param int $file_no
-     * @return bool true:exists, false:not exists
+     * @param int $item_id Item id アイテムのユニークID
+     * @param int $item_no Item no アイテムの通番
+     * @param int $attribute_id Unique ID of metadata items ( attribute value ). メタデータ項目のユニークID(属性ID)
+     * @param int $file_no File no ファイル通番
+     * @return boolean Is exist 存在しているか否か
+     *                 true:exists, false:not exists
      */
     function existsFlashContents($item_id, $item_no, $attribute_id, $file_no)
     {
@@ -726,12 +1113,14 @@ class Repository_Validator_DownloadCheck extends Validator
     
     /**
      * check file contents exists
+     * ファイルが存在するかを確認する
      *
-     * @param int $item_id
-     * @param int $item_no
-     * @param int $attribute_id
-     * @param int $file_no
-     * @return bool true:exists, false:not exists
+     * @param int $item_id Item id アイテムのユニークID
+     * @param int $item_no Item no アイテムの通番
+     * @param int $attribute_id Unique ID of metadata items ( attribute value ). メタデータ項目のユニークID(属性ID)
+     * @param int $file_no File no ファイル通番
+     * @return boolean Is exist 存在するか否か
+     *                 true:exists, false:not exists
      */
     function existsFileContents($fileName)
     {
@@ -753,13 +1142,14 @@ class Repository_Validator_DownloadCheck extends Validator
     
     /**
      * Check file download view flag
+     * ファイルの公開日を過ぎているか判定する。
      * 
-     * @param string $pubDate
-     * @param string $transStartDate
-     * @param bool $isFlash
-     * @return string accessFlag 0: open
-     *                           1: need login
-     *                           2: not access
+     * @param string $pubDate File open date. ファイル公開日
+     * @param string $transStartDate Now date. アクセス日時
+     * @return string access flag アクセス状態
+     *                0: open
+     *                1: need login
+     *                2: not access
      */
     public function checkFileDownloadViewFlag($pubDate, $transStartDate)
     {
@@ -801,8 +1191,12 @@ class Repository_Validator_DownloadCheck extends Validator
     
     /**
      * check item access flag
-     *
-     * @return bool item_accessFlag  true:canAccess, false:cannnotAccess  
+     * アイテムにアクセスできるかをチェックする
+     * 
+     * @param int $item_id Item id アイテムのユニークID
+     * @param int $item_no Item no アイテムの通番
+     * @return boolean be able to access アクセスできるか否か
+     *                 true:canAccess, false:cannnotAccess  
      */
     public function checkCanItemAccess($item_id, $item_no)
     {
@@ -810,14 +1204,8 @@ class Repository_Validator_DownloadCheck extends Validator
         $user_id = $this->Session->getParameter("_user_id");
         $user_auth_id = $this->Session->getParameter("_user_auth_id");
         $auth_id = $this->RepositoryAction->getRoomAuthorityID();
-        
-        if($user_auth_id >= $this->RepositoryAction->repository_admin_base && $auth_id >= $this->RepositoryAction->repository_admin_room)
-        {
-            // for admin
-            return true;
-        }
         // Fix insert user fileDL 2012/01/30 Y.Nakao --end--
-        
+
         // check item public
         $query = "SELECT shown_date, shown_status, ins_user_id".
                 " FROM ".DATABASE_PREFIX."repository_item ".
@@ -839,7 +1227,13 @@ class Repository_Validator_DownloadCheck extends Validator
         } else if(!isset($result[0])){
             return false;
         }
-        
+
+        // check NC2 admin user
+        if($user_auth_id >= $this->RepositoryAction->repository_admin_base && $auth_id >= $this->RepositoryAction->repository_admin_room)
+        {
+            // for admin
+            return true;
+        }
         // Fix insert user fileDL 2012/01/30 Y.Nakao --start--
         if($user_id === $result[0]['ins_user_id'])
         {
@@ -893,6 +1287,16 @@ class Repository_Validator_DownloadCheck extends Validator
     }
     
     // Add check site license 2008/10/20 Y.Nakao --start--
+    /**
+     * To determine whether the access from the site license Regulatory.
+     * サイトライセンス認可機関からのアクセスかを判断する
+     * 
+     * @param int $item_id Item id アイテムのユニークID
+     * @param int $item_no Item no アイテムの通番
+     * @param number $sitelicense_id sitelisence org. ユーザーが所属しているサイトライセンス認可機関の情報
+     * @return string Is access by site license organization サイトライセンス認可機関からのアクセスか
+     *                "true" => Belong to the site license approval authority. サイトライセンス認可機関に所属している / "false" => It does not belong to the site license approval authority. サイトライセンス認可機関に所属していない
+     */
     public function checkSiteLicense($item_id="", $item_no="", &$sitelicense_id=0){
         // サイトライセンス除外アイテムタイプのチェック（引数が設定されている場合のみ）
         // 除外アイテムタイプであった場合はSLユーザーであってもfalseを返すので一番先に処理をする
@@ -1000,8 +1404,9 @@ class Repository_Validator_DownloadCheck extends Validator
     
     /**
      * set parameter
+     * パラメータ設定
      *
-     * @param unknown_type $attributes
+     * @param array $attributes Arguments that are passed from maple.ini of class you set the Validator. Validatorを設定したクラスのmaple.iniから渡される引数
      */
     private function setAttributesParameter($attributes)
     {
@@ -1082,12 +1487,21 @@ class Repository_Validator_DownloadCheck extends Validator
         if(isset($attributes[13]) && strlen($attributes[13]) > 0){
             $this->image_slide = $attributes[13];
         }
+        // Add File replace T.Koyasu 2016/02/29 --start--
+        // バージョンファイルダウンロードのためバージョン情報を追加
+        // ver
+        if(isset($attributes[14]) && strlen($attributes[14]) > 0){
+            $this->ver = $attributes[14];
+        }
+        // Add File replace T.Koyasu 2016/02/29 --start--
     }
     
     /**
      * make login error parameter
+     * ログインエラーパラメータ作成
      *
-     * @return string NC2version flg:shibboleth flg
+     * @return string login error parameter ログインエラーパラメータ
+     *                NC2version flg:shibboleth flg
      */
     private function makeLoginInformation(){
         $version = 0;
@@ -1118,13 +1532,14 @@ class Repository_Validator_DownloadCheck extends Validator
     
     /**
      * check can access Charge Server
+     * 課金サーバにアクセスできるかを確認する
      *
-     * @param unknown_type $item_id
-     * @param unknown_type $item_no
-     * @param unknown_type $attribute_id
-     * @param unknown_type $file_no
-     * @param unknown_type $file_price
-     * @return unknown
+     * @param int $item_id Item id アイテムのユニークID
+     * @param int $item_no Item no アイテムの通番
+     * @param int $attribute_id Unique ID of metadata items ( attribute value ). メタデータ項目のユニークID(属性ID)
+     * @param int $file_no File no ファイル通番
+     * @param string $file_price price ファイルの金額
+     * @return string Billing implementation results. 課金サーバーへの接続結果
      */
     private function accessChargeServer($item_id, $item_no, $attribute_id, $file_no, $file_price)
     {
@@ -1168,15 +1583,22 @@ class Repository_Validator_DownloadCheck extends Validator
     
     /**
      * create charge action
-     *
-     */    
+     * 課金を実施する
+     * 
+     * @param string $credit_url 課金URL
+     * @param int $item_id Item id アイテムのユニークID
+     * @param int $item_no Item no アイテムの通番
+     * @param int $attribute_id Unique ID of metadata items ( attribute value ). メタデータ項目のユニークID(属性ID)
+     * @param int $file_no File no ファイル通番
+     * @return Billing implementation results. 課金実施結果
+     */
     function createCharge(&$credit_url, $item_id, $item_no, $attribute_id, $file_no){
         $result = $this->checkChargeRecord($item_id, $item_no, $credit_url);
         if($result != "true"){
             return $result;
         }
         // get title
-        $return = $this->RepositoryAction->getItemTableData($item_id, $item_no, $item_data);
+        $return = $this->RepositoryAction->getItemTableData($item_id, $item_no, $item_data, $errorMsg);
         if($return === false || count($item_data["item"])==0){
             return "unknown";
         }
@@ -1312,15 +1734,16 @@ class Repository_Validator_DownloadCheck extends Validator
      * checkChargeRecord
      * IDServerと連携している場合、課金ログをチェックする
      *  
-     * @param  $item_id
-     *         $item_no
-     *         &$credit_url 
-     * @return "true"       IDServerと連携している、課金前
-     *         "false"      IDServerと連携していない
-     *         "unknown"    クレジットカード情報なし
-     *       "shared"     クレジットカード登録不可(共有アカウント)
-     *         "credit"     クレジットカード情報エラー
-     *         "already"    課金済
+     * @param int $item_id Item id アイテムのユニークID
+     * @param int $item_no Item no アイテムの通番
+     * @param string $credit_url Billing URL 課金URL
+     * @return string Result 結果
+     *                "true" And in cooperation with the IDServer, billing before IDServerと連携している、課金前
+     *                "false" Not in conjunction with IDServer IDServerと連携していない
+     *                "unknown" No credit card information クレジットカード情報なし
+     *                "shared" Credit cards can not be registered(shared account) クレジットカード登録不可(共有アカウント)
+     *                "credit" Credit card information error クレジットカード情報エラー
+     *                "already" Billing already 課金済
      */
     function checkChargeRecord($item_id, $item_no, &$credit_url){
         // getPrefixID
@@ -1434,7 +1857,12 @@ class Repository_Validator_DownloadCheck extends Validator
     
     /**
      * close charge action
-     *
+     * 課金処理を確定する
+     * 
+     * @param string $trade_id Unique ID of the request that charge 課金したリクエストのユニークID
+     * @return boolean Result 結果
+     *                 true => success / false => failed
+     *                 true => 課金成功 / false => 課金失敗 
      */
     function closeCharge($trade_id){
         // close charge URL
@@ -1496,9 +1924,11 @@ class Repository_Validator_DownloadCheck extends Validator
     // Add download action for repository_uri called 2009/10/02 A.Suzuki --end--
     
     /**
-     * Enter description here...
+     * Connection information acquisition to the accounting server.
+     * 課金サーバーへの接続情報取得
      *
-     * @return array()
+     * @return array Connection information to the billing server課金サーバーへの接続情報
+     *               array["charge_id"|"charge_pass"|"charge_fqdn"|"user_fqdn"|"sys_id"]
      */
     function getChargePass(){
         $config = parse_ini_file(BASE_DIR.'/webapp/modules/repository/config/main.ini');
@@ -1516,10 +1946,14 @@ class Repository_Validator_DownloadCheck extends Validator
     
     /**
      * check price for access user, and highlight
+     * ユーザに合わせて課金額をハイライト表示する
      *
-     * @param array $file_info
-     * @param string $status <= "true", "already"
-     * @return unknown
+     * @param array $file_info file information. ファイルを特定するための情報
+     * @param string $status Whether or not charged 課金されているか否か
+     * @return boolean|array Result 結果
+     *                       false => None Highlights ( download authority None or administrator ). ハイライトなし（ダウンロード権限なしor管理者) 
+     *                       array => Highlight information of download amount of access users. アクセスユーザーのダウンロード金額のハイライト情報
+     *                       array[$ii]
      */
     function checkPriceAccent($file_info, $status="true"){
         ///// get groupID and price /////
@@ -1609,10 +2043,11 @@ class Repository_Validator_DownloadCheck extends Validator
     // Modify add memo for charge record. 2012/02/28 Y.Nakao --start--
     /**
      * get charge memo
+     * 課金時のコメント取得
      *
-     * @param int $item_id
-     * @param int $item_no
-     * @return string charge memo
+     * @param int $item_id Item id アイテムのユニークID
+     * @param int $item_no Item no アイテム通番
+     * @return string charge memo Billing at the time of the comment information ( enumeration of affiliation index name). 課金時のコメント情報（所属インデックス名の列挙）
      */
     private function getChargeMemo($item_id, $item_no)
     {
@@ -1664,7 +2099,15 @@ class Repository_Validator_DownloadCheck extends Validator
     }
     // Modify add memo for charge record. 2012/02/28 Y.Nakao --end--
     
-        // Add check charge record from log table 2008/10/16 Y.Nakao --start--
+    // Add check charge record from log table 2008/10/16 Y.Nakao --start--
+    /**
+     * Get billing records.
+     * 課金レコード取得
+     * 
+     * @param string $content_id Unique ID of the billing content. 課金コンテンツのユニークID(課金時に指定したアイテムのキー<prefix/suffix>) 
+     * @return array|string string Failed 失敗
+     *                      array billing records 課金レコード
+     */
     function getChargeRecord($content_id){
         ////////// get charge record //////////
         // request uri is write ASCII
@@ -1729,8 +2172,10 @@ class Repository_Validator_DownloadCheck extends Validator
     // Add check sitelicense group 2015/01/19 T.Ichikawa --start--
     /**
      * check sitelicense group
+     * サイトライセンス認可機関に所属しているかを確認する
      *
-     * @return bool sitelicense_flag
+     * @param array Site license authorized institution to which the user belongs. ユーザーが所属するサイトライセンス認可機関
+     * @return boolean sitelicense flag サイトライセンスフラグ
      */
     public function checkSiteLicenseGroup(&$sitelicense_id)
     {
@@ -1769,5 +2214,171 @@ class Repository_Validator_DownloadCheck extends Validator
         return false;
     }
     // Add check sitelicense group 2015/01/19 T.Ichikawa --end--
+    
+    // Add File replace T.Koyasu 2016/02/29 --start--
+    /**
+     * In order to determine whether it is possible to download at a higher processing, return the access status of the old version of the file
+     * 上位処理でダウンロード可能かどうかを判断するため、古いバージョンファイルのアクセスステータスを返す
+     *
+     * @param int $itemId Item id アイテムID
+     * @param int %itemNo Item no アイテムNo
+     * @param int $attrId Attribute id 属性ID
+     * @param int $fileNo File number ファイル通番
+     * @param int $version File version ファイルのバージョン
+     * @return string Access status アクセスステータス
+     *                              "not_found" => Version file (physically) can not download because or authority that does not exist is not enough バージョンファイルが(物理的に)存在しない or 権限が足りないのでダウンロード不可
+     *                              "admin" => Administrator. Available for download version file 管理者。バージョンファイルがダウンロード可能
+     *                              "free" => Not an administrator, but the version files are available for download 管理者ではないが、バージョンファイルはダウンロード可能
+     */
+    private function checkVersionFileAccessStatus($itemId, $itemNo, $attrId, $fileNo, $ver){
+        // 存在確認を行い、バージョンファイルが存在しないならファイルがないことを示すステータスを返す(ファイルが存在しません、となるので既存のものとは別。上位関数の処理も修正する必要あり)
+        $query = "SELECT version, file_shown_state, file_update_user_id ". 
+                 " FROM ". DATABASE_PREFIX. "repository_file_update_history ". 
+                 " WHERE item_id = ? ". 
+                 " AND item_no = ? ". 
+                 " AND attribute_id = ? ". 
+                 " AND file_no = ? ". 
+                 " AND version = ? ". 
+                 " AND is_delete = ?;";
+        $params = array();
+        $params[] = $itemId;
+        $params[] = $itemNo;
+        $params[] = $attrId;
+        $params[] = $fileNo;
+        $params[] = $ver;
+        $params[] = 0;
+        $result = $this->Db->execute($query, $params);
+        if($result === false || count($result) === 0){
+            // データベースアクセス時にエラーが発生している⇒ダウンロード不可（ステータス＝ファイルが存在しない）
+            return self::ACCESS_STATUS_FILE_IS_NOT_FOUND;
+        }
+        $fileShownStatus = $result[0]["file_shown_state"];
+        
+        // バージョンファイルが物理的に存在しない ⇒ ダウンロード不可（ステータス＝ファイルが存在しない）
+        $verFilePath = $this->generateVersionFilePath($itemId, $attrId, $fileNo, $ver);
+        if(!file_exists($verFilePath)){
+            return self::ACCESS_STATUS_FILE_IS_NOT_FOUND;
+        }
+        
+        // 管理者またはアイテム登録者である ⇒ ダウンロード可能
+        if($this->isAdmin($itemId, $itemNo)){
+            return self::ACCESS_STATUS_ADMIN;
+        }
+        
+        // 管理者またはアイテム登録者ではない かつ バージョンファイルの公開ステータス「非公開」の場合
+        // ログイン済 ⇒ ダウンロード不可（ステータス＝閲覧権限なし）
+        // 未ログイン ⇒ ログイン要求
+        if($fileShownStatus == self::VERSION_FILE_SHOWN_STATE_PRIVATE){
+            
+            $login_id = $this->Session->getParameter("_login_id");
+            $user_id = $this->Session->getParameter("_user_id");
+            
+            if($user_id != "0" && strlen($login_id) != 0)
+            {
+                // ログイン済
+                return self::ACCESS_STATUS_CLOSE;
+            }
+            else
+            {
+                // 未ログイン
+                return self::ACCESS_STATUS_LOGIN;
+            }
+        }
+        
+        // ダウンロードOK
+        return self::ACCESS_STATUS_FREE;
+    }
+    
+    /**
+     * It returns the path of the old version of the file specified version
+     * 指定したバージョンの旧バージョンファイルのパスを返す
+     *
+     * @param int $itemId Item id アイテムID
+     * @param int $attrId Attribute id 属性ID
+     * @param int $fileNo File number ファイル通番
+     * @param int $version File version ファイルバージョン
+     * @return string the path of the old version of the file 旧バージョンファイルのパス
+     */
+    private function generateVersionFilePath($itemId, $attrId, $fileNo, $version){
+        // 拡張子を取得
+        $query = "SELECT physical_file_name ". 
+                 " FROM ". DATABASE_PREFIX. "repository_file_update_history ".
+                 " WHERE item_id = ? ".
+                 " AND item_no = ? ". 
+                 " AND attribute_id = ? ". 
+                 " AND file_no = ? ". 
+                 " AND version = ?;";
+        $params = array();
+        $params[] = $itemId;
+        $params[] = 1;
+        $params[] = $attrId;
+        $params[] = $fileNo;
+        $params[] = $version;
+        $result = $this->Db->execute($query, $params);
+        $pathInfo = pathinfo($result[0]["physical_file_name"]);
+        $extension = $pathInfo["extension"];
+        
+        $path = "";
+        $path = WEBAPP_DIR. DIRECTORY_SEPARATOR. "uploads/repository/versionFiles". DIRECTORY_SEPARATOR;
+        $path .= $itemId. "_". $attrId. "_". $fileNo. DIRECTORY_SEPARATOR. $version. ".". $extension;
+        
+        return $path;
+    }
+    
+    /**
+     * Access user determines whether the administrator ( the owner of the administrator or item of WEKO).
+     * アクセスユーザーが管理者（WEKOの管理者またはアイテムの登録者）であるか判定する。
+     * 
+     * @param $item_id int ItemId. アイテムId
+     * @param $item_no int ItemNo. アイテムNo
+     * @return bool Whether or not the administrator 管理者であるか否か（true=>管理者である / false=>管理者ではない）
+     */
+    private function isAdmin($item_id, $item_no){
+        // アクセスユーザー情報取得
+        $user_id = $this->Session->getParameter("_user_id");
+        $login_id = $this->Session->getParameter("_login_id");
+        $user_auth_id = $this->Session->getParameter("_user_auth_id");
+        $auth_id = $this->RepositoryAction->getRoomAuthorityID();
+        
+        if( !($user_id != "0" && strlen($login_id) != 0) )
+        {
+            // 未ログイン
+            return false;
+        }
+        
+        // check admin user
+        // WEKO管理者か判定
+        if( $user_auth_id >= $this->RepositoryAction->repository_admin_base && 
+            $auth_id >= $this->RepositoryAction->repository_admin_room){
+            // WEKO管理者である
+            return true;
+        }
+        
+        // アイテムの登録ユーザーIDを取得
+        $query = "SELECT ".RepositoryConst::DBCOL_COMMON_INS_USER_ID." ".
+                " FROM {".RepositoryConst::DBTABLE_REPOSITORY_ITEM."} ".
+                " WHERE ".RepositoryConst::DBCOL_REPOSITORY_ITEM_ITEM_ID." = ? ".
+                " AND ".RepositoryConst::DBCOL_REPOSITORY_ITEM_ITEM_NO." = ? ".
+                " AND ".RepositoryConst::DBCOL_COMMON_IS_DELETE." = ?; ";
+        $params = array();
+        $params[] = $item_id;
+        $params[] = $item_no;
+        $params[] = 0;
+        $result = $this->Db->execute($query, $params);
+        if($result === false || count($result) != 1)
+        {
+            // データベースエラー。アイテム登録者と判定できなかった。
+            return false;
+        }
+        
+        // check insert user
+        if( $user_id == $result[0][RepositoryConst::DBCOL_COMMON_INS_USER_ID]){
+            // アクセスユーザー＝アイテム登録者である。
+            return true;
+        }
+        
+        return false;
+    }
+    // Add File replace T.Koyasu 2016/02/29 --end--
 }
 ?>

@@ -1,34 +1,65 @@
 <?php
+
+/**
+ * Action class for the item type import
+ * アイテムタイプインポート用アクションクラス
+ *
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Import.class.php 56708 2015-08-19 13:08:03Z tomohiro_ichikawa $
+// $Id: Import.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
-// Copyright (c) 2007 - 2008, National Institute of Informatics, 
+// Copyright (c) 2007 - 2008, National Institute of Informatics,
 // Research and Development Center for Scientific Information Resources
 //
 // This program is licensed under a Creative Commons BSD Licence
 // http://creativecommons.org/licenses/BSD/
 //
 // --------------------------------------------------------------------
-
-/* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
-include_once MAPLE_DIR.'/includes/pear/File/Archive.php';
-require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
-require_once WEBAPP_DIR.'/modules/repository/action/edit/import/ImportCommon.class.php';
 /**
- * [[アイテムタイプImport]]
- *
- * @package	 [[package名]]
- * @access	  public
+ * File archive library class
+ * ファイルアーカイブライブラリクラス
+ */
+include_once MAPLE_DIR.'/includes/pear/File/Archive.php';
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
+require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
+/**
+ * Import common class
+ * インポート汎用処理クラス
+ */
+require_once WEBAPP_DIR.'/modules/repository/action/edit/import/ImportCommon.class.php';
+
+/**
+ * Action class for the item type import
+ * アイテムタイプインポート用アクションクラス
+ * 
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class Repository_Action_Edit_Itemtype_Import extends RepositoryAction
 {
 	// component
-	var $Session = null;
 	/**
-	 * [[機能説明]]
+	 * Session management objects
+	 * Session管理オブジェクト
 	 *
-	 * @access  public
+	 * @var Session
+	 */
+	var $Session = null;
+
+	/**
+	 * Execute
+	 * 実行
+	 *
+	 * @return string "success"/"error" success/failed 成功/失敗
+	 * @throws RepositoryException
 	 */
 	function execute()
 	{
@@ -102,7 +133,7 @@ class Repository_Action_Edit_Itemtype_Import extends RepositoryAction
 				$this->failTrans();
 				throw $exception;
 			}
-			
+			$this->finalize();
 			return 'success';
 		
 		} catch ( RepositoryException $Exception) {
@@ -120,7 +151,10 @@ class Repository_Action_Edit_Itemtype_Import extends RepositoryAction
 	}
 	
 	/**
-	 * extrac upload zip file
+	 * Extraction import ZIP file
+	 * インポートZIPファイル解凍
+	 *
+	 * @return string|bool extracted file path/false 解凍されたファイルのパス/失敗
 	 */
 	function extraction(){
 

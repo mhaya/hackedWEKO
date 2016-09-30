@@ -1,7 +1,15 @@
 <?php
+
+/**
+ * Action class for Tree view
+ * ツリー表示Actionクラス
+ *
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Tree.class.php 53594 2015-05-28 05:25:53Z kaede_matsushita $
+// $Id: Tree.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics,
 // Research and Development Center for Scientific Information Resources
@@ -10,22 +18,76 @@
 // http://creativecommons.org/licenses/BSD/
 //
 // --------------------------------------------------------------------
-/* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
+/**
+ * JSON library class
+ * JSONライブラリクラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/JSON.php';
+/**
+ * Download process class
+ * ダウンロード処理クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryDownload.class.php';
+/**
+ * Index authority manager class
+ * インデックス権限管理クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryIndexAuthorityManager.class.php';
 
+/**
+ * Action class for Tree view
+ * ツリー表示Actionクラス
+ *
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
+ */
 class Repository_Action_Main_Tree extends RepositoryAction
 {
     // components
+    /**
+     * Session management objects
+     * Session管理オブジェクト
+     *
+     * @var Session
+     */
     var $Session = null;
+    /**
+     * Database management objects
+     * データベース管理オブジェクト
+     *
+     * @var DbObject
+     */
     var $Db = null;
+    /**
+     * Upload table display object
+     * アップロードテーブル表示用オブジェクト
+     *
+     * @var Uploads_View
+     */
     var $uploadsView = null;
 
     // request parameter
+    /**
+     * Clicked index ID
+     * クリックされたインデックスID
+     *
+     * @var int
+     */
     var $click_id = null;       // click index id
-    var $sel_mode = null;       // select mode
+    /**
+     * operation mode
+     * 操作モード
+     *
+     * @var string
+     */
+    var $sel_mode = null;     // select mode
                                 // '' : snippet
                                 // 'check' : check box
                                 // 'rootcheck' : check box + root index
@@ -39,49 +101,170 @@ class Repository_Action_Main_Tree extends RepositoryAction
                                 // 'editPrivatetree'                      // Add edit privatetree K.Matsuo 2012/04/15
                                 // 'detail_search'                        // Add detail search index tree
                                 // 'harvestingCheck'                    // for harvesting index tree
+    /**
+     * Edit index ID
+     * 編集中のインデックスID
+     *
+     * @var int
+     */
     var $edit_id = null;        // edit index id
-                                // if sel_mode is 'insert', insert parent index id
+                                  // if sel_mode is 'insert', insert parent index id
+    /**
+     * Checked index ID
+     * チェックされたインデックスID
+     *
+     * @var int
+     */
     var $chk_index_id = null;   // checked index id
+    /**
+     * Enter "More input" flag
+     * "More input"の押下フラグ
+     *
+     * @var string
+     */
     var $more_idx = null;       // click more index id
 
     // member
+    /**
+     * Opening index list
+     * 開状態のインデックスリスト
+     *
+     * @var string
+     */
     var $open_ids = "";             // open index ids delimiter ","
+    /**
+     * display language
+     * 表示言語
+     *
+     * @var string
+     */
     var $lang = "";                 // get language
+    /**
+     * Checked index ID list
+     * チェックされたインデックスIDリスト
+     *
+     * @var string
+     */
     var $CheckedIds = null;         // checked index ids delmiter "|"
 
     // Add config management authority 2010/02/23 Y.Nakao --start--
+    /**
+     * Room authority
+     * ルーム権限
+     *
+     * @var int
+     */
     var $auth_id = "";
     // Add config management authority 2010/02/23 Y.Nakao --end--
 
     // prevent double registration for ELS 2010/10/20 A.Suzuki --start--
+    /**
+     * Registered to ELS index list
+     * ELSに登録されたインデックスリスト
+     *
+     * @var array
+     */
     private $elsRegisteredIndex_ = array();
     // prevent double registration for ELS 2010/10/20 A.Suzuki --end--
 
     // Bugfix modules id 2011/06/29 --start--
+    /**
+     * Module block info
+     * モジュールブロック情報
+     *
+     * @var array
+     */
     private $block_info = array();
     // Bugfix modules id 2011/06/29 --end--
 
     // Add tree access control list 2012/02/29 T.Koyasu -start-
+    /**
+     * (Deprecated) Can access index ID lsit
+     * (廃止予定) アクセス可能インデックスリスト
+     *
+     * @var array
+     */
     private $canAccessIndexIds_ = array();
     // Add tree access control list 2012/02/29 T.Koyasu -end-
 
     // Add repository parameter 2013/04/11 K.Matsuo -start-
+    /**
+     * Admim view parameters
+     * 管理画面からのパラメータ
+     *
+     * @var array
+     */
     private $admin_params_ = array();
     // Add repository parameter 2013/04/11 K.Matsuo -start-
     // Add child index left margin 2013/06/17 K.Matsuo -start-
+    /**
+     * Child index left margin
+     * 子インデックス左マージン
+     *
+     * @var int
+     */
     private $childLeftMargin = 12;
     // Add child index left margin 2013/06/17 K.Matsuo -end-
     // Add detail search index tree T.Koyasu -start-
+    /**
+     * Module ID
+     * モジュールＩＤ
+     *
+     * @var int
+     */
     public $id_module = null;
+    /**
+     * Detail check IDs
+     * 詳細検索でチェックされたインデックスID
+     *
+     * @var array
+     */
     public  $detail_check_ids = null;
+    /**
+     * Detail all check
+     * 詳細検索で全チェックされたかのフラグ
+     *
+     * @var int
+     */
     public  $detail_all_check = null;
     // Add detail search index tree T.Koyasu -end-
+    /**
+     * Update open info
+     * 開閉状態の更新
+     *
+     * @var array
+     */
     public $updateOpenInfo = null;
+    /**
+     * Private tree root hierarchy
+     * プライベートツリーのルートインデックスからの階層
+     *
+     * @var null
+     */
     private $privateTreeRootHierarchy = null;
+    /**
+     * Get public index query string
+     * 公開インデックス取得クエリ文
+     *
+     * @var string
+     */
     private $publicIndexQuery = "";
     // bug fix root select of private tree
+    /**
+     * Private tree root select
+     * プライベートツリー作成場所がルート直下であるかどうかのフラグ
+     *
+     * @var int
+     */
     public $private_root_select = null;
-    
+
+    /**
+     * Execute
+     * 実行
+     *
+     * @return string "success"/"error" success/failed 成功/失敗
+     * @throws RepositoryException
+     */
     function execute()
     {
         ///////////////////////
@@ -376,8 +559,10 @@ class Repository_Action_Main_Tree extends RepositoryAction
                 $this->getRootPrivateTreeHTML($idx_data, $tree_html);
                 $tmpArray = array();
                 $this->getShowIndex($tmpArray, array($idx_data["index_id"]), 0);
-                $tree_html .= $tmpArray[$idx_data["index_id"]]["html"];
-                $tree_html .= "</div>";
+                if(isset($tmpArray[$idx_data["index_id"]])){
+                    $tree_html .= $tmpArray[$idx_data["index_id"]]["html"];
+                    $tree_html .= "</div>";
+                }
             } else {
                 if($this->sel_mode=="edit"){
                     // set root index show HTML
@@ -399,17 +584,13 @@ class Repository_Action_Main_Tree extends RepositoryAction
                 if($this->sel_mode=="edit" || $this->sel_mode=="rootcheck"){
                     $tree_html .= "</div>";
                 }
+                // インデックス付属情報
+                if($this->sel_mode == "edit") {
+                    $this->smartyAssign = $this->Session->getParameter("smartyAssign");
+                    $tree_html .= '<br>';
+                    $tree_html .= '<a class="btn_white" href="#" onclick="javascript: outputIndexMetadata(); return false;">'.$this->smartyAssign->getLang("repository_button_edittree_output_index_metadata").'</a>';
+                }
             }
-//            if($this->sel_mode == ""){
-//                // get root open tree data
-//                $view_tree_html = "";
-//                if(isset($tmpArray[0]["session_html"]))
-//                {
-//                    $view_tree_html = str_replace("'", "\'", $tmpArray[0]["session_html"]);
-//                }
-//                $this->Session->setParameter("view_tree_html", $view_tree_html);
-//            }
-
         }
         ///////////////////////////////
         // set session open node id
@@ -452,9 +633,12 @@ class Repository_Action_Main_Tree extends RepositoryAction
     }
 
     /**
-     * check click index data
-     * $not_for_html
+     * Get index data
+     * インデックス情報取得
      *
+     * @param int $id index id インデックスID
+     * @return array index data インデックス情報
+     *                array[0]["index_id"|"index_name"|"index_name_english"|...]
      */
     function getIndexData($id){
         // get click node data for make html
@@ -472,9 +656,11 @@ class Repository_Action_Main_Tree extends RepositoryAction
     }
 
     /**
-     * out root index's HTML
+     * Output root index HTML
+     * ルートインデックス表示HTMLを出力する
      *
-     * @param $tree_html index tree view HTML
+     * @param string $tree_html index tree view HTML ツリー表示HTML
+     * @param string $type display type 表示タイプ
      */
     function getRootIndexHTML(&$tree_html, $type){
         if($type == 'edit'){
@@ -543,10 +729,12 @@ class Repository_Action_Main_Tree extends RepositoryAction
 
     /**
      * check access right for insert item
+     * インデックスにアクセスできるか判定する
      *
-     * @param $access_role access auth's room_id delemit is ","
-     * @param $access_group access group's room_id delemit is ","
-     * @param $indexId check index id
+     * @param string  $access_role access auth's room_id アクセス可能な権限リスト
+     * @param string $access_group access group's room_id アクセス可能なグループIDリスト
+     * @param int $indexId check index id インデックスID
+     * @return bool true/false can access/or not アクセス可/不可
      */
     function checkAccessIndex($access_role, $access_group, $indexId){
         // Add config management authority 2010/02/23 Y.Nakao --start--
@@ -613,9 +801,10 @@ class Repository_Action_Main_Tree extends RepositoryAction
 
     /**
      * check index public status
+     * インデックス公開状態をチェックする
      *
-     * @param $idx_id index_id
-     * @return bool true:public / false:closed
+     * @param int $idx_id index ID インデックスID
+     * @return bool true/false public/close 公開/非公開
      */
     function checkPublic($idx_id){
         $query = "SELECT index_id FROM ". DATABASE_PREFIX ."repository_index ".
@@ -633,11 +822,14 @@ class Repository_Action_Main_Tree extends RepositoryAction
         }
         return true;
     }
+
     /**
      * out my privatetree root index's HTML
+     * プライベートツリーHTMLを出力する
      *
-     * @param $data my privatetree root
-     * @param $tree_html index tree view HTML
+     * @param array $data private tree data プライベートツリー情報
+     *                     array[$ii["index_id"|"index_name"|"index_name_english"|...]
+     * @param $tree_html index tree view HTML ツリー表示HTML
      */
     function getRootPrivateTreeHTML($data, &$tree_html){
         $id = $data['index_id'];
@@ -683,14 +875,16 @@ class Repository_Action_Main_Tree extends RepositoryAction
 
     // Add output tree 2013/06/13 K.Matsuo --start--
     /**
-     * get public index array
-     *  closed index under is not get
+     * Get show index
+     * 表示するインデックスを取得する
      *
      * @param array $ret return search result 取得結果
-     * @param array $idx_id search parent_index_id 親インデックスID
-     * @param array $checkPrivateTreeHierarchy hierarchy check private tree プライベートツリーが存在する階層（true：表示する）
-     * @param array $hierarchy set hierarchy 現在の階層
-     * @param array[$ii][room_id] $usersGroups // Add tree access control list 2012/02/29 T.Koyasu ユーザーグループリスト（権限判定）
+     *                    array[$ii["index_id"|"index_name"|"index_name_english"|...]
+     * @param string $idx_id search parent_index_id 親インデックスID
+     * @param int $checkPrivateTreeHierarchy hierarchy check private tree プライベートツリーが存在する階層（true：表示する）
+     * @param int $hierarchy set hierarchy 現在の階層
+     * @param array $usersGroups user groups ユーザーグループリスト
+     *                            array[$ii][room_id]
      */
     public function getShowIndex(&$ret, $idx_id, $checkPrivateTreeHierarchy=0, $hierarchy=0, $usersGroups=array() ){
         $user_id = $this->Session->getParameter("_user_id");
@@ -887,12 +1081,13 @@ class Repository_Action_Main_Tree extends RepositoryAction
         }
     }
     /**
-     * get public index array
-     *  closed index under is not get
+     * Output tree HTML
+     * ツリーHTMLを出力する
      *
-     * @param array $ret return search result
-     * @param array $idx_id search parent_index_id
-     * @param array[$ii][room_id] $usersGroups // Add tree access control list 2012/02/29 T.Koyasu
+     * @param array $indexData index info インデックス情報
+     *                          array[$ii]["index_id"|"index_name"|"index_name_english"|...]
+     * @param bool $hasChild has child index flag 子インデックス存在フラグ
+     * @param string $html output html string 出力するHTML文字列
      */
     public function outputTreeHtml($indexData, $hasChild, &$html){
         $name = "";
@@ -943,11 +1138,13 @@ class Repository_Action_Main_Tree extends RepositoryAction
 
     // Add output tree 2013/06/17 K.Matsuo --start--
     /**
-     * get check(import) tree html
+     * Output tree with checkbox html
+     * チェックボックス付きのツリーHTMLを出力する
      *
-     * @param $indexData show index data
-     * @param $hasChild is index had child
-     * @param $html output html
+     * @param array $indexData index info インデックス情報
+     *                          array[$ii]["index_id"|"index_name"|"index_name_english"|...]
+     * @param bool $hasChild has child index flag 子インデックス存在フラグ
+     * @param string $html output html string 出力するHTML文字列
      */
     private function outputCheckTreeHtml($indexData, $hasChild, &$html)
     {
@@ -979,11 +1176,13 @@ class Repository_Action_Main_Tree extends RepositoryAction
         $html .= '</div>';
     }
     /**
-     * get root check(manage, harvest) tree html
+     * Output tree with checkbox html (include Root index)
+     * チェックボックス付きのツリーHTMLを出力する(ルートインデックス含む)
      *
-     * @param $indexData show index data
-     * @param $hasChild is index had child
-     * @param $html output html
+     * @param array $indexData index info インデックス情報
+     *                          array[$ii]["index_id"|"index_name"|"index_name_english"|...]
+     * @param bool $hasChild has child index flag 子インデックス存在フラグ
+     * @param string $html output html string 出力するHTML文字列
      */
     private function outputRootCheckTreeHtml($indexData, $hasChild, &$html)
     {
@@ -1012,11 +1211,13 @@ class Repository_Action_Main_Tree extends RepositoryAction
     }
 
     /**
-     * get link(item regist) tree html
+     * Output tree HTML for item position index view
+     * 所属ツリー選択画面用のHTMLを出力する
      *
-     * @param $indexData show index data
-     * @param $hasChild is index had child
-     * @param $html output html
+     * @param array $indexData index info インデックス情報
+     *                          array[$ii]["index_id"|"index_name"|"index_name_english"|...]
+     * @param bool $hasChild has child index flag 子インデックス存在フラグ
+     * @param string $html output html string 出力するHTML文字列
      */
     private function outputLinkTreeHtml($indexData, $hasChild, &$html)
     {
@@ -1058,12 +1259,15 @@ class Repository_Action_Main_Tree extends RepositoryAction
         $html .= '</div>';
         $html .= '</a>';
     }
+
     /**
-     * get sel(item manage) tree html
+     * Output sel tree html
+     * セルツリーHTMLを出力する
      *
-     * @param $indexData show index data
-     * @param $hasChild is index had child
-     * @param $html output html
+     * @param array $indexData index info インデックス情報
+     *                          array[$ii]["index_id"|"index_name"|"index_name_english"|...]
+     * @param bool $hasChild has child index flag 子インデックス存在フラグ
+     * @param string $html output html string 出力するHTML文字列
      */
     private function outputSelTreeHtml($indexData, $hasChild, &$html)
     {
@@ -1091,12 +1295,15 @@ class Repository_Action_Main_Tree extends RepositoryAction
         $html .= '</div>';
         $html .= '</a>';
     }
+
     /**
-     * get els tree html
+     * Output ELS tree HTML
+     * ELS用のツリーHTMLを出力する
      *
-     * @param $indexData show index data
-     * @param $hasChild is index had child
-     * @param $html output html
+     * @param array $indexData index info インデックス情報
+     *                          array[$ii]["index_id"|"index_name"|"index_name_english"|...]
+     * @param bool $hasChild has child index flag 子インデックス存在フラグ
+     * @param string $html output html string 出力するHTML文字列
      */
     private function outputELSTreeHtml($indexData, $hasChild, &$html)
     {
@@ -1124,11 +1331,13 @@ class Repository_Action_Main_Tree extends RepositoryAction
     }
 
     /**
-     * get edit tree html
+     * Output tree HTML for edit view
+     * ツリー編集画面用のツリーHTMLを出力する
      *
-     * @param $indexData show index data
-     * @param $hasChild is index had child
-     * @param $html output html
+     * @param array $indexData index info インデックス情報
+     *                          array[$ii]["index_id"|"index_name"|"index_name_english"|...]
+     * @param bool $hasChild has child index flag 子インデックス存在フラグ
+     * @param string $html output html string 出力するHTML文字列
      */
     private function outputEditTreeHtml($indexData, $hasChild, &$html)
     {
@@ -1200,6 +1409,15 @@ class Repository_Action_Main_Tree extends RepositoryAction
             $html .= '</div>';
         }
     }
+
+    /**
+     * Get sentry HTML
+     * Sentry用のHTMLを作成する
+     *
+     * @param array $indexData index info インデックス情報
+     *                          array[$ii]["index_id"|"index_name"|"index_name_english"|...]
+     * @param string $tree_html output html string 出力するHTML文字列
+     */
     function getSentryHTML($indexData, &$tree_html){
         $leftMargin = ($indexData["hierarchy"]) * $this->childLeftMargin;
         $id = $indexData["index_id"];
@@ -1215,10 +1433,12 @@ class Repository_Action_Main_Tree extends RepositoryAction
 
     /**
      * get snippet html
+     * Snippet画面用のツリーHTMLを作成する
      *
-     * @param $indexData show index data
-     * @param $hasChild is index had child
-     * @param $html output html
+     * @param array $indexData index info インデックス情報
+     *                          array[$ii]["index_id"|"index_name"|"index_name_english"|...]
+     * @param bool $hasChild has child index flag 子インデックス存在フラグ
+     * @param string $html output html string 出力するHTML文字列
      */
     private function outputSnippetTreeHtml($indexData, $hasChild, &$html)
     {
@@ -1268,9 +1488,12 @@ class Repository_Action_Main_Tree extends RepositoryAction
 
     /**
      * add tree open close icon
+     * ツリー改変アイコンを付与する
      *
-     * @param $id index id
-     * @param $html outputhtml
+     * @param array $indexData index info インデックス情報
+     *                          array[$ii]["index_id"|"index_name"|"index_name_english"|...]
+     * @param bool $hasChild has child index flag 子インデックス存在フラグ
+     * @param string $html output html string 出力するHTML文字列
      */
     public function addFolderOpenCloseIcon($indexData, $hasChild, &$html)
     {
@@ -1314,12 +1537,15 @@ class Repository_Action_Main_Tree extends RepositoryAction
             }
         }
     }
+
     // Add output tree 2013/06/13 K.Matsuo --start--
     // Add sort privateTree K.Matsuo 2013/06/14 --start--
     /**
      * get child index List from registration index of Privatetree
+     * プライベートツリーの子インデックスを取得するクエリ文を取得する
      *
-     * @param $parent_index_id parent index id (Privatetree Parent)
+     * @param int $parent_index_id parent index id (Privatetree Parent) 親インデックスID
+     * @return string query string クエリ文
      */
     public function getMixturePrivateTreeQuery($idx_id)
     {
@@ -1400,8 +1626,10 @@ class Repository_Action_Main_Tree extends RepositoryAction
 
     /**
      * get hierarchy infomation
+     * インデックス階層を取得する
      *
-     * @param $idx_id index id
+     * @param int $idx_id index id インデックスID
+     * @return int hierarchy 階層
      */
     public function getHierarchy($idx_id)
     {
@@ -1426,10 +1654,12 @@ class Repository_Action_Main_Tree extends RepositoryAction
 
     /**
      * create index tree for detail search
+     * 詳細検索用のツリーHTMLを出力する
      *
-     * @param array  i   $indexData
-     * @param bool   i   $hasChild
-     * @param string i/o $html
+     * @param array $indexData index info インデックス情報
+     *                          array[$ii]["index_id"|"index_name"|"index_name_english"|...]
+     * @param bool $hasChild has child index flag 子インデックス存在フラグ
+     * @param string $html output html string 出力するHTML文字列
      */
     private function outputDetailSearch($indexData, $hasChild, &$html)
     {
@@ -1520,8 +1750,9 @@ class Repository_Action_Main_Tree extends RepositoryAction
 
     /**
      * Set open_id for search_detail
+     * 詳細検索のツリーで開状態になっているツリーをセットする
      *
-     * @param int  i   $index_id
+     * @param int $index_id index ID インデックスID
      */
     private function setOpenIdsForDetailSearch($index_id)
     {
@@ -1539,7 +1770,7 @@ class Repository_Action_Main_Tree extends RepositoryAction
 
     /**
      * Get public index query
-     *
+     * 公開インデックス取得クエリを作成する
      */
     private function getPublicIndexQuery()
     {

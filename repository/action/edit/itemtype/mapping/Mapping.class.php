@@ -1,35 +1,55 @@
 <?php
+/**
+ * Action class for the mapping editing of string attached metadata item to item type
+ * アイテムタイプに紐付くメタデータ項目のマッピング編集用アクションクラス
+ *
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Mapping.class.php 20917 2013-01-16 07:38:08Z atsushi_suzuki $
+// $Id: Mapping.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
-// Copyright (c) 2007 - 2008, National Institute of Informatics, 
+// Copyright (c) 2007 - 2008, National Institute of Informatics,
 // Research and Development Center for Scientific Information Resources
 //
 // This program is licensed under a Creative Commons BSD Licence
 // http://creativecommons.org/licenses/BSD/
 //
 // --------------------------------------------------------------------
-
-/* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
 
 /**
- * [[機能説明]]
- *
- * @package     [[package名]]
- * @access      public
+ * Action class for the mapping editing of string attached metadata item to item type
+ * アイテムタイプに紐付くメタデータ項目のマッピング編集用アクションクラス
+ * 
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class Repository_Action_Edit_Itemtype_Mapping extends RepositoryAction
 {
 	// リクエストパラメータを受け取るため
-	var $item_type_id = null;		//前画面で選択したアイテムタイプID(編集時)
+	/**
+	 * Item type ID
+	 * アイテムタイプID
+	 *
+	 * @var int
+	 */
+	var $item_type_id = null;
 	
-    /**
-     * [[機能説明]]
-     *
-     * @access  public
-     */
+	/**
+	 * Execute
+	 * 実行
+	 *
+	 * @return string "success"/"error" success/failed 成功/失敗
+	 * @throws RepositoryException
+	 */
     function execute()
     {
     	try {
@@ -98,6 +118,7 @@ class Repository_Action_Edit_Itemtype_Mapping extends RepositoryAction
 			if ( $result == false ){
 				//print "終了処理失敗";
 			}
+			$this->finalize();
 	        return 'success';
 	    }
 	    catch ( RepositoryException $Exception) {

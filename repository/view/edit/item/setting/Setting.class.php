@@ -1,106 +1,315 @@
 <?php
+
+/**
+ * View for item setting
+ * アイテム管理画面View class
+ *
+ * @package     WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Setting.class.php 53594 2015-05-28 05:25:53Z kaede_matsushita $
+// $Id: Setting.class.php 70936 2016-08-09 09:53:57Z keiya_sugimoto $
 //
-// Copyright (c) 2007 - 2008, National Institute of Informatics, 
+// Copyright (c) 2007 - 2008, National Institute of Informatics,
 // Research and Development Center for Scientific Information Resources
 //
 // This program is licensed under a Creative Commons BSD Licence
 // http://creativecommons.org/licenses/BSD/
 //
 // --------------------------------------------------------------------
-
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
-require_once WEBAPP_DIR. '/modules/repository/components/Checkdoi.class.php';
+/**
+ * Check grant doi business class
+ * DOI付与チェックビジネスクラス
+ */
+require_once WEBAPP_DIR. '/modules/repository/components/business/doi/Checkdoi.class.php';
+/**
+ * Search process class
+ * 検索処理クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositorySearch.class.php';
+/**
+ * Result of check grant DOI class
+ * DOI付与チェック結果クラス
+ *
+ */
+require_once WEBAPP_DIR. '/modules/repository/components/business/doi/Resultcheckdoi.class.php';
 
 /**
- * [[アイテム管理viewアクション]]
- * 表示順序設定画面
- * 一括エンバーゴ設定画面
- * 一括削除画面
- * 
- * @package  [[package名]]
- * @access    public
+ * View for item setting
+ * アイテム管理画面View class
+ *
+ * @package     WEKO
+ * @copyright   (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license     http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access      public
  */
 class Repository_View_Edit_Item_Setting extends RepositoryAction
 {
+    /**
+     * 表示順序設定画面
+     * 一括エンバーゴ設定画面
+     * 一括削除画面
+     */
+
+    /**
+     * Item max display count
+     * アイテム最大表示数
+     */
     const MAX_ITEM_DISPLAY = 100;
     
     // 使用コンポーネントを受け取るため
+    /**
+     * Session management objects
+     * Session管理オブジェクト
+     *
+     * @var Session
+     */
     var $Session = null;
+    /**
+     * Database management objects
+     * データベース管理オブジェクト
+     *
+     * @var DbObject
+     */
     var $Db = null;
     
     // エラーメッセージ
+    /**
+     * Error message
+     * エラーメッセージ
+     *
+     * @var string
+     */
     public $errMsg = null;
     
-    /*
+    /**
+     * item setting view selected tab
      * 選択タブ
+     *
+     * @var int
      */
     public $item_setting_active_tab = null;
     
     /*
      * エンバーゴ設定用
      */
-    // ライセンスマスタ情報
+    /**
+     * License master info
+     * ライセンスマスタ情報
+     *
+     * @var array
+     */
     public $licence_master = array();
-    // 現在時刻格納
+    /**
+     * Now date
+     * 現在時刻
+     *
+     * @var array
+     */
     public $date = array();
-    // 初期値はオープンアクセス
-    public $embargo_flag_chk = null;
+    /**
+     * Check embargo
+     * エンバーゴチェック
+     *
+     * @var null
+     */
+    public $embargo_flag_chk = null; // 初期値はオープンアクセス
     //public $embargo_flag_chk = "1";
-    
-    // ライセンスマスタの数
+
+    /**
+     * License master number
+     * ライセンスマスタ数
+     *
+     * @var int
+     */
     public $licence_num = 0;
+    /**
+     * Help icon display flag
+     * ヘルプアイコン表示フラグ
+     *
+     * @var int
+     */
     public $help_icon_display =  null;
     
-    //自由入力欄
+    /**
+     * Free input text
+     * 自由入力欄
+     *
+     * @var string
+     */
     public $licence_free_text = "";
-    //サブインデックスに適用するかのフラグ
-    public $embargo_recursion = null;
-    //ライセンスタイプの選択インデックス
-    public $license_id = null;
+    /**
+     * embargo recursion to sub index flag
+     * エンバーゴサブインデックス適用フラグ
+     *
+     * @var null
+     */
+    public $embargo_recursion = null; //サブインデックスに適用するかのフラグ
+    /**
+     * License type ID
+     * ライセンスタイプID
+     *
+     * @var int
+     */
+    public $license_id = null; //ライセンスタイプの選択インデックス
     
     /*
      * 並び替え表示用
      */
+    /**
+     * Sort index ID
+     * ソートするインデックスID
+     *
+     * @var int
+     */
     public $sortIndexId = null;
+    /**
+     * Sort index name
+     * ソートするインデックス名
+     *
+     * @var string
+     */
     public $sortIndexName = null;
+    /**
+     * Sort data
+     * ソートするデータ
+     *
+     * @var array
+     */
     public $sortData = array();
+    /**
+     * Authority check flag
+     * 権限チェックフラグ
+     *
+     * @var bool
+     */
     public $authCheckFlg = false;
     
     /*
      * JaLC DOI一括設定表示用
      */
+    /**
+     * DOI data array
+     * DOIデータ配列
+     *
+     * @var array
+     */
     public $doiData = array();
+    /**
+     * Exist JaLC DOI prefix flag
+     * JaLC DOIプレフィックス設定フラグ
+     *
+     * @var bool
+     */
     public $exist_jalcdoi_prefix = false;
+    /**
+     * Exist CrossRef prefix flag
+     * CrossRefプレフィックス設定フラグ
+     *
+     * @var bool
+     */
     public $exist_crossref_prefix = false;
+    /**
+     * Exist DataCite DOI prefix flag
+     * DataCite DOIプレフィックス設定フラグ
+     *
+     * @var bool
+     */
     public $exist_datacite_prefix = false;
     
-    /*
-     * DOI付与アイテム数表示用
+    /**
+     * grant DOI item number message
+     * DOI付与済みアイテム表示用メッセージ
+     *
+     * @var string
      */
     public $doi_count_msg = null;
     
     /*
      * 検索削除表示用
      */
+    /**
+     * Search keyrowrd in detail search
+     * 詳細検索欄に表示する検索キーワード
+     *
+     * @var string
+     */
     public $searchkeywordForDelete = null; // 検索欄に表示するキーワード
+    /**
+     * Search keyrowrd in simple search
+     * キーワード検索欄に表示する検索キーワード
+     *
+     * @var string
+     */
     public $meta = null;                   // キーワード検索で入力された検索キーワード
+    /**
+     * Search keyrowrd in detail search
+     * 詳細検索欄に表示する検索キーワード
+     *
+     * @var string
+     */
     public $all = null;                    // 全文検索で入力された検索キーワード
+    /**
+     * Search simple or detail
+     * キーワード検索化詳細検索化のフラグ
+     *
+     * @var int
+     */
     public $search_type = null;            // キーワード検索なのか、全文検索なのかを保存するフラグ
+    /**
+     * Search result array
+     * 検索結果配列
+     *
+     * @var array
+     */
     public $titleData = array();           // 検索結果が入った配列
+    /**
+     * Success deleting item count
+     * 削除成功アイテム数
+     *
+     * @var int
+     */
     public $delete_success_num = 0;        // 削除に成功したアイテム数
+    /**
+     * display page number
+     * 表示中のページ番号
+     *
+     * @var int
+     */
     public $page_no = null;                // 表示しているページ番号
+    /**
+     * page numbers
+     * 全体ページ数
+     *
+     * @var int
+     */
     public $page_num = 0;                  // 全体のページ数
+    /**
+     * item count in a page
+     * 1ページに表示するアイテム数
+     *
+     * @var int
+     */
     public $list_view_num = 100;           // 1ページに表示するアイテム数
+    /**
+     * search result item count
+     * 検索結果のアイテム数
+     *
+     * @var int
+     */
     public $item_num = null;               // 検索結果の総アイテム数
     
     /**
-     * [[機能説明]]
+     * Execute
+     * 実行
      *
-     * @access  public
+     * @return string "success"/"error" success/failed 成功/失敗
      */
     protected  function executeApp()
     {
@@ -200,9 +409,10 @@ class Repository_View_Edit_Item_Setting extends RepositoryAction
     }
     
     /**
+     * Set custom sort order
      * 並び替え表示データ設定
-     * 
-     * @return bool 成否
+     *
+     * @return bool true/false success/failed 成功/失敗
      */
     private function displayCustomsort()
     {
@@ -273,8 +483,10 @@ class Repository_View_Edit_Item_Setting extends RepositoryAction
     
     /**
      * エンバーゴ設定用画面表示データ設定
+     * Set data for embargo setting view
      *
-     * @return string errormsg
+     * @return bool true/false success/failed 成功/失敗
+     * @throws RepositoryException
      */
     private function displayEmbago()
     {
@@ -340,7 +552,10 @@ class Repository_View_Edit_Item_Setting extends RepositoryAction
     }
     
     /**
+     * Set data for all delete view
      * 一括削除画面表示用データ設定
+     *
+     * @return bool true/false success/failed 成功/失敗
      */
     private function displayListdelete()
     {
@@ -348,10 +563,12 @@ class Repository_View_Edit_Item_Setting extends RepositoryAction
         return true;
     }
     
-    /*
+    /**
+     * Get selected index name
      * 選択インデックス名を取得する
-     * @param int 対象インデックス
-     * @return string 対象インデックス名
+     *
+     * @param int $sortIndexid selected index ID 選択されたインデックスID
+     * @return string index name インデックス名
      */
     private function getSortIdxName($sortIndexid){
         //戻り値
@@ -380,9 +597,10 @@ class Repository_View_Edit_Item_Setting extends RepositoryAction
     }
     
     /**
+     * grant DOI to all
      * DOI一括付与
-     * 
-     * @return bool 成否
+     *
+     * @return bool true/false success/failed 成功/失敗
      */
     private function displayDoi()
     {
@@ -416,11 +634,13 @@ class Repository_View_Edit_Item_Setting extends RepositoryAction
         
         if(isset($this->sortIndexId) && $this->sortIndexId > 0)
         {
-            $CheckDoi = new Repository_Components_Checkdoi($this->Session, $this->Db, $this->TransStartDate);
+            $CheckDoi = BusinessFactory::getFactory()->getBusiness("businessCheckdoi");
             $this->exist_jalcdoi_prefix = $CheckDoi->existJalcdoiPrefix();
             $this->exist_crossref_prefix = $CheckDoi->existCrossrefPrefix();
             $this->exist_datacite_prefix = $CheckDoi->existDatacitePrefix();
-            if($CheckDoi->isHarvestPublicIndex($this->sortIndexId) && ($this->exist_jalcdoi_prefix || $this->exist_crossref_prefix || $this->exist_datacite_prefix))
+            $resultCheckDoi = new ResultCheckDoi();
+            $CheckDoi->isHarvestPublicIndex($this->sortIndexId, $resultCheckDoi);
+            if($resultCheckDoi->isGrantDoi && ($this->exist_jalcdoi_prefix || $this->exist_crossref_prefix || $this->exist_datacite_prefix))
             {
                 //1 データベース[PREFIX]_repository_position_indexテーブルからインデックスの情報を1～100件まで取得する。
                 //  以下のカラム条件に一致するインデックスの情報を1件～100件まで取得する。
@@ -448,73 +668,76 @@ class Repository_View_Edit_Item_Setting extends RepositoryAction
                     for($ii=0;$ii<count($item_result);$ii++)
                     {
                         $jalc_doi_grant_flag = $CheckDoi->checkDoiGrant($item_result[$ii]['item_id'], $item_result[$ii]['item_no'], 
-                                               Repository_Components_Checkdoi::TYPE_JALC_DOI, 
-                                               Repository_Components_Checkdoi::CHECKING_STATUS_ITEM_MANAGEMENT);
+                                               Repository_Components_Business_Doi_Checkdoi::TYPE_JALC_DOI, 
+                                               null, 
+                                               Repository_Components_Business_Doi_Checkdoi::CHECKING_STATUS_ITEM_MANAGEMENT);
                         $cross_ref_grant_flag = $CheckDoi->checkDoiGrant($item_result[$ii]['item_id'], $item_result[$ii]['item_no'], 
-                                               Repository_Components_Checkdoi::TYPE_CROSS_REF, 
-                                               Repository_Components_Checkdoi::CHECKING_STATUS_ITEM_MANAGEMENT);
+                                               Repository_Components_Business_Doi_Checkdoi::TYPE_CROSS_REF, 
+                                               null, 
+                                               Repository_Components_Business_Doi_Checkdoi::CHECKING_STATUS_ITEM_MANAGEMENT);
                         $datacite_grant_flag = $CheckDoi->checkDoiGrant($item_result[$ii]['item_id'], $item_result[$ii]['item_no'], 
-                                               Repository_Components_Checkdoi::TYPE_DATACITE, 
-                                               Repository_Components_Checkdoi::CHECKING_STATUS_ITEM_MANAGEMENT);
-                        if($jalc_doi_grant_flag && $cross_ref_grant_flag && $datacite_grant_flag)
+                                               Repository_Components_Business_Doi_Checkdoi::TYPE_DATACITE, 
+                                               null, 
+                                               Repository_Components_Business_Doi_Checkdoi::CHECKING_STATUS_ITEM_MANAGEMENT);
+                        if($jalc_doi_grant_flag->isGrantDoi && $cross_ref_grant_flag->isGrantDoi && $datacite_grant_flag->isGrantDoi)
                         {
                             // 全て付与可能
                             $this->setDoiData($item_result[$ii]['item_id'],
                                               $item_result[$ii]['item_no'],
                                               $this->doiData, 
-                                              Repository_Components_Checkdoi::CAN_GRANT_DOI, 
-                                              Repository_Components_Checkdoi::CAN_GRANT_DOI, 
-                                              Repository_Components_Checkdoi::CAN_GRANT_DOI);
+                                              Repository_Components_Business_Doi_Checkdoi::CAN_GRANT_DOI, 
+                                              Repository_Components_Business_Doi_Checkdoi::CAN_GRANT_DOI, 
+                                              Repository_Components_Business_Doi_Checkdoi::CAN_GRANT_DOI);
                         }
-                        else if($jalc_doi_grant_flag && !$cross_ref_grant_flag && !$datacite_grant_flag)
+                        else if($jalc_doi_grant_flag->isGrantDoi && !$cross_ref_grant_flag->isGrantDoi && !$datacite_grant_flag->isGrantDoi)
                         {
                             // JaLC DOIのみ付与可能
                             $this->setDoiData($item_result[$ii]['item_id'],
                                               $item_result[$ii]['item_no'],
                                               $this->doiData, 
-                                              Repository_Components_Checkdoi::CAN_GRANT_DOI, 
-                                              Repository_Components_Checkdoi::CANNOT_GRANT_DOI, 
-                                              Repository_Components_Checkdoi::CANNOT_GRANT_DOI);
+                                              Repository_Components_Business_Doi_Checkdoi::CAN_GRANT_DOI, 
+                                              Repository_Components_Business_Doi_Checkdoi::CANNOT_GRANT_DOI, 
+                                              Repository_Components_Business_Doi_Checkdoi::CANNOT_GRANT_DOI);
                         }
-                        else if(!$jalc_doi_grant_flag && $cross_ref_grant_flag && !$datacite_grant_flag)
+                        else if(!$jalc_doi_grant_flag->isGrantDoi && $cross_ref_grant_flag->isGrantDoi && !$datacite_grant_flag->isGrantDoi)
                         {
                             // Cross Refのみ付与可能
                             $this->setDoiData($item_result[$ii]['item_id'],
                                               $item_result[$ii]['item_no'],
                                               $this->doiData, 
-                                              Repository_Components_Checkdoi::CANNOT_GRANT_DOI, 
-                                              Repository_Components_Checkdoi::CAN_GRANT_DOI, 
-                                              Repository_Components_Checkdoi::CANNOT_GRANT_DOI);
+                                              Repository_Components_Business_Doi_Checkdoi::CANNOT_GRANT_DOI, 
+                                              Repository_Components_Business_Doi_Checkdoi::CAN_GRANT_DOI, 
+                                              Repository_Components_Business_Doi_Checkdoi::CANNOT_GRANT_DOI);
                         }
-                        else if(!$jalc_doi_grant_flag && !$cross_ref_grant_flag && $datacite_grant_flag)
+                        else if(!$jalc_doi_grant_flag->isGrantDoi && !$cross_ref_grant_flag->isGrantDoi && $datacite_grant_flag->isGrantDoi)
                         {
                             // DataCiteのみ付与可能
                             $this->setDoiData($item_result[$ii]['item_id'],
                                               $item_result[$ii]['item_no'],
                                               $this->doiData, 
-                                              Repository_Components_Checkdoi::CANNOT_GRANT_DOI, 
-                                              Repository_Components_Checkdoi::CANNOT_GRANT_DOI, 
-                                              Repository_Components_Checkdoi::CAN_GRANT_DOI);
+                                              Repository_Components_Business_Doi_Checkdoi::CANNOT_GRANT_DOI, 
+                                              Repository_Components_Business_Doi_Checkdoi::CANNOT_GRANT_DOI, 
+                                              Repository_Components_Business_Doi_Checkdoi::CAN_GRANT_DOI);
                         }
-                        else if($jalc_doi_grant_flag && $cross_ref_grant_flag && !$datacite_grant_flag)
+                        else if($jalc_doi_grant_flag->isGrantDoi && $cross_ref_grant_flag->isGrantDoi && !$datacite_grant_flag->isGrantDoi)
                         {
                             // JaLC DOI、Cross Ref付与可能
                             $this->setDoiData($item_result[$ii]['item_id'],
                                               $item_result[$ii]['item_no'],
                                               $this->doiData, 
-                                              Repository_Components_Checkdoi::CAN_GRANT_DOI, 
-                                              Repository_Components_Checkdoi::CAN_GRANT_DOI, 
-                                              Repository_Components_Checkdoi::CANNOT_GRANT_DOI);
+                                              Repository_Components_Business_Doi_Checkdoi::CAN_GRANT_DOI, 
+                                              Repository_Components_Business_Doi_Checkdoi::CAN_GRANT_DOI, 
+                                              Repository_Components_Business_Doi_Checkdoi::CANNOT_GRANT_DOI);
                         }
-                        else if($jalc_doi_grant_flag && !$cross_ref_grant_flag && $datacite_grant_flag)
+                        else if($jalc_doi_grant_flag->isGrantDoi && !$cross_ref_grant_flag->isGrantDoi && $datacite_grant_flag->isGrantDoi)
                         {
                             // JaLCDOI、DataCite付与可能
                             $this->setDoiData($item_result[$ii]['item_id'],
                                               $item_result[$ii]['item_no'],
                                               $this->doiData, 
-                                              Repository_Components_Checkdoi::CAN_GRANT_DOI, 
-                                              Repository_Components_Checkdoi::CANNOT_GRANT_DOI, 
-                                              Repository_Components_Checkdoi::CAN_GRANT_DOI);
+                                              Repository_Components_Business_Doi_Checkdoi::CAN_GRANT_DOI, 
+                                              Repository_Components_Business_Doi_Checkdoi::CANNOT_GRANT_DOI, 
+                                              Repository_Components_Business_Doi_Checkdoi::CAN_GRANT_DOI);
                         }
                     }
                     if(count($item_result) < 100)
@@ -529,12 +752,16 @@ class Repository_View_Edit_Item_Setting extends RepositoryAction
     }
     
     /**
+     * grant JaLC DOI to all
      * JaLC DOI一括付与
-     * 
-     * @param doi_data
-     * @param jalc_doi_flag  0:can grant 1:cannot grant
-     * @param cross_ref_flag 0:can grant 1:cannot grant
-     * @param datacite_flag 0:can grant 1:cannot grant
+     *
+     * @param int $item_id item ID アイテムID
+     * @param int $item_no item number アイテム通番
+     * @param array $doi_data DOI data DOIデータ
+     *                         array[$ii]["jalc_doi"|"cross_ref"|"datacite"]
+     * @param int $jalc_doi_flag 0:grant, 1: not grant 0:付与する, 1:付与しない
+     * @param int $cross_ref_flag 0:grant, 1: not grant 0:付与する, 1:付与しない
+     * @param int $datacite_flag 0:grant, 1: not grant 0:付与する, 1:付与しない
      */
     private function setDoiData($item_id, $item_no, &$doi_data, $jalc_doi_flag, $cross_ref_flag, $datacite_flag)
     {
@@ -561,7 +788,10 @@ class Repository_View_Edit_Item_Setting extends RepositoryAction
     }
     
     /**
+     * Search delete
      * 検索削除
+     *
+     * @return bool true/false success/failed 成功/失敗
      */
     private function displaySearchDelete(){
         
@@ -629,8 +859,11 @@ class Repository_View_Edit_Item_Setting extends RepositoryAction
     }
     
     /**
+     * Search delete and format
      * 検索削除 検索結果整形
-     * @param searchResult search()の戻り値 Array([0] => Array ( [item_id] => 5 [item_no] => 1 [uri] => http://localhost/netcommons2.4.2.0/htdocs/?action=repository_uri&item_id=5 ))
+     *
+     * @param array $searchResult search result 検索結果
+     *                             array[$ii]["item_id"|"item_no"|"url"]
      */
     private function displaySearchResult($searchResult){
         

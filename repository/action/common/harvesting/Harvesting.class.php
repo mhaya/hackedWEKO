@@ -1,7 +1,15 @@
 <?php
+
+/**
+ * Harvest Action class(Because it takes time, calling more than once this action, to perform the harvest)
+ * ハーベストアクションクラス(時間がかかるため、複数回本アクションを呼び出し、ハーベストを実行する)
+ * 
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Harvesting.class.php 44462 2014-11-28 02:42:41Z tomohiro_ichikawa $
+// $Id: Harvesting.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -12,16 +20,25 @@
 // --------------------------------------------------------------------
 
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
+/**
+ * Harvest processing common classes
+ * ハーベスト処理共通クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryHarvesting.class.php';
 
 /**
- * Harvesting
- *
- * @package     NetCommons
- * @author      A.Suzuki(IVIS)
- * @project     NetCommons Project, supported by National Institute of Informatics
- * @access      public
+ * Harvest Action class(Because it takes time, calling more than once this action, to perform the harvest)
+ * ハーベストアクションクラス(時間がかかるため、複数回本アクションを呼び出し、ハーベストを実行する)
+ * 
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class Repository_Action_Common_Harvesting extends RepositoryAction
 {
@@ -29,43 +46,55 @@ class Repository_Action_Common_Harvesting extends RepositoryAction
     // Request parameters
     //----------------------------
     /**
-     * login_id
+     * Administrator login ID
+     * 管理者ログインID
      *
      * @var string
      */
     public $login_id = null;
     /**
-     * password to login
+     * Administrator password
+     * 管理者パスワード
      *
      * @var string
      */
     public $password = null;
     /**
-     * user_authority_id
+     * User of the base level of authority
+     * ユーザのベース権限レベル
      *
-     * @var int
+     * @var string
      */
     public $user_authority_id = "";
     /**
-     * authority_id
+     * User of room privilege level
+     * ユーザのルーム権限レベル
      *
-     * @var int
+     * @var string
      */
     public $authority_id = "";
     /**
-     * user_id
+     * User_id
+     * ユーザID
      *
      * @var string
      */
     public $user_id = "";
     
     /**
-     * allItemAcquisition
+     * All Items output flag
+     * 全アイテム出力フラグ
      * 
      * @var bool
      */
     private $allItemAcquisition = null;
     
+    /**
+     * Do the harvest to the set institutions to WEKO, to register the item
+     * WEKOに設定された機関に対しハーベストを行い、アイテムを登録する
+     *
+     * @return boolean Unauthorized access 不正アクセス
+     */
     function execute()
     {
         try {
@@ -204,7 +233,7 @@ class Repository_Action_Common_Harvesting extends RepositoryAction
                 // Finalize
                 $this->exitAction();
             }
-            
+            $this->finalize();
             exit();
         }
         catch (Exception $exception)
@@ -217,9 +246,10 @@ class Repository_Action_Common_Harvesting extends RepositoryAction
     }
     
     /**
-     * Call another process by async
+     * To perform the harvest action to asynchronous
+     * ハーベストアクションを非同期に実行する
      *
-     * @return bool
+     * @return boolean Execution result 実行結果
      */
     public function callAnotherProcessByAsync()
     {

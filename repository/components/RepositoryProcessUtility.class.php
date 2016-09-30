@@ -1,7 +1,15 @@
 <?php
+
+/**
+ * Asynchronous processing run common classes
+ * 非同期処理実行共通クラス
+ * 
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: RepositoryProcessUtility.class.php 44462 2014-11-28 02:42:41Z tomohiro_ichikawa $
+// $Id: RepositoryProcessUtility.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -11,15 +19,29 @@
 //
 // --------------------------------------------------------------------
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
+/**
+ * Asynchronous processing run common classes
+ * 非同期処理実行共通クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryProcessUtility.class.php';
 
+/**
+ * Asynchronous processing run common classes
+ * 非同期処理実行共通クラス
+ * 
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
+ */
 class RepositoryProcessUtility
 {
-    
     /**
-     * Call another process by async
+     * To perform the asynchronous processing
+     * 非同期処理を実行する
      *
-     * @paarm nextRequest I Next, the request to perform 
+     * @param string $nextRequest Request URL to perform the asynchronous processing 非同期処理を実行するためのリクエストURL
+     * @return boolean Execution result 実行結果
      */
     public static function callAsyncProcess($nextRequest)
     {

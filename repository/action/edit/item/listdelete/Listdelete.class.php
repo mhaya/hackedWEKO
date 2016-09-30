@@ -1,7 +1,15 @@
 <?php
+
+/**
+ * Action class for items bulk deletion
+ * アイテム一括削除用アクションクラス
+ * 
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Listdelete.class.php 24576 2013-08-02 04:00:29Z ayumi_jin $
+// $Id: Listdelete.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -11,40 +19,80 @@
 //
 // --------------------------------------------------------------------
 
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
+/**
+ * Action class for the index operation
+ * インデックス操作用アクションクラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/action/edit/tree/Tree.class.php';
 
 /**
- * [[アイテム管理actionアクション]]
- * アイテム一括削除action
+ * Action class for items bulk deletion
+ * アイテム一括削除用アクションクラス
  * 
- * @package	 [[package名]]
- * @access	  public
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class Repository_Action_Edit_Item_Listdelete extends RepositoryAction
 {
     // コンポーネント受け取り
+    /**
+     * Session management objects
+     * Session管理オブジェクト
+     *
+     * @var Session
+     */
     var $Session = null;
+    /**
+     * Database management objects
+     * データベース管理オブジェクト
+     *
+     * @var DbObject
+     */
     var $Db = null;
 
     // *********************
     // リクエストパラメータ
     // *********************
     // 選択インデックスID
+    /**
+     * Select index id
+     * 選択インデックスID
+     *
+     * @var int
+     */
     public $targetIndexId = null;
     // サブインデックス以下削除フラグ
+    /**
+     * Sub-index following the deletion flag
+     * サブインデックス以下削除フラグ
+     *
+     * @var boolean
+     */
     public $isDeleteSubIndexItem = null;
 
     // *********************
     // メンバ変数
     // *********************
-    //edit_treeのインスタンス
+    /**
+     * Repository_Action_Edit_Tree object
+     * Repository_Action_Edit_Treeオブジェクト
+     *
+     * @var Repository_Action_Edit_Tree
+     */
     private $edit_tree_instance = array();
     
     /**
-     * アイテム一括削除 execute
+     * Item bulk deletion
+     * アイテム一括削除
      *
-     * @access  public
+     * @return string Result 結果
      */
     function execute()
     {
@@ -142,6 +190,7 @@ class Repository_Action_Edit_Item_Listdelete extends RepositoryAction
             }
             // エラーメッセージ開放
             $this->Session->removeParameter("error_msg");
+            $this->finalize();
             return 'success';
         }
         catch ( RepositoryException $Exception) {

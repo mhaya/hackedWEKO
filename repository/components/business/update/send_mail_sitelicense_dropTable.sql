@@ -1,0 +1,1 @@
+DROP TABLE IF EXISTS %%DATABASE_PREFIX%%repository_send_mail_sitelicense;

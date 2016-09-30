@@ -1,7 +1,15 @@
 <?php
+
+/**
+ * Action class for WEKO updates
+ * WEKOアップデート用アクションクラス
+ *
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Update.class.php 58278 2015-09-30 09:33:47Z tomohiro_ichikawa $
+// $Id: Update.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics,
 // Research and Development Center for Scientific Information Resources
@@ -11,30 +19,88 @@
 //
 // --------------------------------------------------------------------
 
-/* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
+/**
+ * ZIP file manipulation library
+ * ZIPファイル操作ライブラリ
+ */
 include_once MAPLE_DIR.'/includes/pear/File/Archive.php';
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
+/**
+ * Asynchronous processing run common classes
+ * 非同期処理実行共通クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryProcessUtility.class.php';
 
+/**
+ * Action class for WEKO updates
+ * WEKOアップデート用アクションクラス
+ * 
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
+ */
 class Repository_Action_Main_Update extends RepositoryAction
 {
+    /**
+     * Database management objects
+     * データベース管理オブジェクト
+     *
+     * @var DbObject
+     */
     var $Db = null;
     
     /**
      * recursive proccessing flg list
+     * 最後に実行する処理リスト
      *
-     * @var array(Key => Value)
+     * @var array
      */
     private $recursiveProcessingFlgList = array();
     
     // key of recursive processing
+    /**
+     * reconstruction search table flag key
+     * 検索テーブル再構築実行キー
+     */
     const KEY_REPOSITORY_SEARCH_TABLE_PROCESSING = "keyRepositorySearchTableProccessing";
+    /**
+     * reconstraction index authority flag key
+     * インデックス権限再構築実行キー
+     */
     const KEY_REPOSITORY_INDEX_MANAGER = "KeyRepositoryIndexManager";
+    /**
+     * Execute file cleanup flag key
+     * ファイルクリーンアップ実行キー
+     */
     const KEY_REPOSITORY_CLEANUP_DELETED_FILE = "KeyRepositoryCleanupDeletedFile";
+    /**
+     * Create search log flag key
+     * 検索ログデータ作成実行キー
+     */
     const KEY_REPOSITORY_SEARCH_LOG = "KeyRepositorySearchLog";
+    /**
+     * Create log elapsed time flag key
+     * ログ経過時間データ作成実行キー
+     */
     const KEY_REPOSITORY_ELAPSEDTIME_LOG = "KeyRepositoryElapsedtimeLog";
+    /**
+     * exclude log flag key
+     * ログ除外処理実行キー
+     */
     const KEY_REPOSITORY_EXCLUDE_LOG = "KeyRepositoryExcludeLog";
-    
+
+    /**
+     * Execute
+     * 実行
+     *
+     * @return bool true/false success/failed 成功/失敗
+     * @throws RepositoryException
+     */
     function execute()
     {
         try {
@@ -260,11 +326,8 @@ class Repository_Action_Main_Update extends RepositoryAction
                      "WHERE param_name = 'WEKO_version'; ";
             $retRef = $this->Db->execute($query);
             if($retRef === false || count($retRef)!=1){
-                $errMsg = $this->Db->ErrorMsg();
-                $exception = new RepositoryException( "ERR_MSG_xxx-xxx1", "xxx-xxx1" );
-                // Rollback
-                $this->failTrans();
-                throw $exception;
+                $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                throw new AppException("Failed WEKO update.");
             }
             $old_version = str_replace(".", "", $retRef[0]["param_value"]);
             switch($old_version){
@@ -276,10 +339,8 @@ class Repository_Action_Main_Update extends RepositoryAction
                     // Add for workearea 2008/01/29 Y.Nakao --end--
                     $retRef = $this->Db->execute($query);
                     if($retRef === false || count($retRef)!=1){
-                        $errMsg = $this->Db->ErrorMsg();
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
 
                     // Add Column "hidden" to repository_item_attr_type 2009/02/18 A.Suzuki --start--
@@ -288,10 +349,8 @@ class Repository_Action_Main_Update extends RepositoryAction
                              "ADD `hidden` INT NOT NULL default 0 AFTER `list_view_enable`;";
                     $retRef = $this->Db->execute($query);
                     if($retRef === false || count($retRef)!=1){
-                        $errMsg = $this->Db->ErrorMsg();
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
                     // Add Column "hidden" to repository_item_attr_type 2009/02/18 A.Suzuki --end--
                 case 134:
@@ -321,10 +380,8 @@ class Repository_Action_Main_Update extends RepositoryAction
 
                     $retRef = $this->Db->execute($query, $params);
                     if($retRef === false || count($retRef)!=1){
-                        $errMsg = $this->Db->ErrorMsg();
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
                     // Add sort setting 2009/03/18 A.Suzuki --end--
 
@@ -343,10 +400,8 @@ class Repository_Action_Main_Update extends RepositoryAction
 
                     $retRef = $this->Db->execute($query, $params);
                     if($retRef === false || count($retRef)!=1){
-                        $errMsg = $this->Db->ErrorMsg();
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
                     // Add default_list_view_num 2009/03/27 A.Suzuki --end--
                 case 137:
@@ -407,15 +462,15 @@ class Repository_Action_Main_Update extends RepositoryAction
                     $retRef = $this->Db->execute($query);
                     if($retRef === false || count($retRef)!=1){
                         fclose($pointer);
-                        $errMsg = $this->Db->ErrorMsg();
-                        $pointer2=fopen(WEBAPP_DIR.'/logs/weko/update_error_log.txt', "w");
-                        fputs($pointer2, 'select file record count error : '.$contents_path."\n");
-                        fputs($pointer2, 'query : '.$query."\n");
-                        fputs($pointer2, $errMsg."\n");
-                        fclose($pointer2);
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        
+                        // エラーメッセージ出力
+                        $errMsg = "Failed WEKO update.\n";
+                        $errMsg += 'select file record count error : '.$contents_path."\n";
+                        $errMsg += 'query : '.$query."\n";
+                        $errMsg += $this->Db->ErrorMsg()."\n";
+                        $this->errorLog($errMsg, __FILE__, __CLASS__, __LINE__);
+                        
+                        throw new AppException("Failed WEKO update.");
                     }
                     $total_file = $retRef[0]['count(*)'];
                     //fputs($pointer, 'total file num : '.$total_file."\n");
@@ -430,15 +485,16 @@ class Repository_Action_Main_Update extends RepositoryAction
                         fputs($pointer, 'query : '.$query."\n");
                         $retRef = $this->Db->execute($query);
                         if($retRef === false){
-                            $errMsg = $this->Db->ErrorMsg();
                             fclose($pointer);
-                            fputs($pointer2, 'select file record error : '.$contents_path."\n");
-                            fputs($pointer2, 'query : '.$query."\n");
-                            fputs($pointer2, $errMsg."\n");
-                            fclose($pointer2);
-                            // Rollback
-                            $this->failTrans();
-                            throw $exception;
+                            
+                            // エラーメッセージ出力
+                            $errMsg = "Failed WEKO update.\n";
+                            $errMsg += 'select file record error : '.$contents_path."\n";
+                            $errMsg += 'query : '.$query."\n";
+                            $errMsg += $this->Db->ErrorMsg()."\n";
+                            $this->errorLog($errMsg, __FILE__, __CLASS__, __LINE__);
+                            
+                            throw new AppException("Failed WEKO update.");
                         }
                         fputs($pointer, 'count : '.count($retRef)."\n");
                         for($ii=0; $ii<count($retRef); $ii++){
@@ -451,13 +507,15 @@ class Repository_Action_Main_Update extends RepositoryAction
                             $result = $this->createFile($output_file, $retRef[$ii]['file']);
                             if($result === false){
                                 fclose($pointer);
-                                fputs($pointer2, 'count : '.count($retRef)."\n");
-                                fputs($pointer2, 'make file : '.$output_file);
-                                fputs($pointer2, " : NG \n");
-                                fclose($pointer2);
-                                // Rollback
-                                $this->failTrans();
-                                throw $exception;
+                                
+                                // エラーメッセージ出力
+                                $errMsg = "Failed WEKO update.\n";
+                                $errMsg += 'count : '.count($retRef)."\n";
+                                $errMsg += 'make file : '.$output_file." : NG \n";
+                                $errMsg += $this->Db->ErrorMsg()."\n";
+                                $this->errorLog($errMsg, __FILE__, __CLASS__, __LINE__);
+                                
+                                throw new AppException("Failed WEKO update.");
                             }
                             fputs($pointer, " : success\n");
                         }
@@ -470,20 +528,16 @@ class Repository_Action_Main_Update extends RepositoryAction
                             " DROP file ";
                     $retRef = $this->Db->execute($query);
                     if($retRef === false){
-                        $errMsg = $this->Db->ErrorMsg();
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
                     // Add pdf prev id
                     $query = "ALTER TABLE ". DATABASE_PREFIX ."repository_file ".
                              "ADD `prev_id` INT NOT NULL default 0 AFTER `extension`;";
                     $retRef = $this->Db->execute($query);
                     if($retRef === false || count($retRef)!=1){
-                        $errMsg = $this->Db->ErrorMsg();
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
                     // Add separate file from DB 2009/04/17 Y.Nakao --end--
                 case 138:
@@ -494,10 +548,8 @@ class Repository_Action_Main_Update extends RepositoryAction
                              "AND is_delete = 0;";
                     $retRef = $this->Db->execute($query);
                     if($retRef === false || count($retRef)!=1){
-                        $errMsg = $this->Db->ErrorMsg();
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
 
                     if($retRef[0]['param_value'] != ""){
@@ -519,10 +571,8 @@ class Repository_Action_Main_Update extends RepositoryAction
                     // UPDATE実行
                     $retRef = $this->Db->execute($query, $params);
                     if($retRef === false || count($retRef)!=1){
-                        $errMsg = $this->Db->ErrorMsg();
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
                     // Add sort order "publication year" 2009/06/25 A.Suzuki --end--
 
@@ -533,10 +583,8 @@ class Repository_Action_Main_Update extends RepositoryAction
                              "AND is_delete = 0;";
                     $retRef = $this->Db->execute($query);
                     if($retRef === false || count($retRef)!=1){
-                        $errMsg = $this->Db->ErrorMsg();
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
 
                     // keyword検索のデフォルトは"出版年(降順)"に設定
@@ -558,10 +606,8 @@ class Repository_Action_Main_Update extends RepositoryAction
                     // UPDATE実行
                     $retRef = $this->Db->execute($query, $params);
                     if($retRef === false || count($retRef)!=1){
-                        $errMsg = $this->Db->ErrorMsg();
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
                     // Add sort order default for keyword 2009/06/29 A.Suzuki --end--
 
@@ -578,10 +624,8 @@ class Repository_Action_Main_Update extends RepositoryAction
 
                     $retRef = $this->Db->execute($query, $params);
                     if($retRef === false || count($retRef)!=1){
-                        $errMsg = $this->Db->ErrorMsg();
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
                     // Add currency_setting 2009/06/26 A.Suzuki --end--
 
@@ -598,10 +642,8 @@ class Repository_Action_Main_Update extends RepositoryAction
 
                     $retRef = $this->Db->execute($query, $params);
                     if($retRef === false || count($retRef)!=1){
-                        $errMsg = $this->Db->ErrorMsg();
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
                     // Add select_language 2009/07/01 A.Suzuki --end--
 
@@ -612,10 +654,8 @@ class Repository_Action_Main_Update extends RepositoryAction
                              "ADD `rss_display` INT NOT NULL default 0 AFTER `display_more`;";
                     $retRef = $this->Db->execute($query);
                     if($retRef === false || count($retRef)!=1){
-                        $errMsg = $this->Db->ErrorMsg();
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
                     // Add RSS icon display select 2009/07/06 A.Suzuki --end--
 
@@ -626,60 +666,48 @@ class Repository_Action_Main_Update extends RepositoryAction
                              "ADD `title_english` TEXT NOT NULL AFTER `title`;";
                     $retRef = $this->Db->execute($query);
                     if($retRef === false || count($retRef)!=1){
-                        $errMsg = $this->Db->ErrorMsg();
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
                     // repository_item : "title" 属性変更 [TEXT NOT NULL => TEXT default '']
                     $query = "ALTER TABLE ". DATABASE_PREFIX ."repository_item ".
                              "MODIFY `title` TEXT NOT NULL ;";
                     $retRef = $this->Db->execute($query);
                     if($retRef === false || count($retRef)!=1){
-                        $errMsg = $this->Db->ErrorMsg();
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
                     // repository_item : "serch_key_english" 追加
                     $query = "ALTER TABLE ". DATABASE_PREFIX ."repository_item ".
                              "ADD `serch_key_english` TEXT NOT NULL AFTER `serch_key`;";
                     $retRef = $this->Db->execute($query);
                     if($retRef === false || count($retRef)!=1){
-                        $errMsg = $this->Db->ErrorMsg();
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
                     // repository_item_attr_type : "display_lang_type" 追加
                     $query = "ALTER TABLE ". DATABASE_PREFIX ."repository_item_attr_type ".
                              "ADD `display_lang_type` TEXT NOT NULL AFTER `dublin_core_mapping`;";
                     $retRef = $this->Db->execute($query);
                     if($retRef === false || count($retRef)!=1){
-                        $errMsg = $this->Db->ErrorMsg();
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
                     // repository_biblio_info : "biblio_name_english" 追加
                     $query = "ALTER TABLE ". DATABASE_PREFIX ."repository_biblio_info ".
                              "ADD `biblio_name_english` TEXT NOT NULL AFTER `biblio_name`;";
                     $retRef = $this->Db->execute($query);
                     if($retRef === false || count($retRef)!=1){
-                        $errMsg = $this->Db->ErrorMsg();
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
                     // repository_ranking : "disp_name_english" 追加
                     $query = "ALTER TABLE ". DATABASE_PREFIX ."repository_ranking ".
                              "ADD `disp_name_english` TEXT NOT NULL AFTER `disp_name`;";
                     $retRef = $this->Db->execute($query);
                     if($retRef === false || count($retRef)!=1){
-                        $errMsg = $this->Db->ErrorMsg();
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
                     // Add alternative language data 2009/07/17 A.Suzuki --end--
 
@@ -698,10 +726,8 @@ class Repository_Action_Main_Update extends RepositoryAction
 
                     $retRef = $this->Db->execute($query, $params);
                     if($retRef === false || count($retRef)!=1){
-                        $errMsg = $this->Db->ErrorMsg();
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
                     // Add alternative language setting 2009/08/11 A.Suzuki --end--
 
@@ -736,10 +762,8 @@ class Repository_Action_Main_Update extends RepositoryAction
                     $params[] = $this->TransStartDate;  // mod_date
                     $retRef = $this->Db->execute($query, $params);
                     if($retRef === false || count($retRef)!=1){
-                        $errMsg = $this->Db->ErrorMsg();
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
                     // Add parameter for ELS auto entry 2009/08/31 Y.Nakao --end--
 
@@ -776,10 +800,8 @@ class Repository_Action_Main_Update extends RepositoryAction
                              ") ENGINE=innodb;";
                     $result = $this->Db->execute($query);
                     if($result === false){
-                        $errMsg = $this->Db->ErrorMsg();
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
                     // Add table "repository_supple" 2009/07/16 A.Suzuki --end--
 
@@ -796,10 +818,8 @@ class Repository_Action_Main_Update extends RepositoryAction
 
                     $retRef = $this->Db->execute($query, $params);
                     if($retRef === false || count($retRef)!=1){
-                        $errMsg = $this->Db->ErrorMsg();
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
                     // Add supple WEKO url 2009/08/28 A.Suzuki --end--
 
@@ -816,10 +836,8 @@ class Repository_Action_Main_Update extends RepositoryAction
 
                     $retRef = $this->Db->execute($query, $params);
                     if($retRef === false || count($retRef)!=1){
-                        $errMsg = $this->Db->ErrorMsg();
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
                     // Add supple WEKO review flag 2009/09/24 A.Suzuki --end--
 
@@ -835,10 +853,8 @@ class Repository_Action_Main_Update extends RepositoryAction
 
                     $retRef = $this->Db->execute($query, $params);
                     if($retRef === false || count($retRef)!=1){
-                        $errMsg = $this->Db->ErrorMsg();
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
 
                     $query = "INSERT INTO ". DATABASE_PREFIX. "repository_parameter ".
@@ -853,10 +869,8 @@ class Repository_Action_Main_Update extends RepositoryAction
 
                     $retRef = $this->Db->execute($query, $params);
                     if($retRef === false || count($retRef)!=1){
-                        $errMsg = $this->Db->ErrorMsg();
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
 
                     $query = "CREATE TABLE ".DATABASE_PREFIX."repository_users ( ".
@@ -875,10 +889,8 @@ class Repository_Action_Main_Update extends RepositoryAction
                     $params = array();
                     $retRef = $this->Db->execute($query, $params);
                     if($retRef === false || count($retRef)!=1){
-                        $errMsg = $this->Db->ErrorMsg();
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
                 case 140:
                     // Add DC mapping for default itemtype 2009/11/10 A.Suzuki --start--
@@ -902,10 +914,8 @@ class Repository_Action_Main_Update extends RepositoryAction
                     // UPDATE実行
                     $result = $this->Db->execute($query, $params);
                     if($result === false || count($result)!=1){
-                        $errMsg = $this->Db->ErrorMsg();
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
 
                     // get default itemtype
@@ -927,10 +937,8 @@ class Repository_Action_Main_Update extends RepositoryAction
                     $params[] = 0;  // is_delete
                     $retRef = $this->Db->execute($query, $params);
                     if($retRef === false){
-                        $errMsg = $this->Db->ErrorMsg();
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
                     // Update to DC mapping if junii2 mapping had changed from default.
                     foreach($retRef as $attr){
@@ -1240,10 +1248,8 @@ class Repository_Action_Main_Update extends RepositoryAction
                         // UPDATE実行
                         $result = $this->Db->execute($query, $params);
                         if($result === false || count($result)!=1){
-                            $errMsg = $this->Db->ErrorMsg();
-                            // Rollback
-                            $this->failTrans();
-                            throw $exception;
+                            $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                            throw new AppException("Failed WEKO update.");
                         }
                     }
                     // Add DC mapping for default itemtype 2009/11/10 A.Suzuki --end--
@@ -1253,30 +1259,24 @@ class Repository_Action_Main_Update extends RepositoryAction
                              "ADD `display_name` TEXT NOT NULL AFTER `file_name`;";
                     $retRef = $this->Db->execute($query);
                     if($retRef === false || count($retRef)!=1){
-                        $errMsg = $this->Db->ErrorMsg();
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
 
                     $query = "ALTER TABLE ". DATABASE_PREFIX ."repository_file ".
                              "ADD `display_type` INT NOT NULL default 0 AFTER `display_name`;";
                     $retRef = $this->Db->execute($query);
                     if($retRef === false || count($retRef)!=1){
-                        $errMsg = $this->Db->ErrorMsg();
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
 
                     $query = "ALTER TABLE ". DATABASE_PREFIX ."repository_file ".
                              "ADD `flash_pub_date` VARCHAR(23) AFTER `pub_date`;";
                     $retRef = $this->Db->execute($query);
                     if($retRef === false || count($retRef)!=1){
-                        $errMsg = $this->Db->ErrorMsg();
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
                     // Extend file type 2009/12/10 A.Suzuki --end--
 
@@ -1341,10 +1341,8 @@ class Repository_Action_Main_Update extends RepositoryAction
                     // UPDATE実行
                     $result = $this->Db->execute($query, $params);
                     if($result === false || count($result)!=1){
-                        $errMsg = $this->Db->ErrorMsg();
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
                     // Bug fix biblio_info junii2 mapping 2010/01/29 A.Suzuki --end--
                     // Add Last reset date of Ranking log  2010/02/08 K.Ando --start--
@@ -1360,10 +1358,8 @@ class Repository_Action_Main_Update extends RepositoryAction
 
                     $retRef = $this->Db->execute($query, $params);
                     if($retRef === false || count($retRef)!=1){
-                        $errMsg = $this->Db->ErrorMsg();
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
                     // Add Last reset date of Ranking log 2010/02/08 K.Ando --start--
                 case 142:
@@ -1380,10 +1376,8 @@ class Repository_Action_Main_Update extends RepositoryAction
 
                     $retRef = $this->Db->execute($query, $params);
                     if($retRef === false || count($retRef)!=1){
-                        $errMsg = $this->Db->ErrorMsg();
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
                     $query = "INSERT INTO ". DATABASE_PREFIX. "repository_parameter ".
                              "(param_name, param_value, explanation, ins_user_id, mod_user_id, ".
@@ -1397,10 +1391,8 @@ class Repository_Action_Main_Update extends RepositoryAction
 
                     $retRef = $this->Db->execute($query, $params);
                     if($retRef === false || count($retRef)!=1){
-                        $errMsg = $this->Db->ErrorMsg();
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
                     // Add Help icon and OAI-ORE icon display setting 2010/02/08 K.Ando --end--
                 case 143:
@@ -1417,10 +1409,8 @@ class Repository_Action_Main_Update extends RepositoryAction
 
                     $retRef = $this->Db->execute($query, $params);
                     if($retRef === false || count($retRef)!=1){
-                        $errMsg = $this->Db->ErrorMsg();
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
                     // Add AWSSecretAccessKey setting 2010/03/31 S.Nonomura --end--
                 case 144:
@@ -1429,21 +1419,15 @@ class Repository_Action_Main_Update extends RepositoryAction
                             " ADD `host` TEXT NOT NULL AFTER `ip_address`; ";
                     $retRef = $this->Db->execute($query);
                     if($retRef === false || count($retRef)!=1){
-                        $errMsg = $this->Db->ErrorMsg();
-                        echo $errMsg."<br/>";
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
                     $query = "UPDATE ".DATABASE_PREFIX."repository_log ".
                             " SET host = ip_address; ";
                     $ret = $this->Db->execute($query);
                     if($ret === false){
-                        $errMsg = $this->Db->ErrorMsg();
-                        echo $errMsg."<br/>";
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
                     // Add host in log table Y.Nakao 2010/03/05 --end--
                     // Add send mail for log report 2010/03/10 Y.Nakao --start--
@@ -1458,10 +1442,8 @@ class Repository_Action_Main_Update extends RepositoryAction
                     $params[] = $this->TransStartDate;  // mod_date
                     $retRef = $this->Db->execute($query, $params);
                     if($retRef === false || count($retRef)!=1){
-                        $errMsg = $this->Db->ErrorMsg();
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
                     // Add send mail for log report 2010/03/10 Y.Nakao --end--
 
@@ -1470,33 +1452,24 @@ class Repository_Action_Main_Update extends RepositoryAction
                             " ADD `metadata` LONGTEXT NOT NULL AFTER `extracted_text`; ";
                     $retRef = $this->Db->execute($query);
                     if($retRef === false || count($retRef)!=1){
-                        $errMsg = $this->Db->ErrorMsg();
-                        echo $errMsg."<br/>";
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
 
                     $query = "ALTER TABLE ". DATABASE_PREFIX ."repository_fulltext_data ".
                              "ADD FULLTEXT (`metadata`);";
                     $retRef = $this->Db->execute($query);
                     if($retRef === false || count($retRef)!=1){
-                        $errMsg = $this->Db->ErrorMsg();
-                        echo $errMsg."<br/>";
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
 
                     $query = "UPDATE ".DATABASE_PREFIX."repository_fulltext_data ".
                             " SET metadata = ''; ";
                     $ret = $this->Db->execute($query);
                     if($ret === false){
-                        $errMsg = $this->Db->ErrorMsg();
-                        echo $errMsg."<br/>";
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
 
                     $this->rebuildFullTextTable();
@@ -1514,10 +1487,8 @@ class Repository_Action_Main_Update extends RepositoryAction
                     $params[] = $this->TransStartDate;  // mod_date
                     $retRef = $this->Db->execute($query, $params);
                     if($retRef === false || count($retRef)!=1){
-                        $errMsg = $this->Db->ErrorMsg();
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
                     $query = "INSERT INTO ". DATABASE_PREFIX. "repository_parameter ".
                             " (param_name, param_value, explanation, ins_user_id, mod_user_id, ".
@@ -1530,10 +1501,8 @@ class Repository_Action_Main_Update extends RepositoryAction
                     $params[] = $this->TransStartDate;  // mod_date
                     $retRef = $this->Db->execute($query, $params);
                     if($retRef === false || count($retRef)!=1){
-                        $errMsg = $this->Db->ErrorMsg();
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
                     $query = "INSERT INTO ". DATABASE_PREFIX. "repository_parameter ".
                             " (param_name, param_value, explanation, ins_user_id, mod_user_id, ".
@@ -1546,29 +1515,23 @@ class Repository_Action_Main_Update extends RepositoryAction
                     $params[] = $this->TransStartDate;  // mod_date
                     $retRef = $this->Db->execute($query, $params);
                     if($retRef === false || count($retRef)!=1){
-                        $errMsg = $this->Db->ErrorMsg();
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
                     // Add file copy to contents lab 2010/06/28 A.Suzuki --end--
                     // Add log move 2010/07/02 Y.Nakao --start--
                     $query = " ALTER TABLE ".DATABASE_PREFIX."repository_log ENGINE = MYISAM; ";
                     $ret = $this->Db->execute($query);
                     if($ret === false){
-                        $errMsg = "Error case 145<br/>";
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
                     $query = "ALTER TABLE ". DATABASE_PREFIX ."repository_log ".
                             " ADD `user_agent` TEXT NOT NULL AFTER `host`; ";
                     $ret = $this->Db->execute($query);
                     if($ret === false){
-                        $errMsg = "Error case 145<br/>";
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
                     // Add log move 2010/07/02 Y.Nakao --end--
                 case 146:
@@ -1580,11 +1543,8 @@ class Repository_Action_Main_Update extends RepositoryAction
                             " ADD `display_type` INT default 0 AFTER `display_more`; ";
                     $retRef = $this->Db->execute($query);
                     if($retRef === false || count($retRef)!=1){
-                        $errMsg = $this->Db->ErrorMsg();
-                        echo $errMsg."<br/>";
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
                     // Add contents page 2010/07/30 Y.Nakao --end--
                     // Add index thumbnail --start--
@@ -1592,31 +1552,22 @@ class Repository_Action_Main_Update extends RepositoryAction
                             " ADD `thumbnail` LONGBLOB NOT NULL AFTER rss_display; ";
                     $retRef = $this->Db->execute($query);
                     if($retRef === false || count($retRef)!=1){
-                        $errMsg = $this->Db->ErrorMsg();
-                        echo $errMsg."<br/>";
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
                     $query = "ALTER TABLE ". DATABASE_PREFIX ."repository_index ".
                             " ADD `thumbnail_name` TEXT NOT NULL AFTER thumbnail; ";
                     $retRef = $this->Db->execute($query);
                     if($retRef === false || count($retRef)!=1){
-                        $errMsg = $this->Db->ErrorMsg();
-                        echo $errMsg."<br/>";
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
                     $query = "ALTER TABLE ". DATABASE_PREFIX ."repository_index ".
                             " ADD `thumbnail_mime_type` TEXT NOT NULL AFTER thumbnail_name; ";
                     $retRef = $this->Db->execute($query);
                     if($retRef === false || count($retRef)!=1){
-                        $errMsg = $this->Db->ErrorMsg();
-                        echo $errMsg."<br/>";
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
 
                     // Add index thumbnail --end--
@@ -1633,10 +1584,8 @@ class Repository_Action_Main_Update extends RepositoryAction
                     $params[] = $this->TransStartDate;  // mod_date
                     $retRef = $this->Db->execute($query, $params);
                     if($retRef === false || count($retRef)!=1){
-                        $errMsg = $this->Db->ErrorMsg();
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
                     // Add ELS data transfer index --end--
                 case 151:
@@ -1663,10 +1612,8 @@ class Repository_Action_Main_Update extends RepositoryAction
                              " ) ENGINE=innodb; ";
                     $retRef = $this->Db->execute($query);
                     if($retRef === false || count($retRef)!=1){
-                        $errMsg = $this->Db->ErrorMsg();
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
                     // Add name_authority table 2010/10/26 A.Suzuki --end--
 
@@ -1675,49 +1622,34 @@ class Repository_Action_Main_Update extends RepositoryAction
                              " ADD `family_ruby` TEXT NOT NULL AFTER `name_en`; ";
                     $retRef = $this->Db->execute($query);
                     if($retRef === false || count($retRef)!=1){
-                        $errMsg = $this->Db->ErrorMsg();
-                        echo $errMsg."<br/>";
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
                     $query = "ALTER TABLE ". DATABASE_PREFIX ."repository_personal_name ".
                              " ADD `name_ruby` TEXT NOT NULL AFTER `family_ruby`; ";
                     $retRef = $this->Db->execute($query);
                     if($retRef === false || count($retRef)!=1){
-                        $errMsg = $this->Db->ErrorMsg();
-                        echo $errMsg."<br/>";
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
                     $query = "ALTER TABLE ". DATABASE_PREFIX ."repository_personal_name ".
                              " ADD `author_id` INT NOT NULL AFTER `item_type_id`; ";
                     $retRef = $this->Db->execute($query);
                     if($retRef === false || count($retRef)!=1){
-                        $errMsg = $this->Db->ErrorMsg();
-                        echo $errMsg."<br/>";
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
                     $query = "ALTER TABLE ". DATABASE_PREFIX ."repository_personal_name DROP `family_en`;";
                     $retRef = $this->Db->execute($query);
                     if($retRef === false || count($retRef)!=1){
-                        $errMsg = $this->Db->ErrorMsg();
-                        echo $errMsg."<br/>";
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
                     $query = "ALTER TABLE ". DATABASE_PREFIX ."repository_personal_name DROP `name_en`;";
                     $retRef = $this->Db->execute($query);
                     if($retRef === false || count($retRef)!=1){
-                        $errMsg = $this->Db->ErrorMsg();
-                        echo $errMsg."<br/>";
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
                     // Extend personal_name table 2010/10/26 A.Suzuki --end--
 
@@ -1738,28 +1670,22 @@ class Repository_Action_Main_Update extends RepositoryAction
                              " ) ENGINE=innodb; ";
                     $retRef = $this->Db->execute($query);
                     if($retRef === false || count($retRef)!=1){
-                        $errMsg = $this->Db->ErrorMsg();
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
 
                     $query = "CREATE TABLE ".DATABASE_PREFIX."repository_external_author_id_prefix_seq_id (`id` INT NOT NULL); ";
                     $retRef = $this->Db->execute($query);
                     if($retRef === false || count($retRef)!=1){
-                        $errMsg = $this->Db->ErrorMsg();
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
                     $query = "INSERT INTO ". DATABASE_PREFIX. "repository_external_author_id_prefix_seq_id ".
                              " (`id`) VALUES (3); ";
                     $retRef = $this->Db->execute($query);
                     if($retRef === false || count($retRef)!=1){
-                        $errMsg = $this->Db->ErrorMsg();
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
                     $query = "INSERT INTO ". DATABASE_PREFIX. "repository_external_author_id_prefix ".
                              " (prefix_id, prefix_name, block_id, room_id, ".
@@ -1782,10 +1708,8 @@ class Repository_Action_Main_Update extends RepositoryAction
                     $params[] = $this->TransStartDate;  // mod_date
                     $retRef = $this->Db->execute($query, $params);
                     if($retRef === false || count($retRef)!=1){
-                        $errMsg = $this->Db->ErrorMsg();
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
 
                     $query = "CREATE TABLE ".DATABASE_PREFIX."repository_external_author_id_suffix ( ".
@@ -1803,10 +1727,8 @@ class Repository_Action_Main_Update extends RepositoryAction
                              " ) ENGINE=innodb; ";
                     $retRef = $this->Db->execute($query);
                     if($retRef === false || count($retRef)!=1){
-                        $errMsg = $this->Db->ErrorMsg();
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
                     // Add external_author table 2010/10/29 A.Suzuki --end--
                 case 160:
@@ -1822,10 +1744,8 @@ class Repository_Action_Main_Update extends RepositoryAction
                     $params[] = $this->TransStartDate;  // mod_date
                     $retRef = $this->Db->execute($query, $params);
                     if($retRef === false || count($retRef)!=1){
-                        $errMsg = $this->Db->ErrorMsg();
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
                     // Add download_file_type 2010/12/10 H.Goto --end--
                     // Add multiple FLASH files download 2011/02/04 Y.Nakao --start--
@@ -1836,22 +1756,16 @@ class Repository_Action_Main_Update extends RepositoryAction
                              "ADD `browsing_flag` INT NOT NULL default 0 AFTER `item_type_id`; ";
                     $retRef = $this->Db->execute($query);
                     if($retRef === false || count($retRef)!=1){
-                        $errMsg = $this->Db->ErrorMsg();
-                        echo $errMsg."<br/>";
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
                     // Add browsing_flag 2011/02/15 A.Suzuki --end--
                     // Delete table : repository_position_group 2011/02/17 A.Suzuki --start--
                     $query = "DROP TABLE IF EXISTS ". DATABASE_PREFIX ."repository_position_group; ";
                     $retRef = $this->Db->execute($query);
                     if($retRef === false || count($retRef)!=1){
-                        $errMsg = $this->Db->ErrorMsg();
-                        echo $errMsg."<br/>";
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
                     // Delete table : repository_position_group 2011/02/17 A.Suzuki --end--
 
@@ -1871,10 +1785,8 @@ class Repository_Action_Main_Update extends RepositoryAction
                     $params[] = $this->TransStartDate;  // mod_date
                     $retRef = $this->Db->execute($query, $params);
                     if($retRef === false || count($retRef)!=1){
-                        $errMsg = $this->Db->ErrorMsg();
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
                     // Add file_clean_up_last_date 2011/02/23 H.Goto --end--
                     // Fix "CiNii" notation 2011/03/15 A.Suzuki --start--
@@ -1889,10 +1801,8 @@ class Repository_Action_Main_Update extends RepositoryAction
                     $params[] = $this->TransStartDate;
                     $retRef = $this->Db->execute($query, $params);
                     if($retRef === false || count($retRef)!=1){
-                        $errMsg = $this->Db->ErrorMsg();
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
                     // Fix "CiNii" notation 2011/03/15 A.Suzuki --end--
 
@@ -1912,30 +1822,24 @@ class Repository_Action_Main_Update extends RepositoryAction
                     $params[] = $this->TransStartDate;  // mod_date
                     $retRef = $this->Db->execute($query, $params);
                     if($retRef === false || count($retRef)!=1){
-                        $errMsg = $this->Db->ErrorMsg();
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
                     $query = "ALTER TABLE ".DATABASE_PREFIX."repository_index ".
                              "ADD select_index_list_name_english text NOT NULL ".
                              "AFTER rss_display;";
                     $refRef = $this->Db->execute($query);
                     if($retRef === false || count($retRef)!=1){
-                        $errMsg = $this->Db->ErrorMsg();
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
                     $query = "ALTER TABLE ".DATABASE_PREFIX."repository_index ".
                              "ADD select_index_list_name text NOT NULL ".
                              "AFTER rss_display;";
                     $refRef = $this->Db->execute($query);
                     if($retRef === false || count($retRef)!=1){
-                        $errMsg = $this->Db->ErrorMsg();
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
 
                     $query = "ALTER TABLE ".DATABASE_PREFIX."repository_index ".
@@ -1943,10 +1847,8 @@ class Repository_Action_Main_Update extends RepositoryAction
                              "AFTER rss_display;";
                     $refRef = $this->Db->execute($query);
                     if($retRef === false || count($retRef)!=1){
-                        $errMsg = $this->Db->ErrorMsg();
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
                     // Add index list 2011/4/6 S.Abe --end--
                     // out version up log. Y.Nakao 2012/03/05 --start--
@@ -1964,10 +1866,8 @@ class Repository_Action_Main_Update extends RepositoryAction
                     $params[] = 0;
                     $refRef = $this->Db->execute($query, $params);
                     if($retRef === false || count($retRef)!=1){
-                        $errMsg = $this->Db->ErrorMsg();
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
                     if(isset($refRef[0]['count(*)']) && $refRef[0]['count(*)'] == 0)
                     {
@@ -1982,10 +1882,8 @@ class Repository_Action_Main_Update extends RepositoryAction
                         $params[] = $this->TransStartDate;  // mod_date
                         $retRef = $this->Db->execute($query, $params);
                         if($retRef === false || count($retRef)!=1){
-                            $errMsg = $this->Db->ErrorMsg();
-                            // Rollback
-                            $this->failTrans();
-                            throw $exception;
+                            $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                            throw new AppException("Failed WEKO update.");
                         }
                     }
                     // Add AssociateTag for modify API Y.Nakao 2011/10/19 --end--
@@ -1999,20 +1897,16 @@ class Repository_Action_Main_Update extends RepositoryAction
                              "AFTER access_group;";
                     $refRef = $this->Db->execute($query);
                     if($retRef === false || count($retRef)!=1){
-                        $errMsg = $this->Db->ErrorMsg();
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
                     $query = "ALTER TABLE ".DATABASE_PREFIX."repository_index ".
                              "ADD `exclusive_acl_role` TEXT NOT NULL ".
                              "AFTER access_group;";
                     $refRef = $this->Db->execute($query);
                     if($retRef === false || count($retRef)!=1){
-                        $errMsg = $this->Db->ErrorMsg();
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
                     // Add tree access control list 2011/12/28 Y.Nakao --end--
                     // Add tree access control list 2012/02/22 T.Koyasu -start-
@@ -2024,10 +1918,8 @@ class Repository_Action_Main_Update extends RepositoryAction
                     $params[] = '';
                     $retRef = $this->Db->execute($query, $params);
                     if($retRef === false || count($retRef)!=1){
-                        $errMsg = $this->Db->ErrorMsg();
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
                     // Add tree access control list 2012/02/22 T.Koyasu -end-
                     // set_spec
@@ -2036,10 +1928,8 @@ class Repository_Action_Main_Update extends RepositoryAction
                              "AFTER thumbnail_mime_type;";
                     $retRef = $this->Db->execute($query);
                     if($retRef === false || count($retRef)!=1){
-                        $errMsg = $this->Db->ErrorMsg();
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
                     // repository_id
                     $query = "ALTER TABLE ".DATABASE_PREFIX."repository_index ".
@@ -2047,10 +1937,8 @@ class Repository_Action_Main_Update extends RepositoryAction
                              "AFTER thumbnail_mime_type;";
                     $retRef = $this->Db->execute($query);
                     if($retRef === false || count($retRef)!=1){
-                        $errMsg = $this->Db->ErrorMsg();
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
 
                     // Add harvesting 2012/03/02 A.Suzuki --start--
@@ -2072,10 +1960,8 @@ class Repository_Action_Main_Update extends RepositoryAction
                              " ) ENGINE=innodb; ";
                     $retRef = $this->Db->execute($query);
                     if($retRef === false || count($retRef)!=1){
-                        $errMsg = $this->Db->ErrorMsg();
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
 
                     $query = "CREATE TABLE ".DATABASE_PREFIX."repository_harvesting_log ( ".
@@ -2100,10 +1986,8 @@ class Repository_Action_Main_Update extends RepositoryAction
                              " ) ENGINE=MYISAM; ";
                     $retRef = $this->Db->execute($query);
                     if($retRef === false || count($retRef)!=1){
-                        $errMsg = $this->Db->ErrorMsg();
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
 
                     $query = "INSERT INTO ". DATABASE_PREFIX. "repository_parameter ".
@@ -2122,10 +2006,8 @@ class Repository_Action_Main_Update extends RepositoryAction
                     $params[] = $this->TransStartDate;  // mod_date
                     $retRef = $this->Db->execute($query, $params);
                     if($retRef === false || count($retRef)!=1){
-                        $errMsg = $this->Db->ErrorMsg();
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
 
                     // itemtype for harvesting
@@ -2155,10 +2037,8 @@ class Repository_Action_Main_Update extends RepositoryAction
                     }
                     $retRef = $this->Db->execute($query, $params);
                     if($retRef === false || count($retRef)!=1){
-                        $errMsg = $this->Db->ErrorMsg();
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
 
                     $query = "INSERT INTO ".DATABASE_PREFIX."repository_item_attr_type ".
@@ -2264,10 +2144,8 @@ class Repository_Action_Main_Update extends RepositoryAction
                     }
                     $retRef = $this->Db->execute($query, $params);
                     if($retRef === false || count($retRef)!=1){
-                        $errMsg = $this->Db->ErrorMsg();
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
 
                     $query = "INSERT INTO ".DATABASE_PREFIX."repository_item_attr_candidate VALUE ";
@@ -2297,10 +2175,8 @@ class Repository_Action_Main_Update extends RepositoryAction
                     }
                     $retRef = $this->Db->execute($query, $params);
                     if($retRef === false || count($retRef)!=1){
-                        $errMsg = $this->Db->ErrorMsg();
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
                     // Add harvesting 2012/03/02 A.Suzuki --end--
 
@@ -2313,10 +2189,8 @@ class Repository_Action_Main_Update extends RepositoryAction
                              "AND ins_date = mod_date ;";
                     $retRef = $this->Db->execute($query);
                     if($retRef === false){
-                        $errMsg = $this->Db->ErrorMsg();
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
                     // Update to DC mapping if junii2 mapping had changed from default.
                     foreach($retRef as $attr){
@@ -2352,10 +2226,8 @@ class Repository_Action_Main_Update extends RepositoryAction
                         $recCnt = $this->Db->execute($query, $params);
                         if($recCnt === false)
                         {
-                            $errMsg = $this->Db->ErrorMsg();
-                            // Rollback
-                            $this->failTrans();
-                            throw $exception;
+                            $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                            throw new AppException("Failed WEKO update.");
                         }
                         if(count($recCnt) == 0)
                         {
@@ -2389,10 +2261,8 @@ class Repository_Action_Main_Update extends RepositoryAction
                             $params[] = 0; // is_delete
                             $result = $this->Db->execute($query, $params);
                             if($result === false){
-                                $errMsg = $this->Db->ErrorMsg();
-                                // Rollback
-                                $this->failTrans();
-                                throw $exception;
+                                $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                                throw new AppException("Failed WEKO update.");
                             }
                         }
 
@@ -2411,10 +2281,8 @@ class Repository_Action_Main_Update extends RepositoryAction
                             $params[] = 3;
                             $result = $this->Db->execute($query, $params);
                             if($result === false){
-                                $errMsg = $this->Db->ErrorMsg();
-                                // Rollback
-                                $this->failTrans();
-                                throw $exception;
+                                $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                                throw new AppException("Failed WEKO update.");
                             }
                         }
                     }
@@ -2437,10 +2305,8 @@ class Repository_Action_Main_Update extends RepositoryAction
                     $params[] = $this->TransStartDate;  // mod_date
                     $retRef = $this->Db->execute($query, $params);
                     if($retRef === false || count($retRef)!=1){
-                        $errMsg = $this->Db->ErrorMsg();
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
 
                     // Insert to repository_item_attr_type table
@@ -2483,10 +2349,8 @@ class Repository_Action_Main_Update extends RepositoryAction
                     }
                     $retRef = $this->Db->execute($query, $params);
                     if($retRef === false || count($retRef)!=1){
-                        $errMsg = $this->Db->ErrorMsg();
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
                     $query = "INSERT INTO ".DATABASE_PREFIX."repository_item_attr_candidate ".
                              "(`item_type_id`, `attribute_id`, `candidate_no`, `candidate_value`, ".
@@ -2505,10 +2369,8 @@ class Repository_Action_Main_Update extends RepositoryAction
                     }
                     $retRef = $this->Db->execute($query, $params);
                     if($retRef === false || count($retRef)!=1){
-                        $errMsg = $this->Db->ErrorMsg();
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
                     // Add default item type 'Others' --end--
                     $this->versionUp('2.0.1');
@@ -2525,10 +2387,8 @@ class Repository_Action_Main_Update extends RepositoryAction
                     $params[] = $this->TransStartDate;  // mod_date
                     $retRef = $this->Db->execute($query, $params);
                     if($retRef === false || count($retRef)!=1){
-                        $errMsg = $this->Db->ErrorMsg();
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
                     $query = "CREATE TABLE ".DATABASE_PREFIX."repository_pdf_cover_parameter ( ".
                              " `param_name` TEXT(255), ".
@@ -2546,10 +2406,8 @@ class Repository_Action_Main_Update extends RepositoryAction
                              " ) ENGINE=innodb; ";
                     $retRef = $this->Db->execute($query);
                     if($retRef === false || count($retRef)!=1){
-                        $errMsg = $this->Db->ErrorMsg();
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
                     $query = "INSERT INTO ". DATABASE_PREFIX. "repository_pdf_cover_parameter ".
                              " (param_name, text, image, extension, ".
@@ -2577,10 +2435,8 @@ class Repository_Action_Main_Update extends RepositoryAction
                     $params[] = $this->TransStartDate;  // mod_date
                     $retRef = $this->Db->execute($query, $params);
                     if($retRef === false || count($retRef)!=1){
-                        $errMsg = $this->Db->ErrorMsg();
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
                     // Add create_cover_flag to repository_index
                     $query = "ALTER TABLE ".DATABASE_PREFIX."repository_index ".
@@ -2588,10 +2444,8 @@ class Repository_Action_Main_Update extends RepositoryAction
                              "AFTER set_spec;";
                     $retRef = $this->Db->execute($query);
                     if($retRef === false || count($retRef)!=1){
-                        $errMsg = $this->Db->ErrorMsg();
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
                     // Add cover_created_flag to repository_file
                     $query = "ALTER TABLE ".DATABASE_PREFIX."repository_file ".
@@ -2599,10 +2453,8 @@ class Repository_Action_Main_Update extends RepositoryAction
                              "AFTER browsing_flag;";
                     $retRef = $this->Db->execute($query);
                     if($retRef === false || count($retRef)!=1){
-                        $errMsg = $this->Db->ErrorMsg();
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
 
                     // Add update_usage_statistics_last_date parameter
@@ -2617,10 +2469,8 @@ class Repository_Action_Main_Update extends RepositoryAction
                     $params[] = $this->TransStartDate;  // mod_date
                     $retRef = $this->Db->execute($query, $params);
                     if($retRef === false || count($retRef)!=1){
-                        $errMsg = $this->Db->ErrorMsg();
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
 
                     // Add usage statistics table
@@ -2639,10 +2489,8 @@ class Repository_Action_Main_Update extends RepositoryAction
                              ") ENGINE=MyISAM;";
                     $retRef = $this->Db->execute($query);
                     if($retRef === false || count($retRef)!=1){
-                        $errMsg = $this->Db->ErrorMsg();
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
 
                     // Add send_feedback_mail_start_date, send_feedback_mail_end_date and exclude_address_for_feedback
@@ -2667,10 +2515,8 @@ class Repository_Action_Main_Update extends RepositoryAction
                     $params[] = $this->TransStartDate;  // mod_date
                     $retRef = $this->Db->execute($query, $params);
                     if($retRef === false || count($retRef)!=1){
-                        $errMsg = $this->Db->ErrorMsg();
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
 
                     // Add multimedia support 2012/08/27 T.Koyasu -start-
@@ -2685,10 +2531,8 @@ class Repository_Action_Main_Update extends RepositoryAction
                     $params[] = $this->TransStartDate;  // mod_date
                     $retRef = $this->Db->execute($query, $params);
                     if($retRef === false || count($retRef)!=1){
-                        $errMsg = $this->Db->ErrorMsg();
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
                     // Add multimedia support 2012/08/27 T.Koyasu -end-
 
@@ -2702,10 +2546,8 @@ class Repository_Action_Main_Update extends RepositoryAction
                     $retRef = $this->Db->execute($query, $params);
                     if($retRef === false)
                     {
-                        $errMsg = $this->Db->ErrorMsg();
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
                     if(count($retRef) == 0)
                     {
@@ -2720,10 +2562,8 @@ class Repository_Action_Main_Update extends RepositoryAction
                         $params[] = $this->TransStartDate;  // mod_date
                         $retRef = $this->Db->execute($query, $params);
                         if($retRef === false || count($retRef)!=1){
-                            $errMsg = $this->Db->ErrorMsg();
-                            // Rollback
-                            $this->failTrans();
-                            throw $exception;
+                            $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                            throw new AppException("Failed WEKO update.");
                         }
                     }
                     // Add Shelf registration to contents lab 2012/10/21 T.Koyasu -end-
@@ -2748,10 +2588,8 @@ class Repository_Action_Main_Update extends RepositoryAction
                     }
                     $retRef = $this->Db->execute($query, $params);
                     if($retRef === false || count($retRef)!=1){
-                        $errMsg = $this->Db->ErrorMsg();
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
                     // Add 'ichushi' parameter --end--
 
@@ -2770,10 +2608,8 @@ class Repository_Action_Main_Update extends RepositoryAction
                     $params[] = $this->TransStartDate;  // mod_date
                     $retRef = $this->Db->execute($query, $params);
                     if($retRef === false || count($retRef)!=1){
-                        $errMsg = $this->Db->ErrorMsg();
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
                     // Add feedback mail setting 2012/12/25 A.Suzuki --end--
 
@@ -2788,10 +2624,8 @@ class Repository_Action_Main_Update extends RepositoryAction
                                  "AFTER ".RepositoryConst::DBCOL_REPOSITORY_LOG_USER_AGENT.";";
                         $retRef = $this->Db->execute($query);
                         if($retRef === false || count($retRef)!=1){
-                            $errMsg = $this->Db->ErrorMsg();
-                            // Rollback
-                            $this->failTrans();
-                            throw $exception;
+                            $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                            throw new AppException("Failed WEKO update.");
                         }
                     }
 
@@ -2803,10 +2637,8 @@ class Repository_Action_Main_Update extends RepositoryAction
                                  "AFTER ".RepositoryConst::DBCOL_REPOSITORY_LOG_FILE_STATUS.";";
                         $retRef = $this->Db->execute($query);
                         if($retRef === false || count($retRef)!=1){
-                            $errMsg = $this->Db->ErrorMsg();
-                            // Rollback
-                            $this->failTrans();
-                            throw $exception;
+                            $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                            throw new AppException("Failed WEKO update.");
                         }
                     }
 
@@ -2818,10 +2650,8 @@ class Repository_Action_Main_Update extends RepositoryAction
                                  "AFTER ".RepositoryConst::DBCOL_REPOSITORY_LOG_SITE_LICENSE.";";
                         $retRef = $this->Db->execute($query);
                         if($retRef === false || count($retRef)!=1){
-                            $errMsg = $this->Db->ErrorMsg();
-                            // Rollback
-                            $this->failTrans();
-                            throw $exception;
+                            $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                            throw new AppException("Failed WEKO update.");
                         }
                     }
 
@@ -2833,10 +2663,8 @@ class Repository_Action_Main_Update extends RepositoryAction
                                  "AFTER ".RepositoryConst::DBCOL_REPOSITORY_LOG_INPUT_TYPE.";";
                         $retRef = $this->Db->execute($query);
                         if($retRef === false || count($retRef)!=1){
-                            $errMsg = $this->Db->ErrorMsg();
-                            // Rollback
-                            $this->failTrans();
-                            throw $exception;
+                            $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                            throw new AppException("Failed WEKO update.");
                         }
                     }
 
@@ -2848,10 +2676,8 @@ class Repository_Action_Main_Update extends RepositoryAction
                                  "AFTER ".RepositoryConst::DBCOL_REPOSITORY_LOG_LOGIN_STATUS.";";
                         $retRef = $this->Db->execute($query);
                         if($retRef === false || count($retRef)!=1){
-                            $errMsg = $this->Db->ErrorMsg();
-                            // Rollback
-                            $this->failTrans();
-                            throw $exception;
+                            $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                            throw new AppException("Failed WEKO update.");
                         }
                     }
                     // Add file download status to log 2012/11/09 A.Suzuki --end--
@@ -2861,10 +2687,8 @@ class Repository_Action_Main_Update extends RepositoryAction
                             " ADD custom_sort_order INT NOT NULL DEFAULT 0 AFTER index_id;";
                     $retRef = $this->Db->execute($query);
                     if($retRef === false){
-                        $errMsg = $this->Db->ErrorMsg();
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
                     // Update custom_sort_order all
                     $query = "SELECT index_id, item_id, item_no ".
@@ -2872,10 +2696,8 @@ class Repository_Action_Main_Update extends RepositoryAction
                              " ORDER BY index_id, item_id, item_no;";
                     $custom_sort_list = $this->Db->execute($query);
                     if($custom_sort_list === false){
-                        $errMsg = $this->Db->ErrorMsg();
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
 
                     for($ii=0; $ii<count($custom_sort_list); $ii++)
@@ -2901,9 +2723,8 @@ class Repository_Action_Main_Update extends RepositoryAction
                             $cnt = $cnt+1;
                         }
                         if($retRef === false){
-                            $errMsg = $this->Db->ErrorMsg();
-                             $this->failTrans();
-                            throw $exception;
+                            $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                            throw new AppException("Failed WEKO update.");
                         }
                     }
 
@@ -2915,10 +2736,8 @@ class Repository_Action_Main_Update extends RepositoryAction
                     $params[] = '|17|18';
                     $retRef = $this->Db->execute($query, $params);
                     if($retRef === false){
-                        $errMsg = $this->Db->ErrorMsg();
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
 
                     // Add display custom order 2013/01/08 A.Jin --end--
@@ -2932,10 +2751,8 @@ class Repository_Action_Main_Update extends RepositoryAction
                             " ADD lom_mapping TEXT NOT NULL AFTER dublin_core_mapping;";
                         $retRef = $this->Db->execute($query);
                         if($retRef === false){
-                            $errMsg = $this->Db->ErrorMsg();
-                            // Rollback
-                            $this->failTrans();
-                            throw $exception;
+                            $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                            throw new AppException("Failed WEKO update.");
                         }
                     }
 
@@ -2954,10 +2771,8 @@ class Repository_Action_Main_Update extends RepositoryAction
                     $params[] = 10000;  // item_type_id
                     $retRef = $this->Db->execute($query, $params);
                     if($retRef === false){
-                        $errMsg = $this->Db->ErrorMsg();
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
                     // Update to LOM mapping if junii2 mapping had changed from default.
                     foreach($retRef as $attr){
@@ -3079,10 +2894,8 @@ class Repository_Action_Main_Update extends RepositoryAction
                         // UPDATE実行
                         $result = $this->Db->execute($query, $params);
                         if($result === false || count($result)!=1){
-                            $errMsg = $this->Db->ErrorMsg();
-                            // Rollback
-                            $this->failTrans();
-                            throw $exception;
+                            $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                            throw new AppException("Failed WEKO update.");
                         }
                     }
 
@@ -3095,10 +2908,8 @@ class Repository_Action_Main_Update extends RepositoryAction
                     $params[] = 20016;  // item_type_id
                     $retRef = $this->Db->execute($query, $params);
                     if($retRef === false){
-                        $errMsg = $this->Db->ErrorMsg();
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
                     if(count($retRef) == 0){
                         $query = "INSERT INTO ".DATABASE_PREFIX."repository_item_type ".
@@ -3106,10 +2917,8 @@ class Repository_Action_Main_Update extends RepositoryAction
                                 "(20016, 'Learning Object Matadata', 'Learning Object Matadata', 'harvesting item type', 'Learning Material', '', '', '', '', '1', '1', '0', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0);";
                         $retRef = $this->Db->execute($query);
                         if($retRef === false){
-                            $errMsg = $this->Db->ErrorMsg();
-                            // Rollback
-                            $this->failTrans();
-                            throw $exception;
+                            $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                            throw new AppException("Failed WEKO update.");
                         }
                     }
 
@@ -3121,10 +2930,8 @@ class Repository_Action_Main_Update extends RepositoryAction
                     $params[] = 20016;  // item_type_id
                     $retRef = $this->Db->execute($query, $params);
                     if($retRef === false){
-                        $errMsg = $this->Db->ErrorMsg();
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
                     if(count($retRef) == 0){
                         $query = "INSERT INTO ".DATABASE_PREFIX."repository_item_attr_type ".
@@ -3132,98 +2939,96 @@ class Repository_Action_Main_Update extends RepositoryAction
                                 "input_type, is_required, plural_enable, line_feed_enable, list_view_enable, hidden, ".
                                 "junii2_mapping, dublin_core_mapping, lom_mapping, display_lang_type, ".
                                 "ins_user_id, mod_user_id, del_user_id, ins_date, mod_date, del_date, is_delete) VALUES ".
-                                "(20016, 1, 1, 'URI', 'URI', 'link', 0, 1, 0, 0, 0, 'URI', 'identifier', 'generalIdentifier', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 2, 2, 'ISSN', 'ISSN', 'text', 0, 1, 0, 0, 0, 'issn', 'identifier', 'generalIdentifier', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 3, 3, 'NCID', 'NCID', 'text', 0, 1, 0, 0, 0, 'NCID', 'identifier', 'generalIdentifier', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 4, 4, '書誌情報', '書誌情報', 'biblio_info', 0, 0, 0, 1, 0, 'jtitle,volume,issue,spage,epage,dateofissued', 'identifier', 'generalIdentifier', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 5, 5, '著者版フラグ', '著者版フラグ', 'select', 0, 0, 0, 0, 0, 'textversion', '', 'generalIdentifier', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 6, 6, 'その他の識別子', 'その他の識別子', 'text', 0, 1, 0, 0, 0, 'identifier', 'identifier', 'generalIdentifier', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 7, 7, '言語', '言語', 'text', 0, 1, 0, 0, 0, 'language', 'language', 'generalLanguage', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 8, 8, '内容記述', '内容記述', 'textarea', 0, 1, 0, 0, 0, 'description', 'description', 'generalDescription', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 9, 9, '範囲', '範囲', 'text', 0, 1, 0, 0, 0, 'coverage', 'coverage', 'generalCoverage', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 10, 10, '構成', '構成', 'select', 0, 0, 0, 0, 0, '', '', 'generalStructure', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 11, 11, '粒度', '粒度', 'select', 0, 0, 0, 0, 0, '', '', 'generalAggregationLevel', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 12, 12, 'エディション', 'エディション', 'text', 0, 0, 0, 0, 0, '', '', 'lifeCycleVersion', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 13, 13, 'ステータス', 'ステータス', 'select', 0, 0, 0, 0, 0, '', '', 'lifeCycleStatus', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 14, 14, '著者(creator)', '著者(creator)', 'name', 0, 1, 0, 0, 0, 'creator', 'creator', 'lifeCycleContributeAuthor', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 15, 15, '公開者(publisher)', '公開者(publisher)', 'name', 0, 1, 0, 0, 0, 'publisher', 'publisher', 'lifeCycleContributePublisher', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 16, 16, '日付', '日付', 'date', 0, 1, 0, 0, 0, 'date', 'date', 'lifeCycleContributePublishDate', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 17, 17, '作成者(initiator)', '作成者(initiator)', 'text', 0, 1, 0, 0, 0, 'contributor', 'contributor', 'lifeCycleContributeInitiator', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 18, 18, '更新者(terminator)', '更新者(terminator)', 'text', 0, 1, 0, 0, 0, 'contributor', 'contributor', 'lifeCycleContributeTerminator', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 19, 19, '校閲者(validator)', '校閲者(validator)', 'text', 0, 1, 0, 0, 0, 'contributor', 'contributor', 'lifeCycleContributeValidator', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 20, 20, '編集者(editor)', '編集者(editor)', 'text', 0, 1, 0, 0, 0, 'contributor', 'contributor', 'lifeCycleContributeEditor', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 21, 21, '装丁(graphical designer)', '装丁(graphical designer)', 'text', 0, 1, 0, 0, 0, 'contributor', 'contributor', 'lifeCycleContributeGraphicalDesigner', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 22, 22, '技術(technical implementer)', '技術(technical implementer)', 'text', 0, 1, 0, 0, 0, 'contributor', 'contributor', 'lifeCycleContributeTechnicalImplementer', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 23, 23, 'コンテンツプロバイダー(content provider)', 'コンテンツプロバイダー(content provider)', 'text', 0, 1, 0, 0, 0, 'contributor', 'contributor', 'lifeCycleContributeContentProvider', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 24, 24, '技術監修(technical validator)', '技術監修(technical validator)', 'text', 0, 1, 0, 0, 0, 'contributor', 'contributor', 'lifeCycleContributeTechnicalValidator', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 25, 25, '教育監修(educational validator)', '教育監修(educational validator)', 'text', 0, 1, 0, 0, 0, 'contributor', 'contributor', 'lifeCycleContributeEducationalValidator', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 26, 26, '台本(script writer)', '台本(script writer)', 'text', 0, 1, 0, 0, 0, 'contributor', 'contributor', 'lifeCycleContributeScriptWriter', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 27, 27, '教育デザイン(instructional designer)', '教育デザイン(instructional designer)', 'text', 0, 1, 0, 0, 0, 'contributor', 'contributor', 'lifeCycleContributeInstructionalDesigner', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 28, 28, '専門家(subject matter expert)', '専門家(subject matter expert)', 'text', 0, 1, 0, 0, 0, 'contributor', 'contributor', 'lifeCycleContributeSubjectMatterExpert', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 29, 29, 'その他の関係者(unknown)', 'その他の関係者(unknown)', 'text', 0, 1, 0, 0, 0, 'contributor', 'contributor', 'lifeCycleContributeUnknown', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 30, 30, 'その他の関係者', 'その他の関係者', 'text', 0, 1, 0, 0, 0, '', '', 'lifeCycleContribute', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 31, 31, 'メタデータ識別子', 'メタデータ識別子', 'text', 0, 1, 0, 0, 0, '', '', 'metaMetadataIdentifer', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 32, 32, 'メタデータ作成者(creator)', 'メタデータ作成者(creator)', 'text', 0, 1, 0, 0, 0, '', '', 'metaMetadataContributeCreator', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 33, 33, 'メタデータ校閲者(validator)', 'メタデータ校閲者(validator)', 'text', 0, 1, 0, 0, 0, '', '', 'metaMetadataContributeValidator', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 34, 34, 'その他のメタデータ関係者', 'その他のメタデータ関係者', 'text', 0, 1, 0, 0, 0, '', '', 'metaMetadataContribute', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 35, 35, 'メタデータスキーマ', 'メタデータスキーマ', 'text', 0, 1, 0, 0, 0, '', '', 'metaMetadataMetadataSchema', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 36, 36, 'メタデータ言語', 'メタデータ言語', 'text', 0, 0, 0, 0, 0, '', '', 'metaMetadataLanguage', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 37, 37, 'ファイルフォーマット', 'ファイルフォーマット', 'text', 0, 1, 0, 0, 0, 'format', 'format', 'technicalFormat', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 38, 38, 'ファイルサイズ', 'ファイルサイズ', 'text', 0, 0, 0, 0, 0, '', '', 'technicalSize', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 39, 39, 'ファイルリンク', 'ファイルリンク', 'text', 0, 1, 0, 0, 0, '', '', 'technicalLocation', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 40, 40, '動作環境', '動作環境', 'text', 0, 1, 0, 0, 0, '', '', 'technicalRequirementOrCompositeType', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 41, 41, '動作条件', '動作条件', 'text', 0, 1, 0, 0, 0, '', '', 'technicalRequirementOrCompositeName', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 42, 42, '推奨バージョン(下限)', '推奨バージョン(下限)', 'text', 0, 1, 0, 0, 0, '', '', 'technicalRequirementOrCompositeMinimumVersion', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 43, 43, '推奨バージョン(上限)', '推奨バージョン(上限)', 'text', 0, 1, 0, 0, 0, '', '', 'technicalRequirementOrCompositeMaximumVersion', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 44, 44, 'インストール手順', 'インストール手順', 'text', 0, 0, 0, 0, 0, '', '', 'technicalInstallationRemarks', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 45, 45, 'その他の技術要件', 'その他の技術要件', 'text', 0, 0, 0, 0, 0, '', '', 'technicalOtherPlatformRequirements', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 46, 46, '再生時間', '再生時間', 'text', 0, 0, 0, 0, 0, '', '', 'technicalDuration', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 47, 47, '授業形態', '授業形態', 'checkbox', 0, 0, 0, 0, 0, '', '', 'educationalInteractivityType', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 48, 48, 'リソースタイプ', 'リソースタイプ', 'checkbox', 0, 0, 0, 0, 0, 'type', 'type', 'educationalLearningResourceType', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 49, 49, '双方向性度合(interactivity level)', '双方向性度合(interactivity level)', 'checkbox', 0, 0, 0, 0, 0, '', '', 'educationalInteractivityLevel', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 50, 50, '情報量(sematic density)', '情報量(sematic density)', 'checkbox', 0, 0, 0, 0, 0, '', '', 'educationalSemanticDensity', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 51, 51, '利用者', '利用者', 'checkbox', 0, 0, 0, 0, 0, '', '', 'educationalIntendedEndUserRole', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 52, 52, '利用環境', '利用環境', 'checkbox', 0, 0, 0, 0, 0, '', '', 'educationalContext', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 53, 53, '対象年齢', '対象年齢', 'text', 0, 1, 0, 0, 0, '', '', 'educationalTypicalAgeRange', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 54, 54, '難易度', '難易度', 'checkbox', 0, 0, 0, 0, 0, '', '', 'educationalDifficulty', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 55, 55, '授業時間', '授業時間', 'text', 0, 1, 0, 0, 0, '', '', 'educationalTypicalLearningTime', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 56, 56, '備考', '備考', 'textarea', 0, 1, 0, 0, 0, '', '', 'educationalDescription', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 57, 57, '言語', '言語', 'text', 0, 1, 0, 0, 0, '', '', 'educationalLanguage', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 58, 58, '有料', '有料', 'select', 0, 0, 0, 0, 0, '', '', 'rightsCost', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 59, 59, '利用形態', '利用形態', 'select', 0, 0, 0, 0, 0, '', '', 'rightsCopyrightAndOtherRestrictions', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 60, 60, '権利', '権利', 'textarea', 0, 0, 0, 0, 0, 'rights', 'rights', 'rightsDescription', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 61, 61, 'PubMed番号', 'PubMed番号', 'text', 0, 1, 0, 0, 0, 'pmid', 'relation', 'relation', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 62, 62, 'DOI', 'DOI', 'text', 0, 1, 0, 0, 0, 'doi', 'relation', 'relation', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 63, 63, '異版である', '異版である', 'text', 0, 1, 0, 0, 0, 'isVersionOf', 'relation', 'relationIsVersionOf', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 64, 64, '異版あり', '異版あり', 'text', 0, 1, 0, 0, 0, 'hasVersion', 'relation', 'relationHasVersion', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 65, 65, '要件とされる', '要件とされる', 'text', 0, 1, 0, 0, 0, 'isRequiredBy', 'relation', 'relationIsRequiredBy', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 66, 66, '要件とする', '要件とする', 'text', 0, 1, 0, 0, 0, 'requires', 'relation', 'relationRequires', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 67, 67, '部分である', '部分である', 'text', 0, 1, 0, 0, 0, 'isPartOf', 'relation', 'relationIsPartOf', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 68, 68, '部分を持つ', '部分を持つ', 'text', 0, 1, 0, 0, 0, 'hasPart', 'relation', 'relationHasPart', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 69, 69, '参照される', '参照される', 'text', 0, 1, 0, 0, 0, 'isReferencedBy', 'relation', 'relationIsReferencedBy', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 70, 70, '参照する', '参照する', 'text', 0, 1, 0, 0, 0, 'references', 'relation', 'relationRreferences', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 71, 71, '別フォーマットである', '別フォーマットである', 'text', 0, 1, 0, 0, 0, 'isFormatOf', 'relation', 'relationIsFormatOf', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 72, 72, '別フォーマットあり', '別フォーマットあり', 'text', 0, 1, 0, 0, 0, 'hasFormat', 'relation', 'relationHasFormat', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 73, 73, '基になる', '基になる', 'text', 0, 1, 0, 0, 0, 'relation', 'relation', 'relationIsBasisFor', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 74, 74, '基づいている', '基づいている', 'text', 0, 1, 0, 0, 0, 'relation', 'relation', 'relationIsBasedOn', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 75, 75, '他の資源との関係', '他の資源との関係', 'textarea', 0, 1, 0, 0, 0, 'relation', 'relation', 'relation', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 76, 76, 'コメント(件名)', 'コメント(件名)', 'text', 0, 1, 0, 0, 0, '', '', 'annotationEntity', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 77, 77, 'コメント(日付)', 'コメント(日付)', 'date', 0, 1, 0, 0, 0, '', '', 'annotationDate', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 78, 78, 'コメント', 'コメント', 'textarea', 0, 1, 0, 0, 0, '', '', 'annotationDescription', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 79, 79, '分類目的', '分類目的', 'checkbox', 0, 0, 0, 0, 0, '', '', 'classificationPurpose', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 80, 80, '分類ソース', '分類ソース', 'text', 0, 1, 0, 0, 0, '', '', 'classificationTaxonPathSource', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 81, 81, '分類', '分類', 'text', 0, 1, 0, 0, 0, '', '', 'classificationTaxon', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 82, 82, '分類説明', '分類説明', 'textarea', 0, 1, 0, 0, 0, '', '', 'classificationDescription', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 83, 83, '分類キーワード', '分類キーワード', 'text', 0, 1, 0, 0, 0, '', '', 'classificationKeyword', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 84, 84, '機関ID', '機関ID', 'text', 1, 0, 0, 0, 1, '', '', '', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 85, 85, 'コンテンツID', 'コンテンツID', 'text', 1, 0, 0, 0, 1, '', '', '', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 86, 86, 'コンテンツ更新日時', 'コンテンツ更新日時', 'date', 1, 0, 0, 0, 1, '', '', '', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0);";
+                                "(20016, 1, 1, 'URI', 'URI', 'link', 0, 1, 0, 0, 0, 'URI', 'identifier', 'generalIdentifier', '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 2, 2, 'ISSN', 'ISSN', 'text', 0, 1, 0, 0, 0, 'issn', 'identifier', 'generalIdentifier', '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 3, 3, 'NCID', 'NCID', 'text', 0, 1, 0, 0, 0, 'NCID', 'identifier', 'generalIdentifier', '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 4, 4, '書誌情報', '書誌情報', 'biblio_info', 0, 0, 0, 1, 0, 'jtitle,volume,issue,spage,epage,dateofissued', 'identifier', 'generalIdentifier', '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 5, 5, '著者版フラグ', '著者版フラグ', 'select', 0, 0, 0, 0, 0, 'textversion', '', 'generalIdentifier', '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 6, 6, 'その他の識別子', 'その他の識別子', 'text', 0, 1, 0, 0, 0, 'identifier', 'identifier', 'generalIdentifier', '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 7, 7, '言語', '言語', 'text', 0, 1, 0, 0, 0, 'language', 'language', 'generalLanguage', '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 8, 8, '内容記述', '内容記述', 'textarea', 0, 1, 0, 0, 0, 'description', 'description', 'generalDescription', '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 9, 9, '範囲', '範囲', 'text', 0, 1, 0, 0, 0, 'coverage', 'coverage', 'generalCoverage', '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 10, 10, '構成', '構成', 'select', 0, 0, 0, 0, 0, '', '', 'generalStructure', '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 11, 11, '粒度', '粒度', 'select', 0, 0, 0, 0, 0, '', '', 'generalAggregationLevel', '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 12, 12, 'エディション', 'エディション', 'text', 0, 0, 0, 0, 0, '', '', 'lifeCycleVersion', '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 13, 13, 'ステータス', 'ステータス', 'select', 0, 0, 0, 0, 0, '', '', 'lifeCycleStatus', '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 14, 14, '著者(creator)', '著者(creator)', 'name', 0, 1, 0, 0, 0, 'creator', 'creator', 'lifeCycleContributeAuthor', '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 15, 15, '公開者(publisher)', '公開者(publisher)', 'name', 0, 1, 0, 0, 0, 'publisher', 'publisher', 'lifeCycleContributePublisher', '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 16, 16, '日付', '日付', 'date', 0, 1, 0, 0, 0, 'date', 'date', 'lifeCycleContributePublishDate', '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 17, 17, '作成者(initiator)', '作成者(initiator)', 'text', 0, 1, 0, 0, 0, 'contributor', 'contributor', 'lifeCycleContributeInitiator', '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 18, 18, '更新者(terminator)', '更新者(terminator)', 'text', 0, 1, 0, 0, 0, 'contributor', 'contributor', 'lifeCycleContributeTerminator', '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 19, 19, '校閲者(validator)', '校閲者(validator)', 'text', 0, 1, 0, 0, 0, 'contributor', 'contributor', 'lifeCycleContributeValidator', '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 20, 20, '編集者(editor)', '編集者(editor)', 'text', 0, 1, 0, 0, 0, 'contributor', 'contributor', 'lifeCycleContributeEditor', '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 21, 21, '装丁(graphical designer)', '装丁(graphical designer)', 'text', 0, 1, 0, 0, 0, 'contributor', 'contributor', 'lifeCycleContributeGraphicalDesigner', '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 22, 22, '技術(technical implementer)', '技術(technical implementer)', 'text', 0, 1, 0, 0, 0, 'contributor', 'contributor', 'lifeCycleContributeTechnicalImplementer', '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 23, 23, 'コンテンツプロバイダー(content provider)', 'コンテンツプロバイダー(content provider)', 'text', 0, 1, 0, 0, 0, 'contributor', 'contributor', 'lifeCycleContributeContentProvider', '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 24, 24, '技術監修(technical validator)', '技術監修(technical validator)', 'text', 0, 1, 0, 0, 0, 'contributor', 'contributor', 'lifeCycleContributeTechnicalValidator', '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 25, 25, '教育監修(educational validator)', '教育監修(educational validator)', 'text', 0, 1, 0, 0, 0, 'contributor', 'contributor', 'lifeCycleContributeEducationalValidator', '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 26, 26, '台本(script writer)', '台本(script writer)', 'text', 0, 1, 0, 0, 0, 'contributor', 'contributor', 'lifeCycleContributeScriptWriter', '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 27, 27, '教育デザイン(instructional designer)', '教育デザイン(instructional designer)', 'text', 0, 1, 0, 0, 0, 'contributor', 'contributor', 'lifeCycleContributeInstructionalDesigner', '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 28, 28, '専門家(subject matter expert)', '専門家(subject matter expert)', 'text', 0, 1, 0, 0, 0, 'contributor', 'contributor', 'lifeCycleContributeSubjectMatterExpert', '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 29, 29, 'その他の関係者(unknown)', 'その他の関係者(unknown)', 'text', 0, 1, 0, 0, 0, 'contributor', 'contributor', 'lifeCycleContributeUnknown', '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 30, 30, 'その他の関係者', 'その他の関係者', 'text', 0, 1, 0, 0, 0, '', '', 'lifeCycleContribute', '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 31, 31, 'メタデータ識別子', 'メタデータ識別子', 'text', 0, 1, 0, 0, 0, '', '', 'metaMetadataIdentifer', '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 32, 32, 'メタデータ作成者(creator)', 'メタデータ作成者(creator)', 'text', 0, 1, 0, 0, 0, '', '', 'metaMetadataContributeCreator', '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 33, 33, 'メタデータ校閲者(validator)', 'メタデータ校閲者(validator)', 'text', 0, 1, 0, 0, 0, '', '', 'metaMetadataContributeValidator', '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 34, 34, 'その他のメタデータ関係者', 'その他のメタデータ関係者', 'text', 0, 1, 0, 0, 0, '', '', 'metaMetadataContribute', '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 35, 35, 'メタデータスキーマ', 'メタデータスキーマ', 'text', 0, 1, 0, 0, 0, '', '', 'metaMetadataMetadataSchema', '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 36, 36, 'メタデータ言語', 'メタデータ言語', 'text', 0, 0, 0, 0, 0, '', '', 'metaMetadataLanguage', '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 37, 37, 'ファイルフォーマット', 'ファイルフォーマット', 'text', 0, 1, 0, 0, 0, 'format', 'format', 'technicalFormat', '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 38, 38, 'ファイルサイズ', 'ファイルサイズ', 'text', 0, 0, 0, 0, 0, '', '', 'technicalSize', '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 39, 39, 'ファイルリンク', 'ファイルリンク', 'text', 0, 1, 0, 0, 0, '', '', 'technicalLocation', '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 40, 40, '動作環境', '動作環境', 'text', 0, 1, 0, 0, 0, '', '', 'technicalRequirementOrCompositeType', '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 41, 41, '動作条件', '動作条件', 'text', 0, 1, 0, 0, 0, '', '', 'technicalRequirementOrCompositeName', '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 42, 42, '推奨バージョン(下限)', '推奨バージョン(下限)', 'text', 0, 1, 0, 0, 0, '', '', 'technicalRequirementOrCompositeMinimumVersion', '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 43, 43, '推奨バージョン(上限)', '推奨バージョン(上限)', 'text', 0, 1, 0, 0, 0, '', '', 'technicalRequirementOrCompositeMaximumVersion', '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 44, 44, 'インストール手順', 'インストール手順', 'text', 0, 0, 0, 0, 0, '', '', 'technicalInstallationRemarks', '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 45, 45, 'その他の技術要件', 'その他の技術要件', 'text', 0, 0, 0, 0, 0, '', '', 'technicalOtherPlatformRequirements', '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 46, 46, '再生時間', '再生時間', 'text', 0, 0, 0, 0, 0, '', '', 'technicalDuration', '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 47, 47, '授業形態', '授業形態', 'checkbox', 0, 0, 0, 0, 0, '', '', 'educationalInteractivityType', '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 48, 48, 'リソースタイプ', 'リソースタイプ', 'checkbox', 0, 0, 0, 0, 0, 'type', 'type', 'educationalLearningResourceType', '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 49, 49, '双方向性度合(interactivity level)', '双方向性度合(interactivity level)', 'checkbox', 0, 0, 0, 0, 0, '', '', 'educationalInteractivityLevel', '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 50, 50, '情報量(sematic density)', '情報量(sematic density)', 'checkbox', 0, 0, 0, 0, 0, '', '', 'educationalSemanticDensity', '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 51, 51, '利用者', '利用者', 'checkbox', 0, 0, 0, 0, 0, '', '', 'educationalIntendedEndUserRole', '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 52, 52, '利用環境', '利用環境', 'checkbox', 0, 0, 0, 0, 0, '', '', 'educationalContext', '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 53, 53, '対象年齢', '対象年齢', 'text', 0, 1, 0, 0, 0, '', '', 'educationalTypicalAgeRange', '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 54, 54, '難易度', '難易度', 'checkbox', 0, 0, 0, 0, 0, '', '', 'educationalDifficulty', '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 55, 55, '授業時間', '授業時間', 'text', 0, 1, 0, 0, 0, '', '', 'educationalTypicalLearningTime', '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 56, 56, '備考', '備考', 'textarea', 0, 1, 0, 0, 0, '', '', 'educationalDescription', '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 57, 57, '言語', '言語', 'text', 0, 1, 0, 0, 0, '', '', 'educationalLanguage', '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 58, 58, '有料', '有料', 'select', 0, 0, 0, 0, 0, '', '', 'rightsCost', '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 59, 59, '利用形態', '利用形態', 'select', 0, 0, 0, 0, 0, '', '', 'rightsCopyrightAndOtherRestrictions', '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 60, 60, '権利', '権利', 'textarea', 0, 0, 0, 0, 0, 'rights', 'rights', 'rightsDescription', '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 61, 61, 'PubMed番号', 'PubMed番号', 'text', 0, 1, 0, 0, 0, 'pmid', 'relation', 'relation', '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 62, 62, 'DOI', 'DOI', 'text', 0, 1, 0, 0, 0, 'doi', 'relation', 'relation', '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 63, 63, '異版である', '異版である', 'text', 0, 1, 0, 0, 0, 'isVersionOf', 'relation', 'relationIsVersionOf', '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 64, 64, '異版あり', '異版あり', 'text', 0, 1, 0, 0, 0, 'hasVersion', 'relation', 'relationHasVersion', '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 65, 65, '要件とされる', '要件とされる', 'text', 0, 1, 0, 0, 0, 'isRequiredBy', 'relation', 'relationIsRequiredBy', '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 66, 66, '要件とする', '要件とする', 'text', 0, 1, 0, 0, 0, 'requires', 'relation', 'relationRequires', '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 67, 67, '部分である', '部分である', 'text', 0, 1, 0, 0, 0, 'isPartOf', 'relation', 'relationIsPartOf', '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 68, 68, '部分を持つ', '部分を持つ', 'text', 0, 1, 0, 0, 0, 'hasPart', 'relation', 'relationHasPart', '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 69, 69, '参照される', '参照される', 'text', 0, 1, 0, 0, 0, 'isReferencedBy', 'relation', 'relationIsReferencedBy', '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 70, 70, '参照する', '参照する', 'text', 0, 1, 0, 0, 0, 'references', 'relation', 'relationRreferences', '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 71, 71, '別フォーマットである', '別フォーマットである', 'text', 0, 1, 0, 0, 0, 'isFormatOf', 'relation', 'relationIsFormatOf', '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 72, 72, '別フォーマットあり', '別フォーマットあり', 'text', 0, 1, 0, 0, 0, 'hasFormat', 'relation', 'relationHasFormat', '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 73, 73, '基になる', '基になる', 'text', 0, 1, 0, 0, 0, 'relation', 'relation', 'relationIsBasisFor', '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 74, 74, '基づいている', '基づいている', 'text', 0, 1, 0, 0, 0, 'relation', 'relation', 'relationIsBasedOn', '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 75, 75, '他の資源との関係', '他の資源との関係', 'textarea', 0, 1, 0, 0, 0, 'relation', 'relation', 'relation', '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 76, 76, 'コメント(件名)', 'コメント(件名)', 'text', 0, 1, 0, 0, 0, '', '', 'annotationEntity', '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 77, 77, 'コメント(日付)', 'コメント(日付)', 'date', 0, 1, 0, 0, 0, '', '', 'annotationDate', '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 78, 78, 'コメント', 'コメント', 'textarea', 0, 1, 0, 0, 0, '', '', 'annotationDescription', '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 79, 79, '分類目的', '分類目的', 'checkbox', 0, 0, 0, 0, 0, '', '', 'classificationPurpose', '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 80, 80, '分類ソース', '分類ソース', 'text', 0, 1, 0, 0, 0, '', '', 'classificationTaxonPathSource', '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 81, 81, '分類', '分類', 'text', 0, 1, 0, 0, 0, '', '', 'classificationTaxon', '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 82, 82, '分類説明', '分類説明', 'textarea', 0, 1, 0, 0, 0, '', '', 'classificationDescription', '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 83, 83, '分類キーワード', '分類キーワード', 'text', 0, 1, 0, 0, 0, '', '', 'classificationKeyword', '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 84, 84, '機関ID', '機関ID', 'text', 1, 0, 0, 0, 1, '', '', '', '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 85, 85, 'コンテンツID', 'コンテンツID', 'text', 1, 0, 0, 0, 1, '', '', '', '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 86, 86, 'コンテンツ更新日時', 'コンテンツ更新日時', 'date', 1, 0, 0, 0, 1, '', '', '', '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0);";
                         $retRef = $this->Db->execute($query);
                         if($retRef === false){
-                            $errMsg = $this->Db->ErrorMsg();
-                            // Rollback
-                            $this->failTrans();
-                            throw $exception;
+                            $this->errorLog($this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                            throw new AppException("repository_failed_update");
                         }
 
                     }
@@ -3236,91 +3041,87 @@ class Repository_Action_Main_Update extends RepositoryAction
                     $params[] = 20016;  // item_type_id
                     $retRef = $this->Db->execute($query, $params);
                     if($retRef === false){
-                        $errMsg = $this->Db->ErrorMsg();
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
                     if(count($retRef) == 0){
 
                         $query = "INSERT INTO ".DATABASE_PREFIX."repository_item_attr_candidate ".
                                 "VALUE ".
-                                "(20016, 5, 1, 'author', 'author', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 5, 2, 'publisher', 'publisher', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 5, 3, 'none', 'none', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 10, 1, 'atomic', 'atomic', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 10, 2, 'collection', 'collection', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 10, 3, 'networked', 'networked', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 10, 4, 'hierarchical', 'hierarchical', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 10, 5, 'linear', 'linear', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 11, 1, 1, 1, 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 11, 2, 2, 2, 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 11, 3, 3, 3, 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 11, 4, 4, 4, 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 13, 1, 'draft', 'draft', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 13, 2, 'final', 'final', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 13, 3, 'revised', 'revised', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 13, 4, 'unavailable', 'unavailable', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 47, 1, 'active', 'active', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 47, 2, 'expositive', 'expositive', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 47, 3, 'mixed', 'mixed', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 48, 1, 'exercise', 'exercise', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 48, 2, 'simulation', 'simulation', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 48, 3, 'questionnaire', 'questionnaire', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 48, 4, 'diagram', 'diagram', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 48, 5, 'figure', 'figure', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 48, 6, 'graph', 'graph', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 48, 7, 'index', 'index', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 48, 8, 'slide', 'slide', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 48, 9, 'table', 'table', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 48, 10, 'narrative text', 'narrative text', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 48, 11, 'exam', 'exam', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 48, 12, 'experiment', 'experiment', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 48, 13, 'problem statement', 'problem statement', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 48, 14, 'self assessment', 'self assessment', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 48, 15, 'lecture', 'lecture', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 49, 1, 'very low', 'very low', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 49, 2, 'low', 'low', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 49, 3, 'medium', 'medium', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 49, 4, 'high', 'high', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 49, 5, 'very high', 'very high', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 50, 1, 'very low', 'very low', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 50, 2, 'low', 'low', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 50, 3, 'medium', 'medium', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 50, 4, 'high', 'high', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 50, 5, 'very high', 'very high', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 51, 1, 'teacher', 'teacher', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 51, 2, 'author', 'author', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 51, 3, 'learner', 'learner', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 51, 4, 'manager', 'manager', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 52, 1, 'school', 'school', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 52, 2, 'higher education', 'higher education', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 52, 3, 'training', 'training', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 52, 4, 'other', 'other', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 54, 1, 'very easy', 'very easy', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 54, 2, 'easy', 'easy', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 54, 3, 'medium', 'medium', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 54, 4, 'difficult', 'difficult', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 54, 5, 'very difficult', 'very difficult', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 58, 1, 'yes', 'yes', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 58, 2, 'no', 'no', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 59, 1, 'yes', 'yes', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 59, 2, 'no', 'no', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 79, 1, 'discipline', 'discipline', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 79, 2, 'idea', 'idea', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 79, 3, 'prerequisite', 'prerequisite', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 79, 4, 'educational objective', 'educational objective', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 79, 5, 'accessibility restrictions', 'accessibility restrictions', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 79, 6, 'educational level', 'educational level', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 79, 7, 'skill level', 'skill level', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 79, 8, 'security level', 'security level', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                                "(20016, 79, 9, 'competency', 'competency', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0);";
+                                "(20016, 5, 1, 'author', 'author', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 5, 2, 'publisher', 'publisher', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 5, 3, 'none', 'none', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 10, 1, 'atomic', 'atomic', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 10, 2, 'collection', 'collection', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 10, 3, 'networked', 'networked', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 10, 4, 'hierarchical', 'hierarchical', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 10, 5, 'linear', 'linear', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 11, 1, 1, 1, 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 11, 2, 2, 2, 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 11, 3, 3, 3, 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 11, 4, 4, 4, 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 13, 1, 'draft', 'draft', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 13, 2, 'final', 'final', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 13, 3, 'revised', 'revised', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 13, 4, 'unavailable', 'unavailable', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 47, 1, 'active', 'active', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 47, 2, 'expositive', 'expositive', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 47, 3, 'mixed', 'mixed', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 48, 1, 'exercise', 'exercise', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 48, 2, 'simulation', 'simulation', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 48, 3, 'questionnaire', 'questionnaire', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 48, 4, 'diagram', 'diagram', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 48, 5, 'figure', 'figure', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 48, 6, 'graph', 'graph', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 48, 7, 'index', 'index', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 48, 8, 'slide', 'slide', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 48, 9, 'table', 'table', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 48, 10, 'narrative text', 'narrative text', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 48, 11, 'exam', 'exam', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 48, 12, 'experiment', 'experiment', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 48, 13, 'problem statement', 'problem statement', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 48, 14, 'self assessment', 'self assessment', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 48, 15, 'lecture', 'lecture', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 49, 1, 'very low', 'very low', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 49, 2, 'low', 'low', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 49, 3, 'medium', 'medium', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 49, 4, 'high', 'high', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 49, 5, 'very high', 'very high', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 50, 1, 'very low', 'very low', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 50, 2, 'low', 'low', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 50, 3, 'medium', 'medium', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 50, 4, 'high', 'high', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 50, 5, 'very high', 'very high', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 51, 1, 'teacher', 'teacher', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 51, 2, 'author', 'author', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 51, 3, 'learner', 'learner', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 51, 4, 'manager', 'manager', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 52, 1, 'school', 'school', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 52, 2, 'higher education', 'higher education', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 52, 3, 'training', 'training', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 52, 4, 'other', 'other', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 54, 1, 'very easy', 'very easy', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 54, 2, 'easy', 'easy', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 54, 3, 'medium', 'medium', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 54, 4, 'difficult', 'difficult', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 54, 5, 'very difficult', 'very difficult', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 58, 1, 'yes', 'yes', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 58, 2, 'no', 'no', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 59, 1, 'yes', 'yes', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 59, 2, 'no', 'no', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 79, 1, 'discipline', 'discipline', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 79, 2, 'idea', 'idea', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 79, 3, 'prerequisite', 'prerequisite', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 79, 4, 'educational objective', 'educational objective', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 79, 5, 'accessibility restrictions', 'accessibility restrictions', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 79, 6, 'educational level', 'educational level', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 79, 7, 'skill level', 'skill level', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 79, 8, 'security level', 'security level', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                                "(20016, 79, 9, 'competency', 'competency', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0);";
                         $retRef = $this->Db->execute($query);
                         if($retRef === false){
-                            $errMsg = $this->Db->ErrorMsg();
-                            // Rollback
-                            $this->failTrans();
-                            throw $exception;
+                            $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                            throw new AppException("Failed WEKO update.");
                         }
                     }
 
@@ -3342,9 +3143,8 @@ class Repository_Action_Main_Update extends RepositoryAction
                     $result = $this->Db->execute($query, $params);
                     if($result === false)
                     {
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
 
                     // INSERT JuNii2 data for textversion, add candidate 'ETD'.
@@ -3362,9 +3162,8 @@ class Repository_Action_Main_Update extends RepositoryAction
                         $ret = $this->Db->execute($query, $params);
                         if($ret === false)
                         {
-                            // Rollback
-                            $this->failTrans();
-                            throw $exception;
+                            $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                            throw new AppException("Failed WEKO update.");
                         }
                         if($ii > 0)
                         {
@@ -3387,9 +3186,8 @@ class Repository_Action_Main_Update extends RepositoryAction
                     $result = $this->Db->execute($indertQuery, $insertParam);
                     if($result === false)
                     {
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
 
                     // UPDATE 学位論文 metadata name.
@@ -3410,9 +3208,8 @@ class Repository_Action_Main_Update extends RepositoryAction
                     $result = $this->Db->execute($query, $params);
                     if($result === false)
                     {
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
                     $query = " UPDATE ".DATABASE_PREFIX."repository_item_attr_type ".
                             " SET attribute_name = ?, attribute_short_name = ? ".
@@ -3431,9 +3228,8 @@ class Repository_Action_Main_Update extends RepositoryAction
                     $result = $this->Db->execute($query, $params);
                     if($result === false)
                     {
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
                     $query = " UPDATE ".DATABASE_PREFIX."repository_item_attr_type ".
                             " SET attribute_name = ?, attribute_short_name = ? ".
@@ -3452,9 +3248,8 @@ class Repository_Action_Main_Update extends RepositoryAction
                     $result = $this->Db->execute($query, $params);
                     if($result === false)
                     {
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
 
                     // release is_required option for creator.
@@ -3472,9 +3267,8 @@ class Repository_Action_Main_Update extends RepositoryAction
                     $result = $this->Db->execute($query, $params);
                     if($result === false)
                     {
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
                     // Fix default item type for JuNii2 ver3.0 Y.Nakao 2013/05/23 --end--
 
@@ -3486,15 +3280,8 @@ class Repository_Action_Main_Update extends RepositoryAction
                              "AFTER create_cover_flag;";
                     $retRef = $this->Db->execute($query);
                     if($retRef === false || count($retRef)!=1){
-                        $errMsg = $this->Db->ErrorMsg();
-                        // Fix ignore Duplicate column name Error mhaya 2016/07/15
-                        echo $errMsg."<br/>";
-                        if(strpos($errMsg,'Duplicate column name')===false){
-                            // Rollback
-                            $this->failTrans();
-                            throw $exception;
-                        }
-                        // Fix ignore Duplicate column name Error mhaya 2016/07/15 --end--
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
                     // Add private_contents to repository_index
                     $query = "ALTER TABLE ".DATABASE_PREFIX."repository_index ".
@@ -3502,15 +3289,8 @@ class Repository_Action_Main_Update extends RepositoryAction
                              "AFTER contents;";
                     $retRef = $this->Db->execute($query);
                     if($retRef === false || count($retRef)!=1){
-                        $errMsg = $this->Db->ErrorMsg();
-                        // Fix ignore Duplicate column name Error mhaya 2016/07/15
-                        echo $errMsg."<br/>";
-                        if(strpos($errMsg,'Duplicate column name')===false){
-                            // Rollback
-                            $this->failTrans();
-                            throw $exception;
-                        }
-                        //  Fix ignore Duplicate column name Error mhaya 2016/07/15 --end--
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
 
                     // set edit tree
@@ -3538,15 +3318,8 @@ class Repository_Action_Main_Update extends RepositoryAction
 
                     $retRef = $this->Db->execute($query, $params);
                     if($retRef === false || count($retRef)!=1){
-                        $errMsg = $this->Db->ErrorMsg();
-                        // Fix ignore Duplicate entry Error mhaya 2016/07/15
-                        echo $errMsg."<br/>";
-                        if(strpos($errMsg,'Duplicate entry')===false){
-                            // Rollback
-                            $this->failTrans();
-                            throw $exception;
-                        }
-                        //  Fix ignore Duplicate entry Error mhaya 2016/07/15 --end--
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
                     $query = "INSERT INTO ". DATABASE_PREFIX. "repository_parameter ".
                              "(param_name, param_value, explanation, ins_user_id, mod_user_id, ".
@@ -3560,15 +3333,8 @@ class Repository_Action_Main_Update extends RepositoryAction
 
                     $retRef = $this->Db->execute($query, $params);
                     if($retRef === false || count($retRef)!=1){
-                        $errMsg = $this->Db->ErrorMsg();
-                        // Fix ignore Duplicate entry Error mhaya 2016/07/15
-                        echo $errMsg."<br/>";
-                        if(strpos($errMsg,'Duplicate entry')===false){
-                            // Rollback
-                            $this->failTrans();
-                            throw $exception;
-                        }
-                        // Fix ignore Duplicate entry Error mhaya 2016/07/15 --end--
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
 
                     $query = "INSERT INTO ". DATABASE_PREFIX. "repository_parameter ".
@@ -3583,15 +3349,8 @@ class Repository_Action_Main_Update extends RepositoryAction
 
                     $retRef = $this->Db->execute($query, $params);
                     if($retRef === false || count($retRef)!=1){
-                        $errMsg = $this->Db->ErrorMsg();
-                        // Fix ignore Duplicate entry Error mhaya 2016/07/15
-                        echo $errMsg."<br/>";
-                        if(strpos($errMsg,'Duplicate entry')===false){
-                            // Rollback
-                            $this->failTrans();
-                            throw $exception;
-                        }
-                        //  Fix ignore Duplicate entry Error mhaya 2016/07/15 --end--
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
                     // Add privatetree Parameter 2013/04/04 K.Matsuo --end--
 
@@ -3602,11 +3361,8 @@ class Repository_Action_Main_Update extends RepositoryAction
                     $params[] = "file_download_type";
                     $retRef = $this->Db->execute($query, $params);
                     if($retRef === false || count($retRef)!=1){
-                        $errMsg = $this->Db->ErrorMsg();
-                        echo $errMsg."<br/>";
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
                     // delete file_download_type 2013/05/08 --end--
 
@@ -3620,15 +3376,8 @@ class Repository_Action_Main_Update extends RepositoryAction
                              "AFTER create_cover_flag;";
                     $retRef = $this->Db->execute($query);
                     if($retRef === false || count($retRef)!=1){
-                        $errMsg = $this->Db->ErrorMsg();
-                        // Fix ignore Duplicate column name Error mhaya 2016/07/15
-                        echo $errMsg."<br/>";
-                        if(strpos($errMsg,'Duplicate column name')===false){
-                            // Rollback
-                            $this->failTrans();
-                            throw $exception;
-                        }
-                        // Fix ignore Duplicate column name Error mhaya 2016/07/15 --end--
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
                     // Add harvest public parameter 2013/07/03 K.Matsuo --end--
                     // Add itemtype multi language 2013/07/22 K.Matsuo --start--
@@ -3648,15 +3397,8 @@ class Repository_Action_Main_Update extends RepositoryAction
                              " ) ENGINE=innodb; ";
                     $result = $this->Db->execute($query);
                     if($result === false){
-                        $errMsg = $this->Db->ErrorMsg();
-                         // Fix ignore Table already exists Error mhaya 2016/07/15
-                        echo $errMsg."<br/>";
-                        if(strpos($errMsg,'already exists')===false){
-                            // Rollback
-                            $this->failTrans();
-                            throw $exception;
-                        }
-                        // Fix ignore Table already exists Error mhaya 2016/07/15 --end--
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
                     // Add itemtype multi language 2013/07/22 K.Matsuo --end--
                     // Add LOM Mapping Name Change 2013/08/22 K.Matsuo --start--
@@ -3682,11 +3424,8 @@ class Repository_Action_Main_Update extends RepositoryAction
                         $result = $this->Db->execute($query, $params);
                         if($result === false)
                         {
-                            $errMsg = $this->Db->ErrorMsg();
-                            echo $errMsg."<br/>";
-                            // Rollback
-                            $this->failTrans();
-                            throw $exception;
+                            $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                            throw new AppException("Failed WEKO update.");
                         }
                     }
                     $changeAttributeNameArray = array('9' => '適用範囲', '12' => 'エディション（版）', '13' => 'ステータス（現状）', '14' => '著者',
@@ -3715,75 +3454,44 @@ class Repository_Action_Main_Update extends RepositoryAction
                         $result = $this->Db->execute($query, $params);
                         if($result === false)
                         {
-                            $errMsg = $this->Db->ErrorMsg();
-                            echo $errMsg."<br/>";
-                            // Rollback
-                            $this->failTrans();
-                            throw $exception;
+                            $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                            throw new AppException("Failed WEKO update.");
                         }
                     }
                     // Add LOM Mapping Name Change 2013/08/22 K.Matsuo --end--
+
                     // Add harvest parameter 2013/08/14 K.Matsuo --start--
                     $query = "ALTER TABLE ".DATABASE_PREFIX."repository_harvesting ".
                              "ADD from_date VARCHAR(20) default NULL ".
                              "AFTER base_url;";
                     $retRef = $this->Db->execute($query);
                     if($retRef === false || count($retRef)!=1){
-                        $errMsg = $this->Db->ErrorMsg();
-                            // Fix ignore Duplicate column name Error mhaya 2016/07/15
-                            echo $errMsg."<br/>";
-                            if(strpos($errMsg,'Duplicate column name')===false){
-                                // Rollback
-                                $this->failTrans();
-                                throw $exception;
-                            }
-                            // Fix ignore Duplicate column name Error mhaya 2016/07/15
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
                     $query = "ALTER TABLE ".DATABASE_PREFIX."repository_harvesting ".
                              "ADD until_date VARCHAR(20) default NULL ".
                              "AFTER from_date;";
                     $retRef = $this->Db->execute($query);
                     if($retRef === false || count($retRef)!=1){
-                        $errMsg = $this->Db->ErrorMsg();
-                        // Fix ignore Duplicate column name Error mhaya 2016/07/15
-                        echo $errMsg."<br/>";
-                        if(strpos($errMsg,'Duplicate column name')===false){
-                                // Rollback
-                                $this->failTrans();
-                                throw $exception;
-                        }
-                        // Fix ignore Duplicate column name Error mhaya 2016/07/15 --end--
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
                     $query = "ALTER TABLE ".DATABASE_PREFIX."repository_harvesting ".
                              "ADD set_param TEXT ".
                              "AFTER until_date;";
                     $retRef = $this->Db->execute($query);
                     if($retRef === false || count($retRef)!=1){
-                        $errMsg = $this->Db->ErrorMsg();
-                        // Fix ignore Duplicate column name Error mhaya 2016/07/15
-                        echo $errMsg."<br/>";
-                        if(strpos($errMsg,'Duplicate column name')===false){
-                            // Rollback
-                            $this->failTrans();
-                            throw $exception;
-                        }
-                        // Fix ignore Duplicate column name Error mhaya 2016/07/15 --end--
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
-
                     $query = "ALTER TABLE ".DATABASE_PREFIX."repository_harvesting ".
                              "ADD execution_date VARCHAR(20) default NULL ".
                              "AFTER automatic_sorting;";
                     $retRef = $this->Db->execute($query);
                     if($retRef === false || count($retRef)!=1){
-                        $errMsg = $this->Db->ErrorMsg();
-                        // Fix ignore Duplicate column name Error mhaya 2016/07/15
-                        echo $errMsg."<br/>";
-                        if(strpos($errMsg,'Duplicate column name')===false){
-                            // Rollback
-                            $this->failTrans();
-                            throw $exception;
-                        }
-                        // Fix ignore Duplicate column name Error mhaya 2016/07/15 --end--
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
                     // Add harvest parameter 2013/08/14 K.Matsuo --end--
 
@@ -3811,14 +3519,12 @@ class Repository_Action_Main_Update extends RepositoryAction
                     $result = $this->Db->execute($query, $params);
                     if($result === false)
                     {
-                        $errMsg = $this->Db->ErrorMsg();
-                        echo $errMsg."<br/>";
-                        // Rollback
-                        $this->failTrans();
-                        throw $exception;
+                        $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                        throw new AppException("Failed WEKO update.");
                     }
                     // Add 学位名を選択肢から自由入力に変更 2013/8/20 A.jin --end--
-                    
+
+
                     // Add set LOM Multi-Language 2013/08/22 K.Matsuo --start--
                     $this->setLOMMultiLang($user_id);
                     // Add set LOM Multi-Language 2013/08/22 K.Matsuo --end--
@@ -3886,6 +3592,16 @@ class Repository_Action_Main_Update extends RepositoryAction
                 default :
                     break;
             }
+            
+            // 現在のバージョンを取得する
+            $query = "SELECT param_value ". 
+                     " FROM ". DATABASE_PREFIX ."repository_parameter ".
+                     " WHERE param_name = 'WEKO_version';";
+            $result = $this->executeSql($query, array());
+            // 2.3.0以降のアップデート処理実施
+            $businessUpdater = BusinessFactory::getFactory()->getBusiness("businessWekoupdaterverlatest");
+            $businessUpdater->execute($result[0]["param_value"]);
+            
             $this->executeRecursiveProcessing();
 
             // make OpenSearch description document
@@ -3900,27 +3616,46 @@ class Repository_Action_Main_Update extends RepositoryAction
 
             // COMMIT
             $result = $this->exitAction();
+            $this->finalize();
+            return true;
 
-            return "true";
-
-        } catch ( RepositoryException $Exception) {
-            //エラーログ出力
-            $this->logFile(
-                "SampleAction",
-                "execute",
-                $Exception->getCode(),
-                $Exception->getMessage(),
-                $Exception->getDetailMsg() );
-            $this->failTrans();
+        } catch ( RepositoryException $exception) {
+            
+            // エラーメッセージを出力
+            $this->errorLog($exception->getDetailMsg(), __FILE__, __CLASS__, __LINE__);
+            
+            // スタックトレースを出力
+            $this->exeptionLog($exception, __FILE__, __CLASS__, __LINE__);
+            
+            // ロールバック
+            if($this->failTrans() === false)
+            {
+                $this->errorLog("Failed rollback trance.", __FILE__, __CLASS__, __LINE__);
+            }
+            
+            return false;
+            
+        } catch (AppException $exception) {
+            // スタックトレースを出力
+            $this->exeptionLog($exception, __FILE__, __CLASS__, __LINE__);
+            
+            // ロールバック
+            if($this->failTrans() === false)
+            {
+                $this->errorLog("Failed rollback trance.", __FILE__, __CLASS__, __LINE__);
+            }
+            
             return false;
         }
     }
 
     /**
      * make real file from DB(Blob)
+     * ファイルを作成する
      *
-     * @param unknown_type $path
-     * @param unknown_type $file
+     * @param string  $path file path ファイル作成先ディレクトリ
+     * @param string $file file name ファイル名
+     * @return bool true/false success/failed 成功/失敗
      */
     function createFile($path, $file ){
         // file open
@@ -3942,9 +3677,10 @@ class Repository_Action_Main_Update extends RepositoryAction
 
     /**
      * copy directory
+     * ディレクトリを複製する
      *
-     * @param string $copy_dir to copy
-     * @param string $org_dir from copy
+     * @param string $copy_dir to copy コピー先
+     * @param string $org_dir from copy コピー元
      */
     function copyDirectory($copy_dir, $org_dir){
         if( file_exists($copy_dir) ){
@@ -3975,6 +3711,10 @@ class Repository_Action_Main_Update extends RepositoryAction
     }
 
     // Add multiple FLASH files download 2011/02/04 Y.Nakao --start--
+    /**
+     * Move FLAGH to directory
+     * FLASHファイルを移動する
+     */
     function moveFlashToFolder(){
         $flashDir = $this->makeFlashFolder();
         if( file_exists($flashDir) ){
@@ -4000,9 +3740,11 @@ class Repository_Action_Main_Update extends RepositoryAction
     // Add multiple FLASH files download 2011/02/04 Y.Nakao --start--
 
     /**
-     * log for WEKO_version
+     * Update WEKO version パラメータ
+     * WEKOパラメータのバージョン情報を更新する
      *
-     * @param unknown_type $ver
+     * @param string $ver WEKO version WEKOバージョン
+     * @throws AppException
      */
     function versionUp($ver)
     {
@@ -4018,19 +3760,19 @@ class Repository_Action_Main_Update extends RepositoryAction
         $params[] = 'WEKO_version';
         $retRef = $this->Db->execute($query, $params);
         if($retRef === false){
-            $exception = new RepositoryException( "ERR_MSG_xxx-xxx1", "xxx-xxx1" );
-            // Rollback
-            $this->failTrans();
-            throw $exception;
+            $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+            throw new AppException("Failed WEKO update.");
         }
     }
 
     /**
      * Check exist column
+     * カラムの存在チェック
      *
-     * @param string $table
-     * @param string $column
-     * @return bool true: exist / false: not exist
+     * @param string $table table name テーブル名
+     * @param string $column column name カラム名
+     * @return bool true/false exist/not exist 存在する/しない
+     * @throws RepositoryException
      */
     private function isExistColumn($table, $column)
     {
@@ -4053,8 +3795,11 @@ class Repository_Action_Main_Update extends RepositoryAction
 
     // Add set LOM Multi-Language 2013/08/22 K.Matsuo --start--
     /**
-     * set multi-language data to Leargnin Object Metadata
+     * set multi-language data to Learning Object Metadata
+     * 多言語のLOMメタデータを挿入する
      *
+     * @param string $user_id user ID ユーザーID
+     * @throws AppException
      */
     private function setLOMMultiLang($user_id)
     {
@@ -4101,15 +3846,8 @@ class Repository_Action_Main_Update extends RepositoryAction
         $result = $this->Db->execute($query, $params);
         if($result === false)
         {
-            // Add ignore Duplicate entry error 2016/07/15 mhaya
-            $errMsg = $this->Db->ErrorMsg();
-            echo $errMsg."<br/>";
-            if(strpos($errMsg,"Duplicate entry")===false){
-                // Rollback
-                $this->failTrans();
-                throw $exception;
-            }
-            // Add ignore Duplicate entry error 2016/07/15 mhaya --end--
+            $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+            throw new AppException("Failed WEKO update.");
         }
         $englishArray =
             array('1' => 'URI' , '2' => 'ISSN' , '3' => 'NCID' , '4' => 'Bibliographic information' , '5' => 'Author version flag' ,
@@ -4129,6 +3867,7 @@ class Repository_Action_Main_Update extends RepositoryAction
                   '71' => 'isformatof: is format of' , '72' => 'hasformat: has format' , '73' => 'isbasisfor: is basis for' , '74' => 'isbasedon: is based on' , '75' => 'Relation' ,
                   '76' => 'Annotation-Entity' , '77' => 'Annotation-Date' , '78' => 'Annotation-Description' , '79' => 'Purpose' , '80' => 'Taxon Path-Source' , '81' => 'Taxon Path-Taxon' ,
                   '82' => 'Classification-Description' , '83' => 'Classification-keyword' , '84' => 'Authority Identifier' , '85' => 'Content Identifier' , '86' => 'Modified content' );
+
         $query = "INSERT INTO ". DATABASE_PREFIX ."repository_item_type_name_multilanguage VALUE ";
         $params = array();
         $addComma = false;
@@ -4154,15 +3893,8 @@ class Repository_Action_Main_Update extends RepositoryAction
         $result = $this->Db->execute($query, $params);
         if($result === false)
         {
-            // Add ignore Duplicate entry error 2016/07/15 mhaya
-            $errMsg = $this->Db->ErrorMsg();
-            echo $errMsg."<br/>";
-            if(strpos($errMsg,"Duplicate entry")===false){
-                // Rollback
-                $this->failTrans();
-                throw $exception;
-            }
-            // Add ignore Duplicate entry error 2016/07/15 mhaya --end--
+            $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+            throw new AppException("Failed WEKO update.");
         }
 
         $chineseArray =
@@ -4203,15 +3935,8 @@ class Repository_Action_Main_Update extends RepositoryAction
         $result = $this->Db->execute($query, $params);
         if($result === false)
         {
-            // Add ignore Duplicate entry error 2016/07/15 mhaya
-            $errMsg = $this->Db->ErrorMsg();
-            echo $errMsg."<br/>";
-            if(strpos($errMsg,"Duplicate entry")===false){
-                // Rollback
-                $this->failTrans();
-                throw $exception;
-            }
-            // Add ignore Duplicate entry error 2016/07/15 mhaya --end--
+            $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+            throw new AppException("Failed WEKO update.");
         }
     }
     // Add set LOM Multi-Language 2013/08/22 K.Matsuo --end--
@@ -4219,7 +3944,7 @@ class Repository_Action_Main_Update extends RepositoryAction
     // Add JuNii2 revision 2013/09/17 R.Matsuura --start--
     /**
      * update WEKO version 207 to version 208
-     *
+     * Version 2.0.7 ⇒ 2.0.8
      */
     private function updateWekoVersion207To208()
     {
@@ -4238,7 +3963,7 @@ class Repository_Action_Main_Update extends RepositoryAction
 
     /**
      * update JuNii2 version 2 to version 3
-     *
+     * JuNii2のバージョンを上げる
      */
     private function updateJuNii2Version2To3()
     {
@@ -4269,16 +3994,8 @@ class Repository_Action_Main_Update extends RepositoryAction
             $result = $this->Db->execute($query, $params);
             if($result === false)
             {
-                // Fix ignore Duplicate entry Error mhaya 2016/07/15
-                $errMsg = $this->Db->ErrorMsg();
-                echo $errMsg."<br/>";
-                if(strpos($errMsg,'Duplicate entry')===false){
-                    $exception = new RepositoryException( "ERR_MSG_xxx-xxx1", "xxx-xxx1" );
-                    // Rollback
-                    $this->failTrans();
-                    throw $exception;
-                }
-                // Fix ignore Duplicate entry Error mhaya 2016/07/15 --end--
+                $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                throw new AppException("Failed WEKO update.");
             }
         }
 
@@ -4325,18 +4042,11 @@ class Repository_Action_Main_Update extends RepositoryAction
             $result = $this->Db->execute($query, $params);
             if($result === false)
             {
-                // Fix ignore Duplicate entry Error mhaya 2016/07/15
-                $errMsg = $this->Db->ErrorMsg();
-                echo $errMsg."<br/>";
-                if(strpos($errMsg,'Duplicate entry')===false){
-                    $exception = new RepositoryException( "ERR_MSG_xxx-xxx1", "xxx-xxx1" );
-                    // Rollback
-                    $this->failTrans();
-                    throw $exception;
-                }
-                // Fix ignore Duplicate entry Error mhaya 2016/07/15 --end--
+                $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                throw new AppException("Failed WEKO update.");
             }
         }
+        
         // Add if default itemtype is not changed, changes metadata junii2 mapping T.Koyasu -start-
         $query = "UPDATE ". DATABASE_PREFIX. "repository_item_attr_type ". 
                 " SET junii2_mapping = ?". 
@@ -4381,9 +4091,8 @@ class Repository_Action_Main_Update extends RepositoryAction
             
             if($result === false)
             {
-                $exception = new RepositoryException( "ERR_MSG_xxx-xxx1", "xxx-xxx1" );
-                $this->failTrans();
-                throw $exception;
+                $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                throw new AppException("Failed WEKO update.");
             }
         }
         // Add if default itemtype is not changed, changes metadata junii2 mapping T.Koyasu -end-
@@ -4394,9 +4103,11 @@ class Repository_Action_Main_Update extends RepositoryAction
     }
 
     /**
-     * insert new atrr for JuNii2ver3
+     * insert new attribute for JuNii2ver3
+     * JuNii2 ver3用の属性を挿入する
      *
-     * @param int $itemTypeId
+     * @param int $itemTypeId item type ID アイテムタイプID
+     * @throws AppException
      */
     private function insertNewAttrForJuNii2Ver3($itemTypeId)
     {
@@ -4411,10 +4122,8 @@ class Repository_Action_Main_Update extends RepositoryAction
         $result = $this->Db->execute($query, $params);
         if($result === false || count($result) != 1)
         {
-            $exception = new RepositoryException( "ERR_MSG_xxx-xxx1", "xxx-xxx1" );
-            // Rollback
-            $this->failTrans();
-            throw $exception;
+            $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+            throw new AppException("Failed WEKO update.");
         }
         $maxAttrId = $result[0]['MAX(attribute_id)'];
         // update show order
@@ -4442,10 +4151,8 @@ class Repository_Action_Main_Update extends RepositoryAction
             $result = $this->Db->execute($query, $params);
             if($result === false)
             {
-                $exception = new RepositoryException( "ERR_MSG_xxx-xxx1", "xxx-xxx1" );
-                // Rollback
-                $this->failTrans();
-                throw $exception;
+                $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                throw new AppException("Failed WEKO update.");
             }
         }
 
@@ -4526,10 +4233,8 @@ class Repository_Action_Main_Update extends RepositoryAction
             $result = $this->Db->execute($query, $params);
             if($result === false)
             {
-                $exception = new RepositoryException( "ERR_MSG_xxx-xxx1", "xxx-xxx1" );
-                // Rollback
-                $this->failTrans();
-                throw $exception;
+                $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                throw new AppException("Failed WEKO update.");
             }
         }
     }
@@ -4538,7 +4243,9 @@ class Repository_Action_Main_Update extends RepositoryAction
     // Add Private Tree index composition K.Matsuo 2013/10/01 --start--
     /**
      * Add Private Tree index composition to repository_parameter table
+     * プライベートツリー構成情報パラメータを挿入する
      *
+     * @throws AppException
      */
     private function addPrivateTreeCompositionToParameter()
     {
@@ -4556,22 +4263,18 @@ class Repository_Action_Main_Update extends RepositoryAction
         $params[] = $this->TransStartDate;  // mod_date
         $retRef = $this->Db->execute($query, $params);
         if($retRef === false || count($retRef)!=1){
-            // Fix ignore Duplicate entry Error mhaya 2016/07/15
-            $errMsg = $this->Db->ErrorMsg();
-            echo $errMsg."<br/>";
-            if(strpos($errMsg,'Duplicate entry')===false){
-                // Rollback
-                $this->failTrans();
-                throw $exception;
-            }
-            // Fix ignore Duplicate entry Error mhaya 2016/07/15 --end--
+            $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+            throw new AppException("Failed WEKO update.");
         }
+
     }
     // Add Private Tree index composition K.Matsuo 2013/10/01 --end--
     // Add File maintenance specification change K.Matsuo 2013/10/02 --start--
     /**
      * Add show_order to repository_file and repository_thumbnail
+     * ファイルテーブルに表示順序カラムを追加する
      *
+     * @throws AppException
      */
     private function addShorOrderToFileAndThumbnail()
     {
@@ -4582,15 +4285,8 @@ class Repository_Action_Main_Update extends RepositoryAction
 
         $retRef = $this->Db->execute($query);
         if($retRef === false || count($retRef)!=1){
-            // Fix ignore Duplicate column name Error mhaya 2016/07/15
-            $errMsg = $this->Db->ErrorMsg();
-            echo $errMsg."<br/>";
-            if(strpos($errMsg,'Duplicate column name')===false){
-                // Rollback
-                $this->failTrans();
-                throw $exception;
-            }
-            // Fix ignore Duplicate column name Error mhaya 2016/07/15 --end--
+            $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+            throw new AppException("Failed WEKO update.");
         }
         // 既存のデータのデータのshow_orderはfile_noと同じ
         // show_order of the data of the existing data is the same as file_no.
@@ -4598,12 +4294,8 @@ class Repository_Action_Main_Update extends RepositoryAction
                 " SET show_order = file_no; ";
         $retRef = $this->Db->execute($query);
         if($retRef === false){
-            $errMsg = $this->Db->ErrorMsg();
-            echo $errMsg."<br/>";
-            $exception = new RepositoryException( "ERR_MSG_xxx-xxx1", "xxx-xxx1" );
-            // Rollback
-            $this->failTrans();
-            throw $exception;
+            $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+            throw new AppException("Failed WEKO update.");
         }
 
         //The item of ShowOrder is added to a repository_thumbnail
@@ -4613,15 +4305,8 @@ class Repository_Action_Main_Update extends RepositoryAction
 
         $retRef = $this->Db->execute($query);
         if($retRef === false || count($retRef)!=1){
-            // Fix ignore Duplicate column name Error mhaya 2016/07/15
-            $errMsg = $this->Db->ErrorMsg();
-            echo $errMsg."<br/>";
-            if(strpos($errMsg,'Duplicate column name')===false){
-                // Rollback
-                $this->failTrans();
-                throw $exception;
-            }
-            // Fix ignore Duplicate column name Error mhaya 2016/07/15 --end--
+            $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+            throw new AppException("Failed WEKO update.");
         }
         // 既存のデータのデータのshow_orderはfile_noと同じ
         // show_order of the data of the existing data is the same as file_no.
@@ -4629,23 +4314,19 @@ class Repository_Action_Main_Update extends RepositoryAction
                 " SET show_order = file_no; ";
         $retRef = $this->Db->execute($query);
         if($retRef === false){
-            // Fix ignore Duplicate column name Error mhaya 2016/07/15
-            $errMsg = $this->Db->ErrorMsg();
-            echo $errMsg."<br/>";
-            if(strpos($errMsg,'Duplicate column name')===false){
-            $exception = new RepositoryException( "ERR_MSG_xxx-xxx1", "xxx-xxx1" );
-            // Rollback
-            $this->failTrans();
-            throw $exception;
-            }
-            // Fix ignore Duplicate column name Error mhaya 2016/07/15 --end--
+            $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+            throw new AppException("Failed WEKO update.");
         }
+
     }
     // Add File maintenance specification change K.Matsuo 2013/10/02 --end--
 
     // add set reference URL to repository_parameter 2013/10/10 S.Suzuki --start--
     /**
      * insert reference URL to repository_parameter
+     * 引用情報のベースURLをパラメータに追加する
+     *
+     * @throws AppException
      */
     private function insertCitedReferenceUrlToParameter() {
         $referenceURL_param_name  = "referenceURL";
@@ -4670,16 +4351,8 @@ class Repository_Action_Main_Update extends RepositoryAction
 
         $retRef = $this->Db->execute($query, $params);
         if($retRef === false || count($retRef)!=1){
-            // Fix ignore Duplicate entry Error mhaya 2016/07/15
-            $errMsg = $this->Db->ErrorMsg();
-            echo $errMsg."<br/>";
-            if(strpos($errMsg,'Duplicate entry')===false){
-                $exception = new RepositoryException( "ERR_MSG_xxx-xxx1", "xxx-xxx1" );
-                // Rollback
-                $this->failTrans();
-                throw $exception;
-            }
-            // Fix ignore Duplicate entry Error mhaya 2016/07/15 --end--
+            $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+            throw new AppException("Failed WEKO update.");
         }
     }
     // add set reference URL to repository_parameter 2013/10/10 S.Suzuki --end--
@@ -4687,7 +4360,7 @@ class Repository_Action_Main_Update extends RepositoryAction
     // Add e-person 2013/10/21 R.Matsuura --start--
     /**
      * update WEKO version 208 to version 209
-     *
+     * Version 2.0.8 ⇒ 2.0.9
      */
     private function updateWekoVersion208To209()
     {
@@ -4702,17 +4375,10 @@ class Repository_Action_Main_Update extends RepositoryAction
                              " VALUES (0, 'e_mail_address', 0, 0, '1', '1', '0', '2008-03-12 00:00:00.000', '2008-03-12 00:00:00.000', '', 0);";
         $result = $this->Db->execute($query);
         if($result === false){
-            // Fix ignore Duplicate entry Error mhaya 2016/07/15
-            $errMsg = $this->Db->ErrorMsg();
-            echo $errMsg."<br/>";
-            if(strpos($errMsg,'Duplicate entry')===false){
-                $exception = new RepositoryException( "ERR_MSG_xxx-xxx1", "xxx-xxx1" );
-                // Rollback
-                $this->failTrans();
-                throw $exception;
-            }
-            // Fix ignore Duplicate entry Error mhaya 2016/07/15 --end--
+            $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+            throw new AppException("Failed WEKO update.");
         }
+        
         // get E-Mail Address from name_authority table and insert into external_author_id_suffix table
         $query = "INSERT INTO ".DATABASE_PREFIX. RepositoryConst::DBTABLE_REPOSITORY_EXTERNAL_AUTHOR_ID_SUFFIX.
                  " ( author_id, prefix_id, suffix, ins_user_id, mod_user_id, del_user_id, ins_date, mod_date, del_date, is_delete) ".
@@ -4721,21 +4387,14 @@ class Repository_Action_Main_Update extends RepositoryAction
                  "WHERE e_mail_address != ? AND e_mail_address IS NOT NULL GROUP BY author_id ;";
         $params = array();
         $params[] = "";
-        $result = $this->Db->execute($query, $params);
+        $result = $this->dbAccess->executeQuery($query, $params);
         
         // delete 'e_mail_address' column from name_authority table
         $query = "ALTER TABLE ". DATABASE_PREFIX. RepositoryConst::DBTABLE_REPOSITORY_NAME_AUTHORITY." DROP e_mail_address;";
         $result = $this->Db->execute($query);
         if($result === false){
-            // Fix ignore Can't DROP Error mhaya 2016/07/15
-            $errMsg = $this->Db->ErrorMsg();
-            echo $errMsg."<br/>";
-            if(strpos($errMsg,'Can\'t DROP')===false){
-                // Rollback
-                $this->failTrans();
-                throw $exception;
-            }
-            // Fix ignore Can't DROP Error mhaya 2016/07/15 --end--
+            $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+            throw new AppException("Failed WEKO update.");
         }
 
         // create 'repository_send_feedbackmail_author_id' table
@@ -4749,15 +4408,8 @@ class Repository_Action_Main_Update extends RepositoryAction
         $params = array();
         $retRef = $this->Db->execute($query, $params);
         if($retRef === false || count($retRef)!=1){
-            // Fix ignore already exists Error mhaya 2016/07/15
-            $errMsg = $this->Db->ErrorMsg();
-            echo $errMsg."<br/>";
-            if(strpos($errMsg,' already exists')===false){
-                // Rollback
-                $this->failTrans();
-                throw $exception;
-            }
-            // Fix ignore already exists Error mhaya 2016/07/15 --end--
+            $this->errorLog("Failed WEKO update.".$this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+            throw new AppException("Failed WEKO update.");
         }
 
         // version up to 2.0.9
@@ -4768,13 +4420,15 @@ class Repository_Action_Main_Update extends RepositoryAction
     // Add advanced search 2013/11/20 R.Matsuura --start--
     /**
      * create search tables
+     * 検索テーブルを作成する
      *
+     * @return bool true/false success/failed 成功/失敗
      */
     private function createSearchTables()
     {
         // search mroonga
         $query = "SHOW ENGINES";
-        $engines = $this->Db->execute($query);
+        $engines = $this->dbAccess->executeQuery($query);
         $isMroongaExist = false;
         for($cnt = 0; $cnt < count($engines); $cnt++)
         {
@@ -4790,15 +4444,15 @@ class Repository_Action_Main_Update extends RepositoryAction
                 " `item_no` int(11) NOT NULL default 0, ".
                 " PRIMARY KEY  (`item_id`,`item_no`) ".
                 " ) ENGINE=MyISAM; ";
-        $this->Db->execute($query);
-        
+        $this->dbAccess->executeQuery($query);
+
         $query = "CREATE TABLE ".DATABASE_PREFIX. "repository_lock ( ".
                 " `process_name` varchar(60) NOT NULL default '', ".
                 " `status` int NOT NULL default 0, ".
                 " `comment` text NOT NULL, ".
                 " PRIMARY KEY  (`process_name`) ".
                 " ) ENGINE=innodb; ";
-        $this->Db->execute($query);
+        $this->dbAccess->executeQuery($query);
 
         $query = "CREATE TABLE ".DATABASE_PREFIX. "repository_search_item_setup ( ".
                 " `type_id` int NOT NULL default 0, ".
@@ -4808,7 +4462,7 @@ class Repository_Action_Main_Update extends RepositoryAction
                 " `junii2_mapping` text NOT NULL, ".
                 " PRIMARY KEY  (`type_id`) ".
                 " ) ENGINE=innodb; ";
-        $this->Db->execute($query);
+        $this->dbAccess->executeQuery($query);
 
         $query = "CREATE TABLE ".DATABASE_PREFIX. "repository_search_sort ( ".
                 " `item_id` int NOT NULL default 0, ".
@@ -4834,7 +4488,7 @@ class Repository_Action_Main_Update extends RepositoryAction
                 " INDEX `revdate_itemid` (`review_date`, `item_id`), ".
                 " INDEX `bibdate_itemid` (`biblio_date`, `item_id`) ".
                 " ) ENGINE=MyISAM; ";
-        $this->Db->execute($query);
+        $this->dbAccess->executeQuery($query);
 
         $tableNameArray = array(
                                 "repository_search_allmetadata",
@@ -4897,9 +4551,10 @@ class Repository_Action_Main_Update extends RepositoryAction
 
     /**
      * create fulltext search table
+     * 全文検索テーブルを作成する
      *
-     * @param string $tableName
-     * @param bool $isMroongaExist
+     * @param string $tableName table name テーブル名
+     * @param bool $isMroongaExist mroonga engine existing flag Mroongaエンジンの存在フラグ
      */
     private function createFullTextSearchTable($tableName, $isMroongaExist)
     {
@@ -4917,13 +4572,14 @@ class Repository_Action_Main_Update extends RepositoryAction
         {
             $query .= " ) ENGINE=MyISAM; ";
         }
-        $this->Db->execute($query);
+        $this->dbAccess->executeQuery($query);
     }
 
     /**
      * create date search table
+     * 日付検索テーブルを作成する
      *
-     * @param string $tableName
+     * @param string $tableName table name テーブル名
      */
     private function createDateSearchTable($tableName)
     {
@@ -4935,12 +4591,12 @@ class Repository_Action_Main_Update extends RepositoryAction
                 " PRIMARY KEY  (`item_id`,`item_no`,`data_no`), ".
                 " INDEX `metadata` (`metadata`) ".
                 " ) ENGINE=MyISAM; ";
-        $this->Db->execute($query);
+        $this->dbAccess->executeQuery($query);
     }
 
     /**
      * update WEKO version 209 to version 2010
-     *
+     * Version 2.0.9 ⇒ 2.0.10
      */
     private function updateWekoVersion209To2010()
     {
@@ -4952,7 +4608,7 @@ class Repository_Action_Main_Update extends RepositoryAction
 
         // delete fulltext_data table
         $query = "DROP TABLE IF EXISTS ". DATABASE_PREFIX. "repository_fulltext_data ;";
-        $this->Db->execute($query);
+        $this->dbAccess->executeQuery($query);
 
         // version up to 2.0.10
         $this->versionUp('2.0.10');
@@ -4960,7 +4616,9 @@ class Repository_Action_Main_Update extends RepositoryAction
 
     /**
      * insert record into repository_search_item_setup
+     * 詳細検索項目テーブルにレコードを追加する
      *
+     * @return bool true/false insert success/insert failed 挿入成功/挿入失敗
      */
     private function insertSearchItemSetup()
     {
@@ -4990,13 +4648,13 @@ class Repository_Action_Main_Update extends RepositoryAction
                  "(22, 'repository_detail_search_show_name_degreename', 0, 0, 'degreename'), ".
                  "(23, 'repository_detail_search_show_name_grantor', 0, 0, 'grantor'), ".
                  "(24, 'repository_detail_search_show_name_index', 1, 1, ''); ";
-        $this->Db->execute($query);
+        $this->dbAccess->executeQuery($query);
         return true;
     }
 
     /**
      * update Weko Version 2.0.10 To 2.0.11
-     *
+     * Version 2.0.10 ⇒ 2.0.11
      */
     private function updateWekoVersion2010To2011()
     {
@@ -5004,11 +4662,11 @@ class Repository_Action_Main_Update extends RepositoryAction
         $query = "ALTER TABLE ".DATABASE_PREFIX. RepositoryConst::DBTABLE_REPOSITORY_INDEX. " ".
                  "ADD INDEX ". RepositoryConst::DBCOL_REPOSITORY_INDEX_OWNER_USER_ID. " (".
                  RepositoryConst::DBCOL_REPOSITORY_INDEX_OWNER_USER_ID. "); ";
-        $this->Db->execute($query);
+        $this->dbAccess->executeQuery($query);
         $query = "ALTER TABLE ".DATABASE_PREFIX. RepositoryConst::DBTABLE_REPOSITORY_INDEX. " ".
                  "ADD INDEX ". RepositoryConst::DBCOL_REPOSITORY_INDEX_PUB_DATE. " (".
                  RepositoryConst::DBCOL_REPOSITORY_INDEX_PUB_DATE. "); ";
-        $this->Db->execute($query);
+        $this->dbAccess->executeQuery($query);
 
         // create new table
         $query = "CREATE TABLE ". DATABASE_PREFIX. "repository_index_browsing_authority ( ".
@@ -5028,7 +4686,7 @@ class Repository_Action_Main_Update extends RepositoryAction
                  "PRIMARY KEY  (`index_id`), ".
                  "INDEX `index_browsing_authority` (`index_id`, `exclusive_acl_role_id`, `exclusive_acl_room_auth`) ".
                  " ) ENGINE=MyISAM; ";
-        $this->Db->execute($query);
+        $this->dbAccess->executeQuery($query);
         $query = "CREATE TABLE ". DATABASE_PREFIX. "repository_index_browsing_groups ( ".
                  "`index_id` int NOT NULL default 0, ".
                  "`exclusive_acl_group_id` int NOT NULL default 0, ".
@@ -5041,7 +4699,7 @@ class Repository_Action_Main_Update extends RepositoryAction
                  "`is_delete` INT(1), ".
                  "PRIMARY KEY  (`index_id`, `exclusive_acl_group_id`) ".
                  " ) ENGINE=MyISAM; ";
-        $this->Db->execute($query);
+        $this->dbAccess->executeQuery($query);
 
         $this->recursiveProcessingFlgList[self::KEY_REPOSITORY_INDEX_MANAGER] = true;
 
@@ -5051,7 +4709,7 @@ class Repository_Action_Main_Update extends RepositoryAction
 
     /**
      * update Weko Version 2.0.11 To 2.0.12
-     *
+     * Version 2.0.11 ⇒ 2.0.12
      */
     private function updateWekoVersion2011To2012()
     {
@@ -5069,7 +4727,7 @@ class Repository_Action_Main_Update extends RepositoryAction
                  "`is_delete` INT(1), ".
                  "PRIMARY KEY  (`id`) ".
                  " ) ENGINE=innodb; ";
-        $this->Db->execute($query);
+        $this->dbAccess->executeQuery($query);
         $query = "CREATE TABLE ". DATABASE_PREFIX. "repository_suffix ( ".
                  "`item_id` int NOT NULL default 0, ".
                  "`item_no` int NOT NULL default 0, ".
@@ -5084,7 +4742,7 @@ class Repository_Action_Main_Update extends RepositoryAction
                  "`is_delete` INT(1), ".
                  "PRIMARY KEY  (`item_id`, `item_no`, `id`) ".
                  " ) ENGINE=innodb; ";
-        $this->Db->execute($query);
+        $this->dbAccess->executeQuery($query);
         
         $user_id = $this->Session->getParameter("_user_id");
         $date = $this->TransStartDate;
@@ -5113,24 +4771,24 @@ class Repository_Action_Main_Update extends RepositoryAction
         $params[] = $user_id;
         $params[] = $date;
         $params[] = $date;
-        $this->Db->execute($query, $params);
+        $this->dbAccess->executeQuery($query, $params);
         
         $query = "SELECT param_value".
                  " FROM ". DATABASE_PREFIX. "repository_parameter".
                  " WHERE param_name = 'prefixID'".
                  " AND is_delete = 0 ;";
-        $YHandlePrefixParam = $this->Db->execute($query);
+        $YHandlePrefixParam = $this->dbAccess->executeQuery($query);
         $prefix = $YHandlePrefixParam[0]["param_value"];
         
         $query = "UPDATE ". DATABASE_PREFIX. "repository_prefix".
                  " SET prefix_id = '". $YHandlePrefixParam[0]["param_value"]."'".
                  " WHERE id = 10 ;";
-        $this->Db->execute($query);
+        $this->dbAccess->executeQuery($query);
         
         //JaLC DOI設定値をインデックスに追加する処理
         $query = "ALTER TABLE ". DATABASE_PREFIX ."repository_index ".
                  "ADD `jalc_doi` INT NOT NULL default 0 AFTER `harvest_public_state`;";
-        $this->Db->execute($query);
+        $this->dbAccess->executeQuery($query);
         
         $query = "INSERT INTO ". DATABASE_PREFIX. "repository_suffix".
                  " (item_id, item_no, id, suffix, ins_user_id, mod_user_id, del_user_id, ins_date, mod_date, del_date, is_delete) ".
@@ -5145,16 +4803,16 @@ class Repository_Action_Main_Update extends RepositoryAction
         $params[] = $user_id;
         $params[] = $date;
         $params[] = $date;
-        $this->Db->execute($query, $params);
+        $this->dbAccess->executeQuery($query, $params);
         
         $query = "UPDATE ". DATABASE_PREFIX. "repository_item".
                  " SET uri=concat('". BASE_URL. "/?action=repository_uri&item_id=', item_id)".
                  "  WHERE uri LIKE 'http://id.nii.ac.jp/". $prefix. "/%';";
-        $this->Db->execute($query);
+        $this->dbAccess->executeQuery($query);
         
         $query = "DELETE FROM ". DATABASE_PREFIX. "repository_parameter".
                  " WHERE param_name = 'prefixID' AND explanation = 'prefixID' ;";
-        $this->Db->execute($query);
+        $this->dbAccess->executeQuery($query);
         
         // version up to 2.0.12
         $this->versionUp('2.0.12');
@@ -5162,7 +4820,7 @@ class Repository_Action_Main_Update extends RepositoryAction
     
     /**
      * execute recursive proccessing of RepositorySearchTableProccessing
-     *
+     * 全アイテムの検索テーブルを更新する
      */
     private function updateSearchTableForAllItem()
     {
@@ -5186,7 +4844,7 @@ class Repository_Action_Main_Update extends RepositoryAction
     
     /**
      * update recursive proccessing of RepositoryIndexManager
-     *
+     * 全インデックスの権限情報を更新する
      */
     private function updateDependentIndex()
     {
@@ -5196,13 +4854,18 @@ class Repository_Action_Main_Update extends RepositoryAction
     }
     
     /**
-     * for recursive processing
-     * after update, when execute recursive processing, 
-     * add key and boolean(true) to $this->recursiveProccesingFlgList, 
-     * write recursive processing to this metho 
+     * Call prcess after update
+     * アップデート後に行う処理を呼ぶ
      */
     private function executeRecursiveProcessing()
     {
+        /**
+         * for recursive processing
+         * after update, when execute recursive processing,
+         * add key and boolean(true) to $this->recursiveProcessingFlgList,
+         * write recursive processing to this method
+         */
+
         // execute recursive proccessing
         foreach($this->recursiveProcessingFlgList as $key => $value)
         {
@@ -5255,8 +4918,10 @@ class Repository_Action_Main_Update extends RepositoryAction
     }
     
     /**
-     * execute recursive proccessing of RepositorySearchTableProccessing
+     * execute recursive processing of RepositorySearchTableProccessing
+     * ファイルクリーンアップを行う
      *
+     * @return bool true/false success/failed 成功/失敗
      */
     private function cleanupDeletedFiles()
     {
@@ -5298,7 +4963,7 @@ class Repository_Action_Main_Update extends RepositoryAction
     
     /**
      * update Weko Version 2.0.12 To 2.1.0
-     *
+     * Version 2.0.12 ⇒ 2.1.0
      */
     private function updateWekoVersion2012To210()
     {
@@ -5308,7 +4973,7 @@ class Repository_Action_Main_Update extends RepositoryAction
     
     /**
      * update Weko Version 2.1.0 To 2.1.1
-     *
+     * Version 2.1.0 ⇒ 2.1.1
      */
     private function updateWekoVersion210To211()
     {
@@ -5319,7 +4984,7 @@ class Repository_Action_Main_Update extends RepositoryAction
     
     /**
      * update Weko Version 2.1.1 To 2.1.2
-     *
+     * Version 2.1.1 ⇒ 2.1.2
      */
     private function updateWekoVersion211To212()
     {
@@ -5335,7 +5000,11 @@ class Repository_Action_Main_Update extends RepositoryAction
         
     /**
      * insert record into repository_lock
+     * プロセスロックテーブルに項目を追加する
      *
+     * @param string $process_name process name プロセス名
+     * @param int $status status ステータス
+     * @return bool true/false success/failed 成功/失敗
      */
     private function insertLockTable($process_name, $status)
     {
@@ -5346,14 +5015,16 @@ class Repository_Action_Main_Update extends RepositoryAction
         $params[] = $process_name;
         $params[] = $status;
         $params[] = "";
-        $this->Db->execute($query, $params);
+        $this->dbAccess->executeQuery($query, $params);
         return true;
     }
     
     // fix No.63 2014/04/04 R.Matsuura --start--
     /**
      * update mapping 'NAID' and 'ISBN'
+     * NAIDとISBNのマッピング情報を更新する
      *
+     * @return bool true/false success/failed 成功/失敗
      */
     private function updateNAIDandISBNJunii2Mapping()
     {
@@ -5384,25 +5055,27 @@ class Repository_Action_Main_Update extends RepositoryAction
     // add biblio flag to index 2014/04/15 T.Ichikawa --start--
     /**
      * Add new column "biblio_flag" and "online_issn" to index table
+     * インデックステーブルに書誌情報フラグとISSN値のカラムを追加する
      *
+     * @return bool true/false success/failed 成功/失敗
      */
     private function addBiblioFlgToIndex()
     {
         $query = "ALTER TABLE ". DATABASE_PREFIX. "repository_index ".
                  "ADD biblio_flag INT(1) NOT NULL DEFAULT 0 ".
                  "AFTER owner_user_id; ";
-        $this->Db->execute($query);
+        $this->dbAccess->executeQuery($query);
 
         $query = "ALTER TABLE ". DATABASE_PREFIX. "repository_index ".
                  "ADD online_issn VARCHAR(9) DEFAULT '' ".
                  "AFTER biblio_flag; ";
-        $this->Db->execute($query);
+        $this->dbAccess->executeQuery($query);
         return true;
     }
     
     /**
      * create site license mail address table
-     *
+     * サイトライセンス利用統計フィードバックメール送信先テーブルを作成する
      */
      private function createSiteLicenseMailTable() {
          $query = "CREATE TABLE ". DATABASE_PREFIX ."repository_send_mail_sitelicense (".
@@ -5413,12 +5086,12 @@ class Repository_Action_Main_Update extends RepositoryAction
                   " `mail_address` TEXT NOT NULL, ".
                   " PRIMARY KEY(`no`) ".
                   ") ENGINE=innodb;";
-         $result = $this->Db->execute($query);
+         $result = $this->dbAccess->executeQuery($query);
      }
      
     /**
      * Create JTitle table
-     *
+     * ISSNテーブルを作成する
      */
      private function createIssnTable() {
          $query = "CREATE TABLE ". DATABASE_PREFIX ."repository_issn (".
@@ -5435,49 +5108,53 @@ class Repository_Action_Main_Update extends RepositoryAction
                   " `is_delete` INT(1), ".
                   " PRIMARY KEY(`issn`) ".
                   ") ENGINE=innodb;";
-         $result = $this->Db->execute($query);
+         $result = $this->dbAccess->executeQuery($query);
      }
 
+    /**
+     * Add INDEX to any table for speed
+     * 各テーブルに高速化用のインデックスを付与する
+     */
     private function remakeIndexForAcceleration()
     {
         $query = "ALTER TABLE ".DATABASE_PREFIX. RepositoryConst::DBTABLE_REPOSITORY_INDEX. " ".
                 "ADD INDEX ". RepositoryConst::DBCOL_REPOSITORY_INDEX_SELECT_INDEX_LIST_DISPLAY. " (".
                 RepositoryConst::DBCOL_REPOSITORY_INDEX_SELECT_INDEX_LIST_DISPLAY. "); ";
-        $this->Db->execute($query);
+        $this->dbAccess->executeQuery($query);
         $query = "ALTER TABLE ".DATABASE_PREFIX. RepositoryConst::DBTABLE_REPOSITORY_INDEX. " ".
                 "ADD INDEX ". RepositoryConst::DBCOL_REPOSITORY_INDEX_PARENT_INDEX_ID. " (".
                 RepositoryConst::DBCOL_REPOSITORY_INDEX_PARENT_INDEX_ID. "); ";
-        $this->Db->execute($query);
+        $this->dbAccess->executeQuery($query);
         $query = "ALTER TABLE ".DATABASE_PREFIX. RepositoryConst::DBTABLE_REPOSITORY_INDEX. " ".
                 "ADD INDEX ". RepositoryConst::DBCOL_REPOSITORY_INDEX_CREATE_COVER_FLAG. " (".
                 RepositoryConst::DBCOL_REPOSITORY_INDEX_CREATE_COVER_FLAG. "); ";
-        $this->Db->execute($query);
+        $this->dbAccess->executeQuery($query);
         $query = "ALTER TABLE ".DATABASE_PREFIX. RepositoryConst::DBTABLE_REPOSITORY_ITEM. " ".
                 "ADD INDEX ". RepositoryConst::DBCOL_REPOSITORY_ITEM_TITLE. " (".
                 RepositoryConst::DBCOL_REPOSITORY_ITEM_TITLE. "(10), ".RepositoryConst::DBCOL_REPOSITORY_ITEM_TITLE_ENGLISH. "(10)); ";
-        $this->Db->execute($query);
+        $this->dbAccess->executeQuery($query);
         $query = "ALTER TABLE ".DATABASE_PREFIX. RepositoryConst::DBTABLE_REPOSITORY_ITEM. " ".
                 "ADD INDEX ". RepositoryConst::DBCOL_COMMON_IS_DELETE. " (".
                 RepositoryConst::DBCOL_COMMON_IS_DELETE. "); ";
-        $this->Db->execute($query);
+        $this->dbAccess->executeQuery($query);
         
         $query = "ALTER TABLE ".DATABASE_PREFIX. "repository_index_browsing_authority ".
                 "DROP INDEX `index_browsing_authority` ; ";
-        $this->Db->execute($query);
+        $this->dbAccess->executeQuery($query);
         $query = "ALTER TABLE ".DATABASE_PREFIX. "repository_index_browsing_authority ".
                 "ADD INDEX `index_browsing_authority` (".
                 "`exclusive_acl_role_id`, `exclusive_acl_room_auth`, `public_state`, `pub_date`, `is_delete`); ";
-        $this->Db->execute($query);
+        $this->dbAccess->executeQuery($query);
         $query = "ALTER TABLE ".DATABASE_PREFIX. "repository_index_browsing_authority ".
                 "ADD INDEX `index_public_state` (".
                 "`public_state`, `pub_date`, `is_delete`); ";
-        $this->Db->execute($query);
+        $this->dbAccess->executeQuery($query);
     }
     // Add OpenDepo 2014/01/31 S.Arata --end--
     
     /**
      * update parameter sitelicense
-     *
+     * サイトライセンスユーザーのパラメータを追加する
      */
      private function updateSiteLicenseForAddMail()
      {
@@ -5486,7 +5163,7 @@ class Repository_Action_Main_Update extends RepositoryAction
                   "WHERE param_name = ? ;";
          $params = array();
          $params[] = "site_license";
-         $retRef = $this->Db->execute($query, $params);
+         $retRef = $this->dbAccess->executeQuery($query, $params);
 
          // fix site license value
          $site_license = "";
@@ -5507,30 +5184,30 @@ class Repository_Action_Main_Update extends RepositoryAction
              $params = array();
              $params[] = $site_license;
              $params[] = "site_license";
-             $this->Db->execute($query, $params);
+             $this->dbAccess->executeQuery($query, $params);
          }
      }
      
     /**
      * Add new column "numeric_ip_address" and "referer" to log table
-     *
+     * ログテーブルにリファラ情報カラムを追加する
      */
      private function addIpAddressToLog() {
         $query = "ALTER TABLE ". DATABASE_PREFIX. "repository_log ".
                  "ADD numeric_ip_address BIGINT NOT NULL DEFAULT -1 ".
                  "AFTER ip_address; ";
-        $this->Db->execute($query);
+        $this->dbAccess->executeQuery($query);
         // Add referer
         $query = "ALTER TABLE ". DATABASE_PREFIX. "repository_log ".
                  "ADD referer TEXT NOT NULL ".
                  "AFTER user_agent; ";
-        $this->Db->execute($query);
+        $this->dbAccess->executeQuery($query);
      }
     // add biblio flag to index 2014/04/15 T.Ichikawa --end--
     
     /**
      * Add parameter send sitelicense feedback mail flag
-     *
+     * サイトライセンス利用統計フィードバックメール送信可否パラメータを追加する
      */
      private function addParamSendSitelicenseMail() {
          $query = "INSERT INTO ". DATABASE_PREFIX. "repository_parameter ".
@@ -5553,12 +5230,12 @@ class Repository_Action_Main_Update extends RepositoryAction
          $params[] = $this->Session->getParameter("_user_id");   // mod_user_id
          $params[] = $this->TransStartDate;  // ins_date
          $params[] = $this->TransStartDate;  // mod_date
-         $this->Db->execute($query, $params);
+         $this->dbAccess->executeQuery($query, $params);
      }
      
     /**
      * update Weko Version 2.1.2 To 2.1.3
-     *
+     * Version 2.1.2 ⇒ 2.1.3
      */
     private function updateWekoVersion212To213()
     {
@@ -5579,19 +5256,19 @@ class Repository_Action_Main_Update extends RepositoryAction
     
     /**
      * add lido_mapping column to repository_item_attr_type table
-     *
+     * アイテム属性タイプテーブルにLIDOマッピングカラムを追加する
      */
     private function addLidoMapping()
     {
         $query = "ALTER TABLE ".DATABASE_PREFIX."repository_item_attr_type ".
                  "ADD `lido_mapping` TEXT NOT NULL ".
                  "AFTER `lom_mapping` ;";
-        $this->Db->execute($query);
+        $this->dbAccess->executeQuery($query);
     }
     
     /**
      * create new item type LIDO
-     *
+     * LIDOアイテムタイプを作成する
      */
     private function createItemTypeLido()
     {
@@ -5602,14 +5279,14 @@ class Repository_Action_Main_Update extends RepositoryAction
         $params = array();
         $params[] = 0;  // is_delete
         $params[] = 20017;  // item_type_id
-        $retRef = $this->Db->execute($query, $params);
+        $retRef = $this->dbAccess->executeQuery($query, $params);
         
         if(count($retRef) == 0)
         {
             $query = "INSERT INTO ".DATABASE_PREFIX."repository_item_type ".
                      "VALUE".
                     "(20017, 'LIDO', 'LIDO', 'harvesting item type', 'Others', '', '', '', '', '1', '1', '0', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0);";
-            $retRef = $this->Db->execute($query);
+            $retRef = $this->dbAccess->executeQuery($query);
         }
         
         $query = "SELECT item_type_id ".
@@ -5618,7 +5295,7 @@ class Repository_Action_Main_Update extends RepositoryAction
         $params = array();
         $params[] = 0;  // is_delete
         $params[] = 20017;  // item_type_id
-        $retRef = $this->Db->execute($query, $params);
+        $retRef = $this->dbAccess->executeQuery($query, $params);
         
         if(count($retRef) == 0)
         {
@@ -5627,43 +5304,43 @@ class Repository_Action_Main_Update extends RepositoryAction
                     "input_type, is_required, plural_enable, line_feed_enable, list_view_enable, hidden, ".
                     "junii2_mapping, dublin_core_mapping, lom_mapping, lido_mapping, display_lang_type, ".
                     "ins_user_id, mod_user_id, del_user_id, ins_date, mod_date, del_date, is_delete) VALUES ".
-                    "(20017, 1, 1, 'lidoレコードID', 'lidoレコードID', 'text', 1, 1, 0, 0, 0, 'identifier', 'identifier', '', ?, '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                    "(20017, 2, 2, '作品タイプID', '作品タイプID', 'text', 1, 1, 0, 0, 0, '', '', '', ?, '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                    "(20017, 3, 3, '作品タイプ（語）', '作品タイプ（語）', 'text', 1, 1, 0, 0, 0, '', '', '', ?, '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                    "(20017, 4, 4, '分類ID', '分類ID', 'text', 0, 1, 0, 0, 0, '', '', '', ?, '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                    "(20017, 5, 5, '分類（語）', '分類（語）', 'text', 0, 1, 0, 0, 0, '', '', '', ?, '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                    "(20017, 6, 6, '資料/作品名（値）', '資料/作品名（値）', 'text', 0, 1, 0, 0, 0, 'title', 'title', '', ?, '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                    "(20017, 7, 7, '銘/題辞写', '銘/題辞写', 'text', 0, 1, 0, 0, 0, '', '', '', ?, '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                    "(20017, 8, 8, '所蔵者名（値）', '所蔵者名（値）', 'name', 0, 1, 0, 0, 0, 'rights', 'rights', '', ?, '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                    "(20017, 9, 9, '所蔵者ウェブリンク', '所蔵者ウェブリンク', 'link', 0, 1, 0, 0, 0, '', '', '', ?, '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                    "(20017, 10, 10, '所蔵者資料/作品ID', '所蔵者資料/作品ID', 'text', 0, 1, 0, 0, 0, '', '', '', ?, '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                    "(20017, 11, 11, '資料/作品状態（状態）', '資料/作品状態（状態）', 'text', 0, 1, 0, 0, 0, '', '', '', ?, '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                    "(20017, 12, 12, '記述ノート（値）', '記述ノート（値）', 'text', 0, 1, 0, 0, 0, 'description', 'description', '', ?, '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                    "(20017, 13, 13, '測定（表示用）', '測定（表示用）', 'text', 0, 1, 0, 0, 0, 'description', 'description', '', ?, '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                    "(20017, 14, 14, 'イベント内容（表示用）', 'イベント内容（表示用）', 'textarea', 0, 1, 0, 0, 0, 'coverage', 'coverage', '', ?, '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                    "(20017, 15, 15, 'イベントタイプ（語）', 'イベントタイプ（語）', 'text', 0, 1, 0, 0, 0, '', '', '', ?, '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                    "(20017, 16, 16, 'イベント行為者／役割（表示用）', 'イベント行為者／役割（表示用）', 'text', 0, 1, 0, 0, 0, 'description', 'description', '', ?, '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                    "(20017, 17, 17, 'イベント発生期間(表示用)', 'イベント発生期間(表示用)', 'text', 0, 1, 0, 0, 0, 'coverage', 'coverage', '', ?, '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                    "(20017, 18, 18, 'イベント発生期間（西暦）（開始日）', 'イベント発生期間（西暦）（開始日）', 'date', 0, 1, 0, 0, 0, '', '', '', ?, '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                    "(20017, 19, 19, 'イベント発生期間（西暦）（終了日）', 'イベント発生期間（西暦）（終了日）', 'date', 0, 1, 0, 0, 0, '', '', '', ?, '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                    "(20017, 20, 20, 'イベント発生時代・年代（語）', 'イベント発生時代・年代（語）', 'text', 0, 1, 0, 0, 0, '', '', '', ?, '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                    "(20017, 21, 21, 'イベント発生地（表示用）', 'イベント発生地（表示用）', 'text', 0, 1, 0, 0, 0, '', '', '', ?, '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                    "(20017, 22, 22, 'イベント発生地緯度・経度', 'イベント発生地緯度・経度', 'text', 0, 1, 0, 0, 0, 'spatial', 'coverage', '', ?, '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                    "(20017, 23, 23, 'イベント素材/技術(表示用)', 'イベント素材/技術(表示用)', 'text', 0, 1, 0, 0, 0, '', '', '', ?, '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                    "(20017, 24, 24, '主題(表示用)', '主題(表示用)', 'text', 0, 1, 0, 0, 0, 'subject', 'subject', '', ?, '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                    "(20017, 25, 25, '関連作品(表示用)', '関連作品(表示用)', 'text', 0, 1, 0, 0, 0, '', '', '', ?, '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                    "(20017, 26, 26, '記録ID', '記録ID', 'text', 1, 1, 0, 0, 0, 'source', 'source', '', ?, '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                    "(20017, 27, 27, '記録タイプ（語）', '記録タイプ（語）', 'text', 1, 1, 0, 0, 0, '', '', '', ?, '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                    "(20017, 28, 28, '記録者名（値）', '記録者名（値）', 'name', 1, 1, 0, 0, 0, 'creator', 'creator', '', ?, '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                    "(20017, 29, 29, '記録情報リンク', '記録情報リンク', 'link', 0, 1, 0, 0, 0, 'URI', 'identifier', '', ?, '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                    "(20017, 30, 30, '記録情報メタデータ記録日', '記録情報メタデータ記録日', 'date', 0, 1, 0, 0, 0, 'date', 'date', '', ?, '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                    "(20017, 31, 31, 'リソースURL', 'リソースURL', 'link', 0, 1, 0, 0, 0, '', '', '', ?, '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                    "(20017, 32, 32, 'リソース説明/記述', 'リソース説明/記述', 'textarea', 0, 1, 0, 0, 0, '', '', '', ?, '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                    "(20017, 33, 33, 'リソース所有者名（値）', 'リソース所有者名（値）', 'name', 0, 1, 0, 0, 0, 'contributor', 'contributor', '', ?, '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                    "(20017, 34, 34, 'リソース権利クレジットライン', 'メタデータ校閲者(validator)リソース権利クレジットライン', 'text', 0, 1, 0, 0, 0, '', '', '', ?, '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                    "(20017, 35, 35, '機関ID', '機関ID', 'text', 1, 0, 0, 0, 1, '', '', '', '', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                    "(20017, 36, 36, 'コンテンツID', 'コンテンツID', 'text', 1, 0, 0, 0, 1, '', '', '', '', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0),".
-                    "(20017, 37, 37, 'コンテンツ更新日時', 'コンテンツ更新日時', 'text', 1, 0, 0, 0, 1, '', '', '', '', '', 1, 1, '', 2008-03-18 00:00:00.000, 2008-03-18 00:00:00.000, '', 0) ; ";
+                    "(20017, 1, 1, 'lidoレコードID', 'lidoレコードID', 'text', 1, 1, 0, 0, 0, 'identifier', 'identifier', '', ?, '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                    "(20017, 2, 2, '作品タイプID', '作品タイプID', 'text', 1, 1, 0, 0, 0, '', '', '', ?, '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                    "(20017, 3, 3, '作品タイプ（語）', '作品タイプ（語）', 'text', 1, 1, 0, 0, 0, '', '', '', ?, '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                    "(20017, 4, 4, '分類ID', '分類ID', 'text', 0, 1, 0, 0, 0, '', '', '', ?, '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                    "(20017, 5, 5, '分類（語）', '分類（語）', 'text', 0, 1, 0, 0, 0, '', '', '', ?, '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                    "(20017, 6, 6, '資料/作品名（値）', '資料/作品名（値）', 'text', 0, 1, 0, 0, 0, 'title', 'title', '', ?, '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                    "(20017, 7, 7, '銘/題辞写', '銘/題辞写', 'text', 0, 1, 0, 0, 0, '', '', '', ?, '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                    "(20017, 8, 8, '所蔵者名（値）', '所蔵者名（値）', 'name', 0, 1, 0, 0, 0, 'rights', 'rights', '', ?, '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                    "(20017, 9, 9, '所蔵者ウェブリンク', '所蔵者ウェブリンク', 'link', 0, 1, 0, 0, 0, '', '', '', ?, '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                    "(20017, 10, 10, '所蔵者資料/作品ID', '所蔵者資料/作品ID', 'text', 0, 1, 0, 0, 0, '', '', '', ?, '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                    "(20017, 11, 11, '資料/作品状態（状態）', '資料/作品状態（状態）', 'text', 0, 1, 0, 0, 0, '', '', '', ?, '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                    "(20017, 12, 12, '記述ノート（値）', '記述ノート（値）', 'text', 0, 1, 0, 0, 0, 'description', 'description', '', ?, '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                    "(20017, 13, 13, '測定（表示用）', '測定（表示用）', 'text', 0, 1, 0, 0, 0, 'description', 'description', '', ?, '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                    "(20017, 14, 14, 'イベント内容（表示用）', 'イベント内容（表示用）', 'textarea', 0, 1, 0, 0, 0, 'coverage', 'coverage', '', ?, '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                    "(20017, 15, 15, 'イベントタイプ（語）', 'イベントタイプ（語）', 'text', 0, 1, 0, 0, 0, '', '', '', ?, '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                    "(20017, 16, 16, 'イベント行為者／役割（表示用）', 'イベント行為者／役割（表示用）', 'text', 0, 1, 0, 0, 0, 'description', 'description', '', ?, '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                    "(20017, 17, 17, 'イベント発生期間(表示用)', 'イベント発生期間(表示用)', 'text', 0, 1, 0, 0, 0, 'coverage', 'coverage', '', ?, '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                    "(20017, 18, 18, 'イベント発生期間（西暦）（開始日）', 'イベント発生期間（西暦）（開始日）', 'date', 0, 1, 0, 0, 0, '', '', '', ?, '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                    "(20017, 19, 19, 'イベント発生期間（西暦）（終了日）', 'イベント発生期間（西暦）（終了日）', 'date', 0, 1, 0, 0, 0, '', '', '', ?, '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                    "(20017, 20, 20, 'イベント発生時代・年代（語）', 'イベント発生時代・年代（語）', 'text', 0, 1, 0, 0, 0, '', '', '', ?, '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                    "(20017, 21, 21, 'イベント発生地（表示用）', 'イベント発生地（表示用）', 'text', 0, 1, 0, 0, 0, '', '', '', ?, '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                    "(20017, 22, 22, 'イベント発生地緯度・経度', 'イベント発生地緯度・経度', 'text', 0, 1, 0, 0, 0, 'spatial', 'coverage', '', ?, '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                    "(20017, 23, 23, 'イベント素材/技術(表示用)', 'イベント素材/技術(表示用)', 'text', 0, 1, 0, 0, 0, '', '', '', ?, '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                    "(20017, 24, 24, '主題(表示用)', '主題(表示用)', 'text', 0, 1, 0, 0, 0, 'subject', 'subject', '', ?, '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                    "(20017, 25, 25, '関連作品(表示用)', '関連作品(表示用)', 'text', 0, 1, 0, 0, 0, '', '', '', ?, '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                    "(20017, 26, 26, '記録ID', '記録ID', 'text', 1, 1, 0, 0, 0, 'source', 'source', '', ?, '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                    "(20017, 27, 27, '記録タイプ（語）', '記録タイプ（語）', 'text', 1, 1, 0, 0, 0, '', '', '', ?, '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                    "(20017, 28, 28, '記録者名（値）', '記録者名（値）', 'name', 1, 1, 0, 0, 0, 'creator', 'creator', '', ?, '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                    "(20017, 29, 29, '記録情報リンク', '記録情報リンク', 'link', 0, 1, 0, 0, 0, 'URI', 'identifier', '', ?, '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                    "(20017, 30, 30, '記録情報メタデータ記録日', '記録情報メタデータ記録日', 'date', 0, 1, 0, 0, 0, 'date', 'date', '', ?, '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                    "(20017, 31, 31, 'リソースURL', 'リソースURL', 'link', 0, 1, 0, 0, 0, '', '', '', ?, '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                    "(20017, 32, 32, 'リソース説明/記述', 'リソース説明/記述', 'textarea', 0, 1, 0, 0, 0, '', '', '', ?, '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                    "(20017, 33, 33, 'リソース所有者名（値）', 'リソース所有者名（値）', 'name', 0, 1, 0, 0, 0, 'contributor', 'contributor', '', ?, '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                    "(20017, 34, 34, 'リソース権利クレジットライン', 'メタデータ校閲者(validator)リソース権利クレジットライン', 'text', 0, 1, 0, 0, 0, '', '', '', ?, '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                    "(20017, 35, 35, '機関ID', '機関ID', 'text', 1, 0, 0, 0, 1, '', '', '', '', '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                    "(20017, 36, 36, 'コンテンツID', 'コンテンツID', 'text', 1, 0, 0, 0, 1, '', '', '', '', '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0),".
+                    "(20017, 37, 37, 'コンテンツ更新日時', 'コンテンツ更新日時', 'text', 1, 0, 0, 0, 1, '', '', '', '', '', 1, 1, '', '2008-03-18 00:00:00.000', '2008-03-18 00:00:00.000', '', 0) ; ";
             
             $params = array();
             $params[] = RepositoryConst::LIDO_TAG_LIDO_REC_ID;
@@ -5701,13 +5378,13 @@ class Repository_Action_Main_Update extends RepositoryAction
             $params[] = RepositoryConst::LIDO_TAG_ADMINISTRATIVE_METADATA.".".RepositoryConst::LIDO_TAG_RESOURCE_WRAP.".".RepositoryConst::LIDO_TAG_RESOURCE_SET.".".RepositoryConst::LIDO_TAG_RESOURCE_SOURCE.".".RepositoryConst::LIDO_TAG_LEGAL_BODY_NAME.".".RepositoryConst::LIDO_TAG_APPELLATION_VALUE;
             $params[] = RepositoryConst::LIDO_TAG_ADMINISTRATIVE_METADATA.".".RepositoryConst::LIDO_TAG_RESOURCE_WRAP.".".RepositoryConst::LIDO_TAG_RESOURCE_SET.".".RepositoryConst::LIDO_TAG_RIGHT_RESOURCE.".".RepositoryConst::LIDO_TAG_CREDIT_LINE;
             
-            $retRef = $this->Db->execute($query, $params);
+            $retRef = $this->dbAccess->executeQuery($query, $params);
         }
     }
     
     /**
      * add external search word parameter and referer
-     *
+     * 外部検索キーワードに関するパラメータを追加する
      */
     private function addExternalSearchWordParameter() {
         $user_id = $this->Session->getParameter("_user_id");
@@ -5736,12 +5413,12 @@ class Repository_Action_Main_Update extends RepositoryAction
         $params[] = $user_id;   // mod_user_id
         $params[] = $this->TransStartDate;  // ins_date
         $params[] = $this->TransStartDate;  // mod_date
-        $this->Db->execute($query, $params);
+        $this->dbAccess->executeQuery($query, $params);
     }
     
     /**
      * Create external search word tables
-     *
+     * 外部検索キーワードテーブルを作成する
      */
     private function createExternalSearchWordTable() 
     {
@@ -5760,12 +5437,12 @@ class Repository_Action_Main_Update extends RepositoryAction
                  " `is_delete` INT(1), ".
                  " PRIMARY KEY(`item_id`, `item_no`, `word`) ".
                  ") ENGINE=MYISAM;";
-        $this->Db->execute($query);
+        $this->dbAccess->executeQuery($query);
         
         // create external searchword for search table
         // search mroonga
         $query = "SHOW ENGINES";
-        $engines = $this->Db->execute($query);
+        $engines = $this->dbAccess->executeQuery($query);
         $isMroongaExist = false;
         for($cnt = 0; $cnt < count($engines); $cnt++)
         {
@@ -5792,7 +5469,7 @@ class Repository_Action_Main_Update extends RepositoryAction
                  " `is_delete` INT(1), ".
                  " PRIMARY KEY(`engine_id`) ".
                  ") ENGINE=MYISAM;";
-        $this->Db->execute($query);
+        $this->dbAccess->executeQuery($query);
         // add default search engines
         $engine_data = array();
         $engine_data['YAHOO! JAPAN'] = array('domain' => 'search.yahoo.co.jp', 'search_word' => 'p', 'delimiter' => '/[+\\s]+/');
@@ -5820,7 +5497,7 @@ class Repository_Action_Main_Update extends RepositoryAction
                  " `is_delete` INT(1), ".
                  " PRIMARY KEY(`stop_word`, `part_of_speech`) ".
                  ") ENGINE=MYISAM;";
-        $this->Db->execute($query);
+        $this->dbAccess->executeQuery($query);
         // add default stop words
         // 日本語
         // 接続詞(順接, 逆説, 並列・追加, 対比・選択, 説明・補足, 転換)
@@ -5869,9 +5546,11 @@ class Repository_Action_Main_Update extends RepositoryAction
     
     /**
      * Add stop word
+     * ストップワードを追加する
      * 
-     * @param int $partOfSpeech part of speech number
-     * @param Object $stopWord stop word array
+     * @param int $partOfSpeech part of speech number 品詞番号
+     * @param array $stopWord stop word ストップワード
+     *                         array[$ii]
      */
     private function addStopWord($partOfSpeech, $stopWord) {
         // partOfSpeech
@@ -5893,11 +5572,12 @@ class Repository_Action_Main_Update extends RepositoryAction
             $params[] = $this->TransStartDate;  // mod_date
         }
         $query .= ";";
-        $this->Db->execute($query, $params);
+        $this->dbAccess->executeQuery($query, $params);
     }
     
     /**
      * Add search engine data
+     * サーチエンジン情報を追加する
      * 
      * @param Object $searchEngine
      */
@@ -5930,12 +5610,12 @@ class Repository_Action_Main_Update extends RepositoryAction
             $engine_id++;
         }
         $query .= ";";
-        $this->Db->execute($query, $params);
+        $this->dbAccess->executeQuery($query, $params);
     }
     
     /**
      * update Weko Version 2.1.3 To 2.1.4
-     *
+     * Version 2.1.3 ⇒ 2.1.4
      */
     private function updateWekoVersion213To214()
     {
@@ -5951,7 +5631,7 @@ class Repository_Action_Main_Update extends RepositoryAction
     
     /**
      * create JaLC DOI and Cross Ref status table
-     *
+     * DOIステータステーブルを作成する
      */
     private function createDoiStatusTable()
     {
@@ -5969,24 +5649,24 @@ class Repository_Action_Main_Update extends RepositoryAction
                  " `is_delete` INT(1), ".
                  " PRIMARY KEY(`item_id`, `item_no`) ".
                  ") ENGINE=innodb;";
-        $this->Db->execute($query);
+        $this->dbAccess->executeQuery($query);
     }
     
     /**
      * drop jalc_doi from index table
-     *
+     * インデックステーブルからJaLC DOIカラムを削除する
      */
     private function dropJalcdoiFromIndexTable() 
     {
         // create external search word table
         $query = "ALTER TABLE ". DATABASE_PREFIX ."repository_index ".
                  "DROP `jalc_doi` ; ";
-        $this->Db->execute($query);
+        $this->dbAccess->executeQuery($query);
     }
     
     /**
      * update Weko Version 2.1.4 To 2.1.5
-     *
+     * Version 2.1.4 ⇒ 2.1.5
      */
     private function updateWekoVersion214To215()
     {
@@ -5996,7 +5676,7 @@ class Repository_Action_Main_Update extends RepositoryAction
     
     /**
      * update Weko Version 2.1.5 To 2.1.6
-     *
+     * Version 2.1.5 ⇒ 2.1.6
      */
     private function updateWekoVersion215To216()
     {
@@ -6007,7 +5687,7 @@ class Repository_Action_Main_Update extends RepositoryAction
     
     /**
      * update Weko Version 2.1.6 To 2.1.7
-     *
+     * Version 2.1.6 ⇒ 2.1.7
      */
     private function updateWekoVersion216To217()
     {
@@ -6032,8 +5712,7 @@ class Repository_Action_Main_Update extends RepositoryAction
     
     /**
      * modify Update Time of Content
-     * (date->text)
-     *
+     * コンテンツ更新日時の属性タイプを日付からテキストに変更する
      */
     private function modifyUpdateTimeOfContent()
     {
@@ -6051,9 +5730,8 @@ class Repository_Action_Main_Update extends RepositoryAction
     }
     
     /**
-     * modify LOM item type name
-     * ('Learning Object Matadata'->'Learning Object Metadata')
-     *
+     * modify LOM item type name('Learning Object Matadata'->'Learning Object Metadata')
+     * LOMアイテムタイプの名前を変更する
      */
     private function modifyLomItemtypeName()
     {
@@ -6070,7 +5748,7 @@ class Repository_Action_Main_Update extends RepositoryAction
     
     /**
      * add Library JaLC DOI Prefix
-     *
+     * 図書館DOIプレフィックスをプレフィックステーブルに追加する
      */
     private function addLibraryJalcDoiPrefix()
     {
@@ -6094,7 +5772,7 @@ class Repository_Action_Main_Update extends RepositoryAction
     
     /**
      * add OAI-PMH Output Flag
-     *
+     * OAI-PMH出力フラグをパラメータに追加する
      */
     private function addOutputOaipmhParameter()
     {
@@ -6118,7 +5796,7 @@ class Repository_Action_Main_Update extends RepositoryAction
     
     /**
      * add Editdoi Output Flag
-     *
+     * DOI付与フラグをパラメータに追加する
      */
     private function addOutputEditdoiParameter()
     {
@@ -6165,7 +5843,7 @@ class Repository_Action_Main_Update extends RepositoryAction
     // Add Default Search Type 2014/12/03 K.Sugimoto --start--
     /**
      * update Weko Version 2.1.7 To 2.1.8
-     *
+     * Version 2.1.7 ⇒ 2.1.8
      */
     private function updateWekoVersion217To218()
     {
@@ -6190,7 +5868,7 @@ class Repository_Action_Main_Update extends RepositoryAction
     
     /**
      * add Default Search Type
-     *
+     * 検索のデフォルト状態をパラメータに追加する
      */
     private function addDefaultSearchTypeParameter()
     {
@@ -6209,13 +5887,14 @@ class Repository_Action_Main_Update extends RepositoryAction
         $params[] = $this->TransStartDate;  // mod_date
         $params[] = 0; // is delete
         $query .= ";";
-        $this->Db->execute($query, $params);
+        $this->dbAccess->executeQuery($query, $params);
     }
     // Add Default Search Type 2014/12/03 K.Sugimoto --end--
     
     // Add Usage Statistics link display setting 2014/12/16 K.Matsushita --start--
     /**
      * add Usage Statistics link display setting
+     * 利用統計リンク表示設定をパラメータに追加する
      */
     private function addUsageStatisticsLinkDisplayParameter()
     {
@@ -6234,14 +5913,14 @@ class Repository_Action_Main_Update extends RepositoryAction
         $params[] = $this->TransStartDate;  // mod_date
         $params[] = 0; // is delete
         $query .= ";";
-        $this->Db->execute($query, $params);
+        $this->dbAccess->executeQuery($query, $params);
     }
     // Add Usage Statistics link display setting 2014/12/16 K.Matsushita --end--
 
     // Add ranking tab display setting 2014/12/19 K.Matsushita --start--
     /**
      * add ranking tab display
-     *
+     * ランキングタブ表示設定をパラメータに追加する
      */
     private function addRankingTabDisplayParameter()
     {
@@ -6260,13 +5939,13 @@ class Repository_Action_Main_Update extends RepositoryAction
         $params[] = $this->TransStartDate;  // mod_date
         $params[] = 0; // is delete
         $query .= ";";
-        $this->Db->execute($query, $params);
+        $this->dbAccess->executeQuery($query, $params);
     }
     // Add ranking tab display setting 2014/12/19 K.Matsushita --end--
     
     /**
-     * add Institution Name
-     *
+     * add Institution Name for GoogleScholar
+     * GoogleScholar出力機関名をパラメータに追加する
      */
     private function addInstitutionName()
     {
@@ -6286,12 +5965,12 @@ class Repository_Action_Main_Update extends RepositoryAction
         $params[] = $this->TransStartDate;
         $params[] = 0;
         
-        $this->Db->execute($query, $params);
+        $this->dbAccess->executeQuery($query, $params);
     }
     
     /**
-     * create itemtype authority tables
-     *
+     * create item type authority tables
+     * アイテムタイプ権限テーブルを作成する
      */
     private function createItemtypeAuthorityTable()
     {
@@ -6308,7 +5987,7 @@ class Repository_Action_Main_Update extends RepositoryAction
                 " `is_delete` INT(1), ".
                 " PRIMARY KEY  (`item_type_id`,`exclusive_base_auth_id`) ".
                 " ) ENGINE=innodb; ";
-        $this->Db->execute($query);
+        $this->dbAccess->executeQuery($query);
         
         // create exclusive room authority table
         $query = "CREATE TABLE ".DATABASE_PREFIX. "repository_item_type_exclusive_room_auth ( ".
@@ -6323,12 +6002,12 @@ class Repository_Action_Main_Update extends RepositoryAction
                 " `is_delete` INT(1), ".
                 " PRIMARY KEY  (`item_type_id`) ".
                 " ) ENGINE=innodb; ";
-        $this->Db->execute($query);
+        $this->dbAccess->executeQuery($query);
     }
     
     /**
      * update Weko Version 2.1.8 To 2.2.0
-     *
+     * Version 2.1.8 ⇒ 2.2.0
      */
     private function updateWekoVersion218To220()
     {
@@ -6378,14 +6057,14 @@ class Repository_Action_Main_Update extends RepositoryAction
     
     /**
      * update licence master creative common's link
-     *
+     * ライセンス取得先URLを更新する
      */
     private function updateLicenseMasterLinks()
     {
         $query = "SELECT * ".
                  "FROM ".DATABASE_PREFIX. "repository_license_master ";
         
-        $result = $this->Db->execute($query);
+        $result = $this->dbAccess->executeQuery($query);
         
         for ($ii = 0; $ii < count($result); $ii++) 
         {
@@ -6415,13 +6094,13 @@ class Repository_Action_Main_Update extends RepositoryAction
             
             $params[] = $result[$ii]["license_id"];
             
-            $this->Db->execute($query, $params);
+            $this->dbAccess->executeQuery($query, $params);
         }
     }
     
     /**
      * create log exclusion list tables of ip_address and user_agent
-     *
+     * ロボットリストテーブルを作成する
      */
     private function createLogExclusionListTables()
     {
@@ -6443,7 +6122,7 @@ class Repository_Action_Main_Update extends RepositoryAction
                  "is_delete int(1) default NULL, ".
                  "PRIMARY KEY  (`robotlist_id`) ".
                  ") ENGINE=InnoDb DEFAULT CHARSET=utf8; ";
-        $this->Db->execute($query);
+        $this->dbAccess->executeQuery($query);
         
         $query = "CREATE TABLE ".DATABASE_PREFIX. "repository_robotlist_data (". 
                  "list_id int(10) NOT NULL AUTO_INCREMENT, ".
@@ -6459,7 +6138,7 @@ class Repository_Action_Main_Update extends RepositoryAction
                  "is_delete int(1) default NULL, ".
                  "PRIMARY KEY  (`list_id`) ".
                  ") ENGINE=InnoDb DEFAULT CHARSET=utf8; ";
-        $this->Db->execute($query);
+        $this->dbAccess->executeQuery($query);
         
         // Improve Log 2015/06/17 K.Sugimoto --start--
         $ipAddressCrawlerList = 'https://bitbucket.org/niijp/jairo-crawler-list/raw/master/JAIRO_Crawler-List_ip_blacklist.txt';
@@ -6492,7 +6171,7 @@ class Repository_Action_Main_Update extends RepositoryAction
         $params[] = $this->TransStartDate;                      // mod_date
         $params[] = "";                                         // del_date
         $params[] = 0;                                          // is_delete
-        $this->Db->execute($query, $params);
+        $this->dbAccess->executeQuery($query, $params);
         
         $this->insertLockTable('Repository_Action_Common_Robotlist', 0);
         $this->insertLockTable('Repository_Action_Common_Background_Deleterobotlist', 0);
@@ -6503,7 +6182,7 @@ class Repository_Action_Main_Update extends RepositoryAction
     
     /**
      * create elapsed log table
-     *
+     * ログ経過時間テーブルを作成する
      */
     private function addElapsedTimeLog()
     {
@@ -6519,7 +6198,7 @@ class Repository_Action_Main_Update extends RepositoryAction
                      "`is_delete` INT(1),". 
                      "PRIMARY KEY(`log_no`)". 
                  ") ENGINE=MyISAM;";
-         $this->Db->execute($query);
+         $this->dbAccess->executeQuery($query);
         
         $this->insertLockTable('Repository_Action_Common_Background_Elapsedtime', 0);
         
@@ -6527,13 +6206,13 @@ class Repository_Action_Main_Update extends RepositoryAction
         $query = "ALTER TABLE ".DATABASE_PREFIX. RepositoryConst::DBTABLE_REPOSITORY_LOG. " ".
                  "ADD INDEX ". RepositoryConst::DBCOL_REPOSITORY_LOG_RECORD_DATE. " (".
                  RepositoryConst::DBCOL_REPOSITORY_LOG_RECORD_DATE. "); ";
-        $this->Db->execute($query);
+        $this->dbAccess->executeQuery($query);
         // Improve Log 2015/06/17 K.Sugimoto --end--
     }
     
     /**
      * create sitelicense tables
-     *
+     * サイトライセンス情報テーブルを作成する
      */
     private function createSitelicenseInfoTable()
     {
@@ -6553,7 +6232,7 @@ class Repository_Action_Main_Update extends RepositoryAction
                 " `is_delete` INT(1), ".
                 " PRIMARY KEY  (`organization_id`) ".
                 " ) ENGINE=innodb; ";
-        $this->Db->execute($query);
+        $this->dbAccess->executeQuery($query);
         
         // create ip address table
         $query = "CREATE TABLE ".DATABASE_PREFIX. "repository_sitelicense_ip_address ( ".
@@ -6570,14 +6249,14 @@ class Repository_Action_Main_Update extends RepositoryAction
                 " `is_delete` INT(1), ".
                 " PRIMARY KEY  (`organization_id`, `organization_no`) ".
                 " ) ENGINE=innodb; ";
-        $this->Db->execute($query);
+        $this->dbAccess->executeQuery($query);
         
         // insert data
         $query = "SELECT param_value FROM ". DATABASE_PREFIX. "repository_parameter ".
                  "WHERE param_name = ? ;";
         $params = array();
         $params[] = "site_license";
-        $result = $this->Db->execute($query, $params);
+        $result = $this->dbAccess->executeQuery($query, $params);
         if(strlen($result[0]["param_value"]) > 0) {
             // 機関毎に分割する
             $sitelicenses = explode("|", $result[0]["param_value"]);
@@ -6621,7 +6300,7 @@ class Repository_Action_Main_Update extends RepositoryAction
                 $params[] = $this->TransStartDate;                      // mod_date
                 $params[] = "";                                         // del_date
                 $params[] = 0;                                          // is_delete
-                $this->Db->execute($query, $params);
+                $this->dbAccess->executeQuery($query, $params);
                 
                 // insert ip address
                 $query = "INSERT INTO ". DATABASE_PREFIX. "repository_sitelicense_ip_address ".
@@ -6639,7 +6318,7 @@ class Repository_Action_Main_Update extends RepositoryAction
                 $params[] = $this->TransStartDate;                      // mod_date
                 $params[] = "";                                         // del_date
                 $params[] = 0;                                          // is_delete
-                $this->Db->execute($query, $params);
+                $this->dbAccess->executeQuery($query, $params);
             }
             
             // delete sitelicense data from parameter table
@@ -6647,29 +6326,29 @@ class Repository_Action_Main_Update extends RepositoryAction
                      "WHERE param_name = ? ;";
             $params = array();
             $params[] = "site_license";
-            $this->Db->execute($query, $params);
+            $this->dbAccess->executeQuery($query, $params);
         }
         // サイトライセンスメール送信先テーブル
         // IPアドレス情報カラムを削除し、組織名カラムを追加する
         $query = "ALTER TABLE ". DATABASE_PREFIX ."repository_send_mail_sitelicense ".
                  "DROP `start_ip_address` ; ";
-        $this->Db->execute($query);
+        $this->dbAccess->executeQuery($query);
         $query = "ALTER TABLE ". DATABASE_PREFIX ."repository_send_mail_sitelicense ".
                  "DROP `finish_ip_address` ; ";
-        $this->Db->execute($query);
+        $this->dbAccess->executeQuery($query);
         
         // ログテーブルにサイトライセンス機関情報保存用カラムを作成する
         $query = "ALTER TABLE ". DATABASE_PREFIX ."repository_log ".
                  "ADD `site_license_id` INT(11) default 0 ".
                  "AFTER `site_license` ;";
-        $this->Db->execute($query);
+        $this->dbAccess->executeQuery($query);
         
     }
     
     // Add CrossRef Metadata Auto Input and Add DataCite 2015/02/03 K.Sugimoto --start--
     /**
      * add CrossRef metadata auto input
-     *
+     * CrossRefアカウント情報パラメータを追加する
      */
     private function addCrossrefQueryService()
     {
@@ -6688,12 +6367,12 @@ class Repository_Action_Main_Update extends RepositoryAction
         $params[] = $this->TransStartDate;  // mod_date
         $params[] = 0; // is delete
         $query .= ";";
-        $this->Db->execute($query, $params);
+        $this->dbAccess->executeQuery($query, $params);
     }
 
     /**
      * add DataCite
-     *
+     *　DataCite DOIのプレフィックスをプレフィックステーブルに追加する
      */
     private function addDataCite()
     {
@@ -6713,7 +6392,7 @@ class Repository_Action_Main_Update extends RepositoryAction
         $params[] = $this->TransStartDate;  // mod_date
         $params[] = 0; // is delete
         $query .= ";";
-        $this->Db->execute($query, $params);
+        $this->dbAccess->executeQuery($query, $params);
         
         // パラメータテーブルにYハンドルPrefixフラグレコードを追加
         $query = "INSERT INTO ". DATABASE_PREFIX. "repository_parameter ".
@@ -6731,7 +6410,7 @@ class Repository_Action_Main_Update extends RepositoryAction
         $params[] = $this->TransStartDate;  // mod_date
         $params[] = 0; // is delete
         $query .= ";";
-        $this->Db->execute($query, $params);
+        $this->dbAccess->executeQuery($query, $params);
 
         // DOI付与フラグを取得
         $query = "SELECT param_name ".
@@ -6741,7 +6420,7 @@ class Repository_Action_Main_Update extends RepositoryAction
         $params = array();
         $params[] = "edit_doi_flag_%";
         $params[] = 0;
-        $result = $this->Db->execute($query, $params);
+        $result = $this->dbAccess->executeQuery($query, $params);
 
         // パラメータテーブルからDOI付与フラグを削除
         $query = "DELETE FROM ".DATABASE_PREFIX."repository_parameter ".
@@ -6750,7 +6429,7 @@ class Repository_Action_Main_Update extends RepositoryAction
         $params = array();
         $params[] = "edit_doi_flag_%";
         $params[] = 0;
-        $this->Db->execute($query, $params);
+        $this->dbAccess->executeQuery($query, $params);
         
         // DOI付与判定テーブルを作成
         $query = "CREATE TABLE ".DATABASE_PREFIX. "repository_doi_flag ( ".
@@ -6769,7 +6448,7 @@ class Repository_Action_Main_Update extends RepositoryAction
                 " `is_delete` INT(1), ".
                 " PRIMARY KEY  (`doi_flag_id`) ".
                 " ) ENGINE=innodb; ";
-        $this->Db->execute($query);
+        $this->dbAccess->executeQuery($query);
         
         // DOI付与判定フラグを追加
         for($i = 0; $i < count($result); $i++)
@@ -6830,7 +6509,7 @@ class Repository_Action_Main_Update extends RepositoryAction
 		        $params[] = $this->TransStartDate;  // mod_date
 		        $params[] = 0; // is delete
 		        $query .= ";";
-		        $this->Db->execute($query, $params);
+		        $this->dbAccess->executeQuery($query, $params);
 	        }
         }
     }
@@ -6839,7 +6518,7 @@ class Repository_Action_Main_Update extends RepositoryAction
     // Improve Search Log 2015/03/19 K.Sugimoto --start--
     /**
      * improve search log
-     *
+     * 検索ログテーブルを作成する
      */
     private function addDetailSearchItem()
     {
@@ -6856,7 +6535,7 @@ class Repository_Action_Main_Update extends RepositoryAction
                 " `is_delete` INT(1), ".
                 " PRIMARY KEY  (`log_no`,`advanced_search_id`) ".
                 " ) ENGINE=MyISAM; ";
-        $this->Db->execute($query);
+        $this->dbAccess->executeQuery($query);
         
         // 集計対象詳細検索項目テーブルを作成
         $query = "CREATE TABLE ".DATABASE_PREFIX. "repository_target_search_item ( ".
@@ -6871,7 +6550,7 @@ class Repository_Action_Main_Update extends RepositoryAction
                 " `is_delete` INT(1), ".
                 " PRIMARY KEY  (`search_item_id`) ".
                 " ) ENGINE=innodb; ";
-        $this->Db->execute($query);
+        $this->dbAccess->executeQuery($query);
         
         // 既存キーワード検索ログ検索項目追加
         $this->recursiveProcessingFlgList[self::KEY_REPOSITORY_SEARCH_LOG] = true;
@@ -6900,7 +6579,7 @@ class Repository_Action_Main_Update extends RepositoryAction
 	        $params[] = $this->TransStartDate;  // mod_date
 	        $params[] = 0; // is delete
 	        $query .= ";";
-	        $this->Db->execute($query, $params);
+	        $this->dbAccess->executeQuery($query, $params);
         }
         
         // ロックテーブルに既存検索ログ検索項目追加クラスを追加
@@ -6909,7 +6588,7 @@ class Repository_Action_Main_Update extends RepositoryAction
     
     /**
      * execute recursive proccessing of DetailSearchItem
-     *
+     * 検索ログ作成処理を実行する
      */
     private function addDetailSearchItemForExistSearchLog()
     {
@@ -6936,7 +6615,7 @@ class Repository_Action_Main_Update extends RepositoryAction
     
     /**
      * execute recursive proccessing of ElapsedtimeLog
-     *
+     * 経過時間ログ作成処理を実行する
      */
     private function insertElapsedLogs()
     {
@@ -6959,7 +6638,8 @@ class Repository_Action_Main_Update extends RepositoryAction
     }
     
     /**
-     * add operation_log table
+     * add operation log table
+     * 操作内容ログテーブルを作成する
      */
     private function addOperationlog()
     {
@@ -6972,13 +6652,13 @@ class Repository_Action_Main_Update extends RepositoryAction
             " `start_log_id` INT default 0, ".
             " PRIMARY KEY(`log_id`) ".
             ") ENGINE=MyISAM;";
-        $this->Db->execute($query);
+        $this->dbAccess->executeQuery($query);
     }
 
     // Extend Search Keyword 2015/02/20 K.Sugimoto --start--
     /**
      * Convert Search Table Hankaku
-     *
+     * 全文検索データの異体字対応インデックス作成を実行する
      */
     private function convertSearchTableKana()
     {
@@ -6989,6 +6669,7 @@ class Repository_Action_Main_Update extends RepositoryAction
     // bug fix external searchword empty 2015/04/09 K.Sugimoto --start--
     /**
      * delete external searchword empty
+     * 空文字の外部検索キーワードを削除する
      */
     private function deleteExternalSearchwordEmpty()
     {
@@ -6996,14 +6677,14 @@ class Repository_Action_Main_Update extends RepositoryAction
                  "WHERE word = ? ;";
         $params = array();
         $params[] = '';
-        $this->Db->execute($query, $params);
+        $this->dbAccess->executeQuery($query, $params);
     }
     // bug fix external searchword empty 2015/04/09 K.Sugimoto --end--
     
     // ImproveLog 2015/06/17 K.Sugimoto --start--
     /**
      * execute recursive proccessing of RobotList
-     *
+     * ロボットによるアクセスログを削除する
      */
     private function excludeLogOfRobotList()
     {
@@ -7028,7 +6709,7 @@ class Repository_Action_Main_Update extends RepositoryAction
     
     /**
      * update Weko Version 2.2.0 To 2.2.1
-     *
+     * Version 2.2.0 ⇒ 2.2.1
      */
     private function updateWekoVersion220To221()
     {
@@ -7038,7 +6719,7 @@ class Repository_Action_Main_Update extends RepositoryAction
     
     /**
      * update Weko Version 2.2.1 To 2.2.2
-     *
+     * Version 2.2.1 ⇒ 2.2.2
      */
     private function updateWekoVersion221To222()
     {
@@ -7048,7 +6729,11 @@ class Repository_Action_Main_Update extends RepositoryAction
         // version up to 2.2.2
         $this->versionUp('2.2.2');
     }
-    
+
+    /**
+     * Create PDF cover page delete status table
+     * PDFカバーページ削除状態テーブルを作成する
+     */
     private function addCoverDeleteStatusTable()
     {
         $query = "CREATE TABLE {repository_cover_delete_status} (".
@@ -7059,9 +6744,13 @@ class Repository_Action_Main_Update extends RepositoryAction
             "`status` INT(1), ".
             "PRIMARY KEY(`item_id`, `item_no`, `attribute_id`, `file_no`)".
             ") ENGINE=MyISAM;";
-        $this->Db->execute($query);
+        $this->dbAccess->executeQuery($query);
     }
-    
+
+    /**
+     * update Weko Version 2.2.2 To 2.2.3
+     * Version 2.2.2 ⇒ 2.2.3
+     */
     private function updateWekoVersion222To223()
     {
         // version up to 2.2.3

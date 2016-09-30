@@ -1,7 +1,15 @@
 <?php
+
+/**
+ * Name authority import confirmation action class
+ * 著者名典拠インポート確認アクションクラス
+ * 
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Confirm.class.php 48455 2015-02-16 10:53:40Z atsushi_suzuki $
+// $Id: Confirm.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -13,23 +21,37 @@
 
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
 
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
+/**
+ * Name authority common classes
+ * 著者名典拠共通クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/NameAuthority.class.php';
+/**
+ * Name authority import action class
+ * 著者名典拠インポートアクションクラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/action/edit/importauthority/Importauthority.class.php';
 
+
 /**
- * [[import終了時、確認画面表示用action]]
- *
- * @package     [[package名]]
- * @access      public
- * @version 1.0 新規作成
+ * Name authority import confirmation action class
+ * 著者名典拠インポート確認アクションクラス
+ * 
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class Repository_Action_Edit_Importauthority_Confirm extends RepositoryAction
 {
     /**
      * execute insert authority into name_authority table
-     * 
-     * @access  public
+     * 著者名典拠テーブルへのインサート
      */
     function executeApp()
     {
@@ -108,8 +130,9 @@ class Repository_Action_Edit_Importauthority_Confirm extends RepositoryAction
         return 'success';
     }
 
-    /*
+    /**
      * get file path
+     * ファイルパス取得
      */
     function getFilePathAuthorTsv(){
     

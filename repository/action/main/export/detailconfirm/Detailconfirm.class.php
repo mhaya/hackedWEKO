@@ -1,7 +1,15 @@
 <?php
+
+/**
+ * Action class for item export confirm
+ * アイテムエクスポート確定用アクションクラス
+ * 
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Detailconfirm.class.php 30197 2013-12-19 09:55:45Z rei_matsuura $
+// $Id: Detailconfirm.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -12,32 +20,75 @@
 // --------------------------------------------------------------------
 
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
+/**
+ * Item authority common classes
+ * アイテム権限共通クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryItemAuthorityManager.class.php';
 
 /**
- * [[機能説明]]
- *
- * @package     [[package名]]
- * @access      public
+ * Action class for item export confirm
+ * アイテムエクスポート確定用アクションクラス
+ * 
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class Repository_Action_Main_Export_DetailConfirm extends RepositoryAction
 {
+    /**
+     * Session management objects
+     * Session管理オブジェクト
+     *
+     * @var Session
+     */
     var $Session = null;
+    /**
+     * Database management objects
+     * データベース管理オブジェクト
+     *
+     * @var DbObject
+     */
     var $Db = null;
     
+    /**
+     * Item id
+     * アイテムID
+     *
+     * @var int
+     */
     var $item_id = null;
+    /**
+     * Item serial number
+     * アイテム通番
+     *
+     * @var int
+     */
     var $item_no = null;
     
     // Fix admin or insert user export action. 2013/05/22 Y.Nakao --start--
+    /**
+     * File export flag
+     * ファイルエクスポートフラグ
+     *
+     * @var int
+     */
     const EXPORT_FILE_ON = 1;
     // Fix admin or insert user export action. 2013/05/22 Y.Nakao --end--
     
     
     /**
-     * [[機能説明]]
+     * To get the information to be displayed on the screen export of items
+     * アイテムのエクスポート画面に表示する情報を取得する
      *
      * @access  public
+     * @return string Result 結果
      */
     function execute()
     {
@@ -269,17 +320,22 @@ class Repository_Action_Main_Export_DetailConfirm extends RepositoryAction
                 // 未実装
                 print "終了処理失敗";
             }
-            
+            $this->finalize();
             return 'success';
         } catch ( RepositoryException $exception){
             // 未実装
         }
     }
 
-    /*
-     * DBから指定された条件でExport情報を取得する
-     * $query   ：クエリ
-     * $param   ：パラメータ
+    /**
+     * To get the Export information under the specified conditions
+     * 指定された条件でExport情報を取得する
+     *
+     * @param string $query Query クエリ
+     * @param array $param Query parameter クエリパラメータ
+     *                     array[$ii]
+     * @return array Query execution result クエリ実行結果
+     *               array[$ii]
      */
     function getExportInfo($query, $param){
 

@@ -1,7 +1,13 @@
 <?php
+/**
+ * Item deleted common class by SWORD protocol
+ * SWORDプロトコルによるアイテム削除共通クラス
+ * 
+ * @package WEKO
+ */
 // --------------------------------------------------------------------
 //
-// $Id: SwordDelete.class.php 53594 2015-05-28 05:25:53Z kaede_matsushita $
+// $Id: SwordDelete.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -13,20 +19,63 @@
 
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
 
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
+/**
+ * Action class for details screen
+ * 詳細画面用アクションクラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/action/main/item/detail/Detail.class.php';
 
 /**
- * Sword delete class
- *
+ * Item deleted common class by SWORD protocol
+ * SWORDプロトコルによるアイテム削除共通クラス
+ * 
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class SwordDelete extends RepositoryAction
 {
     // member
+    /**
+     * Item id
+     * アイテムID
+     *
+     * @var int
+     */
     private $itemId = null;     // item_id
+    /**
+     * Item serial number
+     * アイテム通番
+     *
+     * @var int
+     */
     private $itemNo = null;     // item_no
+    /**
+     * Delete user id
+     * 削除ユーザID
+     *
+     * @var string
+     */
     private $deleteUser = null; // login_id of delete user
+    /**
+     * Login id
+     * ログインID
+     *
+     * @var string
+     */
     private $loginId = null;    // login_id
+    /**
+     * Password
+     * パスワード
+     *
+     * @var string
+     */
     private $password = null;   // password
     
     //-----------------------------------------------
@@ -34,10 +83,11 @@ class SwordDelete extends RepositoryAction
     //-----------------------------------------------
     /**
      * Constructor
+     * コンストラクタ
      *
-     * @param Session $session
-     * @param Db $db
-     * @param string $transStartDate
+     * @param Session $sesssion Session management objects Session管理オブジェクト
+     * @param DbObject $db Database management objects データベース管理オブジェクト
+     * @param string $transStartDate Transaction start date トランザクション開始日時
      * @access public
      */
     public function SwordDelete($session, $db, $transStartDate)
@@ -55,12 +105,13 @@ class SwordDelete extends RepositoryAction
     
     /**
      * Init
+     * 初期化
      *
-     * @param int $itemId
-     * @param int $itemNo
-     * @param string $loginId
-     * @param string $password
-     * @param string $deleteUser
+     * @param int $itemId Item id アイテムID
+     * @param int $itemNo Item serial number アイテム通番
+     * @param string $loginId Login id ログインID
+     * @param string $password Password パスワード
+     * @param string $deleteUser Delete user id 削除ユーザID
      */
     public function init($itemId, $itemNo, $loginId, $password, $deleteUser="")
     {
@@ -80,9 +131,10 @@ class SwordDelete extends RepositoryAction
     
     /**
      * Execute sword delete
+     * 削除実行
      *
-     * @param int $statusCode
-     * @return bool
+     * @param int $statusCode Status code ステータスコード
+     * @return boolean Result 結果
      */
     public function executeSwordDelete(&$statusCode)
     {
@@ -145,10 +197,11 @@ class SwordDelete extends RepositoryAction
     
     /**
      * Check sword login
+     * SWORDログインチェック
      *
-     * @param int $statusCode
-     * @param string $userId
-     * @return bool
+     * @param int $statusCode Status code ステータスコード
+     * @param string $userId User id ユーザID
+     * @return boolean Result 結果
      */
     public function checkSwordLogin(&$statusCode, &$userId)
     {
@@ -215,8 +268,9 @@ class SwordDelete extends RepositoryAction
     
     /**
      * Set http header
-     * 
-     * @param int $code
+     * HTTPヘッダ設定
+     *
+     * @param int $code Code コード
      */
     public function setHeader($code)
     {
@@ -275,11 +329,12 @@ class SwordDelete extends RepositoryAction
     //-----------------------------------------------
     /**
      * Check delete
+     * パラメータチェック
      *
-     * @param int $itemId
-     * @param int $itemNo
-     * @param string $userId
-     * @return bool
+     * @param int $itemId Item id アイテムID
+     * @param int $itemNo Item serial number アイテム通番
+     * @param string $userId User id ユーザID
+     * @return boolean Result 結果
      */
     private function checkDelete($itemId, $itemNo, $userId)
     {
@@ -307,11 +362,12 @@ class SwordDelete extends RepositoryAction
     
     /**
      * Check delete authority
+     * 権限チェック
      *
-     * @param int $itemId
-     * @param int $itemNo
-     * @param string $userId
-     * @return bool
+     * @param int $itemId Item id アイテムID
+     * @param int $itemNo Item serial number アイテム通番
+     * @param string $userId User id ユーザID
+     * @return boolean Result 結果
      */
     private function checkDeleteAuthority($itemId, $itemNo, $userId)
     {
@@ -371,10 +427,11 @@ class SwordDelete extends RepositoryAction
     
     /**
      * Get delete item's mod_date
+     * 削除日時を取得する
      *
-     * @param int $itemId
-     * @param int $itemNo
-     * @return string
+     * @param int $itemId Item id アイテムID
+     * @param int $itemNo Item serial number アイテム通番
+     * @return string Delete date 削除日時
      */
     private function getDeleteItemModDate($itemId, $itemNo)
     {

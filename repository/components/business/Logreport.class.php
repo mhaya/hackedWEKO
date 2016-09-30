@@ -1,4 +1,12 @@
 <?php
+
+/**
+ * Canned reports create a common class
+ * 定型レポート作成共通クラス
+ * 
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
 // $Id: Logreport.class.php 51740 2015-04-08 01:49:14Z tatsuya_koyasu $
@@ -13,43 +21,156 @@
 
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
 
+/**
+ * Business logic abstract class
+ * ビジネスロジック基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/business/Logbase.class.php';
 
+/**
+ * Canned reports create a common class
+ * 定型レポート作成共通クラス
+ * 
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
+ */
 class Repository_Components_Business_Logreport extends Repository_Components_Business_Logbase 
 {
     // const
+    /**
+     * Key name(sitelicense)
+     * キー名(サイトライセンス)
+     *
+     * @var string
+     */
     const IS_SITELICENSE = "is_sitelicense";
+    /**
+     * Key name(not sitelicense)
+     * キー名(サイトライセンスではない)
+     *
+     * @var string
+     */
     const IS_NOT_SITELICENSE = "is_not_sitelicense";
     
+    /**
+     * The maximum number of files records reference
+     * ファイルレコード参照最大数
+     *
+     * @var int
+     */
     const LIMIT_NUM = 11000;
     
     // member
     // start date
+    /**
+     * Aggregate start year
+     * 集計開始年
+     *
+     * @var int
+     */
     private $sy_log = 0;
+    /**
+     * Aggregate start month
+     * 集計開始月
+     *
+     * @var int
+     */
     private $sm_log = 0;
+    /**
+     * Aggregate start day
+     * 集計開始日
+     *
+     * @var int
+     */
     private $sd_log = 1;
     
     // end date
+    /**
+     * Aggregate end year
+     * 集計開始年
+     *
+     * @var int
+     */
     private $ey_log = 0;
+    /**
+     * Aggregate end month
+     * 集計開始月
+     *
+     * @var int
+     */
     private $em_log = 0;
+    /**
+     * Aggregate end day
+     * 集計開始日
+     *
+     * @var int
+     */
     private $ed_log = 31;
     
-    // 
+    /**
+     * Administrator-based authority level
+     * 管理者ベース権限レベル
+     *
+     * @var int
+     */
     private $repository_admin_base = null;
+    /**
+     * Administrator Room authority level
+     * 管理者ルーム権限レベル
+     *
+     * @var int
+     */
     private $repository_admin_room = null;
     
     // setter
+    /**
+     * Set start year
+     * 開始年設定
+     *
+     * @param string $year start year 開始年
+     */
     public function setStartYear($year)     {    $this->sy_log = $year;     }
+    /**
+     * Set start month
+     * 開始月設定
+     *
+     * @param string $month start month 開始月
+     */
     public function setStartMonth($month)   {    $this->sm_log = $month;    }
+    /**
+     * Set end year
+     * 終了年設定
+     *
+     * @param string $year end year 終了年
+     */
     public function setEndYear($year)       {    $this->ey_log = $year;     }
+    /**
+     * Set end month
+     * 終了月設定
+     *
+     * @param string $month end month 終了月
+     */
     public function setEndMonth($month)     {    $this->em_log = $month;    }
-    
+    /**
+     * Set admin base
+     * 管理者ベース権限設定
+     *
+     * @param int $repository_admin_base admin base 管理者ベース権限
+     */
     public function setAdminBase($repository_admin_base){        $this->repository_admin_base = $repository_admin_base;    }
+    /**
+     * Set admin room
+     * 管理者ルーム権限設定
+     *
+     * @param int $repository_admin_room admin room 管理者ルーム権限
+     */
     public function setAdminRoom($repository_admin_room){        $this->repository_admin_room = $repository_admin_room;    }
     
     /**
-     * create each log report data
-     *
+     * (Deprecated)create each log report data
+     * (廃止予定)
      */
     protected function executeApp()
     {
@@ -58,9 +179,9 @@ class Repository_Components_Business_Logreport extends Repository_Components_Bus
     // private method(international processing)
     /**
      * check create supple report
+     * Suppleレポートが作成できるかを確認
      *
-     * @return boolean true : is create
-     *                 false: is not create
+     * @return boolean Is create 作成できるか
      */
     public function isCreateSuppleReport()
     {
@@ -119,8 +240,9 @@ class Repository_Components_Business_Logreport extends Repository_Components_Bus
     
     /**
      * return start date string 'YYYY-MM-DD HH:mm:ss.sss'
+     * 開始日時を作成する
      *
-     * @return string
+     * @return string Start date 開始日時
      */
     private function getStartDate()
     {
@@ -129,8 +251,9 @@ class Repository_Components_Business_Logreport extends Repository_Components_Bus
     
     /**
      * return end date string 'YYYY-MM-DD HH:mm:ss.sss'
+     * 終了日時を作成する
      *
-     * @return string
+     * @return string End date 終了日時
      */
     private function getEndDate()
     {
@@ -139,9 +262,11 @@ class Repository_Components_Business_Logreport extends Repository_Components_Bus
     
     /**
      * return all group information
+     * 全グループ情報を取得する
      *
-     * @param array $allGroup
-     * @return boolean
+     * @param array $allGroup All group list グループ情報
+     *                        array[$ii]["page_id"|"room_id"]
+     * @return boolean Result 結果
      */
     private function getGroupList(&$allGroup)
     {
@@ -168,7 +293,10 @@ class Repository_Components_Business_Logreport extends Repository_Components_Bus
     
     /**
      * create keyword ranking report
-     *
+     * ランキングレポート作成
+     * 
+     * @return array Ranking report ランキングレポート
+     *               array["item_id"|"item_no"|"title"|"title_english"|"count"]
      */
     public function createKeywordRankingReport()
     {
@@ -190,7 +318,10 @@ class Repository_Components_Business_Logreport extends Repository_Components_Bus
     
     /**
      * create item detail view report
-     *
+     * 詳細画面レポート作成
+     * 
+     * @return array Detail report 詳細画面レポート
+     *               $array[$ii]["title"|"title_en"|"index_name"|"total"|"not_login"|"group"]
      */
     public function createDetailViewReport()
     {
@@ -212,6 +343,7 @@ class Repository_Components_Business_Logreport extends Repository_Components_Bus
                      " WHERE ".$subQuery[Repository_Components_Business_Logmanager::SUB_QUERY_KEY_WHERE].
                      " AND LOG.record_date BETWEEN ? AND ? ".
                      " AND LOG.operation_id = ?".
+                     " AND LOG.item_id IS NOT NULL ".
                  " ) LOG ON ITEM.item_id = LOG.item_id AND ITEM.item_no = LOG.item_no ";
         $params = array();
         $params[] = $this->getStartDate();
@@ -268,7 +400,11 @@ class Repository_Components_Business_Logreport extends Repository_Components_Bus
     
     /**
      * create file download report
-     *
+     * ダウンロードレポート作成
+     * 
+     * @return array Download report ダウンロードレポート
+     *               array["fileViewReport"]["fileLog"|"fileOpenLog"]
+     *               array["payPerViewReport"]["priceLog"|"priceOpenLog"]
      */
     public function createFileViewReport()
     {
@@ -301,9 +437,11 @@ class Repository_Components_Business_Logreport extends Repository_Components_Bus
 
     /**
      * Get file download log
+     * ファイルダウンロードログ取得
      *
-     * @param int $currentNum
-     * @return array
+     * @param int $currentNum Start number 開始番号
+     * @return array Download log ダウンロードログ
+     *               array[$ii]["LOG.record_date"|"LOG.ip_address"|"LOG.user_agent"|"LOG.item_id"|"LOG.item_no"|"LOG.attribute_id"|"LOG.file_no"|"LOG.user_id"|"LOG.file_status"|"LOG.site_license"|"LOG.input_type"|"LOG.login_status"|"LOG.group_id"]
      */
     private function searchFileDownloadLog($currentNum)
     {
@@ -337,13 +475,19 @@ class Repository_Components_Business_Logreport extends Repository_Components_Bus
 
     /**
      * Create file download info
+     * ダウンロード情報作成
      *
-     * @param array $log
-     * @param array $priceLog
-     * @param array $priceOpenLog
-     * @param array $fileLog
-     * @param array $fileOpenLog
-     * @return bool
+     * @param array $log Download log ダウンロードログ
+     *                   array[$ii]["LOG.record_date"|"LOG.ip_address"|"LOG.user_agent"|"LOG.item_id"|"LOG.item_no"|"LOG.attribute_id"|"LOG.file_no"|"LOG.user_id"|"LOG.file_status"|"LOG.site_license"|"LOG.input_type"|"LOG.login_status"|"LOG.group_id"]
+     * @param array $priceLog Private price file download count 非公開課金ファイルダウンロード数
+     *                        array["file_name"|"index_name"|"total"|"not_login"|"group"|"site_license"|"admin"|"register"]
+     * @param array $priceOpenLog Public price file download count 公開課金ファイルダウンロード数
+     *                            array["file_name"|"index_name"|"total"|"not_login"|"group"|"site_license"|"admin"|"register"]
+     * @param array $fileLog Private file download count 非公開ファイルダウンロード数
+     *                       array["file_name"|"index_name"|"total"|"not_login"|"group"|"site_license"|"admin"|"register"]
+     * @param array $fileOpenLog Public file download count 公開ファイルダウンロード数
+     *                           array["file_name"|"index_name"|"total"|"not_login"|"group"|"site_license"|"admin"|"register"]
+     * @return boolean Result 結果
      */
     private function makeDownloadInfo($log, &$priceLog, &$priceOpenLog, &$fileLog, &$fileOpenLog)
     {
@@ -391,7 +535,10 @@ class Repository_Components_Business_Logreport extends Repository_Components_Bus
     
     /**
      * create file download per each users report
-     *
+     * ユーザごとのダウンロード数レポート
+     * 
+     * @return array Report レポート
+     *               array[$ii]["user_id"|"login_id"|"handle"|"role_authority_name"|"DLCount"]
      */
     public function createFileViewPerUser()
     {
@@ -436,8 +583,12 @@ class Repository_Components_Business_Logreport extends Repository_Components_Bus
     
     /**
      * set download report data per user to member value
+     * ユーザごとのダウンロード数作成
      *
-     * @param array $result
+     * @param array $result Download data ダウンロード情報
+     *                      array[$ii]["user_id"|"login_id"|"handle"|"role_authority_name"|"DLCount"]
+     * @return array Download count per user ユーザごとのダウンロード数
+     *               array[$ii]["login_id"|"handle"|"name"|"base_authority_name"|"room_authority_name"|"group_name_list"|"dl_count"]
      */
     private function createFileViewPerUserBySqlResult($result)
     {
@@ -518,7 +669,10 @@ class Repository_Components_Business_Logreport extends Repository_Components_Bus
     
     /**
      * create host access report
-     *
+     * ホストアクセスレポート作成
+     * 
+     * @return array Report レポート
+     *               array[$ii]["host"|"ip_address"|"operation_id"|"cnt"]
      */
     public function createHostAccessReport()
     {
@@ -549,7 +703,10 @@ class Repository_Components_Business_Logreport extends Repository_Components_Bus
     
     /**
      * create index access report
-     *
+     * インデックスごとのアクセス数作成
+     * 
+     * @return array Report レポート
+     *               array["totalAccess"|"detailViewPerIndex"]
      */
     public function createIndexAccessReport()
     {
@@ -573,8 +730,10 @@ class Repository_Components_Business_Logreport extends Repository_Components_Bus
     
     /**
      * get detail view per each indexes
+     * インデックスごとの詳細画面アクセス数作成
      *
-     * @return array
+     * @return array Access count アクセス数
+     *               array[$ii][$jj]["id"|"pid"|"name"|"detail_view"]
      */
     private function getDetailViewPerIndexTree(){
         // log report have closed indexs.
@@ -594,6 +753,7 @@ class Repository_Components_Business_Logreport extends Repository_Components_Bus
                  "   WHERE ".$subQuery[Repository_Components_Business_Logmanager::SUB_QUERY_KEY_WHERE].
                  "   AND LOG.record_date BETWEEN ? AND ? ".
                  "   AND LOG.operation_id = ? ".
+                 "   AND LOG.item_id IS NOT NULL ".
                  "   GROUP BY POS.index_id ".
                  " ) AS cnt ".
                  " ON cnt.index_id = idx.index_id ".
@@ -642,8 +802,9 @@ class Repository_Components_Business_Logreport extends Repository_Components_Bus
     
     /**
      * display language is japanese or not
+     * 表示言語が日本語であるか否か
      *
-     * @return boolean
+     * @return boolean Is japanese 日本語であるか否か
      */
     private function isDisplayLanguageJapanese()
     {
@@ -663,9 +824,11 @@ class Repository_Components_Business_Logreport extends Repository_Components_Bus
     
     /**
      * select sitelicense access record by database
+     * サイトライセンスアクセスのログを検索する
      *
-     * @param int $operationId
-     * @return array
+     * @param int $operationId Operation id 操作ID
+     * @return array Result 結果
+     *               array[$ii]["user_id"|"site_license_id"|"site_license"|"ip_address"]
      */
     private function selectSiteLicense($operationId)
     {
@@ -683,6 +846,7 @@ class Repository_Components_Business_Logreport extends Repository_Components_Bus
                  " WHERE ".$subQuery[Repository_Components_Business_Logmanager::SUB_QUERY_KEY_WHERE]. 
                  " AND LOG.record_date >= ? ". 
                  " AND LOG.record_date <= ? ".
+                 " AND LOG.item_id IS NOT NULL ".
                  " AND LOG.operation_id=? "; 
         $params = array();
         $params[] = $this->getStartDate();
@@ -710,13 +874,16 @@ class Repository_Components_Business_Logreport extends Repository_Components_Bus
     
     /**
      * calculate site license report(top or search)
+     * サイトライセンスレポートを作成する
      *
-     * @param array $result
-     * @param string $is_sitelicense
-     * @param string $not_sitelicense
-     * @param string $operation: "top" or "search"
-     * @param array $log_data
-     * @return array
+     * @param array $result Sitelicense search result サイトライセンスアクセス検索結果
+     *                      array[$ii]["user_id"|"site_license_id"|"site_license"|"ip_address"]
+     * @param string $is_sitelicense key name(sitelicense) キー名(サイトライセンス)
+     * @param string $not_sitelicense key name(not sitelicense) キー名(サイトライセンスではない)
+     * @param string $operation Operation 操作
+     * @param array $log_data Site license report サイトライセンスレポート
+     * @return array Site license report サイトライセンスレポート
+     *               array[organization name|"is_sitelicense"|"is_not_sitelicense"]["top"|"search"|"detail"|"download"]
      */
     private function calcSiteLicenseReportNoSupportItemType($result, $is_sitelicense, $not_sitelicense, $operation, $log_data)
     {
@@ -771,10 +938,12 @@ class Repository_Components_Business_Logreport extends Repository_Components_Bus
     
     /**
      * calculate top page access by site lisence user and no site license user
+     * サイトライセンスアクセスレポート作成(トップ)
      *
-     * @param string $is_sitelicense
-     * @param string $not_sitelicense
-     * @param array $log_data
+     * @param string $is_sitelicense key name(sitelicense) キー名(サイトライセンス)
+     * @param string $not_sitelicense key name(not sitelicense) キー名(サイトライセンスではない)
+     * @param array $log_data Site license report サイトライセンスレポート
+     *               array[organization name|"is_sitelicense"|"is_not_sitelicense"]["top"|"search"|"detail"|"download"]
      */
     private function calcTopAccessReport($is_sitelicense, $not_sitelicense, &$log_data)
     {
@@ -793,9 +962,10 @@ class Repository_Components_Business_Logreport extends Repository_Components_Bus
     
     /**
      * get site license organization name by site_license_id
+     * サイトライセンス認可機関名取得
      *
-     * @param int $site_license_id
-     * @return string
+     * @param int $site_license_id Site license id サイトライセンスID
+     * @return string organization name サイトライセンス認可機関名
      */
     private function getSiteLicenseOrganizationById($site_license_id)
     {
@@ -820,10 +990,12 @@ class Repository_Components_Business_Logreport extends Repository_Components_Bus
     
     /**
      * calculate keyword search access by site lisence user and no site license user
+     * サイトライセンスレポート作成(検索)
      *
-     * @param string $is_sitelicense
-     * @param string $not_sitelicense
-     * @param array $log_data
+     * @param string $is_sitelicense key name(sitelicense) キー名(サイトライセンス)
+     * @param string $not_sitelicense key name(not sitelicense) キー名(サイトライセンスではない)
+     * @param array $log_data Site license report サイトライセンスレポート
+     *               array[organization name|"is_sitelicense"|"is_not_sitelicense"]["top"|"search"|"detail"|"download"]
      */
     private function calcSearchAccessReport($is_sitelicense, $not_sitelicense, &$log_data)
     {
@@ -837,9 +1009,11 @@ class Repository_Components_Business_Logreport extends Repository_Components_Bus
     
     /**
      * select sitelicense(detail or download) access record by database
+     * サイトライセンス認可機関のアクセスをログから取得
      *
-     * @param int $operationId
-     * @return array
+     * @param int $operationId Operation 操作
+     * @return array Site license report サイトライセンスレポート
+     *               array[$ii]["user_id"|"ip_address"|"item_type_id"|"site_license_id"|"site_license"]
      */
     private function selectSiteLicenseLogSupportItemtype($operationId)
     {
@@ -855,6 +1029,7 @@ class Repository_Components_Business_Logreport extends Repository_Components_Bus
                  " WHERE ".$subQuery[Repository_Components_Business_Logmanager::SUB_QUERY_KEY_WHERE].
                  " AND LOG.record_date >= ? ".
                  " AND LOG.record_date <= ? ".
+                 " AND LOG.item_id IS NOT NULL ".
                  " AND LOG.operation_id=?; ";
         // Add exclude item_type_id for site license 2013/07/01 A.Suzuki --end--
         $params = array();
@@ -872,14 +1047,17 @@ class Repository_Components_Business_Logreport extends Repository_Components_Bus
     
     /**
      * calculate sitelicense access report(download or detail)
+     * サイトライセンスレポートを作成(詳細、ダウンロード)
      *
-     * @param array $result
-     * @param string $is_sitelicense
-     * @param string $not_sitelicense
-     * @param array $siteLicenseItemTypeId
-     * @param string $operation: "detail" or "download"
-     * @param array $log_data
-     * @return array
+     * @param array $result Sitelicense search result サイトライセンスアクセス検索結果
+     *                      array[$ii]["user_id"|"site_license_id"|"site_license"|"ip_address"]
+     * @param string $is_sitelicense key name(sitelicense) キー名(サイトライセンス)
+     * @param string $not_sitelicense key name(not sitelicense) キー名(サイトライセンスではない)
+     * @param array $siteLicenseItemTypeId Site license item type id サイトライセンスアイテムタイプID
+     * @param string $operation Operation 操作
+     * @param array $log_data Site license report サイトライセンスレポート
+     * @return array Site license report サイトライセンスレポート
+     *               array[organization name|"is_sitelicense"|"is_not_sitelicense"]["top"|"search"|"detail"|"download"]
      */
     private function calcSiteLicenseReportSupportItemType($result, $is_sitelicense, $not_sitelicense, $siteLicenseItemTypeId, $operation, $log_data)
     {
@@ -929,16 +1107,18 @@ class Repository_Components_Business_Logreport extends Repository_Components_Bus
     
     /**
      * calculation sitelicense report for the records not exists sitelicense info
+     * サイトライセンスレポート作成
      *
-     * @param string $ip_address
-     * @param string $user_id
-     * @param int $item_type_id
-     * @param int $siteLicenseItemTypeId
-     * @param array $log_data
-     * @param string $operation
-     * @param string $is_sitelicense
-     * @param string $not_sitelicense
-     * @return array
+     * @param string $ip_address Ip address IPアドレス
+     * @param string $user_id User id ユーザID
+     * @param int $item_type_id Item type id アイテムタイプID
+     * @param int $siteLicenseItemTypeId Site license item type id サイトライセンスアイテムタイプID
+     * @param array $log_data Site license report サイトライセンスレポート
+     * @param string $operation Operation 操作
+     * @param string $is_sitelicense key name(sitelicense) キー名(サイトライセンス)
+     * @param string $not_sitelicense key name(not sitelicense) キー名(サイトライセンスではない)
+     * @return array Site license report サイトライセンスレポート
+     *               array[organization name|"is_sitelicense"|"is_not_sitelicense"]["top"|"search"|"detail"|"download"]
      */
     private function calcSiteLicenseReportSupportItemTypeNotExistSitelicenseInfo($ip_address, $user_id, $item_type_id, $siteLicenseItemTypeId, $log_data, $operation, $is_sitelicense, $not_sitelicense)
     {
@@ -977,10 +1157,13 @@ class Repository_Components_Business_Logreport extends Repository_Components_Bus
     
     /**
      * calculate item detail view access by site lisence user and no site license user
+     * 詳細、ダウンロードのサイトライセンスアクセスレポートを作成
      *
-     * @param string $is_sitelicense
-     * @param string $not_sitelicense
-     * @param array $log_data
+     * @param string $is_sitelicense key name(sitelicense) キー名(サイトライセンス)
+     * @param string $not_sitelicense key name(not sitelicense) キー名(サイトライセンスではない)
+     * @param int $siteLicenseItemTypeId Item type id アイテムタイプID
+     * @param array $log_data Site license report サイトライセンスレポート
+     *                        array[organization name|"is_sitelicense"|"is_not_sitelicense"]["top"|"search"|"detail"|"download"]
      */
     private function calcDetailViewReport($is_sitelicense, $not_sitelicense, $siteLicenseItemTypeId, &$log_data)
     {
@@ -994,10 +1177,13 @@ class Repository_Components_Business_Logreport extends Repository_Components_Bus
     
     /**
      * calculate file download access by site lisence user and no site license user
+     * ダウンロードのサイトライセンスレポートを作成する
      *
-     * @param string $is_sitelicense
-     * @param string $not_sitelicense
-     * @param array $log_data
+     * @param string $is_sitelicense key name(sitelicense) キー名(サイトライセンス)
+     * @param string $not_sitelicense key name(not sitelicense) キー名(サイトライセンスではない)
+     * @param int $siteLicenseItemTypeId Item type id アイテムタイプID
+     * @param array $log_data Site license report サイトライセンスレポート
+     *                        array[organization name|"is_sitelicense"|"is_not_sitelicense"]["top"|"search"|"detail"|"download"]
      */
     private function calcDownloadReport($is_sitelicense, $not_sitelicense, $siteLicenseItemTypeId, &$log_data)
     {
@@ -1011,7 +1197,10 @@ class Repository_Components_Business_Logreport extends Repository_Components_Bus
     
     /**
      * create site access report
-     *
+     * サイトアクセスレポート作成
+     * 
+     * @return array Site license report サイトライセンスレポート
+     *               array[organization name|"is_sitelicense"|"is_not_sitelicense"]["top"|"search"|"detail"|"download"]
      */
     public function createSiteAccessReport()
     {
@@ -1081,7 +1270,10 @@ class Repository_Components_Business_Logreport extends Repository_Components_Bus
     
     /**
      * create user's affiliation report
-     *
+     * ユーザ所属レポート作成
+     * 
+     * @return array user's affiliation report ユーザ所属レポート
+     *               array["all_group"|"user_auth"]
      */
     public function createUserAffiliateReport()
     {
@@ -1144,7 +1336,10 @@ class Repository_Components_Business_Logreport extends Repository_Components_Bus
     
     /**
      * create supplement contents report 
-     *
+     * サプリレポートを作成する
+     * 
+     * @return array Supple report サプリレポート
+     *               array[]
      */
     public function createSuppleReport()
     {
@@ -1209,11 +1404,12 @@ class Repository_Components_Business_Logreport extends Repository_Components_Bus
     
     /**
      * analyze responce xml
+     * サプリWEKOからのXMLを解析する
      *
-     * @param string $responseXml
-     * @param array $supple_data
-     * @return boolean: true -> success
-     *                  false-> failed
+     * @param string $responseXml XML string XML文字列
+     * @param array $supple_data Supple data サプリデータ
+     *                           array["log_view"|"log_download"]
+     * @return boolean Result 結果
      */
     private function analyzeXml($responseXml, &$supple_data)
     {
@@ -1277,13 +1473,14 @@ class Repository_Components_Business_Logreport extends Repository_Components_Bus
     
     /**
      * is site license user or not by access ipaddress, user_id and organization name
+     * サイトライセンス認可機関からのアクセスであるかをチェックする
      *
-     * @param string $access_ip check ip address
-     * @param string $user_id user id
-     * @param string $organization 
+     * @param string $access_ip check ip address IPアドレス
+     * @param string $user_id user id ユーザID
+     * @param string $organization 機関名
      *                  when $access_ip is site license, 
      *                  set $organization is site license organization.
-     * @return string where wuery for site license
+     * @return boolean Result 結果
      */
     private function checkSiteLicenseForLogReport($access_ip, $user_id, &$organization){
         // IPアドレスを0埋めの12桁の文字列にする
@@ -1366,10 +1563,11 @@ class Repository_Components_Business_Logreport extends Repository_Components_Bus
     
     /**
      * when price file download, the user is used group?
+     * ユーザがどのグループでダウンロードしたかを取得する
      *
-     * @param int $price
-     * @param string $user_id
-     * @return int room_id of used group
+     * @param int $price Price 課金額
+     * @param string $user_id User id ユーザID
+     * @return int room_id of used group ルームID
      */
     private function getDownloadType($price, $user_id){
         $room_id = '0';
@@ -1415,9 +1613,10 @@ class Repository_Components_Business_Logreport extends Repository_Components_Bus
     
     /**
      * get group list on the user
+     * ユーザが所属するグループを取得
      * 
      * @param string user_id
-     * @return array
+     * @return array[$ii]["links.room_id"] Room id on user ユーザが所属するグループのルームID
      *
      */
     private function getUserGroupIds($user_id){
@@ -1447,11 +1646,18 @@ class Repository_Components_Business_Logreport extends Repository_Components_Bus
     
     /**
      * Check file download status and file input type
+     * ファイルダウンロード状態をチェックする
      *
-     * @param array $logRecord 'repository_log' table record
-     * @param int $fileStatus 0:unknown / 1: public / -1: private
-     * @param int $inputType 0: file / 1: file_price
-     * @return bool true: success / false: failed
+     * @param array $logRecord 'repository_log' table record repository_logテーブルレコード
+     * @param string $fileName file name ファイル名
+     * @param int $fileStatus File status ファイル状態
+     *                        0:unknown / 1: public / -1: private
+     * @param int $siteLicense Site license status サイトライセンス状態
+     * @param int $inputType Input type 入力タイプ
+     *                       0: file / 1: file_price
+     * @param int $loginStatus Login status ログイン状態
+     * @param int $groupId Group id グループID
+     * @return boolean Result 結果
      */
     private function checkFileDownloadStatus($logRecord, &$fileName, &$fileStatus, &$siteLicense, &$inputType, &$loginStatus, &$groupId)
     {
@@ -1569,7 +1775,6 @@ class Repository_Components_Business_Logreport extends Repository_Components_Bus
             // Get file info
             $query = "SELECT ".RepositoryConst::DBCOL_REPOSITORY_FILE_FILE_NAME.", ".
                                RepositoryConst::DBCOL_REPOSITORY_FILE_PUB_DATE.", ".
-                               RepositoryConst::DBCOL_COMMON_INS_USER_ID." ".
                      "FROM ".DATABASE_PREFIX.RepositoryConst::DBTABLE_REPOSITORY_FILE." ".
                      "WHERE ".RepositoryConst::DBCOL_REPOSITORY_FILE_ITEM_ID." = ? ".
                      "AND ".RepositoryConst::DBCOL_REPOSITORY_FILE_ITEM_NO." = ? ".
@@ -1622,13 +1827,15 @@ class Repository_Components_Business_Logreport extends Repository_Components_Bus
                 $session = $container->getComponent("Session");
                 $userAuthorityManager = new RepositoryUserAuthorityManager($session, $this->Db, $this->accessDate);
                 $authId = $userAuthorityManager->getRoomAuthorityID($logRecord[RepositoryConst::DBCOL_REPOSITORY_LOG_USER_ID]);
+
+                $businessItemAuthority = BusinessFactory::getFactory()->getBusiness("businessItemAuthority");
                 
                 if(strlen($userAuthId) > 0 && ($userAuthId >= $this->repository_admin_base && $authId >= $this->repository_admin_room))
                 {
                     // Admin user
                     $loginStatus = RepositoryConst::LOG_LOGIN_STATUS_ADMIN;
                 }
-                else if($logRecord[RepositoryConst::DBCOL_REPOSITORY_LOG_USER_ID] == $file[0][RepositoryConst::DBCOL_COMMON_INS_USER_ID])
+                else if($businessItemAuthority->isItemContributor($logRecord[RepositoryConst::DBCOL_REPOSITORY_LOG_USER_ID], $itemId, $itemNo))
                 {
                     // Register
                     $loginStatus = RepositoryConst::LOG_LOGIN_STATUS_REGISTER;
@@ -1699,13 +1906,15 @@ class Repository_Components_Business_Logreport extends Repository_Components_Bus
     
     /**
      * Set file download log report to array
+     * ファイルダウンロードデータに情報を入れる
      *
-     * @param string $key
-     * @param string $fileName
-     * @param int $fileStatus
-     * @param int $siteLicense
-     * @param int $loginStatus
-     * @param array $fileLog
+     * @param string $key Key キー
+     * @param string $fileName File name ファイル名
+     * @param int $fileStatus File status ファイル状態
+     * @param int $siteLicense Site license status サイトライセンス状態
+     * @param int $loginStatus Login status ログイン状態
+     * @param array $fileLogFile download data ファイルダウンロードデータ
+     *                       array[key]["file_name"|"index_name"|"total"|"not_login"|"login"|"site_license"|"admin"|"register"]
      */
     private function setFileLogArray($key, $fileName, $fileStatus, $siteLicense, $loginStatus, &$fileLog)
     {
@@ -1749,14 +1958,18 @@ class Repository_Components_Business_Logreport extends Repository_Components_Bus
 
     /**
      * Set file_price download log report to array
+     * 課金ファイルのファイルダウンローデータに情報を入れる
      *
-     * @param string $key
-     * @param string $fileName
-     * @param int $fileStatus
-     * @param int $siteLicense
-     * @param int $loginStatus
-     * @param int $groupId
-     * @param array $fileLog
+     * @param string $key Key キー
+     * @param string $fileName File name ファイル名
+     * @param int $fileStatus File status ファイル状態
+     * @param int $loginStatus Login status ログイン状態
+     * @param int $siteLicense Site license status サイトライセンス状態
+     * @param int $groupId Group id グループID
+     * @param array $fileLogFile download data ファイルダウンロードデータ
+     *                       array[key]["file_name"|"index_name"|"total"|"not_login"|"login"|"site_license"|"admin"|"register"]
+     * @param array $priceLog download price data 課金ファイルダウンロードデータ
+     *                       array[key]["file_name"|"index_name"|"total"|"not_login"|"login"|"site_license"|"admin"|"register"]
      */
     private function setFilePriceLogArray($key, $fileName, $fileStatus, $siteLicense, $loginStatus, $groupId, &$priceLog)
     {
@@ -1810,9 +2023,10 @@ class Repository_Components_Business_Logreport extends Repository_Components_Bus
 
     /**
      * The list of affiliation group names is acquired to the user who specified.
+     * グループ名一覧を取得
      *
-     * @param string $user_id
-     * @return string UserGroupNameList 
+     * @param string $user_id User id ユーザID
+     * @return string User Group Name List グループ名一覧
      */
     private function getUserGroupNameList($user_id){
         // ---------------------------------------------
@@ -1854,12 +2068,11 @@ class Repository_Components_Business_Logreport extends Repository_Components_Bus
     
     /**
      * send http request and get response
+     * リクエスト送信
      *
-     * @param string $sendParam: send url
-     * @return array[code]
-     *              [header]
-     *              [body]
-     *              [cookies]
+     * @param string $sendParam send url リクエストURL
+     * @return array Responce レスポンス
+     *               array["code"|"header"|"body"|"cookies"]
      */
     private function sendHttpRequest($sendParam)
     {
@@ -1924,9 +2137,10 @@ class Repository_Components_Business_Logreport extends Repository_Components_Bus
     
     /**
      * get index path by item key(itemId_itemNo)
+     * インデックスパス取得
      *
-     * @param string $key
-     * @return string
+     * @param string $key Key キー
+     * @return string Index path インデックスパス
      */
     private function getIndexNameByItemKey($key)
     {
@@ -1955,9 +2169,10 @@ class Repository_Components_Business_Logreport extends Repository_Components_Bus
     
     /**
      * get index path by recursive processing
+     * 再帰的にインデックスパスを取得する
      *
-     * @param int $indexId
-     * @return string
+     * @param int $indexId Index id インデックスID
+     * @return string Index path インデックスパス
      */
     private function getIndexFullPathByIndexId($indexId)
     {
@@ -1996,9 +2211,10 @@ class Repository_Components_Business_Logreport extends Repository_Components_Bus
     
     /**
      * Get user_authority_id by user ID
+     * ユーザのベース権限を取得する
      *
-     * @param  string $userId
-     * @return string $userAuthId
+     * @param  string $userId User id ユーザID
+     * @return string User auth id ユーザ権限ID
      */
     private function getUserAuthIdByUserId($userId)
     {

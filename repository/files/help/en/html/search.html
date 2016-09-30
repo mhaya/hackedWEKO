@@ -1,6 +1,6 @@
 <!--// ---------------------------------------------------------------------->
 <!--//                                                                     -->
-<!--// $Id: search.html 36553 2014-05-30 11:01:40Z tomohiro_ichikawa $        -->
+<!--// $Id: search.html 71553 2016-09-02 02:48:08Z keiya_sugimoto $        -->
 <!--//                                                                     -->
 <!--// Copyright (c) 2007 - 2008, National Institute of Informatics,        -->
 <!--// Research and Development Center for Scientific Information Resources -->
@@ -143,8 +143,7 @@
 								Learning Material<br/>
 								Data orDataset<br/>
 								Software<br/>
-								Others<br/>
-								自由記述
+								Others
 							</td>
 							<td>
 								一覧ポップアップで「自由記述」を選択した場合は、Niitypeから検索を行う。<br/>
@@ -244,13 +243,23 @@
 				
 				<h3><a name="author">著者名検索</a></h3>
 				<div class="page_list">
-					検索結果または詳細画面の著者名メタデータのリンクから実施ができます。<br/>
+					管理画面で検索結果または詳細画面の著者名メタデータのリンクを押下する際の動作を「著者名検索」に設定することで、検索結果または詳細画面の著者名メタデータのリンクから実施ができます。<br/>
+					設定方法については<a href="./setting.html#default_search_setting">WEKO管理</a>をご覧ください。<br/>
 					<br/>
 					<br/>
 					<center><img src="./img/search_author.png" alt="著者名検索"></center><br/>
 					<br/>
 				</div>
-				<h3><a name="author">関連ワード検索</a></h3>
+				<h3><a name="wekoAuthorId">WEKO著者ID検索</a></h3>
+				<div class="page_list">
+					管理画面で検索結果または詳細画面の著者名メタデータのリンクを押下する際の動作を「WEKO著者ID検索」に設定することで、検索結果または詳細画面の著者名メタデータのリンクから実施ができます。<br/>
+					設定方法については<a href="./setting.html#default_search_setting">WEKO管理</a>をご覧ください。<br/>
+					<br/>
+					<br/>
+					<center><img src="./img/search_wekoAuthorId.png" alt="WEKO著者ID検索"></center><br/>
+					<br/>
+				</div>
+				<h3><a name="referer">関連ワード検索</a></h3>
 				<div class="page_list">
 					詳細画面の「コンテンツに関連する検索キーワード」のリンクから実施ができます。<br/>
 					<br/>
@@ -258,6 +267,21 @@
 					<center><img src="./img/search_referer.png" alt="関連ワード検索"></center><br/>
 					<br/>
 				</div>
+                <h3><a name="">異体字検索</a></h3>
+                <div class="page_list">
+                    検索機能では意味、読みは同一であるが表記に差異のある異体字を含めて検索することができます。<br/>
+                    例として、タイトルの検索キーワードとして「壱」を入力し、検索を実行したとき、「壱」の異体字である「一」などを含むアイテムも検索することができます。<br/>
+                    <br/>
+                    <center><img src="./img/search_variants.png" alt="異体字検索"></center><br/>
+                    <br/>
+                    <br/>
+                    【注意事項】 <br/>
+                    <ul>
+                        <li>
+                            異体字検索はMroongaがインストールされている必要があります。
+                        </li>
+                    </ul>
+                </div>
 				
 				<h3><a name="searchResult">検索結果</a></h3>
 				<div class="page_list">
@@ -283,7 +307,7 @@
 					<br/>
 					<a name="index_Finding">■目次形式</a><br/>
 					<div class="page_list">
-						指定したインデックスの検索結果の表示形式が目次形式の場合に見出しの一覧が表示されます。<br/>
+						指定したインデックスの検索結果の表示形式が目次形式の場合に見出しの一覧およびページ番号が表示されます。<br/>
 						また、登録されたサムネイルが表示されます。<br/>
 						<br/>
 						<center><img src="./img/index_search_03.png" alt="目次形式によるインデックス表示"></center><br/>
@@ -498,7 +522,9 @@
 							<ul>
 								<li>ファイルのダウンロード権限がない場合は添付ファイルはエクスポートされません。</li>
 								<li>管理者がファイルのエクスポートを制限している場合は添付ファイルはエクスポートされません。</li>
-								<li>TSV形式でExportしたファイルをExcelで開く場合、ファイル指定で開かなければ正常に開けません。</li>
+								<li>TSV形式でエクスポートしたファイルをExcelで開く場合、ファイル指定で開かなければ正常に開けません。</li>
+								<li>管理者またはアイテム登録者でないユーザがエクスポートした場合、著者およびフィードバックメール送信先のメールアドレスは出力されません。<br/>
+								    メールアドレスを出力する場合、repository/config/define.inc.phpの_REPOSITORY_SHOW_EXPORT_MAIL_ADDRESSをtrueにする必要があります。</li>
 							</ul>
 							<br/>
 						</div>

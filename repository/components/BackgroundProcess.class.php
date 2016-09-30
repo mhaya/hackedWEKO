@@ -1,7 +1,15 @@
 <?php
+
+/**
+ * Base class for carrying out asynchronously and recursively possibility is the ability to process a long period of time
+ * 長時間処理する可能性がある機能を非同期かつ再帰的に実施するための基底クラス
+ * 
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: BackgroundProcess.class.php 55181 2015-07-02 09:25:01Z keiya_sugimoto $
+// $Id: BackgroundProcess.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -11,29 +19,51 @@
 //
 // --------------------------------------------------------------------
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
+
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
+
+/**
+ * Asynchronous processing run common classes
+ * 非同期処理実行共通クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryProcessUtility.class.php';
 
+/**
+ * Base class for carrying out asynchronously and recursively possibility is the ability to process a long period of time
+ * 長時間処理する可能性がある機能を非同期かつ再帰的に実施するための基底クラス
+ * 
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
+ */
 class BackgroundProcess extends RepositoryAction
 {
     /**
-     * process name for lock
+     * Process name
+     * プロセス名
      *
      * @var string
      */
     private $process_name = null;
     
     /**
-     * background process finish flag
+     * Asynchronous processing end flag
+     * 非同期処理終了フラグ
      *
-     * @var string
+     * @var boolean
      */
     private $isFinish = false;
     
     /**
-     * constructer
+     * Constructer(To set the process name)
+     * コンストラクタ(プロセス名を設定する)
      *
-     * @param paramter 
+     * @param string paramter Process name プロセス名
      */
     protected function __construct($parameter)
     {
@@ -41,7 +71,8 @@ class BackgroundProcess extends RepositoryAction
     }
     
     /**
-     * execute
+     * Data to be processed is read, and executes the processing
+     * 処理対象のデータを読み込み、処理を実行する
      */
     protected function executeApp()
     {
@@ -73,9 +104,8 @@ class BackgroundProcess extends RepositoryAction
     }
     
     /**
-     * �g�����U�N�V�����O�㏈��
-     * 
-     * ���̏������Ăяo��
+     * Transaction outside the post-processing (calling the following processing)
+     * トランザクション外後処理(次の処理を呼び出す)
      */
     final protected function afterTrans()
     {
@@ -86,7 +116,8 @@ class BackgroundProcess extends RepositoryAction
     }
     
     /**
-     * check and lock background process
+     * As the same asynchronous processing is not multiple execution, leaving the effect that running the database
+     * 同じ非同期処理が多重実行されないよう、データベースに実行中である旨を残す
      */
     private function lockProcess()
     {
@@ -109,7 +140,10 @@ class BackgroundProcess extends RepositoryAction
     }
     
     /**
-     * prepare background process
+     * Read the data to be processed
+     * 処理対象のデータを読み込む
+     * 
+     * @param $target Data to be processed 処理対象のデータ
      */
     protected function prepareBackgroundProcess(&$target)
     {
@@ -118,7 +152,10 @@ class BackgroundProcess extends RepositoryAction
     }
     
     /**
-     * execute background process
+     * To perform the time-consuming process
+     * 時間のかかる処理を実行する
+     * 
+     * @param $target Data to be processed 処理対象のデータ
      */
     protected function executeBackgroundProcess($target)
     {
@@ -126,7 +163,8 @@ class BackgroundProcess extends RepositoryAction
     }
     
     /**
-     * Call another process by async
+     * To perform an action to asynchronous
+     * アクションを非同期に実行する
      */
     private function callAsyncProcess()
     {
@@ -147,7 +185,8 @@ class BackgroundProcess extends RepositoryAction
     }
     
     /**
-     * unlock background process
+     * To OFF the flag for multiple execution prevention
+     * 多重実行防止用のフラグをOFFにする
      */
     private function unlockProcess()
     {

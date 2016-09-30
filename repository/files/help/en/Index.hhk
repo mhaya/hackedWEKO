@@ -16,7 +16,7 @@
 	<LI> <OBJECT type="text/sitemap">
 		<param name="Name" value="キーワード検索">
 		<param name="Name" value="search">
-		<param name="Local" value="html\search.html#keyword">
+		<param name="Local" value="html\search.html#simple">
 		</OBJECT>
 	<LI> <OBJECT type="text/sitemap">
 		<param name="Name" value="アイテム詳細">
@@ -78,8 +78,8 @@
 		<param name="Local" value="html\import.html">
 		</OBJECT>
 	<LI> <OBJECT type="text/sitemap">
-		<param name="Name" value="ログ解析">
-		<param name="Name" value="log">
+		<param name="Name" value="レポート">
+		<param name="Name" value="report">
 		<param name="Local" value="html\log.html">
 		</OBJECT>
 	<LI> <OBJECT type="text/sitemap">

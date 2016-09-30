@@ -1,7 +1,15 @@
 <?php
+
+/**
+ * Common classes for user rights management
+ * ユーザ権限管理用共通クラス
+ *
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: RepositoryUserAuthorityManager.class.php 53594 2015-05-28 05:25:53Z kaede_matsushita $
+// $Id: RepositoryUserAuthorityManager.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -15,20 +23,37 @@
 
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryLogicBase.class.php';
 
+/**
+ * Common classes for user rights management
+ * ユーザ権限管理用共通クラス
+ *
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
+ */
 class RepositoryUserAuthorityManager extends RepositoryLogicBase
 {
     /**
-     * initialize
+     * Constructor
+     * コンストラクタ
      *
-     * @param var $session session
-     * @param var $dbAccess dbAccess
-     * @param string $transStartDate transStartDate
+     * @param Session $Session Session セッション管理オブジェクト
+     * @param DbObjectAdodb $db DB object データベース管理オブジェクト
+     * @param string $TransStartDate Transaction start date トランザクション開始日時
      */
     public function __construct($session, $dbAccess, $transStartDate)
     {
         parent::__construct($session, $dbAccess, $transStartDate);
     }
     
+    /**
+     * Get room id
+     * ルームID取得
+     *
+     * @param string $user_id user id ユーザID
+     * @return int Room id ルームID
+     */
     function getRoomAuthorityID($user_id = ""){
         if(strlen($user_id) == 0){
             $user_id = $this->Session->getParameter("_user_id");    
@@ -72,7 +97,13 @@ class RepositoryUserAuthorityManager extends RepositoryLogicBase
     
     
     /**
+     * To get the registration group list of the user
      * ユーザの登録グループ一覧を取得する
+     *
+     * @param array $user_group User group ユーザグループ
+     *                          array[$ii]["room_id"]
+     * @param string $error_msg Error message エラーメッセージ
+     * @return boolean Result 結果
      */
     function getUsersGroupList(&$user_group, &$error_msg){
         // get List from pages Table
@@ -95,9 +126,11 @@ class RepositoryUserAuthorityManager extends RepositoryLogicBase
     
     /**
      * delete pade_id of private room and public space from $usersGroups
+     * ページID削除
      *
-     * @param array[$ii][room_id] $usersGroups
-     * @return boolean: false->mysql error
+     * @param array $user_group User group ユーザグループ
+     *                          array[$ii]["room_id"]
+     * @return boolean Result 結果
      */
     public function deleteRoomIdOfMyRoomAndPublicSpace(&$usersGroups)
     {
@@ -140,6 +173,12 @@ class RepositoryUserAuthorityManager extends RepositoryLogicBase
         $usersGroups = $retUsersGroups;
     }
     
+    /**
+     * Get block id
+     * ブロックID取得
+     *
+     * @return int block id ブロックID
+     */
     function getBlockPageId(){
         // check NC version 2010/06/07 A.Suzuki --start--
         // get NC version
@@ -225,7 +264,9 @@ class RepositoryUserAuthorityManager extends RepositoryLogicBase
     
     /**
      * Get default auth at public room
-     *
+     * デフォルト権限取得
+     * 
+     * @return int authority 権限
      */
     function getDefaultEntryAuthPublic()
     {
@@ -251,9 +292,10 @@ class RepositoryUserAuthorityManager extends RepositoryLogicBase
     }
     
     /**
+     * To get the version of NetCommons that is currently running
      * 現在稼働しているNetCommonsのバージョンを取得する
      * 
-     * @return string $version
+     * @return string $version Version バージョン
      */
     function getNCVersion(){
         // now version
@@ -272,10 +314,10 @@ class RepositoryUserAuthorityManager extends RepositoryLogicBase
     /**
      *  Get administrator's value that related to parameter name in parameter table  
      *
-     * @param $param_name parameter name 
-     * @param $param_value value
-     * @param $error_msg error message
-     * @return result(true or false)
+     * @param string $param_name parameter name パラメータ名
+     * @param string $param_value value 値
+     * @param string $error_msg error message Error message エラーメッセージ
+     * @return boolean Result 結果
      */
     public function getAdminParam($param_name, &$param_value, &$error_msg)
     {
@@ -301,9 +343,11 @@ class RepositoryUserAuthorityManager extends RepositoryLogicBase
     }
     
     /**
-     *  Get all user authority
+     * Get all user authority
+     * 全ユーザ権限を取得
      * 
-     * @return result(array)
+     * @return array authority 権限
+     *               array[$ii]
      */
     public function getAllAuthority()
     {

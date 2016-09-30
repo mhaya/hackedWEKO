@@ -1,57 +1,90 @@
 <?php
+
+/**
+ * Item register: View for setting link
+ * アイテム登録：リンク設定画面表示
+ *
+ * @package     WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Editlinks.class.php 56595 2015-08-18 01:44:06Z keiya_sugimoto $
+// $Id: Editlinks.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
-// Copyright (c) 2007 - 2008, National Institute of Informatics, 
+// Copyright (c) 2007 - 2008, National Institute of Informatics,
 // Research and Development Center for Scientific Information Resources
 //
 // This program is licensed under a Creative Commons BSD Licence
 // http://creativecommons.org/licenses/BSD/
 //
 // --------------------------------------------------------------------
-
-/* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/common/WekoAction.class.php';
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
+/**
+ * Search request parameter class
+ * 検索リクエストパラメータ処理クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositorySearchRequestParameter.class.php';
 
 /**
+ * Item register: View for setting link
  * アイテム登録：リンク設定画面表示
  *
+ * @package     WEKO
+ * @copyright   (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license     http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
  * @access      public
  */
 class Repository_View_Main_Item_Editlinks extends WekoAction
 {
     // 表示用パラメーター
     /**
+     * Relation candidate
      * relation選択肢
+     *
      * @var array
      */
     public $relationArray = array();
     
     /**
+     * Relation count
      * relation個数
+     *
      * @var int
      */
     public $relationArray_count = 0;
     
     /**
+     * Display help icon flag
      * ヘルプアイコン表示フラグ
+     *
      * @var string
      */
     public $help_icon_display =  "";
     
     // リクエストパラメーター
     /**
+     * Warning message
      * 警告メッセージ配列
+     *
      * @var array
      */
     public $warningMsg = null;
     
     /**
-     * 実行処理
-     * @see ActionBase::executeApp()
+     * Execute
+     * 実行
+     *
+     * @return string "success"/"error" success/failed 成功/失敗
+     * @throws AppException
      */
     protected function executeApp()
     {

@@ -1,7 +1,15 @@
 <?php
+
+/**
+ * Action class for the e-mail address set to send a canned reports
+ * 定型レポートを送付するメールアドレス設定用アクションクラス
+ * 
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Report.class.php 38124 2014-07-01 06:56:02Z rei_matsuura $
+// $Id: Report.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -10,29 +18,64 @@
 // http://creativecommons.org/licenses/BSD/
 //
 // --------------------------------------------------------------------
+/**
+ * ZIP file manipulation library
+ * ZIPファイル操作ライブラリ
+ */
 include_once MAPLE_DIR.'/includes/pear/File/Archive.php';
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
+/**
+ * Common class file download
+ * ファイルダウンロード共通クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryDownload.class.php';
 
 /**
- * Make log report
- *
- * @package	 NetCommons
- * @author	  Y.Nakao(IVIS)
- * @copyright   2006-2009 NetCommons Project
- * @license	 http://www.netcommons.org/license.txt  NetCommons License
- * @project	 NetCommons Project, supported by National Institute of Informatics
- * @access	  public
+ * Action class for the e-mail address set to send a canned reports
+ * 定型レポートを送付するメールアドレス設定用アクションクラス
+ * 
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class Repository_Action_Edit_Log_Report extends RepositoryAction
 {
 	// component
+    /**
+     * Session management objects
+     * Session管理オブジェクト
+     *
+     * @var Session
+     */
 	var $Session = null;
+    /**
+     * Database management objects
+     * データベース管理オブジェクト
+     *
+     * @var DbObject
+     */
 	var $Db = null;
 	
 	// member
+	/**
+	 * Mail address
+	 * メールアドレス
+	 *
+	 * @var string
+	 */
 	var $address = null; 
 	
+	/**
+	 * Set up an e-mail address
+	 * メールアドレスを設定
+	 *
+	 * @return string Result 結果
+	 */
 	function execute()
 	{
 		try {
@@ -98,6 +141,7 @@ class Repository_Action_Edit_Log_Report extends RepositoryAction
 			}
 			
 			echo $this->address;
+			$this->finalize();
 			exit();
 			
 		}

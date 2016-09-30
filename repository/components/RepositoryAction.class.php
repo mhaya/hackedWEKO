@@ -1,7 +1,15 @@
 <?php
+
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ *
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: RepositoryAction.class.php 56715 2015-08-19 13:48:23Z tomohiro_ichikawa $
+// $Id: RepositoryAction.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics,
 // Research and Development Center for Scientific Information Resources
@@ -11,27 +19,93 @@
 //
 // --------------------------------------------------------------------
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
+/**
+ * Action base class for NetCommons
+ * NetCommons用アクション基底クラス
+ */
 require_once WEBAPP_DIR.'/modules/repository/components/FW/ActionBase.class.php';
+/**
+ * Exception class
+ * 例外基底クラス
+ */
 require_once WEBAPP_DIR.'/modules/repository/components/FW/AppException.class.php';
+/**
+ * File archive class
+ * ファイルアーカイブクラス
+ */
 include_once MAPLE_DIR.'/includes/pear/File/Archive.php';
+/**
+ * JSON manipulation library
+ * JSON操作用ライブラリ
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/JSON.php';
 ini_set('include_path', WEBAPP_DIR.'/modules/repository/files/pear'. PATH_SEPARATOR . ini_get('include_path'));
+/**
+ * Date manipulation class
+ * 日付操作クラス
+ */
 include_once WEBAPP_DIR. '/modules/repository/files/pear/Date.php';
+/**
+ * Repository module constant class
+ * WEKO共通定数クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryConst.class.php';
+/**
+ * Add-in call common classes
+ * アドイン呼び出し共通クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAddinCaller.class.php';
+
+/**
+ * DB object wrapper Class
+ * DBオブジェクトラッパークラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryDbAccess.class.php';
+/**
+ * Common classes for user rights management
+ * ユーザ権限管理用共通クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryUserAuthorityManager.class.php';
+/**
+ * String format conversion common classes
+ * 文字列形式変換共通クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryOutputFilter.class.php';
+/**
+ * Common class that manages the search keyword taken out from the external search engine as an external search keyword
+ * 外部検索エンジンから取り出した検索キーワードを外部検索キーワードとして管理する共通クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryExternalSearchWordManager.class.php';
+/**
+ * Common classes for the index operation
+ * インデックス操作用共通クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryIndexManager.class.php';
 
+/**
+ * Extended Log class for the WEKO
+ * WEKO用拡張ログクラス
+ * 
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
+ */
 class RepositoryException extends AppException
 {
+    /**
+     * Detail message
+     * 詳細メッセージ
+     *
+     * @var unknown_type
+     */
     protected   $_DetailMsg = NULL;     //詳細メッセージ
 
     /**
-     * [[詳細メッセージ設定]]
+     * Set detail message
+     * 詳細メッセージ設定
      *
+     * @param string $Msg Message メッセージ
      * @access  public
      */
     function setDetailMsg( $Msg )
@@ -39,9 +113,11 @@ class RepositoryException extends AppException
         $this->_DetailMsg = $Msg;
     }
     /**
-     * [[詳細メッセージ取得]]
+     * Get detail message
+     * 詳細メッセージ取得
      *
      * @access  public
+     * @return string Detail message 詳細メッセージ
      */
     function getDetailMsg()
     {
@@ -51,45 +127,133 @@ class RepositoryException extends AppException
 }
 
 /**
- * [[リポジトリモジュールアクション基本クラス]]
- *
- * @package  [[リポジトリ]]
- * @access    public
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ * 
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class RepositoryAction extends ActionBase
 {
+    /**
+     * Database management objects
+     * データベース管理オブジェクト
+     *
+     * @var DbObject
+     */
     var $Db;
+    /**
+     * Session management objects
+     * Session管理オブジェクト
+     *
+     * @var Session
+     */
     var $Session;
+    /**
+     * Transaction start date and time
+     * トランザクション開始日時
+     *
+     * @var string
+     */
     var $TransStartDate;
 
     // Add config management authority 2010/02/22 Y.Nakao --start--
+    /**
+     * Administrator-based authority level
+     * 管理者ベース権限レベル
+     *
+     * @var int
+     */
     var $repository_admin_base;
+    /**
+     * Administrator Room authority level
+     * 管理者ルーム権限レベル
+     *
+     * @var int
+     */
     var $repository_admin_room;
     // Add config management authority 2010/02/22 Y.Nakao --end--
 
     // Add theme_name for image file Y.Nakao 2011/08/03 --start--
+    /**
+     * Theme name of WEKO module
+     * WEKOモジュールのテーマ名
+     *
+     * @var string
+     */
     public $wekoThemeName = 'default';
     // Add theme_name for image file Y.Nakao 2011/08/03 --end--
 
     // Add smart phone support T.Koyasu 2012/04/02 -start-
+    /**
+     * Whether or not it is being accessed from a smartphone
+     * スマートフォンからアクセスされているか否か
+     *
+     * @var boolean
+     */
     protected $smartphoneFlg = false;
     // Add smart phone support T.Koyasu 2012/04/02 -end-
 
     // Add addin Y.Nakao 2012/07/27 --start--
+    /**
+     * Addin
+     * アドイン
+     *
+     * @var Object
+     */
     public $addin = null;
     // Add addin Y.Nakao 2012/07/27 --end--
 
     // Add database access class R.Matsuura 2013/11/12 --start--
+    /**
+     * Database access object
+     * データベースアクセスオブジェクト
+     *
+     * @var RepositoryDbAccess
+     */
     public $dbAccess = null;
     // Add database access class R.Matsuura 2013/11/12 --end--
-
+    
     /**
-     * [[アクション初期化処理]]
+     * Transaction failure flag
+     * トランザクション失敗フラグ
+     *
+     * @var boolean
+     */
+    private $failedTrans = false;
+    
+    
+    /**
+     * Flag executeApp of the derived class to determine if they were called. true => executeApp is being called. false => executeApp has not been called.
+     * If executeApp of the derived class is being called, it becomes true.
+     * If you are not in a call to the derived class, false.
+     * 派生クラスのexecuteAppが呼び出されているか判断するフラグ。true=>executeAppが呼び出されている。false=>executeAppが呼び出されていない。
+     * 派生クラスのexecuteAppが呼び出されている場合、trueとなる。
+     * 派生クラスの呼び出し中ではない場合、false。
+     * 
+     * @var boolean
+     */
+    private $inExecuteApp = false;
+    
+    
+    /**
+     * Initialize action
+     * アクション初期化処理
      *
      * @access  public
+     * @param boolean $isStartTrans Is start transaction トランザクションが開始されているか
+     * @return string Result 結果
      */
     function initAction($isStartTrans = true)
     {
+        // executeAppからの呼び出し時は何もしない。
+        if($this->inExecuteApp)
+        {
+            return "success";
+        }
+        
         try {
             // 基底クラス初期化処理
             $this->initialize();
@@ -170,6 +334,10 @@ class RepositoryAction extends ActionBase
     }
 
     // Add theme_name for image file Y.Nakao 2011/08/03 --start--
+    /**
+     * Set theme name
+     * テーマ名設定
+     */
     function setThemeName(){
         $blockIds = $this->getBlockPageId();
         if(!isset($blockIds) || !is_array($blockIds))
@@ -220,6 +388,10 @@ class RepositoryAction extends ActionBase
 
 
     // Add config management authority 2010/02/22 Y.Nakao --start--
+    /**
+     * Administrator authority setting
+     * 管理者権限設定
+     */
     function setConfigAuthority(){
         // set authority level from config file
         $config = parse_ini_file(BASE_DIR.'/webapp/modules/repository/config/main.ini');
@@ -252,48 +424,106 @@ class RepositoryAction extends ActionBase
     // Add config management authority 2010/02/22 Y.Nakao --end--
 
     /**
-     * [[アクション終了処理]]
+     * Finalize action
+     * アクション終了処理
      *
      * @access  public
+     * @return string Result 結果
      */
     function exitAction()
     {
+        // executeAppからの呼び出し時は何もしない。
+        if($this->inExecuteApp)
+        {
+            return "success";
+        }
+        
         try {
-            // 基底クラス終了処理
-            $this->finalize();
+            $this->completeTrans();
             
-            //トランザクション終了処理
-            $this->Db->CompleteTrans();
-
             return "success";
         }
         catch ( RepositoryException $exception ) {
+            $this->finalize();
+            
             return "error";
         }
     }
-
+    
     /**
-     * [[トランザクション失敗処理]]
+     * Transaction completion processing of database and file operations
+     * データベースおよびファイル操作のトランザクション完了処理
+     * @see ActionBase::completeTrans
+     */
+    protected function completeTrans(){
+        // ファイル操作の終了処理を行う
+        $contentFileTransaction = null;
+        $bizFactory = BusinessFactory::getFactory();
+        if(isset($bizFactory))
+        {
+            $contentFileTransaction = $bizFactory->getBusiness("businessContentfiletransaction");
+        }
+        
+        if(!is_null($contentFileTransaction))
+        {
+            // ビジネスロジックの判定でNULLチェックを行ってはいけない。
+            // ここでは、DIconファイルにファイル操作を行う宣言がない場合、あえてファイル操作を行う処理は行わない
+            $contentFileTransaction->finishFileOperation();
+        }
+        
+        if($this->failedTrans){
+            throw new RepositoryException("Transaction is failed");
+        }
+        
+        //トランザクション終了処理
+        try{
+            parent::completeTrans();
+        } catch(AppException $ex){
+            $exception = new RepositoryException("Failed commit database transaction.", 4, $ex);
+            $exception->addError("repository_error_failed_db_commit");
+            throw $exception;
+        }
+        
+        // ファイル操作をコミットする
+        if(!is_null($contentFileTransaction))
+        {
+            // ビジネスロジックの判定でNULLチェックを行ってはいけない。
+            // ここでは、DIconファイルにファイル操作を行う宣言がない場合、あえてファイル操作を行う処理は行わない
+            $contentFileTransaction->commit();
+        }
+    }
+    
+    /**
+     * Failed transaction commit process
+     * トランザクション失敗処理
      *
      * @access  public
+     * @return string Result 結果
      */
     function failTrans()
     {
         try {
+            // トランザクション失敗フラグ
+            $this->failedTrans = true;
+            
             //トランザクション失敗フラグON設定処理
             $this->Db->FailTrans();
-
+            
             return "success";
         }
         catch ( RepositoryException $exception ) {
             return "error";
         }
     }
-
+    
     /**
-     * [[イベントログ出力処理]]
+     * Output event log
+     * イベントログ出力処理
      *
-     * @access  public
+     * @param int $EventId Event id イベントID
+     * @param string $EventMsg Event message イベントメッセージ
+     * @access public
+     * @return string Result 結果
      */
     function logEvent(
         $EventId,       //イベントID
@@ -308,9 +538,16 @@ class RepositoryAction extends ActionBase
     }
 
     /**
-     * [[ログファイル出力処理]]
+     * Output log
+     * ログファイル出力処理
      *
-     * @access  public
+     * @param string $ClassName Class name クラス名
+     * @param string $MethodName Method name 関数名
+     * @param int $LogId Log id ログID
+     * @param string $MainMsg Main message メッセージ
+     * @param string $DetailMsg Detail message 詳細メッセージ
+     * @access public
+     * @return string Result 結果
      */
     function logFile(
         $ClassName,     //クラス名
@@ -328,9 +565,12 @@ class RepositoryAction extends ActionBase
     }
 
     /**
-     * [[インデックスツリー情報をSessionに設定]]
+     * Save index information to session
+     * インデックスツリー情報をSessionに設定
      *
      * @access  public
+     * @param boolean $edit_flg Edit flag 編集フラグ
+     * @return boolean Result 結果
      */
     function setIndexTreeData2Session($edit_flg = false)
     {
@@ -377,9 +617,11 @@ class RepositoryAction extends ActionBase
     }
 
     /**
-     * [[開いているノード情報をSessionに設定]]
+     * Save open index node to session
+     * 開いているノード情報をSessionに設定
      *
      * @access  public
+     * @param int $openTreeId Open tree node オープンインデックスID
      */
     function getIndexTreeData2Req($openTreeId) {
         $arOpenIndexId = array();
@@ -389,13 +631,26 @@ class RepositoryAction extends ActionBase
     }
 
     /**
-     * [[アイテムID,アイテム通番で指定されるアイテムのデータをすべて取得する]]
-     * @access public
-     * @return true:正常終了
-     *          →$Result_Listにレコード
-     *         false:異常終了
-     *          →$Error_MsgにエラーメッセージorSessionにエラーコード
-     *          →途中で落ちた場合、$Result_Listにはそれまでのデータが入っている
+     * Get item information
+     * アイテムID,アイテム通番で指定されるアイテムのデータをすべて取得する
+     *
+     * @param int $Item_ID Item id アイテムID
+     * @param int $Item_No Item serial number アイテム通番
+     * @param array $Result_List Item information アイテム情報
+     *                           array["item"][$ii]["item_id"|"item_no"|"revision_no"|"item_type_id"|"prev_revision_no"|"title"|"title_english"|"language"|"review_status"|"review_date"|"shown_status"|"shown_date"|"reject_status"|"reject_date"|"reject_reason"|"serch_key"|"serch_key_english"|"remark"|"uri"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                           array["item_type"][$ii]["item_type_id"|"item_type_name"|"item_type_short_name"|"explanation"|"mapping_info"|"icon_name"|"icon_mime_type"|"icon_extension"|"icon"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                           array["item_attr_type"][$ii]["item_type_id"|"attribute_id"|"show_order"|"attribute_name"|"attribute_short_name"|"input_type"|"is_required"|"plural_enable"|"line_feed_enable"|"list_view_enable"|"hidden"|"junii2_mapping"|"dublin_core_mapping"|"lom_mapping"|"lido_mapping"|"spase_mapping"|"display_lang_type"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                           array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"personal_name_no"|"family"|"name"|"family_ruby"|"name_ruby"|"e_mail_address"|"item_type_id"|"author_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                           array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"show_order"|"mime_type"|"extension"|"file"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                           array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"display_name"|"display_type"|"show_order"|"mime_type"|"extension"|"prev_id"|"file_prev"|"file_prev_name"|"license_id"|"license_notation"|"pub_date"|"flash_pub_date"|"item_type_id"|"browsing_flag"|"cover_created_flag"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                           array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"biblio_no"|"biblio_name"|"biblio_name_english"|"volume"|"issue"|"start_page"|"end_page"|"date_of_issued"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                           array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"display_name"|"display_type"|"show_order"|"mime_type"|"extension"|"prev_id"|"file_prev"|"file_prev_name"|"license_id"|"license_notation"|"pub_date"|"flash_pub_date"|"item_type_id"|"browsing_flag"|"cover_created_flag"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"|"price"]
+     *                           array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"supple_no"|"item_type_id"|"supple_weko_item_id"|"supple_title"|"supple_title_en"|"uri"|"supple_item_type_name"|"mime_type"|"file_id"|"supple_review_status"|"supple_review_date"|"supple_reject_status"|"supple_reject_date"|"supple_reject_reason"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                           array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"attribute_no"|"attribute_value"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     * @param string $Error_Msg Error message エラーメッセージ
+     * @param boolean $blob_flag Whether or not to acquire the image data 画像データを取得するか否か
+     * @param boolean $empty_del_flag Remove the space character 空白文字を削除するかのフラグ
+     * @return boolean Result 結果
      */
     function getItemData(
         $Item_ID,               // アイテムIDの配列
@@ -512,8 +767,25 @@ class RepositoryAction extends ActionBase
     }
 
     /**
-     * [[アイテムIDとアイテム通番から、アイテムテーブルのデータを取得する]]
-     * @access  public
+     * Get item table data
+     * アイテムIDとアイテム通番から、アイテムテーブルのデータを取得する
+     * 
+     * @param int $Item_ID Item id アイテムID
+     * @param int $Item_No Item serial number アイテム通番
+     * @param array $Result_List Item information アイテム情報
+     *                           array["item"][$ii]["item_id"|"item_no"|"revision_no"|"item_type_id"|"prev_revision_no"|"title"|"title_english"|"language"|"review_status"|"review_date"|"shown_status"|"shown_date"|"reject_status"|"reject_date"|"reject_reason"|"serch_key"|"serch_key_english"|"remark"|"uri"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                           array["item_type"][$ii]["item_type_id"|"item_type_name"|"item_type_short_name"|"explanation"|"mapping_info"|"icon_name"|"icon_mime_type"|"icon_extension"|"icon"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                           array["item_attr_type"][$ii]["item_type_id"|"attribute_id"|"show_order"|"attribute_name"|"attribute_short_name"|"input_type"|"is_required"|"plural_enable"|"line_feed_enable"|"list_view_enable"|"hidden"|"junii2_mapping"|"dublin_core_mapping"|"lom_mapping"|"lido_mapping"|"spase_mapping"|"display_lang_type"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                           array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"personal_name_no"|"family"|"name"|"family_ruby"|"name_ruby"|"e_mail_address"|"item_type_id"|"author_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                           array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"show_order"|"mime_type"|"extension"|"file"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                           array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"display_name"|"display_type"|"show_order"|"mime_type"|"extension"|"prev_id"|"file_prev"|"file_prev_name"|"license_id"|"license_notation"|"pub_date"|"flash_pub_date"|"item_type_id"|"browsing_flag"|"cover_created_flag"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                           array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"biblio_no"|"biblio_name"|"biblio_name_english"|"volume"|"issue"|"start_page"|"end_page"|"date_of_issued"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                           array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"display_name"|"display_type"|"show_order"|"mime_type"|"extension"|"prev_id"|"file_prev"|"file_prev_name"|"license_id"|"license_notation"|"pub_date"|"flash_pub_date"|"item_type_id"|"browsing_flag"|"cover_created_flag"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"|"price"]
+     *                           array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"supple_no"|"item_type_id"|"supple_weko_item_id"|"supple_title"|"supple_title_en"|"uri"|"supple_item_type_name"|"mime_type"|"file_id"|"supple_review_status"|"supple_review_date"|"supple_reject_status"|"supple_reject_date"|"supple_reject_reason"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                           array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"attribute_no"|"attribute_value"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     * @param string $error_msg Error message エラーメッセージ
+     * @param boolean $empty_del_flag Remove the space character 空白文字を削除するかのフラグ
+     * @return boolean Result 結果
      */
     function getItemTableData($Item_ID,$Item_No,&$Result_List,&$error_msg, $empty_del_flag=false)
     {
@@ -578,8 +850,24 @@ class RepositoryAction extends ActionBase
     }
 
     /**
-     * [[アイテムタイプIDからアイテムタイプテーブルのデータを取得する]]
-     * @access  public
+     * Get item type table data
+     * アイテムタイプIDからアイテムタイプテーブルのデータを取得する
+     * 
+     * @param int $item_type_id Item type id アイテムタイプID
+     * @param array $Result_List Item information アイテム情報
+     *                           array["item"][$ii]["item_id"|"item_no"|"revision_no"|"item_type_id"|"prev_revision_no"|"title"|"title_english"|"language"|"review_status"|"review_date"|"shown_status"|"shown_date"|"reject_status"|"reject_date"|"reject_reason"|"serch_key"|"serch_key_english"|"remark"|"uri"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                           array["item_type"][$ii]["item_type_id"|"item_type_name"|"item_type_short_name"|"explanation"|"mapping_info"|"icon_name"|"icon_mime_type"|"icon_extension"|"icon"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                           array["item_attr_type"][$ii]["item_type_id"|"attribute_id"|"show_order"|"attribute_name"|"attribute_short_name"|"input_type"|"is_required"|"plural_enable"|"line_feed_enable"|"list_view_enable"|"hidden"|"junii2_mapping"|"dublin_core_mapping"|"lom_mapping"|"lido_mapping"|"spase_mapping"|"display_lang_type"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                           array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"personal_name_no"|"family"|"name"|"family_ruby"|"name_ruby"|"e_mail_address"|"item_type_id"|"author_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                           array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"show_order"|"mime_type"|"extension"|"file"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                           array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"display_name"|"display_type"|"show_order"|"mime_type"|"extension"|"prev_id"|"file_prev"|"file_prev_name"|"license_id"|"license_notation"|"pub_date"|"flash_pub_date"|"item_type_id"|"browsing_flag"|"cover_created_flag"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                           array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"biblio_no"|"biblio_name"|"biblio_name_english"|"volume"|"issue"|"start_page"|"end_page"|"date_of_issued"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                           array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"display_name"|"display_type"|"show_order"|"mime_type"|"extension"|"prev_id"|"file_prev"|"file_prev_name"|"license_id"|"license_notation"|"pub_date"|"flash_pub_date"|"item_type_id"|"browsing_flag"|"cover_created_flag"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"|"price"]
+     *                           array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"supple_no"|"item_type_id"|"supple_weko_item_id"|"supple_title"|"supple_title_en"|"uri"|"supple_item_type_name"|"mime_type"|"file_id"|"supple_review_status"|"supple_review_date"|"supple_reject_status"|"supple_reject_date"|"supple_reject_reason"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                           array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"attribute_no"|"attribute_value"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     * @param string $error_msg Error message エラーメッセージ
+     * @param boolean $blob_flag Whether or not to acquire the image data 画像データを取得するか否か
+     * @return boolean Result 結果
      *
      */
     function getItemTypeTableData($item_type_id,&$Result_List,&$error_msg,$blob_flag=false)
@@ -611,8 +899,23 @@ class RepositoryAction extends ActionBase
     }
 
     /**
-     * [[アイテムタイプIDと属性IDからアイテム属性タイプテーブルのデータを取得する]]
-     * @access  public
+     * Get item attr type table data
+     * アイテムタイプIDと属性IDからアイテム属性タイプテーブルのデータを取得する
+     * 
+     * @param int $item_type_id Item type id アイテムタイプID
+     * @param array $Result_List Item information アイテム情報
+     *                           array["item"][$ii]["item_id"|"item_no"|"revision_no"|"item_type_id"|"prev_revision_no"|"title"|"title_english"|"language"|"review_status"|"review_date"|"shown_status"|"shown_date"|"reject_status"|"reject_date"|"reject_reason"|"serch_key"|"serch_key_english"|"remark"|"uri"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                           array["item_type"][$ii]["item_type_id"|"item_type_name"|"item_type_short_name"|"explanation"|"mapping_info"|"icon_name"|"icon_mime_type"|"icon_extension"|"icon"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                           array["item_attr_type"][$ii]["item_type_id"|"attribute_id"|"show_order"|"attribute_name"|"attribute_short_name"|"input_type"|"is_required"|"plural_enable"|"line_feed_enable"|"list_view_enable"|"hidden"|"junii2_mapping"|"dublin_core_mapping"|"lom_mapping"|"lido_mapping"|"spase_mapping"|"display_lang_type"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                           array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"personal_name_no"|"family"|"name"|"family_ruby"|"name_ruby"|"e_mail_address"|"item_type_id"|"author_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                           array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"show_order"|"mime_type"|"extension"|"file"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                           array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"display_name"|"display_type"|"show_order"|"mime_type"|"extension"|"prev_id"|"file_prev"|"file_prev_name"|"license_id"|"license_notation"|"pub_date"|"flash_pub_date"|"item_type_id"|"browsing_flag"|"cover_created_flag"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                           array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"biblio_no"|"biblio_name"|"biblio_name_english"|"volume"|"issue"|"start_page"|"end_page"|"date_of_issued"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                           array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"display_name"|"display_type"|"show_order"|"mime_type"|"extension"|"prev_id"|"file_prev"|"file_prev_name"|"license_id"|"license_notation"|"pub_date"|"flash_pub_date"|"item_type_id"|"browsing_flag"|"cover_created_flag"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"|"price"]
+     *                           array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"supple_no"|"item_type_id"|"supple_weko_item_id"|"supple_title"|"supple_title_en"|"uri"|"supple_item_type_name"|"mime_type"|"file_id"|"supple_review_status"|"supple_review_date"|"supple_reject_status"|"supple_reject_date"|"supple_reject_reason"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                           array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"attribute_no"|"attribute_value"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     * @param string $error_msg Error message エラーメッセージ
+     * @return boolean Result 結果
      *
      */
     function getItemAttrTypeTableData($item_type_id,&$Result_List,&$error_msg)
@@ -641,9 +944,27 @@ class RepositoryAction extends ActionBase
     }
 
     /**
-     * [[アイテムIDとアイテム通番から、アイテム属性テーブルのデータを取得する]]
-     * @access  public
-     *
+     * Get item attr table data
+     * アイテムIDとアイテム通番から、アイテム属性テーブルのデータを取得する
+     * 
+     * @param int $Item_ID Item id アイテムID
+     * @param int $Item_No Item serial number アイテム通番
+     * @param int $attr_id Attribute id 属性ID
+     * @param int $idx Index id インデックスID
+     * @param array $Result_List Item information アイテム情報
+     *                           array["item"][$ii]["item_id"|"item_no"|"revision_no"|"item_type_id"|"prev_revision_no"|"title"|"title_english"|"language"|"review_status"|"review_date"|"shown_status"|"shown_date"|"reject_status"|"reject_date"|"reject_reason"|"serch_key"|"serch_key_english"|"remark"|"uri"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                           array["item_type"][$ii]["item_type_id"|"item_type_name"|"item_type_short_name"|"explanation"|"mapping_info"|"icon_name"|"icon_mime_type"|"icon_extension"|"icon"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                           array["item_attr_type"][$ii]["item_type_id"|"attribute_id"|"show_order"|"attribute_name"|"attribute_short_name"|"input_type"|"is_required"|"plural_enable"|"line_feed_enable"|"list_view_enable"|"hidden"|"junii2_mapping"|"dublin_core_mapping"|"lom_mapping"|"lido_mapping"|"spase_mapping"|"display_lang_type"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                           array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"personal_name_no"|"family"|"name"|"family_ruby"|"name_ruby"|"e_mail_address"|"item_type_id"|"author_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                           array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"show_order"|"mime_type"|"extension"|"file"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                           array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"display_name"|"display_type"|"show_order"|"mime_type"|"extension"|"prev_id"|"file_prev"|"file_prev_name"|"license_id"|"license_notation"|"pub_date"|"flash_pub_date"|"item_type_id"|"browsing_flag"|"cover_created_flag"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                           array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"biblio_no"|"biblio_name"|"biblio_name_english"|"volume"|"issue"|"start_page"|"end_page"|"date_of_issued"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                           array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"display_name"|"display_type"|"show_order"|"mime_type"|"extension"|"prev_id"|"file_prev"|"file_prev_name"|"license_id"|"license_notation"|"pub_date"|"flash_pub_date"|"item_type_id"|"browsing_flag"|"cover_created_flag"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"|"price"]
+     *                           array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"supple_no"|"item_type_id"|"supple_weko_item_id"|"supple_title"|"supple_title_en"|"uri"|"supple_item_type_name"|"mime_type"|"file_id"|"supple_review_status"|"supple_review_date"|"supple_reject_status"|"supple_reject_date"|"supple_reject_reason"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                           array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"attribute_no"|"attribute_value"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     * @param string $error_msg Error message エラーメッセージ
+     * @param boolean $empty_del_flag Remove the space character 空白文字を削除するかのフラグ
+     * @return boolean Result 結果
      */
     function getItemAttrTableData($Item_ID,$Item_No,$attr_id,$idx,&$Result_List,&$error_msg, $empty_del_flag=false)
     {
@@ -699,9 +1020,27 @@ class RepositoryAction extends ActionBase
     }
 
     /**
-     * [[氏名属性の値を取得]]
-     * @access public
-     *
+     * Get personal name table data
+     * 氏名属性の値を取得
+     * 
+     * @param int $Item_ID Item id アイテムID
+     * @param int $Item_No Item serial number アイテム通番
+     * @param int $attr_id Attribute id 属性ID
+     * @param int $idx Index id インデックスID
+     * @param array $Result_List Item information アイテム情報
+     *                           array["item"][$ii]["item_id"|"item_no"|"revision_no"|"item_type_id"|"prev_revision_no"|"title"|"title_english"|"language"|"review_status"|"review_date"|"shown_status"|"shown_date"|"reject_status"|"reject_date"|"reject_reason"|"serch_key"|"serch_key_english"|"remark"|"uri"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                           array["item_type"][$ii]["item_type_id"|"item_type_name"|"item_type_short_name"|"explanation"|"mapping_info"|"icon_name"|"icon_mime_type"|"icon_extension"|"icon"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                           array["item_attr_type"][$ii]["item_type_id"|"attribute_id"|"show_order"|"attribute_name"|"attribute_short_name"|"input_type"|"is_required"|"plural_enable"|"line_feed_enable"|"list_view_enable"|"hidden"|"junii2_mapping"|"dublin_core_mapping"|"lom_mapping"|"lido_mapping"|"spase_mapping"|"display_lang_type"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                           array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"personal_name_no"|"family"|"name"|"family_ruby"|"name_ruby"|"e_mail_address"|"item_type_id"|"author_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                           array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"show_order"|"mime_type"|"extension"|"file"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                           array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"display_name"|"display_type"|"show_order"|"mime_type"|"extension"|"prev_id"|"file_prev"|"file_prev_name"|"license_id"|"license_notation"|"pub_date"|"flash_pub_date"|"item_type_id"|"browsing_flag"|"cover_created_flag"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                           array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"biblio_no"|"biblio_name"|"biblio_name_english"|"volume"|"issue"|"start_page"|"end_page"|"date_of_issued"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                           array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"display_name"|"display_type"|"show_order"|"mime_type"|"extension"|"prev_id"|"file_prev"|"file_prev_name"|"license_id"|"license_notation"|"pub_date"|"flash_pub_date"|"item_type_id"|"browsing_flag"|"cover_created_flag"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"|"price"]
+     *                           array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"supple_no"|"item_type_id"|"supple_weko_item_id"|"supple_title"|"supple_title_en"|"uri"|"supple_item_type_name"|"mime_type"|"file_id"|"supple_review_status"|"supple_review_date"|"supple_reject_status"|"supple_reject_date"|"supple_reject_reason"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                           array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"attribute_no"|"attribute_value"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     * @param string $error_msg Error message エラーメッセージ
+     * @param boolean $empty_del_flag Remove the space character 空白文字を削除するかのフラグ
+     * @return boolean Result 結果
      */
     function getNameTableData($Item_ID,$Item_No,$attr_id,$idx,&$Result_List,&$error_msg, $empty_del_flag=false){
         // 氏名を取得
@@ -758,9 +1097,27 @@ class RepositoryAction extends ActionBase
     }
 
     /**
-     * [[サムネイル属性の値を取得]]
-     * @access public
-     *
+     * Get thumbnail table data
+     * サムネイル属性の値を取得
+     * 
+     * @param int $Item_ID Item id アイテムID
+     * @param int $Item_No Item serial number アイテム通番
+     * @param int $attr_id Attribute id 属性ID
+     * @param int $idx Index id インデックスID
+     * @param array $Result_List Item information アイテム情報
+     *                           array["item"][$ii]["item_id"|"item_no"|"revision_no"|"item_type_id"|"prev_revision_no"|"title"|"title_english"|"language"|"review_status"|"review_date"|"shown_status"|"shown_date"|"reject_status"|"reject_date"|"reject_reason"|"serch_key"|"serch_key_english"|"remark"|"uri"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                           array["item_type"][$ii]["item_type_id"|"item_type_name"|"item_type_short_name"|"explanation"|"mapping_info"|"icon_name"|"icon_mime_type"|"icon_extension"|"icon"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                           array["item_attr_type"][$ii]["item_type_id"|"attribute_id"|"show_order"|"attribute_name"|"attribute_short_name"|"input_type"|"is_required"|"plural_enable"|"line_feed_enable"|"list_view_enable"|"hidden"|"junii2_mapping"|"dublin_core_mapping"|"lom_mapping"|"lido_mapping"|"spase_mapping"|"display_lang_type"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                           array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"personal_name_no"|"family"|"name"|"family_ruby"|"name_ruby"|"e_mail_address"|"item_type_id"|"author_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                           array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"show_order"|"mime_type"|"extension"|"file"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                           array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"display_name"|"display_type"|"show_order"|"mime_type"|"extension"|"prev_id"|"file_prev"|"file_prev_name"|"license_id"|"license_notation"|"pub_date"|"flash_pub_date"|"item_type_id"|"browsing_flag"|"cover_created_flag"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                           array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"biblio_no"|"biblio_name"|"biblio_name_english"|"volume"|"issue"|"start_page"|"end_page"|"date_of_issued"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                           array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"display_name"|"display_type"|"show_order"|"mime_type"|"extension"|"prev_id"|"file_prev"|"file_prev_name"|"license_id"|"license_notation"|"pub_date"|"flash_pub_date"|"item_type_id"|"browsing_flag"|"cover_created_flag"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"|"price"]
+     *                           array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"supple_no"|"item_type_id"|"supple_weko_item_id"|"supple_title"|"supple_title_en"|"uri"|"supple_item_type_name"|"mime_type"|"file_id"|"supple_review_status"|"supple_review_date"|"supple_reject_status"|"supple_reject_date"|"supple_reject_reason"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                           array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"attribute_no"|"attribute_value"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     * @param string $error_msg Error message エラーメッセージ
+     * @param boolean $blob_flag Whether or not to acquire the image data 画像データを取得するか否か
+     * @return boolean Result 結果
      */
     function getThumbnailTableData($Item_ID,$Item_No,$attr_id,$idx,&$Result_List,&$error_msg,$blob_flag=false){
         // ファイル名を取得
@@ -809,8 +1166,27 @@ class RepositoryAction extends ActionBase
     }
 
     /**
-     * [[ファイル属性の値を取得]]
-     * @access public
+     * Get file table data
+     * ファイル属性の値を取得
+     * 
+     * @param int $Item_ID Item id アイテムID
+     * @param int $Item_No Item serial number アイテム通番
+     * @param int $attr_id Attribute id 属性ID
+     * @param int $idx Index id インデックスID
+     * @param array $Result_List Item information アイテム情報
+     *                           array["item"][$ii]["item_id"|"item_no"|"revision_no"|"item_type_id"|"prev_revision_no"|"title"|"title_english"|"language"|"review_status"|"review_date"|"shown_status"|"shown_date"|"reject_status"|"reject_date"|"reject_reason"|"serch_key"|"serch_key_english"|"remark"|"uri"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                           array["item_type"][$ii]["item_type_id"|"item_type_name"|"item_type_short_name"|"explanation"|"mapping_info"|"icon_name"|"icon_mime_type"|"icon_extension"|"icon"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                           array["item_attr_type"][$ii]["item_type_id"|"attribute_id"|"show_order"|"attribute_name"|"attribute_short_name"|"input_type"|"is_required"|"plural_enable"|"line_feed_enable"|"list_view_enable"|"hidden"|"junii2_mapping"|"dublin_core_mapping"|"lom_mapping"|"lido_mapping"|"spase_mapping"|"display_lang_type"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                           array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"personal_name_no"|"family"|"name"|"family_ruby"|"name_ruby"|"e_mail_address"|"item_type_id"|"author_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                           array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"show_order"|"mime_type"|"extension"|"file"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                           array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"display_name"|"display_type"|"show_order"|"mime_type"|"extension"|"prev_id"|"file_prev"|"file_prev_name"|"license_id"|"license_notation"|"pub_date"|"flash_pub_date"|"item_type_id"|"browsing_flag"|"cover_created_flag"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                           array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"biblio_no"|"biblio_name"|"biblio_name_english"|"volume"|"issue"|"start_page"|"end_page"|"date_of_issued"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                           array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"display_name"|"display_type"|"show_order"|"mime_type"|"extension"|"prev_id"|"file_prev"|"file_prev_name"|"license_id"|"license_notation"|"pub_date"|"flash_pub_date"|"item_type_id"|"browsing_flag"|"cover_created_flag"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"|"price"]
+     *                           array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"supple_no"|"item_type_id"|"supple_weko_item_id"|"supple_title"|"supple_title_en"|"uri"|"supple_item_type_name"|"mime_type"|"file_id"|"supple_review_status"|"supple_review_date"|"supple_reject_status"|"supple_reject_date"|"supple_reject_reason"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                           array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"attribute_no"|"attribute_value"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     * @param string $error_msg Error message エラーメッセージ
+     * @param boolean $blob_flag Whether or not to acquire the image data 画像データを取得するか否か
+     * @return boolean Result 結果
      *
      */
     function getFileTableData($Item_ID,$Item_No,$attr_id,$idx,&$Result_List,&$error_msg,$blob_flag=false){
@@ -835,24 +1211,7 @@ class RepositoryAction extends ActionBase
             $this->Session->setParameter("error_cord",-1);
             return false;
         }
-        // Add separate file from DB 2009/04/21 Y.Nakao --start--
-        $contents_path = $this->getFileSavePath("file");
-        if(strlen($contents_path) == 0){
-            // default directory
-            $contents_path = BASE_DIR.'/webapp/uploads/repository/files';
-        }
-        // Add separate file from DB 2009/04/21 Y.Nakao --end--
-
-        // Add get Flash file size 2010/06/08 A.Suzuki --start--
-        // Add multiple FLASH files download 2011/02/04 Y.Nakao --start--
-        $flash_contents_path = $this->getFlashFolder();
-        if(strlen($flash_contents_path) == 0){
-            // default directory
-            $flash_contents_path = BASE_DIR.'/webapp/uploads/repository/flash';
-        }
-        // Add multiple FLASH files download 2011/02/04 Y.Nakao --end--
-        // Add get Flash file size 2010/06/08 A.Suzuki --end--
-
+        
         // アイテム詳細表示でライセンス情報表示対応 2008/07/02 Y.Nakao --start--
         for($i=0; $i<count($result_File_Table); $i++) {
             $query = "SELECT * ".       // ファイル名を取得
@@ -870,84 +1229,6 @@ class RepositoryAction extends ActionBase
                 $result_File_Table[$i]['img_url'] = $result_License_Table[0]['img_url'];
                 $result_File_Table[$i]['text_url'] = $result_License_Table[0]['text_url'];
             }
-            // Add separate file from DB 2009/04/21 Y.Nakao --start--
-            $file_path = $contents_path.DIRECTORY_SEPARATOR.
-                        $result_File_Table[$i]['item_id'].'_'.
-                        $result_File_Table[$i]['attribute_id'].'_'.
-                        $result_File_Table[$i]['file_no'].'.'.
-                        $result_File_Table[$i]['extension'];
-            if(file_exists($file_path))
-            {
-                // get file size
-                if(array_key_exists(RepositoryConst::ITEM_DATA_KEY_FILE_SIZE_FULL, $result_File_Table[$i])){
-                    $result_File_Table[$i][RepositoryConst::ITEM_DATA_KEY_FILE_SIZE_FULL] = $size;
-                }
-                $size = filesize($file_path);
-                if( ($size/1000)>1 ){
-                    if( ($size/1000000)>1 ){
-                        $result_File_Table[$i][RepositoryConst::ITEM_DATA_KEY_FILE_SIZE] = round($size/1000000, 2)."MB";
-                    } else {
-                        $result_File_Table[$i][RepositoryConst::ITEM_DATA_KEY_FILE_SIZE] = round($size/1000, 2)."KB";
-                    }
-                } else {
-                    $result_File_Table[$i][RepositoryConst::ITEM_DATA_KEY_FILE_SIZE] = $size."Byte";
-                }
-            }
-            else
-            {
-                if(array_key_exists(RepositoryConst::ITEM_DATA_KEY_FILE_SIZE_FULL, $result_File_Table[$i])){
-                    $result_File_Table[$i][RepositoryConst::ITEM_DATA_KEY_FILE_SIZE_FULL] = "0";
-                }
-                $result_File_Table[$i][RepositoryConst::ITEM_DATA_KEY_FILE_SIZE] = "0Byte";
-            }
-            // Add separate file from DB 2009/04/21 Y.Nakao --end--
-
-            // Add multiple FLASH files download 2011/02/04 Y.Nakao --start--
-            // Add get Flash file size 2010/06/08 A.Suzuki --start--
-            $flash_contents_path = $this->getFlashFolder($result_File_Table[$i]['item_id'],
-                                                          $result_File_Table[$i]['attribute_id'],
-                                                          $result_File_Table[$i]['file_no']);
-            if(file_exists($flash_contents_path.DIRECTORY_SEPARATOR.'/weko.swf')){
-                // get file size
-                $flash_size = filesize($flash_contents_path.DIRECTORY_SEPARATOR.'/weko.swf');
-                if($flash_size === false){
-                    $result_File_Table[$i]['flash_size'] = 0;
-                } else {
-                    $result_File_Table[$i]['flash_size'] = $flash_size;
-                }
-                // Add get page count 2011/02/07 Y.Nakao --start--
-                $result_File_Table[$i]['division'] = 0;
-                // Add get page count 2011/02/07 Y.Nakao --end--
-            } else if(file_exists($flash_contents_path.DIRECTORY_SEPARATOR.'/weko1.swf')){
-                // get file size
-                $flash_size = filesize($flash_contents_path.DIRECTORY_SEPARATOR.'/weko1.swf');
-                if($flash_size === false){
-                    $result_File_Table[$i]['flash_size'] = 0;
-                } else {
-                    $result_File_Table[$i]['flash_size'] = $flash_size;
-                }
-                // Add get page count 2011/02/07 Y.Nakao --start--
-                $result_File_Table[$i]['division'] = $this->getFlashPagecount(
-                                                        $result_File_Table[$i]['item_id'],
-                                                        $result_File_Table[$i]['attribute_id'],
-                                                        $result_File_Table[$i]['file_no']);
-                // Add get page count 2011/02/07 Y.Nakao --end--
-            } else if(file_exists($flash_contents_path. '/weko.flv')){
-                // Mod multimedia support 2012/10/09 T.Koyasu -start-
-                // get multimedia file's size
-                $flash_size = filesize($flash_contents_path. '/weko.flv');
-
-                if($flash_size === false){
-                    $result_File_Table[$i]['flash_size'] = 0;
-                } else {
-                    $result_File_Table[$i]['flash_size'] = $flash_size;
-                }
-                // Mod multimedia support 2012/10/09 T.Koyasu -end-
-            } else {
-                $result_File_Table[$i]['flash_size'] = 0;
-            }
-            // Add get Flash file size 2010/06/08 A.Suzuki --end--
-            // Add multiple FLASH files download 2011/02/04 Y.Nakao --end--
 
             if(!$blob_flag){
                 $result_File_Table[$i]['file_prev'] = "";
@@ -962,8 +1243,24 @@ class RepositoryAction extends ActionBase
     }
 
     /**
-     * [[アイテムIDとアイテム通番から、アイテムの所属インデックスのデータを取得する]]
-     * @access  public
+     * Get position index table data
+     * アイテムIDとアイテム通番から、アイテムの所属インデックスのデータを取得する
+     * 
+     * @param int $Item_ID Item id アイテムID
+     * @param int $Item_No Item serial number アイテム通番
+     * @param array $Result_List Item information アイテム情報
+     *                           array["item"][$ii]["item_id"|"item_no"|"revision_no"|"item_type_id"|"prev_revision_no"|"title"|"title_english"|"language"|"review_status"|"review_date"|"shown_status"|"shown_date"|"reject_status"|"reject_date"|"reject_reason"|"serch_key"|"serch_key_english"|"remark"|"uri"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                           array["item_type"][$ii]["item_type_id"|"item_type_name"|"item_type_short_name"|"explanation"|"mapping_info"|"icon_name"|"icon_mime_type"|"icon_extension"|"icon"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                           array["item_attr_type"][$ii]["item_type_id"|"attribute_id"|"show_order"|"attribute_name"|"attribute_short_name"|"input_type"|"is_required"|"plural_enable"|"line_feed_enable"|"list_view_enable"|"hidden"|"junii2_mapping"|"dublin_core_mapping"|"lom_mapping"|"lido_mapping"|"spase_mapping"|"display_lang_type"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                           array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"personal_name_no"|"family"|"name"|"family_ruby"|"name_ruby"|"e_mail_address"|"item_type_id"|"author_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                           array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"show_order"|"mime_type"|"extension"|"file"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                           array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"display_name"|"display_type"|"show_order"|"mime_type"|"extension"|"prev_id"|"file_prev"|"file_prev_name"|"license_id"|"license_notation"|"pub_date"|"flash_pub_date"|"item_type_id"|"browsing_flag"|"cover_created_flag"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                           array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"biblio_no"|"biblio_name"|"biblio_name_english"|"volume"|"issue"|"start_page"|"end_page"|"date_of_issued"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                           array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"display_name"|"display_type"|"show_order"|"mime_type"|"extension"|"prev_id"|"file_prev"|"file_prev_name"|"license_id"|"license_notation"|"pub_date"|"flash_pub_date"|"item_type_id"|"browsing_flag"|"cover_created_flag"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"|"price"]
+     *                           array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"supple_no"|"item_type_id"|"supple_weko_item_id"|"supple_title"|"supple_title_en"|"uri"|"supple_item_type_name"|"mime_type"|"file_id"|"supple_review_status"|"supple_review_date"|"supple_reject_status"|"supple_reject_date"|"supple_reject_reason"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                           array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"attribute_no"|"attribute_value"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     * @param string $error_msg Error message エラーメッセージ
+     * @return boolean Result 結果
      */
     function getItemIndexData($Item_ID,$Item_No,&$Result_List,&$error_msg)
     {
@@ -997,8 +1294,25 @@ class RepositoryAction extends ActionBase
     }
 
     /**
-     * [[アイテムIDとアイテム通番から、アイテムの参照データを取得する]]
-     * @access  public
+     * Get item reference table data
+     * アイテムIDとアイテム通番から、アイテムの参照データを取得する
+     * 
+     * @param int $Item_ID Item id アイテムID
+     * @param int $Item_No Item serial number アイテム通番
+     * @param array $Result_List Item information アイテム情報
+     *                           array["item"][$ii]["item_id"|"item_no"|"revision_no"|"item_type_id"|"prev_revision_no"|"title"|"title_english"|"language"|"review_status"|"review_date"|"shown_status"|"shown_date"|"reject_status"|"reject_date"|"reject_reason"|"serch_key"|"serch_key_english"|"remark"|"uri"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                           array["item_type"][$ii]["item_type_id"|"item_type_name"|"item_type_short_name"|"explanation"|"mapping_info"|"icon_name"|"icon_mime_type"|"icon_extension"|"icon"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                           array["item_attr_type"][$ii]["item_type_id"|"attribute_id"|"show_order"|"attribute_name"|"attribute_short_name"|"input_type"|"is_required"|"plural_enable"|"line_feed_enable"|"list_view_enable"|"hidden"|"junii2_mapping"|"dublin_core_mapping"|"lom_mapping"|"lido_mapping"|"spase_mapping"|"display_lang_type"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                           array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"personal_name_no"|"family"|"name"|"family_ruby"|"name_ruby"|"e_mail_address"|"item_type_id"|"author_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                           array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"show_order"|"mime_type"|"extension"|"file"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                           array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"display_name"|"display_type"|"show_order"|"mime_type"|"extension"|"prev_id"|"file_prev"|"file_prev_name"|"license_id"|"license_notation"|"pub_date"|"flash_pub_date"|"item_type_id"|"browsing_flag"|"cover_created_flag"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                           array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"biblio_no"|"biblio_name"|"biblio_name_english"|"volume"|"issue"|"start_page"|"end_page"|"date_of_issued"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                           array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"display_name"|"display_type"|"show_order"|"mime_type"|"extension"|"prev_id"|"file_prev"|"file_prev_name"|"license_id"|"license_notation"|"pub_date"|"flash_pub_date"|"item_type_id"|"browsing_flag"|"cover_created_flag"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"|"price"]
+     *                           array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"supple_no"|"item_type_id"|"supple_weko_item_id"|"supple_title"|"supple_title_en"|"uri"|"supple_item_type_name"|"mime_type"|"file_id"|"supple_review_status"|"supple_review_date"|"supple_reject_status"|"supple_reject_date"|"supple_reject_reason"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                           array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"attribute_no"|"attribute_value"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     * @param string $error_msg Error message エラーメッセージ
+     * @param boolean $empty_del_flag Remove the space character 空白文字を削除するかのフラグ
+     * @return boolean Result 結果
      */
     function getItemReference($Item_ID,$Item_No,&$Result_List,&$error_msg, $empty_del_flag=false)
     {
@@ -1041,7 +1355,13 @@ class RepositoryAction extends ActionBase
     }
 
     /**
-     * [[アイテムタイプIDで指定されるアイテムを削除]]
+     * Delete item by item type id
+     * アイテムタイプIDで指定されるアイテムを削除
+     * 
+     * @param int $item_type_id Item type id アイテムタイプID
+     * @param string $user_ID User id ユーザID
+     * @param string $Error_Msg Error message エラーメッセージ
+     * @return boolean Result 結果
      */
     function deleteItemOfItemType($item_type_id, $user_ID, &$Error_Msg){
         // アイテムテーブルにレコードがあるか判定
@@ -1078,7 +1398,13 @@ class RepositoryAction extends ActionBase
     }
 
     /**
-     * [[アイテムタイプIDで指定されるアイテムタイプを削除]]
+     * Delete item type by item type id
+     * アイテムタイプIDで指定されるアイテムタイプを削除
+     * 
+     * @param int $item_type_id Item type id アイテムタイプID
+     * @param string $user_ID User id ユーザID
+     * @param string $Error_Msg Error message エラーメッセージ
+     * @return boolean Result 結果
      */
     function deleteItemType($item_type_id, $user_ID, &$Error_Msg){
         // アイテムタイプテーブル削除
@@ -1094,8 +1420,13 @@ class RepositoryAction extends ActionBase
     }
 
     /**
-     * [[アイテムタイプIDで指定されるアイテムタイプテーブルデータを論理削除]]
+     * Delete item type table by item type id
+     * アイテムタイプIDで指定されるアイテムタイプテーブルデータを論理削除
      *
+     * @param int $item_type_id Item type id アイテムタイプID
+     * @param string $user_ID User id ユーザID
+     * @param string $Error_Msg Error message エラーメッセージ
+     * @return boolean Result 結果
      */
     function deleteItemTypeTable($item_type_id, $user_ID, &$Error_Msg){
         // アイテム属性テーブルにレコードがあるか判定
@@ -1150,7 +1481,13 @@ class RepositoryAction extends ActionBase
     }
 
     /**
-     * [[アイテムIDとアイテム通番にて指定されるアイテム属性テーブルデータを削除]]
+     * Delete item attr type table by item type id
+     * アイテムIDとアイテム通番にて指定されるアイテム属性テーブルデータを削除
+     * 
+     * @param int $item_type_id Item type id アイテムタイプID
+     * @param string $user_ID User id ユーザID
+     * @param string $Error_Msg Error message エラーメッセージ
+     * @return boolean Result 結果
      */
     function deleteItemAttrTypeTable($item_type_id, $user_ID, &$Error_Msg){
         // アイテム属性テーブルにレコードがあるか判定
@@ -1253,7 +1590,14 @@ class RepositoryAction extends ActionBase
     }
 
     /**
-     * [[アイテムIDとアイテム通番にて指定されるアイテムを削除]]
+     * Delete item
+     * アイテムIDとアイテム通番にて指定されるアイテムを削除
+     * 
+     * @param int $Item_ID Item id アイテムID
+     * @param int $Item_No Item serial number アイテム通番
+     * @param string $user_ID User id ユーザID
+     * @param string $Error_Msg Error message エラーメッセージ
+     * @return boolean Result 結果
      */
     function deleteItemData($Item_ID,$Item_No,$user_ID,&$Error_Msg){
         // アイテムテーブル削除
@@ -1342,7 +1686,14 @@ class RepositoryAction extends ActionBase
     }
 
     /**
-     * [[アイテムIDとアイテム通番にて指定されるアイテムの属性のみを削除]]
+     * Delete item attr
+     * アイテムIDとアイテム通番にて指定されるアイテムの属性のみを削除
+     * 
+     * @param int $Item_ID Item id アイテムID
+     * @param int $Item_No Item serial number アイテム通番
+     * @param string $user_ID User id ユーザID
+     * @param string $Error_Msg Error message エラーメッセージ
+     * @return boolean Result 結果
      */
     function deleteItemAttrData($Item_ID,$Item_No,$user_ID,&$Error_Msg){
         // アイテム属性削除
@@ -1379,7 +1730,14 @@ class RepositoryAction extends ActionBase
     }
 
     /**
-     * [[アイテムIDとアイテム通番にて指定されるアイテムの属性をファイル＆サムネイル以外削除]]
+     * Delete item attr without file and thumbnail
+     * アイテムIDとアイテム通番にて指定されるアイテムの属性をファイル＆サムネイル以外削除
+     * 
+     * @param int $Item_ID Item id アイテムID
+     * @param int $Item_No Item serial number アイテム通番
+     * @param string $user_ID User id ユーザID
+     * @param string $Error_Msg Error message エラーメッセージ
+     * @return boolean Result 結果
      */
     function deleteItemAttrDataWithoutFile($Item_ID,$Item_No,$user_ID,&$Error_Msg){
         // アイテム属性削除
@@ -1395,8 +1753,14 @@ class RepositoryAction extends ActionBase
     }
 
     /**
-     * [[アイテムIDとアイテム通番にて指定されるアイテムテーブルデータを削除]]
+     * Delete item table data
+     * アイテムIDとアイテム通番にて指定されるアイテムテーブルデータを削除
      *
+     * @param int $Item_ID Item id アイテムID
+     * @param int $Item_No Item serial number アイテム通番
+     * @param string $user_ID User id ユーザID
+     * @param string $Error_Msg Error message エラーメッセージ
+     * @return boolean Result 結果
      */
     function deleteItemTableData($Item_ID,$Item_No,$user_ID,&$Error_Msg){
         // アイテム属性テーブルにレコードがあるか判定
@@ -1456,7 +1820,14 @@ class RepositoryAction extends ActionBase
     }
 
     /**
-     * [[アイテムIDとアイテム通番にて指定されるアイテム属性テーブルデータを削除]]
+     * Delete item attr table data
+     * アイテムIDとアイテム通番にて指定されるアイテム属性テーブルデータを削除
+     * 
+     * @param int $Item_ID Item id アイテムID
+     * @param int $Item_No Item serial number アイテム通番
+     * @param string $user_ID User id ユーザID
+     * @param string $Error_Msg Error message エラーメッセージ
+     * @return boolean Result 結果
      */
     function deleteItemAttrTableData($Item_ID,$Item_No,$user_ID,&$Error_Msg){
         // アイテム属性テーブルにレコードがあるか判定
@@ -1518,7 +1889,15 @@ class RepositoryAction extends ActionBase
     }
 
     /**
-     * [[アイテムIDとアイテム通番と属性IDにて指定されるアイテム属性テーブルデータを削除]]
+     * Delete item attr table data
+     * アイテムIDとアイテム通番と属性IDにて指定されるアイテム属性テーブルデータを削除
+     * 
+     * @param int $Item_ID Item id アイテムID
+     * @param int $Item_No Item serial number アイテム通番
+     * @param int $Attribute_ID Attribute id 属性ID
+     * @param string $user_ID User id ユーザID
+     * @param string $Error_Msg Error message エラーメッセージ
+     * @return boolean Result 結果
      */
     function AttrTableDataWithAttrId($Item_ID,$Item_No,$Attribute_ID,$user_ID,&$Error_Msg){
         // アイテム属性テーブルにレコードがあるか判定
@@ -1576,7 +1955,16 @@ class RepositoryAction extends ActionBase
     }
 
     /**
-     * [[アイテムIDとアイテム通番と属性IDと属性通番にて指定されるアイテム属性テーブルデータを削除]]
+     * Delete item attr table data by attribute id
+     * アイテムIDとアイテム通番と属性IDと属性通番にて指定されるアイテム属性テーブルデータを削除
+     * 
+     * @param int $Item_ID Item id アイテムID
+     * @param int $Item_No Item serial number アイテム通番
+     * @param int $Attribute_ID Attribute id 属性ID
+     * @param int $Attribute_No Attribute number 属性通番
+     * @param string $user_ID User id ユーザID
+     * @param string $Error_Msg Error message エラーメッセージ
+     * @return boolean Result 結果
      */
     function AttrTableDataWithAttrNo($Item_ID,$Item_No,$Attribute_ID,$Attribute_No,$user_ID,&$Error_Msg){
         // アイテム属性テーブルにレコードがあるか判定
@@ -1638,7 +2026,14 @@ class RepositoryAction extends ActionBase
     }
 
     /**
-     * [[アイテムIDとアイテム通番にて指定される氏名テーブルデータ削除]]
+     * Delete personal name table data
+     * アイテムIDとアイテム通番にて指定される氏名テーブルデータ削除
+     * 
+     * @param int $Item_ID Item id アイテムID
+     * @param int $Item_No Item serial number アイテム通番
+     * @param string $user_ID User id ユーザID
+     * @param string $Error_Msg Error message エラーメッセージ
+     * @return boolean Result 結果
      */
     function deletePersonalNameTableData($Item_ID,$Item_No,$user_ID,&$Error_Msg){
         // 氏名テーブルにレコードがあるか判定
@@ -1699,7 +2094,16 @@ class RepositoryAction extends ActionBase
     }
 
     /**
-     * [[アイテムIDとアイテム通番と属性IDと氏名通番にて指定される氏名テーブルデータ削除]]
+     * Delete personal name table data by attribute number
+     * アイテムIDとアイテム通番と属性IDと氏名通番にて指定される氏名テーブルデータ削除
+     * 
+     * @param int $Item_ID Item id アイテムID
+     * @param int $Item_No Item serial number アイテム通番
+     * @param int $Attribute_ID Attribute id 属性ID
+     * @param int $Name_No Attribute number 属性通番
+     * @param string $user_ID User id ユーザID
+     * @param string $Error_Msg Error message エラーメッセージ
+     * @return boolean Result 結果
      */
     function deletePersonalNameTableDataWithAttrNo($Item_ID,$Item_No,$Attribute_ID,$Name_No,$user_ID,&$Error_Msg){
         // 氏名テーブルにレコードがあるか判定
@@ -1760,7 +2164,14 @@ class RepositoryAction extends ActionBase
     }
 
     /**
-     * [[アイテムIDとアイテム通番にて指定されるサムネイルテーブルデータ削除]]
+     * Delete thumbnail table data
+     * アイテムIDとアイテム通番にて指定されるサムネイルテーブルデータ削除
+     * 
+     * @param int $Item_ID Item id アイテムID
+     * @param int $Item_No Item serial number アイテム通番
+     * @param string $user_ID User id ユーザID
+     * @param string $Error_Msg Error message エラーメッセージ
+     * @return boolean Result 結果
      */
     function deleteThumbnailTableData($Item_ID,$Item_No,$user_ID,&$Error_Msg){
         // サムネイルテーブルにレコードがあるか判定
@@ -1821,7 +2232,16 @@ class RepositoryAction extends ActionBase
     }
 
     /**
-     * [[アイテムIDとアイテム通番と属性IDとファイル通番にて指定されるサムネイルテーブルデータ削除]]
+     * Delete thumbnail table data by attribute id
+     * アイテムIDとアイテム通番と属性IDとファイル通番にて指定されるサムネイルテーブルデータ削除
+     * 
+     * @param int $Item_ID Item id アイテムID
+     * @param int $Item_No Item serial number アイテム通番
+     * @param int $Attribute_ID Attribute id 属性ID
+     * @param int $File_No Attribute number 属性通番
+     * @param string $user_ID User id ユーザID
+     * @param string $Error_Msg Error message エラーメッセージ
+     * @return boolean Result 結果
      */
     function deleteThumbnailTableDataWithAttrNo($Item_ID,$Item_No,$Attribute_ID,$File_No,$user_ID,&$Error_Msg){
         // サムネイルテーブルにレコードがあるか判定
@@ -1882,8 +2302,14 @@ class RepositoryAction extends ActionBase
     }
 
     /**
-     * [[アイテムIDとアイテム通番にて指定されるファイルテーブルデータ削除]]
+     * Delete file table data
+     * アイテムIDとアイテム通番にて指定されるファイルテーブルデータ削除
      *
+     * @param int $Item_ID Item id アイテムID
+     * @param int $Item_No Item serial number アイテム通番
+     * @param string $user_ID User id ユーザID
+     * @param string $Error_Msg Error message エラーメッセージ
+     * @return boolean Result 結果
      */
     function deleteFileTableData($Item_ID,$Item_No,$user_ID,&$Error_Msg){
         // ファイルテーブルにレコードがあるか判定
@@ -1991,13 +2417,16 @@ class RepositoryAction extends ActionBase
                 }
             }
 
-            //実ファイルを削除する A.Jin --start--
-            for($index=0; $index<count($select_result);$index++){
-                $this->removePhysicalFileAndFlashDirectory($select_result[$index][RepositoryConst::DBCOL_REPOSITORY_FILE_ITEM_ID],       //item_id
-                                                           $select_result[$index][RepositoryConst::DBCOL_REPOSITORY_FILE_ATTRIBUTE_ID],  //attribute_id
-                                                           $select_result[$index][RepositoryConst::DBCOL_REPOSITORY_FILE_FILE_NO]);      //file_no
+            // Mod remove physical file T.Koyasu 2016/02/29 --start--
+            $businessName = "businessContentfiletransaction";
+            $business = BusinessFactory::getFactory()->getBusiness($businessName);
+            for($ii = 0; $ii < count($select_result); $ii++){
+                $itemId = $select_result[$ii][RepositoryConst::DBCOL_REPOSITORY_FILE_ITEM_ID];
+                $attrId = $select_result[$ii][RepositoryConst::DBCOL_REPOSITORY_FILE_ATTRIBUTE_ID];
+                $fileNo = $select_result[$ii][RepositoryConst::DBCOL_REPOSITORY_FILE_FILE_NO];
+                $business->delete($itemId, $attrId, $fileNo);
             }
-            //実ファイルを削除する A.Jin --end--
+            // Mod remove physical file T.Koyasu 2016/02/29 --end--
         }
 
         return true;
@@ -2005,8 +2434,16 @@ class RepositoryAction extends ActionBase
     }
 
     /**
-     * [[アイテムIDとアイテム通番と属性IDとファイル通番にて指定されるファイルテーブルデータ削除]]
+     * Delete file table data by attribute id
+     * アイテムIDとアイテム通番と属性IDとファイル通番にて指定されるファイルテーブルデータ削除
      *
+     * @param int $Item_ID Item id アイテムID
+     * @param int $Item_No Item serial number アイテム通番
+     * @param int $Attribute_ID Attribute id 属性ID
+     * @param int $File_No Attribute number 属性通番
+     * @param string $user_ID User id ユーザID
+     * @param string $Error_Msg Error message エラーメッセージ
+     * @return boolean Result 結果
      */
     function deleteFileTableDataWithAttrNo($Item_ID,$Item_No,$Attribute_ID,$File_No,$user_ID,&$Error_Msg){
         // ファイルテーブルにレコードがあるか判定
@@ -2067,7 +2504,14 @@ class RepositoryAction extends ActionBase
     }
 
     /**
-     * [[アイテムIDとアイテム通番にて指定される添付ファイルデータ削除]]
+     * Delete attachment file table data
+     * アイテムIDとアイテム通番にて指定される添付ファイルデータ削除
+     * 
+     * @param int $Item_ID Item id アイテムID
+     * @param int $Item_No Item serial number アイテム通番
+     * @param string $user_ID User id ユーザID
+     * @param string $Error_Msg Error message エラーメッセージ
+     * @return boolean Result 結果
      */
     function deleteAttachedFileTableData($Item_ID,$Item_No,$user_ID,&$Error_Msg){
         // 添付ファイルテーブルにレコードがあるか判定
@@ -2127,7 +2571,14 @@ class RepositoryAction extends ActionBase
     }
 
     /**
-     * [[アイテムIDとアイテム通番にて指定される所属インデックスデータ削除]]
+     * Delete position index table data
+     * アイテムIDとアイテム通番にて指定される所属インデックスデータ削除
+     * 
+     * @param int $Item_ID Item id アイテムID
+     * @param int $Item_No Item serial number アイテム通番
+     * @param string $user_ID User id ユーザID
+     * @param string $Error_Msg Error message エラーメッセージ
+     * @return boolean Result 結果
      */
     function deletePositionIndexTableData($Item_ID,$Item_No,$user_ID,&$Error_Msg){
         // 所属インデックステーブルにレコードがあるか判定
@@ -2187,7 +2638,14 @@ class RepositoryAction extends ActionBase
     }
 
     /**
-     * [[アイテムIDとアイテム通番にて指定される参照テーブルデータ削除]]
+     * Delete reference table data
+     * アイテムIDとアイテム通番にて指定される参照テーブルデータ削除
+     * 
+     * @param int $Item_ID Item id アイテムID
+     * @param int $Item_No Item serial number アイテム通番
+     * @param string $user_ID User id ユーザID
+     * @param string $Error_Msg Error message エラーメッセージ
+     * @return boolean Result 結果
      */
     function deleteReference($Item_ID,$Item_No,$user_ID,&$Error_Msg){
         // 参照テーブルにレコードがあるか判定
@@ -2237,7 +2695,14 @@ class RepositoryAction extends ActionBase
     }
     
     /**
-     * [[アイテムIDとアイテム通番にて指定されるサフィックスを削除]]
+     * Delete suffix table data
+     * アイテムIDとアイテム通番にて指定されるサフィックスを削除
+     * 
+     * @param int $Item_ID Item id アイテムID
+     * @param int $Item_No Item serial number アイテム通番
+     * @param string $user_ID User id ユーザID
+     * @param string $Error_Msg Error message エラーメッセージ
+     * @return boolean Result 結果
      */
     private function deleteItemSuffix($Item_ID,$Item_No,$user_ID,&$Error_Msg){
         // 指定されたアイテムのサフィックスを削除
@@ -2270,7 +2735,13 @@ class RepositoryAction extends ActionBase
     // 2008/03/17 川崎追加分 アイテム属性関連挿入＆更新用共通メソッド
 
     /**
-     * [[アイテム属性レコードを挿入]]
+     * Insert item attr
+     * アイテム属性レコードを挿入
+     * 
+     * @param array $params Parameter list パラメータ一覧
+     *                      array[$ii]
+     * @param string $Error_Msg Error message エラーメッセージ
+     * @return boolean Result 結果
      */
     function insertItemAttr($params,&$Error_Msg){
         // 通常のアイテム属性入力用クエリー (挿入)
@@ -2293,7 +2764,13 @@ class RepositoryAction extends ActionBase
     }
 
     /**
-     * [[氏名レコードを挿入]]
+     * Insert personal name
+     * 氏名レコードを挿入
+     * 
+     * @param array $params Parameter list パラメータ一覧
+     *                      array[$ii]
+     * @param string $Error_Msg Error message エラーメッセージ
+     * @return boolean Result 結果
      */
     function insertPersonalName($params,&$Error_Msg){
         // 氏名属性入力用クエリー (挿入)
@@ -2316,7 +2793,13 @@ class RepositoryAction extends ActionBase
     }
 
     /**
-     * [[ファイルレコードを挿入]]
+     * Insert file
+     * ファイルレコードを挿入
+     * 
+     * @param array $params Parameter list パラメータ一覧
+     *                      array[$ii]
+     * @param string $Error_Msg Error message エラーメッセージ
+     * @return boolean Result 結果
      */
     function insertFile($params,&$Error_Msg){
         // ファイル入力用クエリー (挿入)
@@ -2340,7 +2823,13 @@ class RepositoryAction extends ActionBase
 
     // Add file INSERT ON DUPLICATE KEY UPDATE K.Matsuo 2013/10/09 --start--
     /**
-     * [[ファイルレコードを挿入]]
+     * Upsert file
+     * ファイルレコードを挿入
+     * 
+     * @param array $params Parameter list パラメータ一覧
+     *                      array[$ii]
+     * @param string $Error_Msg Error message エラーメッセージ
+     * @return boolean Result 結果
      */
     function insertOrUpdateFile($params,&$Error_Msg){
         // ファイル入力用クエリー (挿入)
@@ -2370,7 +2859,13 @@ class RepositoryAction extends ActionBase
     // Add file INSERT ON DUPLICATE KEY UPDATE K.Matsuo 2013/10/09 --end--
 
     /**
-     * [[サムネイルレコードを挿入]]
+     * Insert thumbnail
+     * サムネイルレコードを挿入
+     * 
+     * @param array $params Parameter list パラメータ一覧
+     *                      array[$ii]
+     * @param string $Error_Msg Error message エラーメッセージ
+     * @return boolean Result 結果
      */
     function insertThumbnail($params,&$Error_Msg){
         // サムネイル用クエリー (挿入)
@@ -2393,7 +2888,13 @@ class RepositoryAction extends ActionBase
     }
 
     /**
-     * [[サムネイルレコードを挿入]]
+     * Upsert thumbnail
+     * サムネイルレコードを挿入
+     * 
+     * @param array $params Parameter list パラメータ一覧
+     *                      array[$ii]
+     * @param string $Error_Msg Error message エラーメッセージ
+     * @return boolean Result 結果
      */
     function insertOrUpdateThumbnail($params,&$Error_Msg){
         // サムネイル用クエリー (挿入)
@@ -2419,7 +2920,13 @@ class RepositoryAction extends ActionBase
     }
     // Add biblio info 2008/08/11 Y.Nakao --start--
     /**
-     * [[書誌情報レコードを挿入]]
+     * Insert biblio information
+     * 書誌情報レコードを挿入
+     * 
+     * @param array $params Parameter list パラメータ一覧
+     *                      array[$ii]
+     * @param string $Error_Msg Error message エラーメッセージ
+     * @return boolean Result 結果
      */
     function insertBiblioInfo($params,&$Error_Msg){
         // 書誌情報属性入力用クエリー (挿入)
@@ -2443,7 +2950,13 @@ class RepositoryAction extends ActionBase
     // Add biblio info 2008/08/11 Y.Nakao --end--
 
     /**
-     * [[アイテム属性レコードを更新]]
+     * Update item attr
+     * アイテム属性レコードを更新
+     * 
+     * @param array $params Parameter list パラメータ一覧
+     *                      array[$ii]
+     * @param string $Error_Msg Error message エラーメッセージ
+     * @return boolean Result 結果
      */
     function updateItemAttr($params,&$Error_Msg){
         // 通常のアイテム属性入力用クエリー (更新)
@@ -2469,7 +2982,13 @@ class RepositoryAction extends ActionBase
     }
 
     /**
-     * [[氏名レコードを更新]]
+     * Update personal name
+     * 氏名レコードを更新
+     * 
+     * @param array $params Parameter list パラメータ一覧
+     *                      array[$ii]
+     * @param string $Error_Msg Error message エラーメッセージ
+     * @return boolean Result 結果
      */
     function updatePersonalName($params,&$Error_Msg){
         // 氏名属性入力用クエリー (更新)
@@ -2500,7 +3019,13 @@ class RepositoryAction extends ActionBase
     }
 
     /**
-     * [[ファイルレコードを更新]]
+     * Update file
+     * ファイルレコードを更新
+     * 
+     * @param array $params Parameter list パラメータ一覧
+     *                      array[$ii]
+     * @param string $Error_Msg Error message エラーメッセージ
+     * @return boolean Result 結果
      */
     function updateFile($params,&$Error_Msg){
         // ファイル入力用クエリー (更新)
@@ -2531,7 +3056,13 @@ class RepositoryAction extends ActionBase
     }
 
     /**
-     * [[サムネイルレコードを更新]]
+     * Update thumbnail
+     * サムネイルレコードを更新
+     * 
+     * @param array $params Parameter list パラメータ一覧
+     *                      array[$ii]
+     * @param string $Error_Msg Error message エラーメッセージ
+     * @return boolean Result 結果
      */
     function updateThumbnail($params,&$Error_Msg){
         // サムネイル用クエリー (挿入)
@@ -2559,7 +3090,13 @@ class RepositoryAction extends ActionBase
 
     // Add biblio info 2008/08/11 Y.Nakao --start--
     /**
-     * [[書誌情報レコードを更新]]
+     * Update biblio information
+     * 書誌情報レコードを更新
+     * 
+     * @param array $params Parameter list パラメータ一覧
+     *                      array[$ii]
+     * @param string $Error_Msg Error message エラーメッセージ
+     * @return boolean Result 結果
      */
     function updateBilioInfo($params,&$Error_Msg){
         // 書誌情報属性入力用クエリー (更新)
@@ -2594,8 +3131,15 @@ class RepositoryAction extends ActionBase
     // Add biblio info 2008/08/11 Y.Nakao --end--
 
     /**
-     * [[アイテム属性のアイテム通番をカウント]]
+     * Count attribute number
+     * アイテム属性のアイテム通番をカウント
      * 注 : 論理削除済みの属性もカウントする
+     * 
+     * @param int $Item_ID Item id アイテムID
+     * @param int $Item_No Item serial number アイテム通番
+     * @param int $Attribute_ID Attribute id 属性ID
+     * @param string $Error_Msg Error message エラーメッセージ
+     * @return int Count 通番
      */
     function countItemAttrNo($Item_ID,$Item_No,$Attribute_ID,&$Error_Msg){
         $params = array(
@@ -2607,8 +3151,15 @@ class RepositoryAction extends ActionBase
     }
 
     /**
-     * [[氏名レコード通番をカウント]]
+     * Count personal name
+     * 氏名レコード通番をカウント
      * 注 : 論理削除済みの属性もカウントする
+     * 
+     * @param int $Item_ID Item id アイテムID
+     * @param int $Item_No Item serial number アイテム通番
+     * @param int $Attribute_ID Attribute id 属性ID
+     * @param string $Error_Msg Error message エラーメッセージ
+     * @return int Count 通番
      */
     function countPersonalNameNo($Item_ID,$Item_No,$Attribute_ID,&$Error_Msg){
         $params = array(
@@ -2620,8 +3171,15 @@ class RepositoryAction extends ActionBase
     }
 
     /**
-     * [[ファイルレコード通番をカウント]]
+     * Count file
+     * ファイルレコード通番をカウント
      * 注 : 論理削除済みの属性もカウントする
+     * 
+     * @param int $Item_ID Item id アイテムID
+     * @param int $Item_No Item serial number アイテム通番
+     * @param int $Attribute_ID Attribute id 属性ID
+     * @param string $Error_Msg Error message エラーメッセージ
+     * @return int Count 通番
      */
     function countFileNo($Item_ID,$Item_No,$Attribute_ID,&$Error_Msg){
         $params = array(
@@ -2633,8 +3191,15 @@ class RepositoryAction extends ActionBase
     }
 
     /**
-     * [[サムネイルレコード通番をカウント]]
-     * 注 : 論理削除済みの属性もカウントする]
+     * Count thumbnail
+     * サムネイルレコード通番をカウント
+     * 注 : 論理削除済みの属性もカウントする
+     * 
+     * @param int $Item_ID Item id アイテムID
+     * @param int $Item_No Item serial number アイテム通番
+     * @param int $Attribute_ID Attribute id 属性ID
+     * @param string $Error_Msg Error message エラーメッセージ
+     * @return int Count 通番
      */
     function countThumbnailNo($Item_ID,$Item_No,$Attribute_ID,&$Error_Msg){
         $params = array(
@@ -2646,8 +3211,15 @@ class RepositoryAction extends ActionBase
     }
 
     /**
-     * [[アイテム属性の最大アイテム通番計算]]
+     * Get maximum attribute number
+     * アイテム属性の最大アイテム通番計算
      * 注 : 論理削除済みの属性もカウントする
+     * 
+     * @param int $Item_ID Item id アイテムID
+     * @param int $Item_No Item serial number アイテム通番
+     * @param int $Attribute_ID Attribute id 属性ID
+     * @param string $Error_Msg Error message エラーメッセージ
+     * @return int Number 通番
      */
     function calcMaxItemAttrNo($Item_ID,$Item_No,$Attribute_ID,&$Error_Msg){
         $query = "SELECT * ".
@@ -2679,8 +3251,15 @@ class RepositoryAction extends ActionBase
     }
 
     /**
-     * [[氏名レコード最大通番計算]]
+     * Get maximum personal name number
+     * 氏名レコード最大通番計算]]
      * 注 : 論理削除済みの属性もカウントする
+     * 
+     * @param int $Item_ID Item id アイテムID
+     * @param int $Item_No Item serial number アイテム通番
+     * @param int $Attribute_ID Attribute id 属性ID
+     * @param string $Error_Msg Error message エラーメッセージ
+     * @return int Number 通番
      */
     function calcMaxPersonalNameNo($Item_ID,$Item_No,$Attribute_ID,&$Error_Msg){
         $query = "SELECT * ".
@@ -2712,8 +3291,15 @@ class RepositoryAction extends ActionBase
     }
 
     /**
-     * [[ファイルレコード最大通番計算]]
+     * Get maximum file number
+     * ファイルレコード最大通番計算
      * 注 : 論理削除済みの属性もカウントする
+     * 
+     * @param int $Item_ID Item id アイテムID
+     * @param int $Item_No Item serial number アイテム通番
+     * @param int $Attribute_ID Attribute id 属性ID
+     * @param string $Error_Msg Error message エラーメッセージ
+     * @return int Number 通番
      */
     function getFileNo($Item_ID,$Item_No,$Attribute_ID,&$Error_Msg){
         $query = "SELECT MAX(file_no) ".
@@ -2745,8 +3331,15 @@ class RepositoryAction extends ActionBase
     }
 
     /**
-     * [[サムネイルレコード最大通番計算]]
-     * 注 : 論理削除済みの属性もカウントする]
+     * Get maximum thumbnail number
+     * サムネイルレコード最大通番計算
+     * 注 : 論理削除済みの属性もカウントする
+     * 
+     * @param int $Item_ID Item id アイテムID
+     * @param int $Item_No Item serial number アイテム通番
+     * @param int $Attribute_ID Attribute id 属性ID
+     * @param string $Error_Msg Error message エラーメッセージ
+     * @return int Number 通番
      */
     function calcMaxThumbnailNo($Item_ID,$Item_No,$Attribute_ID,&$Error_Msg){
         $query = "SELECT * ".
@@ -2778,8 +3371,14 @@ class RepositoryAction extends ActionBase
     }
 
     /**
-     * [[パラメタテーブルの値を全て取得]]
+     * Get parameter table data
+     * パラメタテーブルの値を全て取得
      * パラメタが増えたら追記すること
+     * 
+     * @param array $admin_params Parameter list パラメータ一覧
+     *                            array[param_name]
+     * @param string $Error_Msg Error message エラーメッセージ
+     * @return boolean Result 結果
      */
     function getParamTableData(&$admin_params, &$Error_Msg){
         $admin_params = array();                    // 管理パラメタ列
@@ -2806,8 +3405,14 @@ class RepositoryAction extends ActionBase
     }
 
     /**
-     * [[パラメタテーブルのレコードを全て取得]]
+     * Get parameter table data
+     * パラメタテーブルの値を全て取得
      * パラメタが増えたら追記すること
+     * 
+     * @param array $admin_params Parameter list パラメータ一覧
+     *                            array[param_name]
+     * @param string $Error_Msg Error message エラーメッセージ
+     * @return boolean Result 結果
      */
     function getParamTableRecord(&$admin_params, &$Error_Msg){
         $admin_params = array();                    // 管理パラメタ列
@@ -2832,7 +3437,13 @@ class RepositoryAction extends ActionBase
     }
 
     /**
-     * [[パラメタテーブルのレコードを更新]]
+     * Update parameter table
+     * パラメタテーブルのレコードを更新
+     * 
+     * @param array $params Parameter list パラメータ一覧
+     *                      array[$ii]
+     * @param string $Error_Msg Error message エラーメッセージ
+     * @return boolean Result 結果
      */
     function updateParamTableData($params, &$Error_Msg){
          $query = "UPDATE ". DATABASE_PREFIX ."repository_parameter ".  // パラメタテーブル
@@ -2851,7 +3462,11 @@ class RepositoryAction extends ActionBase
     }
 
     /**
-     * [[nc2が動作しているマシンのOSを取得する]]
+     * Get OS
+     * nc2が動作しているマシンのOSを取得する
+     * 
+     * @param DbObject $Db Database object データベース管理オブジェクト
+     * @return string Operating System OS
      */
     function getOsVer($Db = null){
         $query = "SELECT `param_value` ".
@@ -2877,9 +3492,10 @@ class RepositoryAction extends ActionBase
     // Add 2011/04/08 H.Ito --start--
     /**
      * zip file extract
+     * ZIPファイル解凍
      *
-     * @param $dir_path target dir path
-     * @param $file_name target file name
+     * @param string $dir_path Extract to 解凍先
+     * @param string $file_name zip file path ZIPファイルパス
      */
     function zipDecompress($dir_path, $file_name){
         $file_path = $dir_path . DIRECTORY_SEPARATOR. $file_name;
@@ -2902,10 +3518,11 @@ class RepositoryAction extends ActionBase
 
     /**
      * get Office XML value
+     * OfficeのXML文書を取得する
      *
-     * @param $dir_path target dir path
-     * @param $file_name target file name
-     * @return $outText get Text
+     * @param string $dir_path target dir path ディレクトリパス
+     * @param string $file_name target file name 対象ファイル名
+     * @return string xml string XML文字列
      */
     function getOfficeXMLText($dir_path, $file_name){
         $outText = "";
@@ -2957,10 +3574,11 @@ class RepositoryAction extends ActionBase
 
     /**
      * get Office XML Attributes
+     * OfficeのXML文書の属性を取得する
      *
-     * @param $dir_path target dir path
-     * @param $file_name target file name
-     * @return $outText get Text
+     * @param string $dir_path target dir path ディレクトリパス
+     * @param string $file_name target file name 対象ファイル名
+     * @return string xml string XML文字列
      */
     function getOfficeXMLAttributes($dir_path, $file_name){
         $outText = "";
@@ -2996,6 +3614,14 @@ class RepositoryAction extends ActionBase
 
     // Add 2011/04/08 H.Ito --end--
 
+    /**
+     * Write file
+     * ファイル書き込み
+     *
+     * @param string $file_name File path ファイルパス
+     * @param string $data Data データ
+     * @return boolean Result 結果
+     */
     function outFile($file_name, $data){
         $fp = @fopen( $file_name, "w" );
         if ( !$fp ) {
@@ -3014,8 +3640,11 @@ class RepositoryAction extends ActionBase
         }
     }
 
-    /*
+    /**
+     * Remove directory
      * 指定したディレクトリ以下を削除
+     * 
+     * @param string $dir Directory path ディレクトリパス
      */
     function removeDirectory($dir) {
         if(strlen($dir) > 0)
@@ -3047,56 +3676,12 @@ class RepositoryAction extends ActionBase
         }
     }
 
-    //--実ファイルを削除する 2013/6/10 A.Jin Add--start--
     /**
-     * 実ファイルを削除
-     *
-     * @param int $item_id アイテムID
-     * @param int $attribute_id 属性ID
-     * @param int $file_no ファイルNO
-     * @return bool 処理成功失敗フラグ
-     */
-    function removePhysicalFileAndFlashDirectory($item_id, $attribute_id, $file_no){
-        //1   Filesのファイル削除
-        //Filesのディレクトリを取得する。
-        $dir_path = $this->getFileSavePath("file");
-        if(strlen($dir_path) == 0){
-            // default directory
-            $dir_path = BASE_DIR.'/webapp/uploads/repository/files';
-        }
-
-        //ディレクトリが存在する場合
-        if(file_exists($dir_path)){
-            $pattern = $dir_path.'/'.$item_id.'_'.$attribute_id.'_'.$file_no.'.*';
-            //ディレクトリ以下のFilesファイルを削除する
-            foreach (glob($pattern) as $file_path) {
-                //ディレクトリでなかった場合実ファイルを削除する
-                if(!is_dir($file_path)){
-                    unlink($file_path);
-                }
-            }
-        }
-
-        //2   Flashのファイル&ディレクトリ削除
-        $flash_contents_path = $this->getFlashFolder($item_id,$attribute_id,$file_no);
-        //ディレクトリが存在する場合
-        if(strlen($flash_contents_path)>0){
-            //ディレクトリ以下のFlashファイル&ディレクトリを削除する
-            $this->removeDirectory($flash_contents_path);
-        }
-
-        return true;
-    }
-
-
-    //--実ファイルを削除する 2013/6/10 A.Jin Add--end--
-
-
-    /**
+     * To reverse lookup a shorthand notation from mimetype
      * mimetypeから簡略表記を逆引きする
      *
-     * @param mimetype 逆引きするmimetype
-     * @return mimetype簡略表記
+     * @param string $mimetype mimetype 逆引きするmimetype
+     * @return string mimetype shorthand notation mimetype簡略表記
      */
     function mimetypeSimpleName( $mimetype ){
         // Mod mime type 2010/02/17 K.Ando --start--
@@ -3202,14 +3787,39 @@ class RepositoryAction extends ActionBase
         // Add mimetype 2014/09/10 T.Ichikawa --end--
 
         // mime-typeから名称取得
-        return $mimeinfo[$mimetype];
+        if(isset($mimeinfo[$mimetype]))
+        {
+            return $mimeinfo[$mimetype];
+        }
+        else
+        {
+            return "";
+        }
     }
 
     // Add biblio info 2008/08/11 Y.Nakao --start--
     /**
-     * [[書誌情報属性の値を取得]]
-     * @access public
+     * Get biblio information table data
+     * 書誌情報属性の値を取得
      *
+     * @param int $Item_ID Item id アイテムID
+     * @param int $Item_No Item serial number アイテム通番
+     * @param int $attr_id Attribute id 属性ID
+     * @param int $idx Index id インデックスID
+     * @param array $Result_List Item information アイテム情報
+     *                           array["item"][$ii]["item_id"|"item_no"|"revision_no"|"item_type_id"|"prev_revision_no"|"title"|"title_english"|"language"|"review_status"|"review_date"|"shown_status"|"shown_date"|"reject_status"|"reject_date"|"reject_reason"|"serch_key"|"serch_key_english"|"remark"|"uri"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                           array["item_type"][$ii]["item_type_id"|"item_type_name"|"item_type_short_name"|"explanation"|"mapping_info"|"icon_name"|"icon_mime_type"|"icon_extension"|"icon"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                           array["item_attr_type"][$ii]["item_type_id"|"attribute_id"|"show_order"|"attribute_name"|"attribute_short_name"|"input_type"|"is_required"|"plural_enable"|"line_feed_enable"|"list_view_enable"|"hidden"|"junii2_mapping"|"dublin_core_mapping"|"lom_mapping"|"lido_mapping"|"spase_mapping"|"display_lang_type"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                           array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"personal_name_no"|"family"|"name"|"family_ruby"|"name_ruby"|"e_mail_address"|"item_type_id"|"author_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                           array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"show_order"|"mime_type"|"extension"|"file"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                           array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"display_name"|"display_type"|"show_order"|"mime_type"|"extension"|"prev_id"|"file_prev"|"file_prev_name"|"license_id"|"license_notation"|"pub_date"|"flash_pub_date"|"item_type_id"|"browsing_flag"|"cover_created_flag"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                           array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"biblio_no"|"biblio_name"|"biblio_name_english"|"volume"|"issue"|"start_page"|"end_page"|"date_of_issued"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                           array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"display_name"|"display_type"|"show_order"|"mime_type"|"extension"|"prev_id"|"file_prev"|"file_prev_name"|"license_id"|"license_notation"|"pub_date"|"flash_pub_date"|"item_type_id"|"browsing_flag"|"cover_created_flag"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"|"price"]
+     *                           array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"supple_no"|"item_type_id"|"supple_weko_item_id"|"supple_title"|"supple_title_en"|"uri"|"supple_item_type_name"|"mime_type"|"file_id"|"supple_review_status"|"supple_review_date"|"supple_reject_status"|"supple_reject_date"|"supple_reject_reason"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                           array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"attribute_no"|"attribute_value"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     * @param string $error_msg Error message エラーメッセージ
+     * @param boolean $empty_del_flag Remove the space character 空白文字を削除するかのフラグ
+     * @return boolean Result 結果
      */
     function getBiblioInfoTableData($Item_ID,$Item_No,$attr_id,$idx,&$Result_List,&$error_msg, $empty_del_flag=false){
         // 氏名を取得
@@ -3270,7 +3880,14 @@ class RepositoryAction extends ActionBase
     }
 
     /**
-     * [[アイテムIDとアイテム通番にて指定される書誌情報テーブルデータ削除]]
+     * Delete biblio information table data
+     * アイテムIDとアイテム通番にて指定される書誌情報テーブルデータ削除
+     * 
+     * @param int $Item_ID Item id アイテムID
+     * @param int $Item_No Item serial number アイテム通番
+     * @param string $user_ID User id ユーザID
+     * @param string $Error_Msg Error message エラーメッセージ
+     * @return boolean Result 結果
      */
     function deleteBiblioInfoTableData($Item_ID,$Item_No,$user_ID,&$Error_Msg){
         // 書誌情報テーブルにレコードがあるか判定
@@ -3333,8 +3950,13 @@ class RepositoryAction extends ActionBase
 
     // Add file price 2008/08/28 Y.Nakao --start--
     /**
+     * Get group list
      * NC上に存在するグループの一覧を取得
-     * @return $Result_List['groupe_list'][ii]['～']形式で値が帰る
+     *
+     * @param array $all_group Group list グループ一覧
+     *                         array['groupe_list']$ii][pages's table column name]
+     * @param string $error_msg Error message エラーメッセージ
+     * @return boolean Result 結果
      */
     function getGroupList(&$all_group, &$error_msg){
         // get List from pages Table
@@ -3361,7 +3983,12 @@ class RepositoryAction extends ActionBase
     }
 
     /**
+     * Get user group list
      * ユーザの登録グループ一覧を取得する
+     * 
+     * @param array $user_group User group ユーザグループ
+     *                          array[$ii]["room_id"]
+     * @param string $error_msg Error message エラーメッセージ
      */
     function getUsersGroupList(&$user_group, &$error_msg){
         $userAuthorityManager = new RepositoryUserAuthorityManager($this->Session, $this->dbAccess, $this->TransStartDate);
@@ -3369,7 +3996,27 @@ class RepositoryAction extends ActionBase
     }
 
     /**
+     * Get file price table data
      * ファイルの価格情報を取得する
+     * 
+     * @param int $Item_ID Item id アイテムID
+     * @param int $Item_No Item serial number アイテム通番
+     * @param int $attr_id Attribute id 属性ID
+     * @param int $idx Index id インデックスID
+     * @param array $Result_List Item information アイテム情報
+     *                           array["item"][$ii]["item_id"|"item_no"|"revision_no"|"item_type_id"|"prev_revision_no"|"title"|"title_english"|"language"|"review_status"|"review_date"|"shown_status"|"shown_date"|"reject_status"|"reject_date"|"reject_reason"|"serch_key"|"serch_key_english"|"remark"|"uri"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                           array["item_type"][$ii]["item_type_id"|"item_type_name"|"item_type_short_name"|"explanation"|"mapping_info"|"icon_name"|"icon_mime_type"|"icon_extension"|"icon"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                           array["item_attr_type"][$ii]["item_type_id"|"attribute_id"|"show_order"|"attribute_name"|"attribute_short_name"|"input_type"|"is_required"|"plural_enable"|"line_feed_enable"|"list_view_enable"|"hidden"|"junii2_mapping"|"dublin_core_mapping"|"lom_mapping"|"lido_mapping"|"spase_mapping"|"display_lang_type"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                           array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"personal_name_no"|"family"|"name"|"family_ruby"|"name_ruby"|"e_mail_address"|"item_type_id"|"author_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                           array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"show_order"|"mime_type"|"extension"|"file"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                           array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"display_name"|"display_type"|"show_order"|"mime_type"|"extension"|"prev_id"|"file_prev"|"file_prev_name"|"license_id"|"license_notation"|"pub_date"|"flash_pub_date"|"item_type_id"|"browsing_flag"|"cover_created_flag"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                           array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"biblio_no"|"biblio_name"|"biblio_name_english"|"volume"|"issue"|"start_page"|"end_page"|"date_of_issued"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                           array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"display_name"|"display_type"|"show_order"|"mime_type"|"extension"|"prev_id"|"file_prev"|"file_prev_name"|"license_id"|"license_notation"|"pub_date"|"flash_pub_date"|"item_type_id"|"browsing_flag"|"cover_created_flag"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"|"price"]
+     *                           array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"supple_no"|"item_type_id"|"supple_weko_item_id"|"supple_title"|"supple_title_en"|"uri"|"supple_item_type_name"|"mime_type"|"file_id"|"supple_review_status"|"supple_review_date"|"supple_reject_status"|"supple_reject_date"|"supple_reject_reason"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                           array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"attribute_no"|"attribute_value"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     * @param string $error_msg Error message エラーメッセージ
+     * @param boolean $blob_flag Whether or not to acquire the image data 画像データを取得するか否か
+     * @return boolean Result 結果
      */
     function getFilePriceTableData($Item_ID,$Item_No,$attr_id,$idx,&$Result_List,&$error_msg,$blob_flag=false){
         ///// ファイル情報取得 /////
@@ -3394,23 +4041,6 @@ class RepositoryAction extends ActionBase
             $this->Session->setParameter("error_cord",-1);
             return false;
         }
-        // Add separate file from DB 2009/04/21 Y.Nakao --start--
-        $contents_path = $this->getFileSavePath("file");
-        if(strlen($contents_path) == 0){
-            // default directory
-            $contents_path = BASE_DIR.'/webapp/uploads/repository/files';
-        }
-        // Add separate file from DB 2009/04/21 Y.Nakao --end--
-
-        // Add multiple FLASH files download 2011/02/04 Y.Nakao --start--
-        // Add get Flash file size 2010/06/08 A.Suzuki --start--
-        $flash_contents_path = $this->getFlashFolder();
-        if(strlen($flash_contents_path) == 0){
-            // default directory
-            $flash_contents_path = BASE_DIR.'/webapp/uploads/repository/flash';
-        }
-        // Add get Flash file size 2010/06/08 A.Suzuki --end--
-        // Add multiple FLASH files download 2011/02/04 Y.Nakao --end--
 
         // アイテム詳細表示でライセンス情報表示対応 2008/07/02 Y.Nakao --start--
         for($i=0; $i<count($result_File_Table); $i++) {
@@ -3430,57 +4060,6 @@ class RepositoryAction extends ActionBase
                 $result_File_Table[$i]['text_url'] = $result_License_Table[0]['text_url'];
                 $result_File_Table[$i]['license_notation'] = $result_License_Table[0]['license_notation'];
             }
-            // Add separate file from DB 2009/04/21 Y.Nakao --start--
-            $file_path = $contents_path.DIRECTORY_SEPARATOR.
-                        $result_File_Table[$i]['item_id'].'_'.
-                        $result_File_Table[$i]['attribute_id'].'_'.
-                        $result_File_Table[$i]['file_no'].'.'.
-                        $result_File_Table[$i]['extension'];
-            // get file size
-            if(file_exists($file_path))
-            {
-                $size = filesize($file_path);
-                if( ($size/1000)>1 ){
-                    if( ($size/1000000)>1 ){
-                        $result_File_Table[$i]['file_size'] = round($size/1000000, 2)."MB";
-                    } else {
-                        $result_File_Table[$i]['file_size'] = round($size/1000, 2)."KB";
-                    }
-                } else {
-                    $result_File_Table[$i]['file_size'] = $size."Byte";
-                }
-            }
-            else
-            {
-                $result_File_Table[$i]['file_size'] = "0Byte";
-            }
-            // Add separate file from DB 2009/04/21 Y.Nakao --end--
-
-            // Add get Flash file size 2010/06/08 A.Suzuki --start--
-            // Add multiple FLASH files download 2011/02/04 Y.Nakao --start--
-            $flash_contents_path = $this->getFlashFolder($result_File_Table[$i]['item_id'],
-                                                          $result_File_Table[$i]['attribute_id'],
-                                                          $result_File_Table[$i]['file_no']);
-            if(file_exists($flash_contents_path.DIRECTORY_SEPARATOR.'/weko.swf')){
-                // get file size
-                $flash_size = filesize($flash_contents_path.DIRECTORY_SEPARATOR.'/weko.swf');
-                if($flash_size === false){
-                    $result_File_Table[$i]['flash_size'] = 0;
-                } else {
-                    $result_File_Table[$i]['flash_size'] = $flash_size;
-                }
-            } else if(file_exists($flash_contents_path.DIRECTORY_SEPARATOR.'/weko1.swf')){
-                // get file size
-                $flash_size = filesize($flash_contents_path.DIRECTORY_SEPARATOR.'/weko1.swf');
-                if($flash_size === false){
-                    $result_File_Table[$i]['flash_size'] = 0;
-                } else {
-                    $result_File_Table[$i]['flash_size'] = $flash_size;
-                }
-            } else {
-                $result_File_Table[$i]['flash_size'] = 0;
-            }
-            // Add get Flash file size 2010/06/08 A.Suzuki --end--
 
             if(!$blob_flag){
                 $result_File_Table[$i]['file_prev'] = "";
@@ -3521,7 +4100,36 @@ class RepositoryAction extends ActionBase
         return true;
     }
 
+    /**
+     * Insert file price
+     * 課金ファイル挿入
+     *
+     * @param array $params Parameter list パラメータ一覧
+     *                      array[$ii]
+     * @param string $Error_Msg Error message エラーメッセージ
+     * @return boolean Result 結果
+     */
     function insertFilePrice($params,&$Error_Msg){
+        // 課金ファイルの設定が既に登録されているなら差し替えが実施されている
+        $query = "SELECT item_id ". 
+                 " FROM ". DATABASE_PREFIX. "repository_file_price ". 
+                 " WHERE item_id = ? ".
+                 " AND item_no = ? ". 
+                 " AND attribute_id = ? ". 
+                 " AND file_no = ? ". 
+                 " AND is_delete = ?;";
+        $selectParams = array();
+        $selectParams[] = $params[0];
+        $selectParams[] = $params[1];
+        $selectParams[] = $params[2];
+        $selectParams[] = $params[3];
+        $selectParams[] = 0;
+        $result = $this->executeSql($query, $selectParams);
+        if(count($result) === 1){
+            // 課金ファイルの差替えを実施している
+            return true;
+        }
+        
         // 課金ファイル入力用クエリー (挿入)
         $query = "INSERT INTO ". DATABASE_PREFIX ."repository_file_price ".
 //                   "(item_id, item_no, attribute_id, file_no, price".
@@ -3540,6 +4148,15 @@ class RepositoryAction extends ActionBase
         return true;
     }
 
+    /**
+     * Upsert file price
+     * 課金ファイル更新
+     *
+     * @param array $params Parameter list パラメータ一覧
+     *                      array[$ii]
+     * @param string $Error_Msg Error message エラーメッセージ
+     * @return boolean Result 結果
+     */
     function insertOrUpdatePrice($params,&$Error_Msg){
         // 課金ファイル入力用クエリー (挿入)
         $query = "INSERT INTO ". DATABASE_PREFIX ."repository_file_price ".
@@ -3560,6 +4177,15 @@ class RepositoryAction extends ActionBase
         return true;
     }
 
+    /**
+     * Update file price
+     * 課金ファイル更新
+     *
+     * @param array $params Parameter list パラメータ一覧
+     *                      array[$ii]
+     * @param string $Error_Msg Error message エラーメッセージ
+     * @return boolean Result 結果
+     */
     function updateFilePrice($params,&$Error_Msg){
         // 課金ファイル入力用クエリー (更新)
         // ※更新対象はライセンスとエンバーゴ、更新者、更新日
@@ -3587,6 +4213,12 @@ class RepositoryAction extends ActionBase
     // Add file price 2008/08/28 Y.Nakao --start--
 
     // Add get repository block_id and page_id 2008/09/19 Y.Nakao --start--
+    /**
+     * Get block id
+     * ブロックID取得
+     *
+     * @return int Block id ブロックID
+     */
     function getBlockPageId(){
         // check NC version 2010/06/07 A.Suzuki --start--
         // get NC version
@@ -3675,6 +4307,10 @@ class RepositoryAction extends ActionBase
     // Add set lang resource Add set lang resource 2008/10/06 Y.Nakao --start--
     // ********** this function must call repository/view action **********
     // if repository/action action call this function then don't get lang resource
+    /**
+     * Set language resource
+     * 言語リソース設定
+     */
     function setLangResource(){
         $container =& DIContainerFactory::getContainer();
         $filterChain =& $container->getComponent("FilterChain");
@@ -3684,6 +4320,15 @@ class RepositoryAction extends ActionBase
     // Add set lang resource 2008/10/06 Y.Nakao --end--
 
     // Add get all setting price 2008/10/30 Y.Nakao --start--
+    /**
+     * Get group price information
+     * グループ課金情報取得
+     *
+     * @param array $info Item information アイテム情報
+     *                    array["item_id"|"item_no"|"attribute_id"|"file_no"]
+     * @return array Price information 課金情報
+     *               array[$ii]["name"|"price"|"id"]
+     */
     function getGroupPrice($info){
         // get price table data
         $query = "SELECT price FROM ". DATABASE_PREFIX ."repository_file_price ".
@@ -3738,6 +4383,14 @@ class RepositoryAction extends ActionBase
     // Add get all setting price 2008/10/30 Y.Nakao --end--
 
     // Add detail uri 2008/11/13 --start--
+    /**
+     * Get detail url
+     * 詳細画面URL取得
+     *
+     * @param int $item_id Item id アイテムID
+     * @param int $item_no Item serial number アイテム通番
+     * @return string URL URL
+     */
     function getDetailUri($item_id, $item_no){
         // init
         $detail_uri = "";
@@ -3763,11 +4416,13 @@ class RepositoryAction extends ActionBase
     // Add component Login action 2008/12/08 Y.Nakao --start--
     /**
      * login check
+     * ログインチェック
      *
-     * @param $login_id login ID
-     * @param $password password (this word is not md5 encoding)
-     * @param $Result_List users table data
-     * @param $error_msg error message
+     * @param string $login_id login ID ログインID
+     * @param string $password password (this word is not md5 encoding) パスワード
+     * @param array $Result_List users table data ユーザ情報 
+     *                           array[$ii][users's table column name]
+     * @param string $error_msg Error message エラーメッセージ
      * @return true:LoginOK false:LoginNG
      */
     function checkLogin($login_id, $password, &$Result_List, &$error_msg){
@@ -3834,7 +4489,13 @@ class RepositoryAction extends ActionBase
     }
     // Add component Login action 2008/12/08 Y.Nakao --end--
 
-
+    /**
+     * Get room authority
+     * ルーム権限取得
+     *
+     * @param string $user_id user id ユーザID
+     * @return int room authority ルーム権限
+     */
     function getRoomAuthorityID($user_id = ""){
         $userAuthorityManager = new RepositoryUserAuthorityManager($this->Session, $this->dbAccess, $this->TransStartDate);
         return $userAuthorityManager->getRoomAuthorityID($user_id);
@@ -3843,8 +4504,9 @@ class RepositoryAction extends ActionBase
     // Add count contents of index 2008/12/22 A.Suzuki --start--
     /**
      * add contents
+     * インデックスへのアイテム登録数加算
      *
-     * @param $index_id index ID
+     * @param int $index_id index ID インデックスID
      */
     function addContents($index_id){
         // increment contents
@@ -3885,8 +4547,9 @@ class RepositoryAction extends ActionBase
 
     /**
      * delete contents
+     * インデックスへのアイテム登録数減算
      *
-     * @param $index_id index ID
+     * @param int $index_id index ID インデックスID
      */
     function deleteContents($index_id){
         // decrement contents
@@ -3930,8 +4593,9 @@ class RepositoryAction extends ActionBase
     // Add count private_contents of index 2013/05/07 K.Matsuo --start--
     /**
      * add private_contents
+     * インデックスへのアイテム登録数加算
      *
-     * @param $index_id index ID
+     * @param int $index_id index ID インデックスID
      */
     function addPrivateContents($index_id){
         // increment contents
@@ -3972,8 +4636,9 @@ class RepositoryAction extends ActionBase
 
     /**
      * delete private_contents
+     * インデックスへのアイテム登録数減算
      *
-     * @param $index_id index ID
+     * @param int $index_id index ID インデックスID
      */
     function deletePrivateContents($index_id){
         // decrement contents
@@ -4017,9 +4682,12 @@ class RepositoryAction extends ActionBase
     // Add send item infomation to whatsnew module 2009/01/27 A.Suzuki --start--
     /**
      * addWhatsnew
+     * 新着アイテム追加
      *
-     * @param $item_id
-     * @param $item_no
+     * @param int $item_id Item id アイテムID
+     * @param int $item_no Item serial number アイテム通番
+     * @param int $noblock_id Block id ブロックID
+     * @return boolean Result 結果
      */
     function addWhatsnew($item_id, $item_no, $noblock_id=0){
         $container =& DIContainerFactory::getContainer();
@@ -4144,8 +4812,10 @@ class RepositoryAction extends ActionBase
 
     /**
      * deleteWhatsnew
+     * 新着アイテム削除
      *
-     * @param $item_id
+     * @param int $item_id Item id アイテムID
+     * @return boolean Result 結果
      */
     function deleteWhatsnew($item_id){
         $container =& DIContainerFactory::getContainer();
@@ -4166,9 +4836,8 @@ class RepositoryAction extends ActionBase
      * checkParentPublicState
      * 上位インデックスが非公開でないか調べる。
      *
-     * @param  $index_id
-     * @return true:公開中
-     *         false:非公開である
+     * @param int $index_id index id インデックスID
+     * @return boolean Is public 公開か
      */
     function checkParentPublicState($index_id){
         // 親インデックスのIDを取得
@@ -4227,7 +4896,8 @@ class RepositoryAction extends ActionBase
      * getSortName
      * ソートIDに該当するソート条件名を取得する
      *
-     * @param $sort_id
+     * @param int $sort_id Sort id ソートID
+     * return string sort name ソート名
      */
     function getSortName($sort_id){
         $this->setLangResource();
@@ -4301,8 +4971,9 @@ class RepositoryAction extends ActionBase
      * getParentIndex
      * 上位インデックスのデータを得る
      *
-     * @param int   $index_id
-     *        array &$parent_index
+     * @param int   $index_id index id インデックスID
+     * @param array $parent_index Index information インデックス情報
+     *                            array[$ii]["index_id"|"index_name"|"index_name_english"|"select_index_list_display"|"select_index_list_name"|"select_index_list_name_english"]
      */
     function getParentIndex($index_id, &$parent_index){
         if($index_id != "0"){
@@ -4338,8 +5009,8 @@ class RepositoryAction extends ActionBase
      * forXmlChange
      * XML出力時に特殊文字を HTML エンティティに変換する
      *
-     * @param $tmp
-     * @return $enc_tmp
+     * @param string $tmp string 文字列
+     * @return string Converted string 変換後文字列
      */
     function forXmlChange ($tmp) {
         $tmp = preg_replace('/[\x00-\x1f\x7f]/', '', $tmp);
@@ -4351,8 +5022,8 @@ class RepositoryAction extends ActionBase
      * forXmlChangeDecode
      * XML出力時に変換した特殊文字を元に戻す
      *
-     * @param $tmp
-     * @return $enc_tmp
+     * @param string $tmp string 文字列
+     * @return string Converted string 変換後文字列
      */
     function forXmlChangeDecode ($tmp) {
         $enc_tmp = htmlspecialchars_decode($tmp, ENT_QUOTES);
@@ -4365,8 +5036,8 @@ class RepositoryAction extends ActionBase
      * changeDatetimeToW3C
      * Datetime型をW3CDTFに変換する
      *
-     * @param $datetime
-     * @return $w3c
+     * @param string $datetime Date 日付
+     * @return string Converted string 変換後文字列
      */
     function changeDatetimeToW3C($datetime) {
         $w3c = null;
@@ -4390,7 +5061,7 @@ class RepositoryAction extends ActionBase
      * getMoneyUnit
      * 設定された通貨単位を取得しHTML表示用とJavascript表示用を配列にして返す
      *
-     * @return $money_units 通貨単位文字列の配列
+     * @return string Money unit string 通貨単位文字列の配列
      */
     function getMoneyUnit() {
         // パラメタテーブルの値を取得
@@ -4422,7 +5093,8 @@ class RepositoryAction extends ActionBase
     // Add fix login data 2009/07/31 A.Suzuki --start--
     // セッションのログイン情報の一部が消えてしまうバグ対応
     /**
-     * [[ログイン情報復元処理]]
+     * Login information restoring processing
+     * ログイン情報復元処理
      *
      * @access  public
      */
@@ -4468,9 +5140,27 @@ class RepositoryAction extends ActionBase
 
     // Add input type "supple" 2009/08/24 A.Suzuki --start--
     /**
-     * [[サプリ属性の値を取得]]
+     * Get supple mental contents
+     * サプリ属性の値を取得
+     * 
      * @access public
-     *
+     * @param int $Item_ID Item id アイテムID
+     * @param int $Item_No Item serial number アイテム通番
+     * @param int $attr_id Attribute id 属性ID
+     * @param int $idx Index id インデックスID
+     * @param array $Result_List Item information アイテム情報
+     *                           array["item"][$ii]["item_id"|"item_no"|"revision_no"|"item_type_id"|"prev_revision_no"|"title"|"title_english"|"language"|"review_status"|"review_date"|"shown_status"|"shown_date"|"reject_status"|"reject_date"|"reject_reason"|"serch_key"|"serch_key_english"|"remark"|"uri"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                           array["item_type"][$ii]["item_type_id"|"item_type_name"|"item_type_short_name"|"explanation"|"mapping_info"|"icon_name"|"icon_mime_type"|"icon_extension"|"icon"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                           array["item_attr_type"][$ii]["item_type_id"|"attribute_id"|"show_order"|"attribute_name"|"attribute_short_name"|"input_type"|"is_required"|"plural_enable"|"line_feed_enable"|"list_view_enable"|"hidden"|"junii2_mapping"|"dublin_core_mapping"|"lom_mapping"|"lido_mapping"|"spase_mapping"|"display_lang_type"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                           array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"personal_name_no"|"family"|"name"|"family_ruby"|"name_ruby"|"e_mail_address"|"item_type_id"|"author_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                           array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"show_order"|"mime_type"|"extension"|"file"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                           array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"display_name"|"display_type"|"show_order"|"mime_type"|"extension"|"prev_id"|"file_prev"|"file_prev_name"|"license_id"|"license_notation"|"pub_date"|"flash_pub_date"|"item_type_id"|"browsing_flag"|"cover_created_flag"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                           array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"biblio_no"|"biblio_name"|"biblio_name_english"|"volume"|"issue"|"start_page"|"end_page"|"date_of_issued"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                           array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"display_name"|"display_type"|"show_order"|"mime_type"|"extension"|"prev_id"|"file_prev"|"file_prev_name"|"license_id"|"license_notation"|"pub_date"|"flash_pub_date"|"item_type_id"|"browsing_flag"|"cover_created_flag"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"|"price"]
+     *                           array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"supple_no"|"item_type_id"|"supple_weko_item_id"|"supple_title"|"supple_title_en"|"uri"|"supple_item_type_name"|"mime_type"|"file_id"|"supple_review_status"|"supple_review_date"|"supple_reject_status"|"supple_reject_date"|"supple_reject_reason"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                           array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"attribute_no"|"attribute_value"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     * @param string $error_msg Error message エラーメッセージ
+     * @return boolean Result 結果
      */
     function getSuppleTableData($Item_ID,$Item_No,$attr_id,$idx,&$Result_List,&$error_msg){
         // サプリテーブルからitem_id, item_noに紐付くサプリデータを取得
@@ -4499,7 +5189,16 @@ class RepositoryAction extends ActionBase
     }
 
     /**
-     * [[アイテムIDとアイテム通番にて指定されるサプリテーブルデータ削除]]
+     * Delete supplemental contents data
+     * アイテムIDとアイテム通番にて指定されるサプリテーブルデータ削除
+     * 
+     * @param int $Item_ID Item id アイテムID
+     * @param int $Item_No Item serial number アイテム通番
+     * @param int $user_ID User id ユーザID
+     * @param string $Error_Msg Error message エラーメッセージ
+     * @param boolean $blob_flag Whether or not to acquire the image data 画像データを取得するか否か
+     * @param boolean $empty_del_flag Remove the space character 空白文字を削除するかのフラグ
+     * @return boolean Result 結果
      */
     function deleteSuppleInfoTableData($Item_ID,$Item_No,$user_ID,&$Error_Msg){
         // サプリテーブルにレコードがあるか判定
@@ -4562,9 +5261,13 @@ class RepositoryAction extends ActionBase
 
     // Add get edit item data for supple 2009/09/28 A.Suzuki --start--
     /**
+     * Save edit item information to session
      * 編集するアイテム情報をセッションに保存する
      * サプリコンテンツワークフローからの編集時に呼ばれる
      *
+     * @param int $item_id Item id アイテムID
+     * @param int $item_no Item serial number アイテム通番
+     * @return string Result 結果
      */
     function getEditItemDataForSupple($item_id, $item_no){
         //-----------------------------------------------------------------------
@@ -5162,12 +5865,12 @@ class RepositoryAction extends ActionBase
 
     // Add review mail setting 2009/09/24 Y.Nakao --start--
     /**
-     * 査読通知メール送信に必要なメール情報を取得
      * get review mail info
+     * 査読通知メール送信に必要なメール情報を取得
      *
-     * @param string $fromName
-     * @param array $users
-     * @return bool
+     * @param array $users Mail address list メールアドレス一覧
+     *                          array[$ii]["email"]
+     * @return boolean Result 結果
      */
     function getReviewMailInfo(&$users){
         $users = array();       // メール送信先
@@ -5203,7 +5906,10 @@ class RepositoryAction extends ActionBase
 
     /**
      * check any file can export status
-     *
+     * エクスポートできるかを確認する
+     * 
+     * @param string $status Status 状態
+     * @return string Status 状態
      */
     function checkExportFileDownload($status){
 
@@ -5233,9 +5939,10 @@ class RepositoryAction extends ActionBase
 
     /**
      * Get file save path by config
+     * ファイル保存ディレクトリパス取得
      *
-     * @param string "file" or "flash"
-     * @return string FileSavePath
+     * @param string $mode mode "file" or "flash" モード
+     * @return string File path ファイルパス
      */
     function getFileSavePath($mode){
         $config = parse_ini_file(BASE_DIR.'/webapp/modules/repository/config/main.ini');
@@ -5250,12 +5957,13 @@ class RepositoryAction extends ActionBase
 
 
     /**
-     *  Get administrator's value that related to parameter name in parameter table
+     * Get administrator's value that related to parameter name in parameter table
+     * パラメータテーブル情報を取得
      *
-     * @param $param_name parameter name
-     * @param $param_value value
-     * @param $error_msg error message
-     * @return result(true or false)
+     * @param string $param_name parameter name パラメータ名
+     * @param string $param_value value 値
+     * @param string $error_msg error message エラーメッセージ
+     * @return boolean result(true or false) 結果
      */
     function getAdminParam($param_name, &$param_value, &$error_msg)
     {
@@ -5286,6 +5994,13 @@ class RepositoryAction extends ActionBase
     }
 
     // check supple link 2010/03/16 Y.Nakao --start--
+    /**
+     * Check supple WEKO link
+     * サプリWEKOのリンクをチェックする
+     *
+     * @param boolean $supple_table Check flag チェックフラグ
+     * @return boolean Result 結果
+     */
     function checkSuppleWEKOlink($supple_table = false){
         // there has supple WEKO url and got prefix ID
 
@@ -5325,11 +6040,12 @@ class RepositoryAction extends ActionBase
     // check supple link 2010/03/16 Y.Nakao --end--
 
     /**
+     * To create and update a full-text search table of 1 item.
      * 1アイテムの全文検索テーブルを作成・更新する。(metadetaのみ)
      *
-     * @param   $item_id
-     * @param   $item_no
-     * @param   $update_flg
+     * @param int $item_id item id アイテムID
+     * @param int $item_no item serial number アイテム通番
+     * @param boolean $update_flg update flag 更新フラグ
      */
     function updateFullTextTable($item_id, $item_no, $update_flg){
         ////////////////////////////////////////////////////////////
@@ -5498,6 +6214,7 @@ class RepositoryAction extends ActionBase
     }
 
     /**
+     * To rebuild the full-text search table.
      * 全文検索テーブルを再構築する。
      */
     function rebuildFullTextTable(){
@@ -5518,9 +6235,10 @@ class RepositoryAction extends ActionBase
     }
 
     /**
+     * To get the version of NetCommons that is currently running
      * 現在稼働しているNetCommonsのバージョンを取得する
      *
-     * @return string $version
+     * @return string Version バージョン
      */
     function getNCVersion(){
         // now version
@@ -5537,10 +6255,11 @@ class RepositoryAction extends ActionBase
 
     /**
      * Get file icon ID from mimetype or extention.
+     * アイコンを取得する
      *
-     * @param string $mimetype
-     * @param string $extention
-     * @return int icon_id
+     * @param string $mimetype mimetype mimetype
+     * @param string $extention extension 拡張子
+     * @return int icon id アイコンID
      */
     function getFileIconID($mimetype, $extention=null){
         $icon_id = 0;
@@ -5707,9 +6426,10 @@ class RepositoryAction extends ActionBase
     // Add contents page 2010/08/06 Y.Nakao --start--
     /**
      * check display type for index
+     * 表示形式をチェックする
      *
-     * @param unknown_type $index_id
-     * @return int display type
+     * @param int $index_id Index id インデックスID
+     * @return int display type 表示形式
      *          0: list
      *          1: contents
      */
@@ -5738,10 +6458,11 @@ class RepositoryAction extends ActionBase
     // Add multiple FLASH files download 2011/02/04 Y.Nakao --start--
     /**
      * make flash save folder.
+     * FLASHディレクトリパスを作成する
      *
-     * @param int $itemId item_id
-     * @param int $attrId attribute_id
-     * @param int $fileNo file_no
+     * @param int $itemId item id アイテムID
+     * @param int $attrId attribute id 属性ID
+     * @param int $fileNo file number ファイル通番
      */
     function makeFlashFolder($itemId=0, $attrId=0, $fileNo=0){
         $flashDirPath = $this->getFileSavePath("flash");
@@ -5774,12 +6495,13 @@ class RepositoryAction extends ActionBase
     }
 
     /**
-     * check exists flash save folder.
+     * Get exists flash save folder.
+     * FLASHディレクトリパスを取得する
      *
-     * @param int $itemId item_id default 0
-     * @param int $attrId attribute_id default 0
-     * @param int $fileNo file_no default 0
-     * @return string flash save folder path.
+     * @param int $itemId item id アイテムID
+     * @param int $attrId attribute id 属性ID
+     * @param int $fileNo file number ファイル通番
+     * @return string flash save folder path. FLASHディレクトリパス
      */
     function getFlashFolder($itemId=0, $attrId=0, $fileNo=0){
         $flashDirPath = $this->getFileSavePath("flash");
@@ -5800,50 +6522,10 @@ class RepositoryAction extends ActionBase
     }
 
     /**
-     * get flash file page count(flash files count)
-     *
-     * @param int $itemId item_id
-     * @param int $attrId attribute_id
-     * @param int $fileNo file_no
-     * @return int flash pagecount
-     */
-    function getFlashPagecount($itemId, $attrId, $fileNo){
-        $flashDir = $this->getFlashFolder($itemId, $attrId, $fileNo);
-        if(strlen($flashDir) == 0){
-            // flash save folder not exists
-            return 0;
-        }
-        $flashContents = $flashDir.'/weko1.swf';
-        $pageCnt = 0;
-        if(strlen($flashDir) > 0 && file_exists($flashContents)){
-            if(strlen($flashDir) > 0){
-                if (file_exists($flashDir)) {
-                    chmod ($flashDir, 0755 );
-                }
-                if ($handle = opendir("$flashDir")) {
-                    while (false !== ($file = readdir($handle))) {
-                        if ($file != "." && $file != "..") {
-                            if (!is_dir("$flashDir/$file")) {
-                                if(preg_match("/weko[0-9]+.swf/", $file) == 1){
-                                    $pageCnt++;
-                                }
-                            }
-                        }
-                    }
-                    closedir($handle);
-                }
-            }
-        }
-        //if($pageCnt == 1){
-        //    $pageCnt = 0;
-        //}
-        return $pageCnt;
-    }
-    // Add multiple FLASH files download 2011/02/04 Y.Nakao --end--
-
-    /**
      * get flag which decides whether display index list or not
-     * @return int index display flg
+     * インデックス一覧表示フラグを取得する
+     * 
+     * @return int index display flg 表示形式
      */
     function getSelectIndexListDisplay() {
          $query = "SELECT param_value ".
@@ -5859,8 +6541,12 @@ class RepositoryAction extends ActionBase
 
     // Add log exclusion from user-agaent 2011/05/09 H.Ito --start--
     /**
-     * logExclusion
-     * @return  logExclusion sql
+     * Get logExclusion sub query
+     * 除外ログ用のサブクエリを取得する
+     * 
+     * @param int $isProcessflg process flag 進捗フラグ
+     * @param boolean $isFullPathflg Full path flag フルパスフラグ
+     * @return string logExclusion sql 除外ログ用のサブクエリ
      */
     function createLogExclusion($isProcessflg=0,$isFullPathflg=true)
     {
@@ -5942,9 +6628,10 @@ class RepositoryAction extends ActionBase
     // Add check edit user auth 2011/06/02 A.Suzuki --start--
     /**
      * Check edit user auth
+     * アイテム登録のユーザ権限をチェックする
      *
-     * @param string $user_id
-     * @param int $item_id
+     * @param string $user_id User id ユーザID
+     * @param int $item_id Item id アイテムID
      * @return boolean  true: editable
      *                 false: uneditable
      */
@@ -5978,10 +6665,11 @@ class RepositoryAction extends ActionBase
     // Add checkDate 2011/06/13 T.Sugimoto --start--
     /**
      * checkDate
+     * 日付をチェックする
      *
-     * @param int $year
-     * @param int $month
-     * @param int $date
+     * @param int $year Year 年
+     * @param int $month Month 月
+     * @param int $date Day 日
      * @return boolean  true: editable
      *                 false: uneditable
      */
@@ -6047,11 +6735,13 @@ class RepositoryAction extends ActionBase
     // Add Create tag 2011/12/02 A.Suzuki --start--
     /**
      * Create tag
+     * メタタグを作成する
      *
-     * @param string $elementName
-     * @param array $attribute["key"] = "value"
-     * @param string $content
-     * @return string tag text
+     * @param string $elementName Tag name タグ名
+     * @param array $attribute Attribute list 属性一覧
+     *                         array[key]
+     * @param string $content Value 値
+     * @return string tag text タグ文字列
      */
     function createTags($elementName, $attribute = null, $content = null){
         $retTag = "";
@@ -6092,8 +6782,9 @@ class RepositoryAction extends ActionBase
     // Modfy proxy 2011/12/06 Y.Nakao --start--
     /**
      * get proxy setting data.
+     * プロキシ情報を取得する
      *
-     * @return array proxy setting data.
+     * @return array proxy setting data. プロキシ情報
      *               array('proxy_mode'=>0, 'poxy_host'=>'', 'proxy_port'=>'', 'proxy_user'=>'', 'proxy_pass'=>'')
      */
     public function getProxySetting()
@@ -6146,10 +6837,13 @@ class RepositoryAction extends ActionBase
 
     /**
      * check all user's group in exclusive_acl_group
+     * 閲覧権限のないグループをチェックする
      *
-     * @param array[$ii][room_id] $usersGroups
-     * @param string $exclusiveAclGroup
-     * @return boolean: true->all user's group in exclusive_acl_group
+     * @param array $usersGroups User group list ユーザグループ一覧
+     *                           array[$ii]["room_id"]
+     * @param string $exclusiveAclGroup Exclusive authority 閲覧権限のないグループ
+     * @return boolean Result 結果
+     *                 true->all user's group in exclusive_acl_group
      *                 false->is not all user's group in exclusive_acl_group
      */
     public function checkAccessGroup($usersGroups, $exclusiveAclGroup)
@@ -6164,9 +6858,12 @@ class RepositoryAction extends ActionBase
 
     /**
      * delete pade_id of private room and public space from $usersGroups
+     * プライベートルームのぺーじIDを削除する
      *
-     * @param array[$ii][room_id] $usersGroups
-     * @return boolean: false->mysql error
+     * @param array $usersGroups User group list ユーザグループ一覧
+     *                           array[$ii]["room_id"]
+     * @return boolean Result 結果
+     *                 false->mysql error
      */
     public function deleteRoomIdOfMyRoomAndPublicSpace(&$usersGroups)
     {
@@ -6212,9 +6909,11 @@ class RepositoryAction extends ActionBase
 
     /**
      * Get parameter for PDF Cover by param_name
+     * PDFカバーページ設定を取得する
      *
-     * @param string $paramName
-     * @return array
+     * @param string $paramName Parameter name パラメータ名
+     * @return array parameter for PDF Cover PDFカバーページ設定
+     *               array["param_name"|"text"|"image"|"extension"|"mimetype"]
      */
     public function getPdfCoverParamRecord($paramName)
     {
@@ -6234,14 +6933,11 @@ class RepositoryAction extends ActionBase
 
     /**
      * Update pdf cover parameter
+     * PDFカバーページ設定更新
      *
-     * @param array $params["paramNeme"] required
-     *                     ["text"]
-     *                     ["image"]
-     *                     ["extension"]
-     *                     ["mod_user_id"] required
-     *                     ["mod_date"] required
-     * @return bool
+     * @param array $params Parameter param-得た
+     *                      array["paramNeme"|"text"|"image"|"extension"|"mod_user_id"|"mod_date"]
+     * @return boolean Result 結果
      */
     public function updatePdfCoverParamByParamName($params)
     {
@@ -6296,8 +6992,10 @@ class RepositoryAction extends ActionBase
 
     /**
      * Get indexes create_cover_flag is on
+     * PDFカバーページ設定がONであるインデックスを取得する
      *
-     * @return array
+     * @return array Index list インデックス一覧
+     *               array[$ii]["index_id"|"index_name"|"index_name_english"]
      */
     public function getIndexIsCoverFlagOn()
     {
@@ -6319,12 +7017,13 @@ class RepositoryAction extends ActionBase
 
     /**
      * Resize image file
+     * 画像ファイルリサイズ
      *
-     * @param int &$width
-     * @param int &$height
-     * @param int $maxWidth
-     * @param int $maxHeight
-     * @return bool
+     * @param int $width Width 横幅
+     * @param int $height Height 縦幅
+     * @param int $maxWidth Maximum width 最大横幅
+     * @param int $maxHeight Maximum height 最大縦幅
+     * @return boolean Result 結果
      */
     public function resizeImage(&$width, &$height, $maxWidth=100, $maxHeight=100)
     {
@@ -6365,9 +7064,10 @@ class RepositoryAction extends ActionBase
 
     /**
      * Check extension for PDF cover header image
+     * PDFカバーページに利用できる拡張子かを調べる
      *
-     * @param string $extention
-     * @return bool
+     * @param string $extention extension 拡張子
+     * @return boolean Result 結果
      */
     public function checkHeaderImageExtension($extention)
     {
@@ -6388,9 +7088,11 @@ class RepositoryAction extends ActionBase
 
     /**
      * Check for indexes match index create cover
+     * カバーページを付与するインデックスがあるか
      *
-     * @param array $indexIds
-     * @return bool
+     * @param array $indexIds Index id list インデックスID一覧
+     *                        array[$ii]
+     * @return boolean Result 結果
      */
     public function checkIndexCreateCover($indexIds)
     {
@@ -6409,9 +7111,10 @@ class RepositoryAction extends ActionBase
 
     /**
      * Get user name by mail address
+     * ユーザ名を取得する
      *
-     * @param string $address
-     * @return string
+     * @param string $address address メールアドレス
+     * @return string user name ユーザ名
      */
     public function getUserNameByAddress($address)
     {
@@ -6456,10 +7159,11 @@ class RepositoryAction extends ActionBase
     // Mod multimedia support 2012/10/09 T.Koyasu -start-
     /**
      * file is multimedia file or not
+     * マルチメディアファイルであるか
      *
-     * @param string $mimeType
-     * @param string $extension
-     * @return boolean
+     * @param string $mimeType mimetype mimetype
+     * @param string $extension extension 拡張子
+     * @return boolean Result 結果
      */
     public function isMultimediaFile($mimeType, $extension)
     {
@@ -6476,10 +7180,11 @@ class RepositoryAction extends ActionBase
 
     //Add ichushi fill 2012/11/21 A.jin --start--
     /**
+     * To get the login information to log in to Ichushi from database
      * 医中誌へログインするためのログイン情報をデータベースから取得する
      *
-     * @param string ログインID
-     * @param string ログインパスワード
+     * @param string $login_id login id ログインID
+     * @param string $login_passwd password ログインパスワード
      */
     public function getLoginInfoIchushi( &$login_id, &$login_passwd)
     {
@@ -6502,11 +7207,13 @@ class RepositoryAction extends ActionBase
     }
 
     /**
+     * Login to ichushi
      * 医中誌へログインする
      *
-     * @param string ログインID
-     * @param string ログインパスワード
-     * @param string Cookie
+     * @param string $login_id login id ログインID
+     * @param string $login_passwd password ログインパスワード
+     * @param string $cookie cookie クッキー
+     * @return boolean Result 結果
      */
     public function loginIchushi($login_id, $login_passwd, &$cookie)
     {
@@ -6578,9 +7285,11 @@ class RepositoryAction extends ActionBase
     }
 
     /**
+     * Logout by ichushi
      * 医中誌からログアウトする
      *
-     * @param string Cookie
+     * @param string $cookie Cookie クッキー
+     * @return boolean Result 結果
      */
     public function logoutIchushi($cookie)
     {
@@ -6645,15 +7354,16 @@ class RepositoryAction extends ActionBase
 
     /**
      * Get file download status for entryLog
+     * ログからダウンロード状態を取得する
      *
-     * @param int $itemId
-     * @param int $itemNo
-     * @param int $attrId
-     * @param int $fileNo
-     * @param int $fileStatus
-     * @param int $inputType
-     * @param int $loginStatus
-     * @param int $groupId
+     * @param int $itemId Item id アイテムID
+     * @param int $itemNo Item serial number アイテム通番
+     * @param int $attrId attribute id 属性ID
+     * @param int $fileNo file number ファイル通番
+     * @param int $fileStatus file status 公開状態
+     * @param int $inputType input type 入力タイプ
+     * @param int $loginStatus login status ログイン状態
+     * @param int $groupId group id グループID
      */
     public function getFileDownloadStatusForEntryLog(
         $itemId, $itemNo, $attrId, $fileNo, &$fileStatus,
@@ -6701,6 +7411,12 @@ class RepositoryAction extends ActionBase
                 $inputType = RepositoryConst::LOG_INPUT_TYPE_FILE;
             }
             
+            // アイテム登録者情報を取得する
+            $itemInfo = array();
+            $errorMsg = "";
+            $this->getItemTableData($itemId, $itemNo, $itemInfo, $errorMsg);
+            $itemInsUserId = $itemInfo["item"][0][RepositoryConst::DBCOL_COMMON_INS_USER_ID];
+
             // login status
             $userId = $this->Session->getParameter("_user_id");
             $userAuthId = $this->Session->getParameter("_user_auth_id");
@@ -6716,7 +7432,7 @@ class RepositoryAction extends ActionBase
                 // Admin user
                 $loginStatus = RepositoryConst::LOG_LOGIN_STATUS_ADMIN;
             }
-            else if($fileInfo[0][RepositoryConst::DBCOL_COMMON_INS_USER_ID] === $userId)
+            else if($itemInsUserId === $userId)
             {
                 // Register
                 $loginStatus = RepositoryConst::LOG_LOGIN_STATUS_REGISTER;
@@ -6773,11 +7489,11 @@ class RepositoryAction extends ActionBase
     // Fix check index_id Y.Nakao 2013/06/07 --start--
     /**
      * check exists index.
-     *
      * delete index is not exists.
+     * インデックス有無を確認する
      *
-     * @param int $indexId
-     * @return true/false
+     * @param int $indexId index id インデックスID
+     * @return boolean Result 結果
      */
     public function existsIndex($indexId)
     {
@@ -6805,9 +7521,10 @@ class RepositoryAction extends ActionBase
     // Add specialized support for open.repo "auto affiliation in private tree" Y.Nakao 2013/06/21 --start--
     /**
      * get private tree index id
+     * プライベートツリーインデックスIDを取得する
      *
-     * @param string $userId user id
-     * @return int index id
+     * @param string $userId user id ユーザID
+     * @return int index id インデックスID
      */
     function getPrivateTreeIndexId($userId="")
     {
@@ -6849,9 +7566,13 @@ class RepositoryAction extends ActionBase
     // when availability private tree, auto affiliation in private tree / プライベートツリーが有効の場合、プライベートツリーに所属させる
     /**
      * auto affiliation in private tree
+     * プライベートツリーに自動的にインデックスを登録する
      *
-     * @param array $indice array(array("index_id" => $index_id), array("index_id" => $index_id), ... )
-     * @param string $insUserId insert user id / when set contributor
+     * @param array $indice Index id list インデックス一覧
+     *                      array[$ii]["index_id"]
+     * @param string $insUserId insert user id / when set contributor 挿入ユーザID
+     * @return array index id list インデックスID一覧
+     *               array[$ii]["index_id"]
      */
     function addPrivateTreeInPositionIndex($indice, $insUserId="")
     {
@@ -6959,7 +7680,9 @@ class RepositoryAction extends ActionBase
     // Add get default auth at public room 2013/06/13 A.Suzuki --start--
     /**
      * Get default auth at public room
-     *
+     * パブリックルームのデフォルト権限を取得する
+     * 
+     * @return int authority level 権限
      */
     function getDefaultEntryAuthPublic()
     {
@@ -6988,9 +7711,11 @@ class RepositoryAction extends ActionBase
     // Add item type multi-language 2013/07/25 K.Matsuo --start--
     /**
      * attribute name change into multilanguage itemtype name
+     * 属性名を他言語用に変換する
      *
-     * @param int $item_type_id itemtype id
-     * @param array $array_item_type_attr itemtype attribute array
+     * @param int $item_type_id itemtype id アイテムタイプID
+     * @param array $array_item_type_attr itemtype attribute array 属性名一覧
+     *              array[$ii]["attribute_name"]
      */
     public function setItemtypeNameMultiLanguage($item_type_id, &$array_item_type_attr){
         $select_lang = $this->Session->getParameter("_lang");
@@ -7009,9 +7734,12 @@ class RepositoryAction extends ActionBase
         }
         for($ii = 0; $ii < count($result); $ii++){
             for($jj = 0; $jj < count($array_item_type_attr); $jj++){
-                if($result[$ii]['attribute_id'] == $array_item_type_attr[$jj]['attribute_id']){
-                    $array_item_type_attr[$jj]['attribute_name'] = $result[$ii]['item_type_name'];
-                    continue;
+                if(isset($array_item_type_attr[$jj]['attribute_id']) && isset($result[$ii]['attribute_id']))
+                {
+                    if($result[$ii]['attribute_id'] == $array_item_type_attr[$jj]['attribute_id']){
+                        $array_item_type_attr[$jj]['attribute_name'] = $result[$ii]['item_type_name'];
+                        continue;
+                    }
                 }
             }
         }
@@ -7021,9 +7749,10 @@ class RepositoryAction extends ActionBase
     //Add scrape attrTableData if "plural_enable" state change "enabled" to "disabled" 2013/09/09 T.Ichikawa --start--
     /**
      * scrape attrTableData if "plural_enable" state changed
+     * 複数可オプションが変更されているならitem_attrテーブルデータを削除する
      *
-     * @param $idx index number
-     * @param $Result_List users table data
+     * @param array $Result_List users table data ユーザテーブルデータ
+     *                           array[$ii]
      */
     private function scrapeTableData(&$Result_List) {
         array_splice($Result_List, 1);
@@ -7033,9 +7762,10 @@ class RepositoryAction extends ActionBase
 
     // Add DSpace data move T.Koyasu 2013/10/23 --start--
     /**
-     * base process of Action and View
+     * Execute
+     * 実行処理
      *
-     * @return to transition
+     * @return string to transition 遷移先
      */
     public function execute()
     {
@@ -7061,7 +7791,9 @@ class RepositoryAction extends ActionBase
             $this->preExecute();
             
             // call the method(executeApp) of each inheritance class
+            $this->inExecuteApp = true;
             $strProcResult = $this->executeApp();
+            $this->inExecuteApp = false;
             
             // トランザクション内後処理呼び出し
             $this->postExecute();
@@ -7071,6 +7803,9 @@ class RepositoryAction extends ActionBase
             
             // トランザクション外後処理
             $this->afterTrans();
+            
+            // 基底クラス終了処理
+            $this->finalize();
             
             // return result string
             if($this->exitFlag) {
@@ -7086,6 +7821,8 @@ class RepositoryAction extends ActionBase
         catch(RepositoryException $Exception)
         {
             // catch database exception
+            
+            $this->inExecuteApp = false;
             
             // if start transaction, exec rollback
             if($nIsInit === true){
@@ -7128,7 +7865,10 @@ class RepositoryAction extends ActionBase
             }
             
             // ビジネスロジック生成クラス終了処理
-            BusinessFactory::uninitialize();
+            $businessFactory = BusinessFactory::getFactory();
+            if(isset($businessFactory)) {
+                $businessFactory->uninitialize();
+            }
             
             if($this->exitFlag) {
                 if(is_array($this->errMsg)){
@@ -7155,34 +7895,36 @@ class RepositoryAction extends ActionBase
             $this->addErrMsg("予期せぬエラーが発生しました");
             
             // ビジネスロジック生成クラス終了処理
-            BusinessFactory::uninitialize();
+            $businessFactory = BusinessFactory::getFactory();
+            if(isset($businessFactory)) {
+                $businessFactory->uninitialize();
+            }
             
             return "error";
         }
     }
 
     /**
-     * abstract function for execute method of child class
+     * Execute application
+     * 処理実行関数
      *
-     * @return strResult
+     * @return strResult Result 結果
      */
     protected function executeApp()
     {
         $exception = new RepositoryException( "ERR_MSG_UnpopulatedCode", 00002 ); //主メッセージとログIDを指定して例外を作成
         throw $exception;
     }
-    protected function beforeTrans(){}
-    protected function afterTrans(){}
-    protected function preExecute(){}
-    protected function postExecute(){}
 
     // Add DSpace data move T.Koyasu 2013/10/23 --end--
     
     // Add e-person R.Matsuura 2014/01/06 --start--
     /**
      * get author name by mail address
+     * 著者名を取得する
      * 
-     * @return string
+     * @param string $address Email address メールアドレス
+     * @return string Author name 著者名
      */
     public function getAuthorNameByAddress($address)
     {
@@ -7231,5 +7973,22 @@ class RepositoryAction extends ActionBase
         return $authorName;
     }
     // Add e-person R.Matsuura 2014/01/06 --end--
+    
+    /**
+     * Run the universally to perform processing during query execution
+     * クエリ実行時に普遍的に行う処理を実行する(今後、dbAccessは使用せず、この関数を使用し、クエリを実行する)
+     *
+     * @param string $query Query to run 実行するクエリ
+     * @param array $params Parameters of the query クエリのパラメータ
+     * @return array Result 実行結果
+     */
+    protected function executeSql($query, $params){
+        $result = $this->Db->execute($query, $params);
+        if($result === false){
+            // 例外
+            throw new AppException($this->Db->ErrorMsg());
+        }
+        return $result;
+    }
 }
 ?>

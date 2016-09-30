@@ -1,0 +1,37 @@
+<?php
+
+/**
+ * Send Sitelicense usage statistics mail batch interface
+ * サイトライセンス利用統計メール送信バッチインターフェース
+ *
+ * @package WEKO
+ */
+
+// --------------------------------------------------------------------
+//
+// $Id: SitelicenseUsagestatisticsFeedbackMailBatch.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
+//
+// Copyright (c) 2007 - 2008, National Institute of Informatics,
+// Research and Development Center for Scientific Information Resources
+//
+// This program is licensed under a Creative Commons BSD Licence
+// http://creativecommons.org/licenses/BSD/
+//
+// --------------------------------------------------------------------
+
+/**
+ * Setting Const process
+ * 定数設定処理
+ */
+require_once(dirname(__FILE__)."/../FW/BatchNC2Const.inc.php");
+/**
+ * Send sitelicense usage statistics mail class
+ * サイトライセンス利用統計メール送信クラス
+ */
+require_once(dirname(__FILE__)."/SitelicenseUsagestatisticsFeedbackMailAction.class.php");
+
+$class = new SitelicenseUsagestatisticsFeedbackMailAction();
+$ret = $class->execute($argv, WEBAPP_DIR."/modules/repository/batch/SitelicenseUsagestatisticsFeedbackMail/SitelicenseUsagestatisticsFeedbackMail.ini");
+
+echo $ret;
+?>

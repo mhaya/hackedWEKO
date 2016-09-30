@@ -1,7 +1,15 @@
 <?php
+
+/**
+ * SWORD Service Document acquisition source file
+ * SWORD Service Document取得ソースファイル
+ * 
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: servicedocument.php 30197 2013-12-19 09:55:45Z rei_matsuura $
+// $Id: servicedocument.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -25,6 +33,13 @@
 //error_reporting(E_ALL);
 session_start();
 // path transform
+/**
+ * To convert the backslash in the path to slash
+ * パス内のバックスラッシュをスラッシュに変換する
+ *
+ * @param string $path Path パス
+ * @return string Converted string 変換後文字列
+ */
 function transPathSeparator($path) {
     if ( DIRECTORY_SEPARATOR != '/' ) {
         // IIS6 doubles the \ chars

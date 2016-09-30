@@ -1,7 +1,14 @@
 <?php
+/**
+ * Action class for robotlist log delete
+ * ロボットリストログ削除用アクションクラス
+ * 
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Robotlist.class.php 51750 2015-04-08 04:02:25Z shota_suzuki $
+// $Id: Robotlist.class.php 69174 2016-06-22 06:43:30Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -12,22 +19,38 @@
 // --------------------------------------------------------------------
 
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
+/**
+ * Action base class for WEKO
+ * WEKO用アクション基底クラス
+ * 
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/common/WekoAction.class.php';
 
 /**
- * [[機能説明]]
- *
- * @package     [[package名]]
+ * Action class for robotlist log delete
+ * ロボットリストログ削除用アクションクラス
+ * 
+ * @package     WEKO
+ * @copyright   (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license     http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
  * @access      public
  */
 class Repository_Action_Common_Robotlist extends WekoAction
 {
+    /**
+     * Background process name for lock table
+     * ロックテーブル用非同期処理名
+     *
+     * @var string
+     */
     const PARAM_NAME = "Repository_Action_Common_Robotlist";
     
     /**
-     * [[機能説明]]
+     * Get robotlist and delete robotlist log
+     * ロボットリストの取得及びロボットリストログの削除を実施する
      *
-     * @access public
+     * @return string Result code 
+     *                実行結果
      */
     function executeApp()
     {
@@ -74,8 +97,10 @@ class Repository_Action_Common_Robotlist extends WekoAction
     }
     
     /**
-    * ロボットリスト非同期削除クラスにアクセスする
-    */
+     * Access to delete robotlist log background process class
+     * ロボットリストログ削除非同期処理クラスにアクセスする
+     *
+     */
     private function accessTodeleterobotlist()
     {
         $url = BASE_URL . "/?action=repository_action_common_background_deleterobotlist";
@@ -91,8 +116,10 @@ class Repository_Action_Common_Robotlist extends WekoAction
     }
     
     /**
-    * ロボットリストマスタを取得する
-    */
+     * Get Robotlist master file information
+     * ロボットリストマスタファイル情報を取得する
+     *
+     */
     private function getRobotListMaster()
     {
         $query = "SELECT * " . 
@@ -114,8 +141,14 @@ class Repository_Action_Common_Robotlist extends WekoAction
     }
     
     /**
-    * ロボットリストデータを更新する
-    */
+     * Update robotlist data
+     * ロボットリストデータを更新する
+     *
+     * @param int $robotlistId Robotlist master id
+     *                         ロボットリストマスタID
+     * @param int $status Robotlist status
+     *                    ロボットリストのステータス
+     */
     private function updateRobotListData($robotlistId, $status)
     {
         $query = "UPDATE ". DATABASE_PREFIX. "repository_robotlist_data ". 

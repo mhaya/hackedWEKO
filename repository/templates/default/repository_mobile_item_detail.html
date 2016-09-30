@@ -1,6 +1,6 @@
 <!--// ---------------------------------------------------------------------->
 <!--//                                                                     -->
-<!--// $Id: repository_mobile_item_detail.html 47574 2015-02-02 07:33:54Z tomohiro_ichikawa $          -->
+<!--// $Id: repository_mobile_item_detail.html 70936 2016-08-09 09:53:57Z keiya_sugimoto $          -->
 <!--//                                                                     -->
 <!--// Copyright (c) 2007 - 2008, National Institute of Informatics,        -->
 <!--// Research and Development Center for Scientific Information Resources -->
@@ -563,53 +563,102 @@
                      </div>
                      <div style="text-align:left; padding-left:20px;">
                          <{if count($item_attr[i]) == 1}>
-                             <a href="<{$item_attr[i][0].url}>" >
-                                 <{$item_attr[i][0].family}>
-                                 <{if $item_attr[i][0].name!=""}>
-                                     ,&nbsp;<{$item_attr[i][0].name}>
+                             <{if $attr_type[i].display_lang_type|lower == "english"}>
+                                 <{if $item_attr[i][0].name!="" && $item_attr[i][0].family!=""}>
+                                     <{*詳細画面の著者名から検索できない不具合修正 2015/01/06 K.Sugimoto --start--*}>
+                                     <a href="<{$item_attr[i][0].url}>" ><{$item_attr[i][0].name}> <{$item_attr[i][0].family}></a>
+                                 <{elseif $item_attr[i][0].family!=""}>
+                                     <a href="<{$item_attr[i][0].url}>" ><{$item_attr[i][0].family}></a>
+                                 <{else}>
+                                     <a href="<{$item_attr[i][0].url}>" ><{$item_attr[i][0].name}></a>
                                  <{/if}>
-                             </a>
-                             <{if $attr_type[i].display_lang_type=="japanese"}>
-                                 <{if $item_attr[i][0].family_ruby!="" || $item_attr[i][0].name_ruby!=""}>
-                                     <br/>
-                                     <{$item_attr[i][0].family_ruby}>,&nbsp;<{$item_attr[i][0].name_ruby}>
+                             <{else}>
+                                 <{if $item_attr[i][0].name!="" && $item_attr[i][0].family!=""}>
+                                     <a href="<{$item_attr[i][0].url}>" ><{$item_attr[i][0].family}> <{$item_attr[i][0].name}></a>
+                                     <{*詳細画面の著者名から検索できない不具合修正 2015/01/06 K.Sugimoto --end--*}>
+                                 <{elseif $item_attr[i][0].family!=""}>
+                                     <a href="<{$item_attr[i][0].url}>" ><{$item_attr[i][0].family}></a>
+                                 <{else}>
+                                     <a href="<{$item_attr[i][0].url}>" ><{$item_attr[i][0].name}></a>
+                                 <{/if}>
+                                 <{if $attr_type[i].display_lang_type=="japanese"}>
+                                     <{if $item_attr[i][0].family_ruby!="" || $item_attr[i][0].name_ruby!=""}>
+                                         <br/>
+                                         <{$item_attr[i][0].family_ruby}>&nbsp;<{$item_attr[i][0].name_ruby}>
+                                     <{/if}>
                                  <{/if}>
                              <{/if}>
-                             <{if $item_attr[i][0].e_mail_address!=""}>
+                             <{if defined("_REPOSITORY_SHOW_AUTHOR_MAIL_ADDRESS") && $smarty.const._REPOSITORY_SHOW_AUTHOR_MAIL_ADDRESS && $item_attr[i][0].e_mail_address!=""}>
                                  <br/>
                                  <{$item_attr[i][0].e_mail_address}>
                              <{/if}>
-                             <{if $item_attr[i][0].author_id_text!=""}>
+                             <{if is_array($item_attr[i][0].external_author_id)}>
                                  <br/>
-                                 <{$item_attr[i][0].author_id_text}>
+                                <{section name=k loop=$item_attr[i][0].external_author_id}>
+                                    <{assign var=k value=$smarty.section.k.index}>
+                                    <{if $smarty.section.k.index > 0}>
+                                        , 
+                                    <{/if}>
+                                    <{$item_attr[i][0].external_author_id[k].prefix_name}>:
+                                    <{if $item_attr[i][0].external_author_id[k].url != null}>
+                                        <a href="<{$item_attr[i][0].external_author_id[k].url}>" target="_blank" ><{$item_attr[i][0].external_author_id[k].suffix}></a>
+                                    <{else}>
+                                        <{$item_attr[i][0].external_author_id[k].suffix}>
+                                    <{/if}>
+                                <{/section}>
                              <{/if}>
                          <{else}>
                              <table width="100%">
                                  <{section name=j loop=$item_attr[i]}>
+                                 <{assign var=j value=$smarty.section.j.index}>
                                      <tr>
                                          <td style="vertical-align: top; padding-top: 5px;">
                                              <{$smarty.section.j.index_next}>.
                                          </td>
                                          <td style="width:100%; padding-top: 5px;">
-                                             <a href="<{$item_attr[i][j].url}>" >
-                                                 <{$item_attr[i][j].family}>
-                                                 <{if $item_attr[i][j].name!=""}>
-                                                     ,&nbsp;<{$item_attr[i][j].name}>
+                                             <{if $attr_type[i].display_lang_type|lower == "english"}>
+                                                 <{if $item_attr[i][j].name!="" && $item_attr[i][j].family!=""}>
+                                                     <{*詳細画面の著者名から検索できない不具合修正 2015/01/06 K.Sugimoto --start--*}>
+                                                     <a href="<{$item_attr[i][j].url}>" ><{$item_attr[i][j].name}> <{$item_attr[i][j].family}></a>
+                                                 <{elseif $item_attr[i][j].family!=""}>
+                                                     <a href="<{$item_attr[i][j].url}>" ><{$item_attr[i][j].family}></a>
+                                                 <{else}>
+                                                     <a href="<{$item_attr[i][j].url}>" ><{$item_attr[i][j].name}></a>
                                                  <{/if}>
-                                             </a>
-                                             <{if $attr_type[i].display_lang_type=="japanese"}>
-                                                 <{if $item_attr[i][j].family_ruby!="" || $item_attr[i][j].name_ruby!=""}>
-                                                     <br/>
-                                                     <{$item_attr[i][j].family_ruby}>,&nbsp;<{$item_attr[i][j].name_ruby}>
+                                             <{else}>
+                                                 <{if $item_attr[i][j].name!="" && $item_attr[i][j].family!=""}>
+                                                     <a href="<{$item_attr[i][j].url}>" ><{$item_attr[i][j].family}> <{$item_attr[i][j].name}></a>
+                                                     <{*詳細画面の著者名から検索できない不具合修正 2015/01/06 K.Sugimoto --end--*}>
+                                                 <{elseif $item_attr[i][j].family!=""}>
+                                                     <a href="<{$item_attr[i][j].url}>" ><{$item_attr[i][j].family}></a>
+                                                 <{else}>
+                                                     <a href="<{$item_attr[i][j].url}>" ><{$item_attr[i][j].name}></a>
+                                                 <{/if}>
+                                                 <{if $attr_type[i].display_lang_type=="japanese"}>
+                                                     <{if $item_attr[i][j].family_ruby!="" || $item_attr[i][j].name_ruby!=""}>
+                                                         <br/>
+                                                         <{$item_attr[i][j].family_ruby}>&nbsp;<{$item_attr[i][j].name_ruby}>
+                                                     <{/if}>
                                                  <{/if}>
                                              <{/if}>
-                                             <{if $item_attr[i][j].e_mail_address!=""}>
+                                             <{if defined("_REPOSITORY_SHOW_AUTHOR_MAIL_ADDRESS") && $smarty.const._REPOSITORY_SHOW_AUTHOR_MAIL_ADDRESS && $item_attr[i][j].e_mail_address!=""}>
                                                  <br/>
                                                  <{$item_attr[i][j].e_mail_address}>
                                              <{/if}>
-                                             <{if $item_attr[i][j].author_id_text!=""}>
+                                             <{if is_array($item_attr[i][j].external_author_id)}>
                                                  <br/>
-                                                 <{$item_attr[i][j].author_id_text}>
+                                                <{section name=k loop=$item_attr[i][j].external_author_id}>
+                                                    <{assign var=k value=$smarty.section.k.index}>
+                                                    <{if $smarty.section.k.index > 0}>
+                                                        , 
+                                                    <{/if}>
+                                                    <{$item_attr[i][j].external_author_id[k].prefix_name}>:
+                                                    <{if $item_attr[i][j].external_author_id[k].url != null}>
+                                                        <a href="<{$item_attr[i][j].external_author_id[k].url}>" target="_blank" ><{$item_attr[i][j].external_author_id[k].suffix}></a>
+                                                    <{else}>
+                                                        <{$item_attr[i][j].external_author_id[k].suffix}>
+                                                    <{/if}>
+                                                <{/section}>
                                              <{/if}>
                                          </td>
                                      </tr>
@@ -626,27 +675,26 @@
                         <{$attr_type[i].attribute_name}>
                     </div>
                     <div style="text-align:left; padding-left:20px;">
-                      <{if count($item_attr[i])==1}>
-<!-- using iframe/img tag 2016/07/25 by mhaya start -->
-<{if $item_attr[i][j].attribute_value[1] != "" && (strstr(strtolower($item_attr[i][0].attribute_value[1]),"iframe"))==true}>
-       <iframe class="hackedWekoItem" src="<{$item_attr[i][j].attribute_value[0]}>" scrolling="auto">Sorry. This content use IFrame</iframe>
+                        <{if count($item_attr[i])==1}>
+                            <{if $smarty.const._REPOSITORY_SHOW_IMAGE_URL_OF_LINK && $item_attr[i][0].attribute_value[0]|regex_replace:'/jpg$/':'x' ne $item_attr[i][0].attribute_value[0]}>
 
-<{elseif strstr(strtolower($item_attr[i][j].attribute_value[0]),".jpg")==true||strstr(strtolower($item_attr[i][j].attribute_value[0]),".jpg")==true}>
-                              <a target="_blank" href="<{$item_attr[i][0].attribute_value[0]}>">
-       <img class="hackedWekoItem" src="<{$item_attr[i][j].attribute_value[0]}>" alt="<{$item_attr[i][j].attribute_value[1]}>"/>
-</a>
-<{else}>
-                              <a target="_blank" href="<{$item_attr[i][0].attribute_value[0]}>">
-                                  <{if $item_attr[i][0].attribute_value[1] != ""}>
-                                     <{$item_attr[i][0].attribute_value[1]}>
-                                <{else}>
-                                <{$item_attr[i][0].attribute_value[0]}>
-                                  <{/if}>
-                              </a>
-<{/if}>
-<!-- using iframe/img tag 2016/07/25 by mhaya end -->
-                              
-                             <{else}>
+				<!-- add img link 2016/10/01 by mhaya start -->
+                                <a target="_blank" href="<{$item_attr[i][0].attribute_value[0]}>">
+<img class="imageSize" src="<{$item_attr[i][0].attribute_value[0]}>" alt="<{$item_attr[i][0].attribute_value[1]}>" title="<{$item_attr[i][0].attribute_value[1]}>">
+				</a>
+				<!-- add img link 2016/10/01 by mhaya end -->
+                            <{elseif $smarty.const._REPOSITORY_SHOW_IMAGE_URL_OF_LINK && $item_attr[i][0].attribute_value[1] == 'iframe'}>
+                                <iframe class="iframeSize" src="<{$item_attr[i][0].attribute_value[0]}>"></iframe>
+                            <{else}>
+                                 <a target="_blank" href="<{$item_attr[i][0].attribute_value[0]}>">
+                                     <{if $item_attr[i][0].attribute_value[1] != ""}>
+                                         <{$item_attr[i][0].attribute_value[1]}>
+                                     <{else}>
+                                         <{$item_attr[i][0].attribute_value[0]}>
+                                     <{/if}>
+                                 </a>
+                            <{/if}>
+                        <{else}>
                             <table width="100%">
                                 <{section name=j loop=$item_attr[i]}>
                                     <tr>
@@ -654,24 +702,27 @@
                                             <{$smarty.section.j.index_next}>.
                                         </td>
                                         <td style="width:100%; padding-top: 5px;">
-<!-- using iframe/img tag 2012/09/20 by mhaya start -->
-<{if $item_attr[i][j].attribute_value[1] != "" && (strstr(strtolower($item_attr[i][0].attribute_value[1]),"iframe"))==true}>
-       <iframe style="width: 60%;" src="<{$item_attr[i][j].attribute_value[0]}>" height="700" width="100%" scrolling="auto">Sorry. This content use IFrame</iframe>
-<{elseif strstr(strtolower($item_attr[i][j].attribute_value[0]),".jpg")==true||strstr(strtolower($item_attr[i][j].attribute_value[0]),".jpg")==true}>
-       <img style="width: 60%;" src="<{$item_attr[i][j].attribute_value[0]}>" alt="<{$item_attr[i][j].attribute_value[1]}>"/>
-<{else}>
-
-
-                                             <a target="_blank" href="<{$item_attr[i][j].attribute_value[0]}>">
-                                                 <{if $item_attr[i][j].attribute_value[1] != ""}>
-                                                     <{$item_attr[i][j].attribute_value[1]}>
-                                               <{else}>
-                                                     <{$item_attr[i][j].attribute_value[0]}>
-                                                 <{/if}>
-                                             </a>
-
-<{/if}>
-<!-- using iframe/img tag 2012/09/20 by mhaya end -->
+                                            <{if $smarty.const._REPOSITORY_SHOW_IMAGE_URL_OF_LINK && $item_attr[i][j].attribute_value[0]|regex_replace:'/jpg$/':'x' ne $item_attr[i][j].attribute_value[0]}>
+						<!-- add img link 2016/10/01 by mhaya start -->
+                                		<a target="_blank" href="<{$item_attr[i][j].attribute_value[0]}>">
+                                                <img class="imageSize" src="<{$item_attr[i][j].attribute_value[0]}>" alt="<{$item_attr[i][j].attribute_value[1]}>" title="<{$item_attr[i][j].attribute_value[1]}>">
+						</a>
+						<!-- add img link 2016/10/01 by mhaya end -->
+                                                <br>
+                                                <br>
+                                            <{elseif $smarty.const._REPOSITORY_SHOW_IMAGE_URL_OF_LINK && $item_attr[i][j].attribute_value[1] == 'iframe'}>
+                                                <iframe class="iframeSize" src="<{$item_attr[i][j].attribute_value[0]}>"></iframe>
+                                                <br>
+                                                <br>
+                                            <{else}>
+                                                <a target="_blank" href="<{$item_attr[i][j].attribute_value[0]}>">
+                                                    <{if $item_attr[i][j].attribute_value[1] != ""}>
+                                                        <{$item_attr[i][j].attribute_value[1]}>
+                                                    <{else}>
+                                                        <{$item_attr[i][j].attribute_value[0]}>
+                                                    <{/if}>
+                                                </a><br>
+                                            <{/if}>
                                         </td>
                                     </tr>
                                 <{/section}>

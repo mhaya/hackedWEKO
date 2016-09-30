@@ -1,73 +1,103 @@
 <?php
+
+/**
+ * Item register: View of granting DOI
+ * アイテム登録：DOI付与画面表示
+ *
+ * @package     WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Editdoi.class.php 53594 2015-05-28 05:25:53Z kaede_matsushita $
+// $Id: Editdoi.class.php 70936 2016-08-09 09:53:57Z keiya_sugimoto $
 //
-// Copyright (c) 2007 - 2008, National Institute of Informatics, 
+// Copyright (c) 2007 - 2008, National Institute of Informatics,
 // Research and Development Center for Scientific Information Resources
 //
 // This program is licensed under a Creative Commons BSD Licence
 // http://creativecommons.org/licenses/BSD/
 //
 // --------------------------------------------------------------------
-
-/* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/common/WekoAction.class.php';
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
-require_once WEBAPP_DIR. '/modules/repository/components/Checkdoi.class.php';
+/**
+ * Check grant doi business class
+ * DOI付与チェックビジネスクラス
+ */
+require_once WEBAPP_DIR. '/modules/repository/components/business/doi/Checkdoi.class.php';
 
 /**
+ * Item register: View of granting DOI
  * アイテム登録：DOI付与画面表示
  *
+ * @package     WEKO
+ * @copyright   (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license     http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
  * @access      public
  */
 class Repository_View_Main_Item_Editdoi extends WekoAction
 {
     // 表示用パラメーター
     /**
+     * Display help icon flag
      * ヘルプアイコン表示フラグ
+     *
      * @var string
      */
     public $help_icon_display =  "";
     
     /**
+     * Display DOI flag
      * DOI表示フラグ
+     *
      * @var bool
      */
     public $displays_doi_grant = false;
     
     /**
+     * DOI status
      * DOIステータス
+     *
      * @var int
      */
     public $doi_status = 0;
     
     /**
-     * registed doi
-     *   0:not registed
-     *   1:jalcdoi registed
-     *   2:crossref registed
-     *   3:datacite registed
+     * registered DOI(0:not registed, 1:jalcdoi registed, 2:crossref registed, 3:datacite registed)
+     * 登録されたDOI（0：登録されていない、1：jalc DOI, 2：CrossRef、3：DataCite）
+     *
      * @var int
      */
     public $registed_doi = 0;
     
     /**
-     * registed library jalcdoi
-     *   0:not registed
-     *   1:registed
+     * Registed library jalcdoi(0:not registered,1:registered)
+     * 図書館DOI(0: 未発番, 1: 発番済)
+     *
      * @var int
      */
     public $registed_library_jalcdoi = 0;
     
     /**
      * prefix of JaLC DOI
+     * JaLC DOI プレフィックス
+     *
      * @var string
      */
     public $prefix_jalcdoi = null;
     
     /**
      * prefix of Cross Ref
+     * CrossRef DOI プレフィックス
+     *
      * @var string
      */
     public $prefix_crossref = null;
@@ -75,6 +105,8 @@ class Repository_View_Main_Item_Editdoi extends WekoAction
     // Add DataCite 2015/02/10 K.Sugimoto --start--
     /**
      * prefix of DataCite
+     * DataCite DOI プレフィックス
+     *
      * @var string
      */
     public $prefix_datacite = null;
@@ -82,41 +114,47 @@ class Repository_View_Main_Item_Editdoi extends WekoAction
     
     /**
      * prefix of Library JaLC DOI
+     * 図書館DOI プレフィックス
+     *
      * @var string
      */
     public $prefix_library_jalcdoi = null;
     
     /**
      * suffix
+     * サフィックス
+     *
      * @var string
      */
     public $suffix = null;
     
     /**
-     * drop doi
-     *   when drop doi, it going to be 'true'
+     * drop doi flag
+     * DOI取り下げフラグ
+     *
      * @var string
      */
     public $drop_doi = null;
     
     /**
-     * edit flag
-     *   0:new item
-     *   1:edit item
+     * edit flag(0:new item,1:edit item)
+     * 編集フラグ(0: 新規, 1: 既存編集)
+     *
      * @var string
      */
     public $edit_flag = 0;
     
     // Add DataCite 2015/02/10 K.Sugimoto --start--
     /**
-     * prefix add flag
-     *   0:do not add
-     *   1:add
+     * prefix add flag(0:do not add, 1:add)
+     * プレフィックス追加フラグ(0: 未追加, 1: 追加)
      */
     public $prefix_flag = null;
     
     /**
      * prefix of YHandle
+     * Yハンドルプレフィックス
+     *
      * @var string
      */
     public $prefix_yhandle = null;
@@ -124,14 +162,19 @@ class Repository_View_Main_Item_Editdoi extends WekoAction
     
     // リクエストパラメーター
     /**
+     * Warning message
      * 警告メッセージ配列
+     *
      * @var array
      */
     public $warningMsg = null;
 
     /**
-     * 実行処理
-     * @see ActionBase::executeApp()
+     * Execute
+     * 実行
+     *
+     * @return string "success"/"error" success/failed 成功/失敗
+     * @throws AppException
      */
     protected function executeApp()
     {
@@ -148,7 +191,7 @@ class Repository_View_Main_Item_Editdoi extends WekoAction
         $item_no = intval($this->Session->getParameter("edit_item_no"));
         
         // DOI付与可能かどうかをチェック
-        $CheckDoi = new Repository_Components_Checkdoi($this->Session, $this->Db, $this->accessDate);
+        $CheckDoi = BusinessFactory::getFactory()->getBusiness("businessCheckdoi");
         require_once WEBAPP_DIR. '/modules/repository/components/RepositoryHandleManager.class.php';
         $repositoryHandleManager = new RepositoryHandleManager($this->Session, $this->Db, $this->accessDate);
         if($this->drop_doi == 'true')
@@ -156,35 +199,35 @@ class Repository_View_Main_Item_Editdoi extends WekoAction
             $repositoryHandleManager->dropDoiSuffix($item_id, $item_no);
         }
         $displays_jalcdoi_grant = $CheckDoi->checkDoiGrant(
-            $item_id, $item_no, Repository_Components_Checkdoi::TYPE_JALC_DOI);
+            $item_id, $item_no, Repository_Components_Business_Doi_Checkdoi::TYPE_JALC_DOI, null);
         $displays_crossref_grant = $CheckDoi->checkDoiGrant(
-            $item_id, $item_no, Repository_Components_Checkdoi::TYPE_CROSS_REF);
+            $item_id, $item_no, Repository_Components_Business_Doi_Checkdoi::TYPE_CROSS_REF, null);
         $displays_datacite_grant = $CheckDoi->checkDoiGrant(
-            $item_id, $item_no, Repository_Components_Checkdoi::TYPE_DATACITE);
+            $item_id, $item_no, Repository_Components_Business_Doi_Checkdoi::TYPE_DATACITE, null);
         $displays_library_jalcdoi_grant = $CheckDoi->checkDoiGrant(
-            $item_id, $item_no, Repository_Components_Checkdoi::TYPE_LIBRARY_JALC_DOI);
-        if($displays_jalcdoi_grant)
+            $item_id, $item_no, Repository_Components_Business_Doi_Checkdoi::TYPE_LIBRARY_JALC_DOI, null);
+        if($displays_jalcdoi_grant->isGrantDoi)
         {
             $this->prefix_jalcdoi = $repositoryHandleManager->getJalcDoiPrefix();
             $this->prefix_yhandle = $repositoryHandleManager->getYHandlePrefix();
             $this->suffix = $repositoryHandleManager->getYHandleSuffix($item_id, $item_no);
             $this->displays_doi_grant = true;
         }
-        if($displays_crossref_grant)
+        if($displays_crossref_grant->isGrantDoi)
         {
             $this->prefix_crossref = $repositoryHandleManager->getCrossRefPrefix();
             $this->prefix_yhandle = $repositoryHandleManager->getYHandlePrefix();
             $this->suffix = $repositoryHandleManager->getYHandleSuffix($item_id, $item_no);
             $this->displays_doi_grant = true;
         }
-        if($displays_datacite_grant)
+        if($displays_datacite_grant->isGrantDoi)
         {
             $this->prefix_datacite = $repositoryHandleManager->getDataCitePrefix();
             $this->prefix_yhandle = $repositoryHandleManager->getYHandlePrefix();
             $this->suffix = $repositoryHandleManager->getYHandleSuffix($item_id, $item_no);
             $this->displays_doi_grant = true;
         }
-        if($displays_library_jalcdoi_grant)
+        if($displays_library_jalcdoi_grant->isGrantDoi)
         {
             $this->prefix_library_jalcdoi = $repositoryHandleManager->getLibraryJalcDoiPrefix();
             $this->prefix_yhandle = $repositoryHandleManager->getYHandlePrefix();

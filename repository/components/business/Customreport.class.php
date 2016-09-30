@@ -1,4 +1,12 @@
 <?php
+
+/**
+ * Log management common classes
+ * カスタムレポート共通クラス
+ *
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
 // $Id: Uploadfiles.class.php 48455 2015-02-16 10:53:40Z atsushi_suzuki $
@@ -11,69 +19,160 @@
 //
 // --------------------------------------------------------------------
 
+/**
+ * At the time the log aggregate common classes
+ * ログ集計時共通クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/business/Logbase.class.php';
 
 /**
- * business logic for create custom report
- * 
- * @package     NetCommons
- * @author      T.Koyasu(IVIS)
- * @copyright   2006-2008 NetCommons Project
- * @license     http://www.netcommons.org/license.txt  NetCommons License
- * @project     NetCommons Project, supported by National Institute of Informatics
- * @access      public
+ * Log management common classes
+ * カスタムレポート共通クラス
+ *
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class Repository_Components_Business_Customreport extends Repository_Components_Business_Logbase 
 {
     /**
      * each $per_log custom report data by repository_log
+     * カスタムレポート
      *
      * @var array
      */
     private $customReportData = array();
     
     /**
-     * start date for calc repository_log
+     * Aggregate start year
+     * 集計開始年
      *
      * @var int
      */
     private $sy_log = 0;
+    /**
+     * Aggregate start month
+     * 集計開始月
+     *
+     * @var int
+     */
     private $sm_log = 0;
+    /**
+     * Aggregate start day
+     * 集計開始日
+     *
+     * @var int
+     */
     private $sd_log = 0;
     
     /**
-     * end date for calc repository_log
+     * Aggregate end year
+     * 集計開始年
      *
-     * @var unknown_type
+     * @var int
      */
     private $ey_log = 0;
+    /**
+     * Aggregate end month
+     * 集計開始月
+     *
+     * @var int
+     */
     private $em_log = 0;
+    /**
+     * Aggregate end day
+     * 集計開始日
+     *
+     * @var int
+     */
     private $ed_log = 0;
     
     /**
      * operation number for calc repository_log
-     *
+     * アイテム登録集計
+     * 
+     * @var int
      */
     const TYPE_LOG_REGIST_ITEM = 1;
+    /**
+     * operation number for calc repository_log
+     * ダウンロード集計
+     * 
+     * @var int
+     */
     const TYPE_LOG_DOWNLOAD = 2;
+    
+    /**
+     * operation number for calc repository_log
+     * 詳細画面集計
+     * 
+     * @var int
+     */
     const TYPE_LOG_VIEW = 3;
+    
+    /**
+     * Aggregate interest
+     * 集計対象
+     * 
+     * @var int
+     */
     private $type_log = self::TYPE_LOG_DOWNLOAD;
     
     /**
-     * unit for calc repository_log
+     * Period
+     * 集計期間
      *
+     * @var int
      */
     const PER_LOG_DAY = 1;
+    /**
+     * Period
+     * 集計期間
+     *
+     * @var int
+     */
     const PER_LOG_WEEK = 2;
+    /**
+     * Period
+     * 集計期間
+     *
+     * @var int
+     */
     const PER_LOG_MONTH = 3;
+    /**
+     * Period
+     * 集計期間
+     *
+     * @var int
+     */
     const PER_LOG_YEAR = 4;
+    /**
+     * Period
+     * 集計期間
+     *
+     * @var int
+     */
     const PER_LOG_ITEM = 5;
+    /**
+     * Period
+     * 集計期間
+     *
+     * @var int
+     */
     const PER_LOG_HOST = 6;
+    
+    /**
+     * Period
+     * 集計期間
+     *
+     * @var int
+     */
     private $per_log = self::PER_LOG_YEAR;
     
     /**
      * create Custom report by count type
-     *
+     * カスタムレポート作成
      */
     protected function executeApp()
     {
@@ -99,7 +198,7 @@ class Repository_Components_Business_Customreport extends Repository_Components_
     
     /**
      * create custom report by date and set $customReportData
-     *
+     * 日付からカスタムレポートを作成
      */
     private function createReportPerDate()
     {
@@ -116,23 +215,15 @@ class Repository_Components_Business_Customreport extends Repository_Components_
         $this->makeBetweenDates($sy, $sm, $sd, $ey, $em, $ed, $su_db);
         
         $query="";
-        $subQuery = Repository_Components_Business_Logmanager::getSubQueryForAnalyzeLog(Repository_Components_Business_Logmanager::SUB_QUERY_TYPE_DEFAULT);
         
         switch ( $this->per_log ) {
             case self::PER_LOG_DAY:
                 // per day
                 $query = "SELECT t1.day, t2.cnt ".
                         " FROM ". DATABASE_PREFIX ."repository_date AS t1 ".
-                        " LEFT JOIN ( ".
-                        "   SELECT CAST( LOG.record_date AS DATE ) AS d1, count(*) AS cnt ";
-                $query .= $subQuery[Repository_Components_Business_Logmanager::SUB_QUERY_KEY_FROM];
-                // Modify for remove IE Continuation log K.Matsuo 2011/11/17 --end-- 
-                $query .= "     WHERE ".$subQuery[Repository_Components_Business_Logmanager::SUB_QUERY_KEY_WHERE].
-                          "     AND LOG.record_date >= '$sy-$sm-$sd 00:00:00.000' ".
-                          "     AND LOG.record_date <= '$ey-$em-$ed 23:59:99.999' ".
-                          "     AND LOG.operation_id = '".$this->type_log."' ".
-                          "     GROUP BY d1 ". 
-                          " ) AS t2 ON ( t1.day = t2.d1 ) ";
+                        " LEFT JOIN ( ";
+                $query .= $this->createSubQueryPerDate($sy, $sm, $sd, $ey, $em, $ed);
+                $query .= " ) AS t2 ON ( t1.day = t2.d1 ) ";
                 $ret = $this->Db->execute($query." WHERE cnt IS NOT NULL ORDER BY cnt DESC LIMIT 0 , 1 ");
                 if($ret === false)
                 {
@@ -152,16 +243,9 @@ class Repository_Components_Business_Customreport extends Repository_Components_
                         "   ) AS t3 ".
                         "   GROUP BY `day2` ".
                         " ) AS t1 ".
-                        " LEFT JOIN ( ".
-                        "   SELECT YEARWEEK( CAST( `record_date` AS DATE ) ) AS d1, count(*) AS cnt ";
-                $query .= $subQuery[Repository_Components_Business_Logmanager::SUB_QUERY_KEY_FROM];
-                // Modify for remove IE Continuation log K.Matsuo 2011/11/17 --end-- 
-                $query .= "     WHERE ".$subQuery[Repository_Components_Business_Logmanager::SUB_QUERY_KEY_WHERE].
-                        "   AND LOG.record_date >= '$sy-$sm-$sd 00:00:00.000' ".
-                        "   AND LOG.record_date <= '$ey-$em-$ed 23:59:99.999' ".
-                        "   AND LOG.operation_id = '".$this->type_log."' ".
-                        "   GROUP BY d1 ". 
-                        " ) AS t2 ON ( t1.day2 = t2.d1 ) ";
+                        " LEFT JOIN ( ";
+                $query .= $this->createSubQueryPerDate($sy, $sm, $sd, $ey, $em, $ed);
+                $query .= " ) AS t2 ON ( t1.day2 = t2.d1 ) ";
                 $ret = $this->Db->execute($query." WHERE cnt IS NOT NULL ORDER BY cnt DESC LIMIT 0 , 1 ");
                 if($ret === false)
                 {
@@ -181,16 +265,9 @@ class Repository_Components_Business_Customreport extends Repository_Components_
                         "   ) AS t3 ".
                         "   GROUP BY `day2` ".
                         " ) AS t1 ".
-                        " LEFT JOIN ( ".
-                        "   SELECT SUBSTRING(CAST(LOG.record_date AS DATE), 1, 7) AS d1, count(*) AS cnt ";
-                $query .= $subQuery[Repository_Components_Business_Logmanager::SUB_QUERY_KEY_FROM];
-                // Modify for remove IE Continuation log K.Matsuo 2011/11/17 --end-- 
-                $query .= "     WHERE ".$subQuery[Repository_Components_Business_Logmanager::SUB_QUERY_KEY_WHERE].
-                          "     AND LOG.record_date >= '$sy-$sm-$sd 00:00:00.000' ".
-                          "     AND LOG.record_date <= '$ey-$em-$ed 23:59:99.999' ".
-                          "     AND LOG.operation_id = '".$this->type_log."' ".
-                          "     GROUP BY d1 ". 
-                          " ) AS t2 ON ( t1.day2 = t2.d1 ) ";
+                        " LEFT JOIN ( ";
+                $query .= $this->createSubQueryPerDate($sy, $sm, $sd, $ey, $em, $ed);
+                $query .= " ) AS t2 ON ( t1.day2 = t2.d1 ) ";
                 $ret = $this->Db->execute($query." WHERE cnt IS NOT NULL ORDER BY cnt DESC LIMIT 0 , 1 ");
                 if($ret === false)
                 {
@@ -210,16 +287,9 @@ class Repository_Components_Business_Customreport extends Repository_Components_
                         "   ) AS t3 ".
                         "   GROUP BY `day2` ".
                         " ) AS t1 ".
-                        " LEFT JOIN ( ".
-                        "   SELECT SUBSTRING(CAST(LOG.record_date AS DATE), 1, 4) AS d1, count(*) AS cnt ";
-                $query .= $subQuery[Repository_Components_Business_Logmanager::SUB_QUERY_KEY_FROM];
-                // Modify for remove IE Continuation log K.Matsuo 2011/11/17 --end-- 
-                $query .= "     WHERE ".$subQuery[Repository_Components_Business_Logmanager::SUB_QUERY_KEY_WHERE].
-                        "   AND LOG.record_date >= '$sy-$sm-$sd 00:00:00.000' ".
-                        "   AND LOG.record_date <= '$ey-$em-$ed 23:59:99.999' ".
-                        "   AND LOG.operation_id = '".$this->type_log."' ".
-                        "   GROUP BY d1 ". 
-                        " ) AS t2 ON ( t1.day2 = t2.d1 ) ";
+                        " LEFT JOIN ( ";
+                $query .= $this->createSubQueryPerDate($sy, $sm, $sd, $ey, $em, $ed);
+                $query .= " ) AS t2 ON ( t1.day2 = t2.d1 ) ";
                 $ret = $this->Db->execute($query." WHERE cnt IS NOT NULL ORDER BY cnt DESC LIMIT 0 , 1 ");
                 if($ret === false)
                 {
@@ -278,8 +348,86 @@ class Repository_Components_Business_Customreport extends Repository_Components_
     }
     
     /**
-     * create custom report by item and set $customReportData
+     * Create sub query per date
+     * 年月週日ごとの集計用クエリのサブクエリを作成する
      *
+     * @param string $sy Start year
+     *                   集計開始年
+     * @param string $sm Start month
+     *                   集計開始月
+     * @param string $sd Start day
+     *                   集計開始日
+     * @param string $ey End year
+     *                   集計終了年
+     * @param string $em End month
+     *                   集計終了月
+     * @param string $ed End day
+     *                   集計終了日
+     *
+     * @return string Sub query for count query per date
+     *                年月週日ごとの集計用クエリのサブクエリ
+     *
+     */
+    private function createSubQueryPerDate($sy, $sm, $sd, $ey, $em, $ed)
+    {
+        $query = "";
+        $dateColumn = "";
+        
+        // アイテム登録数の場合はログではなく、アイテム作成日時を参照
+        if($this->type_log != self::TYPE_LOG_REGIST_ITEM)
+        {
+            $dateColumn = "LOG.record_date AS DATE";
+        }
+        else
+        {
+            $dateColumn = "ITEM.ins_date AS DATE";
+        }
+        
+        // 年ごと、月ごと、週ごと、日ごとで日時の取得形式を変更
+        switch ( $this->per_log ) {
+            case self::PER_LOG_DAY:
+                $query = "   SELECT CAST( ".$dateColumn." ) AS d1, count(*) AS cnt ";
+                break;
+            case self::PER_LOG_WEEK:
+                $query = "   SELECT YEARWEEK( CAST( ".$dateColumn." ) ) AS d1, count(*) AS cnt ";
+                break;
+            case self::PER_LOG_MONTH:
+                $query = "   SELECT SUBSTRING(CAST(".$dateColumn."), 1, 7) AS d1, count(*) AS cnt ";
+                break;
+            case self::PER_LOG_YEAR:
+                $query = "   SELECT SUBSTRING(CAST(".$dateColumn."), 1, 4) AS d1, count(*) AS cnt ";
+                break;
+            default:
+                break;
+        }
+        
+        // アイテム登録数の場合はログではなく、アイテム作成日時を参照
+        if($this->type_log != self::TYPE_LOG_REGIST_ITEM)
+        {
+            $subQuery = Repository_Components_Business_Logmanager::getSubQueryForAnalyzeLog(Repository_Components_Business_Logmanager::SUB_QUERY_TYPE_DEFAULT);
+            
+            $query .= $subQuery[Repository_Components_Business_Logmanager::SUB_QUERY_KEY_FROM];
+            // Modify for remove IE Continuation log K.Matsuo 2011/11/17 --end-- 
+            $query .= " WHERE ".$subQuery[Repository_Components_Business_Logmanager::SUB_QUERY_KEY_WHERE].
+                      " AND LOG.record_date >= '$sy-$sm-$sd 00:00:00.000' ".
+                      " AND LOG.record_date <= '$ey-$em-$ed 23:59:99.999' ".
+                      " AND LOG.operation_id = '".$this->type_log."' ".
+                      " AND LOG.item_id IS NOT NULL ".
+                      " GROUP BY d1 ";
+        }
+        else
+        {
+            $query .= " FROM ".DATABASE_PREFIX."repository_item AS ITEM ".
+                      " WHERE ITEM.ins_date >= '$sy-$sm-$sd 00:00:00.000' ".
+                      " AND ITEM.ins_date <= '$ey-$em-$ed 23:59:99.999' ".
+                      " GROUP BY d1 ";
+        }
+        return $query;
+    }
+    
+    /**
+     * create custom report by item and set $customReportData
+     * アイテム毎のカスタムレポート作成
      */
     private function createReportPerItem()
     {
@@ -311,6 +459,7 @@ class Repository_Components_Business_Customreport extends Repository_Components_
                   " AND LOG.record_date >= ? ". 
                   " AND LOG.record_date <= ? ".
                   " AND LOG.operation_id=? ".
+                  " AND LOG.item_id IS NOT NULL ".
                   " GROUP BY item_id, item_no ";
         $params = array();
         $params[] = $sy. "-". $sm. "-". $sd. " 00:00:00.000";
@@ -380,6 +529,7 @@ class Repository_Components_Business_Customreport extends Repository_Components_
                 " FROM `".DATABASE_PREFIX."repository_log_".$tmpDate."` AS log, ".DATABASE_PREFIX."repository_item AS item ". 
                 " WHERE log.item_id = item.item_id ".
                 " AND log.item_no = item.item_no ".
+                " AND log.item_id IS NOT NULL ".
                 " AND cnt > 0 ". 
                 " ORDER BY cnt DESC, log.item_id ASC ";
         /* Mod add item_id to custom report 2012/8/17 Tatsuya.Koyasu -start- */
@@ -401,7 +551,7 @@ class Repository_Components_Business_Customreport extends Repository_Components_
     
     /**
      * create custom report by host and set $customReportData
-     *
+     * ホスト毎のカスタムレポート作成
      */
     private function createReportPerHost()
     {
@@ -481,6 +631,7 @@ class Repository_Components_Business_Customreport extends Repository_Components_
                    " AND LOG.record_date >= ? ". 
                    " AND LOG.record_date <= ? ".
                    " AND LOG.operation_id = ? ".
+                   " AND LOG.item_id IS NOT NULL ".
                    " GROUP BY LOG.ip_address ".
                    " ORDER BY cnt DESC , LOG.ip_address ASC; ";
         $params = array();
@@ -498,6 +649,11 @@ class Repository_Components_Business_Customreport extends Repository_Components_
                 $log_per_host[$items[$ii]['ip_address']]['host'] = $items[$ii]['host'];
                 $log_per_host[$items[$ii]['ip_address']]['cnt'] = $items[$ii]['cnt'];
             }
+        }
+        
+        if($this->type_log == self::TYPE_LOG_REGIST_ITEM)
+        {
+            $this->countRegistedItemByHarvestingPerHost($sy, $sm, $sd, $ey, $em, $ed, $log_per_host);
         }
         
         // ソート
@@ -518,17 +674,217 @@ class Repository_Components_Business_Customreport extends Repository_Components_
         $this->customReportData = $items;
     }
     
+    /**
+     * Count registed item by harvesting per host
+     * ホストごとのハーベストアイテム登録数を集計する
+     *
+     * @param string $sy Start year
+     *                   集計開始年
+     * @param string $sm Start month
+     *                   集計開始月
+     * @param string $sd Start day
+     *                   集計開始日
+     * @param string $ey End year
+     *                   集計終了年
+     * @param string $em End month
+     *                   集計終了月
+     * @param string $ed End day
+     *                   集計終了日
+     * @param array $log_per_host Count log per host
+     *                            ホストごとの集計数
+     *                            array["172.18.72.168"|"test.repo.nii.ac.jp"|...]["ip_address"|"host"|"cnt"]
+     *
+     */
+    private function countRegistedItemByHarvestingPerHost($sy, $sm, $sd, $ey, $em, $ed, &$log_per_host)
+    {
+        require_once WEBAPP_DIR. '/modules/repository/components/RepositoryHarvesting.class.php';
+        $container = & DIContainerFactory::getContainer();
+        $session = $container->getComponent("Session");
+        $harvesting = new RepositoryHarvesting($session, $this->Db);
+        $harvesting->TransStartDate = $this->accessDate;
+        
+        // ハーベスト対象のリポジトリ取得
+        $harvestingInfo = array();
+        $harvesting->getHarvestingTable($harvestingInfo);
+        
+        for($ii = 0; $ii < count($harvestingInfo); $ii++)
+        {
+            if(preg_match("/^https?:\/\/(([^\/]+)).*$/", $harvestingInfo[$ii]["base_url"], $matches) === 1 && $harvestingInfo[$ii]["post_index_id"] != 0)
+            {
+                $host = $matches[1];
+                // ハーベスト登録先インデックス以下のハーベストアイテム登録数を取得
+                $indexIdList = $harvestingInfo[$ii]["post_index_id"];
+                $this->createChildIndexIdList($harvestingInfo[$ii]["post_index_id"], $indexIdList);
+                $query = "SELECT COUNT(DISTINCT ITEM.item_id) AS cnt ".
+                         " FROM ".DATABASE_PREFIX."repository_item AS ITEM ".
+                         " INNER JOIN ". DATABASE_PREFIX. "repository_item_attr_type ATTR_TYPE ON ITEM.item_type_id = ATTR_TYPE.item_type_id ". 
+                         " INNER JOIN ". DATABASE_PREFIX. "repository_item_attr ATTR ON ITEM.item_id = ATTR.item_id ". 
+                         " INNER JOIN ". DATABASE_PREFIX. "repository_position_index POS ON ITEM.item_id = POS.item_id AND ITEM.item_no = POS.item_no ". 
+                         " WHERE ITEM.ins_date >= ? ". 
+                         " AND ITEM.ins_date <= ? ". 
+                         " AND POS.index_id IN(".$indexIdList.") ";
+                $params = array();
+                $params[] = $sy. "-". $sm. "-". $sd. " 00:00:00.000";
+                $params[] = $ey. "-". $em. "-". $ed. " 23:59:59.999";
+                
+                // ハーベスト先機関に紐付くアイテムを特定するための条件を追加する
+                $this->addWherePhraseForHarvestItem($host, $query, $params);
+                
+                $query .= " ORDER BY cnt DESC; ";
+                $result = $this->Db->execute($query, $params);
+                if($result === false){
+                    $this->errorLog($this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+                    throw new AppException($this->Db->ErrorMsg());
+                }
+                
+                // ホストごとに集計結果を保持
+                $ip_address = gethostbyname($host);
+                if(array_key_exists($host, $log_per_host)){
+                    $log_per_host[$host]["cnt"] += $result[0]["cnt"];
+                } else {
+                    $log_per_host[$host]["ip_address"] = $ip_address;
+                    $log_per_host[$host]["host"] = $host;
+                    $log_per_host[$host]["cnt"] = $result[0]["cnt"];
+                }
+            }
+        }
+    }
+    
+    /**
+     * Add a WHERE phrase to identify the items that attach straps to harvest destination repository
+     * ハーベスト先機関に紐付くアイテムを特定するためのWHERE句を追加する
+     *
+     * @param string $host Hostname of harvest destination repository
+     *                     ハーベスト先機関のホスト名
+     * @param string $query Query statement to search for harvest items
+     *                      ハーベストアイテムを検索するクエリ文
+     * @param array $params Parameters query run-time
+     *                      クエリ実行時のパラメータ
+     *                      array[$ii]
+     *
+     */
+    private function addWherePhraseForHarvestItem($host, &$query, &$params)
+    {
+        $query .= " AND ATTR.attribute_value LIKE ? ";
+        $params[] = "oai:".$host.":%";
+        
+        // ハーベスト用アイテムタイプによってコンテンツIDの属性IDが変化するため、
+        // 各アイテムタイプごとに条件を設定
+        for($jj = 20001; $jj < 20018; $jj++)
+        {
+            if($jj == 20001)
+            {
+                $query .= " AND ( ";
+            }
+            
+            $query .= " (ATTR_TYPE.item_type_id = ? ".
+                      " AND ATTR_TYPE.attribute_id = ? ) ";
+            $params[] = $jj;
+            switch($jj)
+            {
+                case 20001:
+                    $params[] = 16;
+                    break;
+                
+                case 20002:
+                case 20003:
+                case 20004:
+                case 20005:
+                case 20006:
+                case 20007:
+                case 20008:
+                case 20009:
+                case 20010:
+                case 20011:
+                case 20012:
+                case 20013:
+                case 20014:
+                case 20015:
+                    $params[] = 53;
+                    break;
+                
+                case 20016:
+                    $params[] = 85;
+                    break;
+                
+                case 20017:
+                    $params[] = 36;
+                    break;
+                
+                default:
+                    $params[] = 0;
+                    break;
+            }
+            
+            if($jj < 20017)
+            {
+                $query .= " OR ";
+            }
+            else
+            {
+                $query .= " ) ";
+            }
+        }
+    }
+    
+    /**
+     * Create child index ID List in order to confirm whether the items 
+     * that have been registered at the harvest repository
+     * ハーベスト機関にて登録されたアイテムであるかを確認するため、
+     * 指定インデックスの子インデックスIDリストを作成する
+     *
+     * @param int $parentIndexId Parent index ID
+     *                           親インデックスのインデックスID
+     * @param string $indexIdList Child index ID list comma delimited
+     *                            指定インデックスの子インデックスIDリスト(カンマ区切り)
+     *
+     */
+    private function createChildIndexIdList($parentIndexId, &$indexIdList)
+    {
+        // 親インデックスに所属するインデックスをすべて取得
+        $query = "SELECT index_id " .
+                 "FROM " . DATABASE_PREFIX . "repository_index " .
+                 "WHERE parent_index_id = ? " . 
+                 "ORDER BY show_order ;";
+        
+        $params = array();
+        $params[] = $parentIndexId;
+        
+        $result = $this->Db->execute($query, $params);
+        if($result === false){
+            $this->errorLog($this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+            throw new AppException($this->Db->ErrorMsg());
+        }
+        
+        for ($ii = 0; $ii < count($result); $ii++)
+        {
+            if (strlen($indexIdList) == 0)
+            {
+                $indexIdList = $result[$ii]["index_id"];
+            }
+            else
+            {
+                $indexIdList .= ",".$result[$ii]["index_id"];
+            }
+            
+            // 1階層深く探査
+            $this->createChildIndexIdList($result[$ii]["index_id"], $indexIdList);
+        }
+    }
+    
     // private method(international processing)
     /**
      * get calc custom report term
+     * カスタムレポート集計期間を取得
      *
-     * @param string $sy
-     * @param string $sm
-     * @param string $sd
-     * @param string $ey
-     * @param string $em
-     * @param string $ed
-     * @return array(0 => date1, 1 => date2)
+     * @param string $sy Aggregate start year 集計開始年
+     * @param string $sm Aggregate start month 集計開始月
+     * @param string $sd Aggregate start day 集計開始日
+     * @param string $ey Aggregate end year 集計開始年
+     * @param string $em Aggregate end month 集計開始月
+     * @param string $ed Aggregate end day 集計開始日
+     * @return array Custom Report Period カスタムレポート集計期間
+     *               array[$ii]
      */
     private function getTermArray(&$sy, &$sm, &$sd, &$ey, &$em, &$ed)
     {
@@ -575,17 +931,18 @@ class Repository_Components_Business_Customreport extends Repository_Components_
     
     /**
      * read removed log by file and return count per date
+     * 削除したログの集計数を取得する
      *
-     * @param string $sy
-     * @param string $sm
-     * @param string $sd
-     * @param string $ey
-     * @param string $em
-     * @param string $ed
-     * @param array $date_list
-     * @param string $su_db: next date by log files
-     * 
-     * @return array: cnt array by date
+     * @param string $sy Aggregate start year 集計開始年
+     * @param string $sm Aggregate start month 集計開始月
+     * @param string $sd Aggregate start day 集計開始日
+     * @param string $ey Aggregate end year 集計開始年
+     * @param string $em Aggregate end month 集計開始月
+     * @param string $ed Aggregate end day 集計開始日
+     * @param array $date_list Date list 日付一覧
+     *                         array[$ii]
+     * @param string $su_db next date by log files ログファイルを調べる次の日付
+     * @return array cnt array by date 日毎の集計数
      */
     private function readRemovedLogFile($sy, $sm, $sd, $ey, $em, $ed, $date_list, &$su_db)
     {
@@ -712,14 +1069,16 @@ class Repository_Components_Business_Customreport extends Repository_Components_
     
     /**
      * create date table between start date and end date
+     * 集計用に日付テーブルを作成する
      *
-     * @param string $sy
-     * @param string $sm
-     * @param string $sd
-     * @param string $ey
-     * @param string $em
-     * @param string $ed
-     * @param string $su_db
+     * @param string $sy Aggregate start year 集計開始年
+     * @param string $sm Aggregate start month 集計開始月
+     * @param string $sd Aggregate start day 集計開始日
+     * @param string $ey Aggregate end year 集計開始年
+     * @param string $em Aggregate end month 集計開始月
+     * @param string $ed Aggregate end day 集計開始日
+     * @param array $date_list Date list 日付一覧
+     *                         array[$ii]
      */
     private function makeBetweenDates($sy, $sm, $sd, $ey, $em, $ed, $su_db)
     {
@@ -790,16 +1149,72 @@ class Repository_Components_Business_Customreport extends Repository_Components_
     }
     
     // getter
+    /**
+     * Get custom report
+     * カスタムレポートを取得する
+     *
+     * @return array[$ii]["ip_address"|"host"|"cnt"]
+     *         array[$ii]["day"|"day2"]
+     *         array[$ii]["title"|"title_english"|"cnt"]
+     */
     public function getCustomReportData(){  return $this->customReportData; }
     
     // setter
+    /**
+     * Set start year
+     * 開始年を設定
+     *
+     * @param int $year
+     */
     public function setStartYear($year){    $this->sy_log = $year;  }
+    /**
+     * Set start month
+     * 開始月を設定
+     *
+     * @param int $year
+     */
     public function setStartMonth($month){  $this->sm_log = $month; }
+    /**
+     * Set start day
+     * 開始日を設定
+     *
+     * @param int $year
+     */
     public function setStartDay($day){      $this->sd_log = $day;   }
+    /**
+     * Set end year
+     * 終了年を設定
+     *
+     * @param int $year
+     */
     public function setEndYear($year){      $this->ey_log = $year;  }
+    /**
+     * Set end month
+     * 終了月を設定
+     *
+     * @param int $year
+     */
     public function setEndMonth($month){    $this->em_log = $month; }
+    /**
+     * Set end day
+     * 終了日を設定
+     *
+     * @param int $year
+     */
     public function setEndDay($day){        $this->ed_log = $day;   }
+    /**
+     * Set count type
+     * 集計形式を設定
+     *
+     * @param int $year
+     */
     public function setCountType($type){    $this->type_log = $type;}
+    /**
+     * Set count per
+     * 集計期間を設定
+     *
+     * @param int $year
+     */
     public function setCountPer($per){      $this->per_log = $per;  }
 }
 ?>

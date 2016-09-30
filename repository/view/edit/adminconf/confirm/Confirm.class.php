@@ -1,7 +1,13 @@
 <?php
+/**
+ * View class for the administrator account confirmation screen display
+ * 管理者アカウント確認画面表示用ビュークラス
+ *
+ * @package WEKO
+ */
 // --------------------------------------------------------------------
 //
-// $Id: Confirm.class.php 38124 2014-07-01 06:56:02Z rei_matsuura $
+// $Id: Confirm.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics,
 // Research and Development Center for Scientific Information Resources
@@ -11,40 +17,94 @@
 //
 // --------------------------------------------------------------------
 
-
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
+
+/**
+ * Harvest processing common classes
+ * ハーベスト処理共通クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryHarvesting.class.php';
 
 /**
- * [[機能説明]]
+ * View class for the administrator account confirmation screen display
+ * 管理者アカウント確認画面表示用ビュークラス
  *
- * @package     [[package名]]
- * @access      public
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class Repository_View_Edit_AdminConf_Confirm extends RepositoryAction
 {
 	// component
+    /**
+     * Session management objects
+     * Session管理オブジェクト
+     *
+     * @var Session
+     */
 	var $Session = null;
+    /**
+     * Database management objects
+     * データベース管理オブジェクト
+     *
+     * @var DbObject
+     */
 	var $Db = null;
 
 	// request parmater
+    /**
+     * Administrator login ID
+     * 管理者ログインID
+     *
+     * @var string
+     */
 	var $login_id = null;
-	var $error_msg = null;
-	var $adminconfirm_action = null;	// action Name(sitemap, ranking, filecleanup, harvesting, usagestatistics, feedback, sitelicensemail)
 	
+    /**
+     * Error message
+     * エラーメッセージ
+     *
+     * @var string
+     */
+	var $error_msg = null;
+	/**
+	 * Action name
+	 * アクション名
+	 *
+	 * @var string
+	 */
+	var $adminconfirm_action = null;	// action Name(sitemap, ranking, filecleanup, harvesting, usagestatistics, feedback)
+	/**
+	 * (Deprecated)
+	 * (廃止予定)
+	 *
+	 * @var string
+	 */
 	public $is_create_data = null;
-    
+    /**
+     * Harvest all item acquisition flag
+     * ハーベスト全件取得フラグ
+     *
+     * @var boolean
+     */
     public $harvesting_all_item_acquisition = null;
     
     /**
      * Harvesting warning repository
+     * ハーベスト警告リポジトリ
      *
-     * @var array
+     * @var array[$ii]
      */
     public $harvestWarningRepos = array();
 	
 	/**
-	 * [[機能説明]]
+	 * To perform the specified action
+	 * 指定されたアクションを実行する
 	 *
 	 * @access  public
 	 */
@@ -69,7 +129,6 @@ class Repository_View_Edit_AdminConf_Confirm extends RepositoryAction
                 $this->adminconfirm_action == 'ranking' || 
                 $this->adminconfirm_action == 'filecleanup' || 
                 $this->adminconfirm_action == 'usagestatistics' || 
-                $this->adminconfirm_action == 'sitelicensemail' || 
                 $this->adminconfirm_action == 'feedback' || 
                 $this->adminconfirm_action == 'reconstructindexauth' || 
                 $this->adminconfirm_action == 'reconstructsearch' ||
@@ -141,6 +200,7 @@ class Repository_View_Edit_AdminConf_Confirm extends RepositoryAction
 				$this->failTrans();                             //トランザクション失敗を設定(ROLLBACK)
 				throw $exception;
 			}
+			$this->finalize();
 			return 'success';
 			
 		} catch ( RepositoryException $Exception) {

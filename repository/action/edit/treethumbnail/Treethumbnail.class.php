@@ -1,9 +1,17 @@
 <?php
+
+/**
+ * Tree thumbnail upload class
+ * ツリーサムネイルアップロードクラス
+ *
+ * @package     WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Treethumbnail.class.php 1441 2010-09-14 06:19:56Z yuko_nakao $
+// $Id: Treethumbnail.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
-// Copyright (c) 2007 - 2008, National Institute of Informatics, 
+// Copyright (c) 2007 - 2008, National Institute of Informatics,
 // Research and Development Center for Scientific Information Resources
 //
 // This program is licensed under a Creative Commons BSD Licence
@@ -11,23 +19,44 @@
 //
 // --------------------------------------------------------------------
 
-/* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
-
 /**
- * [[機能説明]]
+ * Tree thumbnail upload class
+ * ツリーサムネイルアップロードクラス
  *
- * @package     [[package名]]
+ * @package     WEKO
+ * @copyright   (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license     http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
  * @access      public
  */
 class Repository_Action_Edit_Treethumbnail
 {
-    var $Session = null;
-    var $Db = null;
-    var $uploadsAction = null;
     /**
-     * [[機能説明]]
+     * Session management objects
+     * Session管理オブジェクト
      *
-     * @access  public
+     * @var Session
+     */
+    var $Session = null;
+    /**
+     * Database management objects
+     * データベース管理オブジェクト
+     *
+     * @var DbObject
+     */
+    var $Db = null;
+    /**
+     * Upload file management objects
+     * アップロードファイル管理オブジェクト
+     *
+     * @var Uploads_Action
+     */
+    var $uploadsAction = null;
+
+    /**
+     * Execute
+     * 実行
+     *
+     * @return bool true/false success/failed 成功/失敗
      */
     function execute()
     {

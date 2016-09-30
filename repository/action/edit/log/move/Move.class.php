@@ -1,7 +1,15 @@
 <?php
+
+/**
+ * Log deletion action class
+ * ログ削除アクションクラス
+ *
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Move.class.php 57188 2015-08-27 00:55:07Z tatsuya_koyasu $
+// $Id: Move.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics,
 // Research and Development Center for Scientific Information Resources
@@ -11,44 +19,138 @@
 //
 // --------------------------------------------------------------------
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
+/**
+ * Fixed logging action class
+ * 定型ログ作成アクションクラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/logreport/Logreport.class.php';
-require_once WEBAPP_DIR. '/modules/repository/components/RepositoryUsagestatistics.class.php';
 
 /**
- * log result action
+ * Log deletion action class
+ * ログ削除アクションクラス
  *
- * @package     NetCommons
- * @author      S.Kawasaki(IVIS)
- * @copyright   2006-2008 NetCommons Project
- * @license     http://www.netcommons.org/license.txt  NetCommons License
- * @project     NetCommons Project, supported by National Institute of Informatics
- * @access      public
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class Repository_Action_Edit_Log_Move extends RepositoryAction
 {
 	// component
+    /**
+     * Session management objects
+     * Session管理オブジェクト
+     *
+     * @var Session
+     */
 	var $Session = null;
+    /**
+     * Database management objects
+     * データベース管理オブジェクト
+     *
+     * @var DbObject
+     */
 	var $Db = null;
+    /**
+     * Language Resource Management object
+     * 言語リソース管理オブジェクト
+     *
+     * @var Smarty
+     */
 	var $smartyAssign = null;
 	
 	// request parameter
+	/**
+	 * Delete start year
+	 * 削除開始年
+	 *
+	 * @var int
+	 */
 	var $start_year = null;
+    /**
+     * Delete starting month
+     * 削除開始月
+     *
+     * @var int
+     */
 	var $start_month = null;
+    /**
+     * Delete End Year
+     * 削除終了年
+     *
+     * @var int
+     */
 	var $end_year = null;
+    /**
+     * Delete end month
+     * 削除終了月
+     *
+     * @var int
+     */
 	var $end_month = null;
+    /**
+     * Delete period
+     * 削除期間
+     *
+     * @var int
+     */
 	var $log_term = null;
 	
 	// login info
+	/**
+	 * User id
+	 * ユーザID
+	 *
+	 * @var string
+	 */
 	var $user_id = null;
+    /**
+     * Administrator login ID
+     * 管理者ログインID
+     *
+     * @var string
+     */
 	var $login_id = null;
+    /**
+     * Administrator password
+     * 管理者パスワード
+     *
+     * @var string
+     */
 	var $password = null;
+    /**
+     * User of the base level of authority
+     * ユーザのベース権限レベル
+     *
+     * @var string
+     */
 	var $user_authority_id = null;
+    /**
+     * User of room privilege level
+     * ユーザのルーム権限レベル
+     *
+     * @var string
+     */
 	var $authority_id = null;
 	
 	// member
+	/**
+	 * Delete log exclusion subquery
+	 * 削除ログ排除サブクエリ
+	 *
+	 * @var string
+	 */
 	var $log_exception = "";
 	
+	/**
+	 * To delete the log
+	 * ログを削除する
+	 */
 	function executeApp()
 	{
 		try {
@@ -292,10 +394,11 @@ class Repository_Action_Edit_Log_Move extends RepositoryAction
 	}
 	
 	/**
-	 * move log data
+	 * Move log data
 	 * between start date to end date
+	 * ログを退避する
 	 *
-	 * @return bool retult
+	 * @return boolean Retult 結果
 	 */
 	function moveLogData(){
 		// log move to file
@@ -667,10 +770,11 @@ class Repository_Action_Edit_Log_Move extends RepositoryAction
 	}
 	
 	/**
-	 * make log report
+	 * Make log report
 	 * save to webapp/logs/weko/logreport/logReport_YYYYMM.zip
+	 * 定型ログ作成
 	 * 
-	 * @return bool retult
+	 * @return bool Retult 結果
 	 */
 	function makeLogReport(){
 		$block_id = $this->getBlockPageId();
@@ -790,10 +894,11 @@ class Repository_Action_Edit_Log_Move extends RepositoryAction
 	}
 	
 	/**
-	 * dump log data for SQL or CSV
+	 * Dump log data for SQL or CSV
 	 * between start date to end date
+	 * ログテーブルダンプ作成
 	 *
-	 * @return bool retult
+	 * @return bool Retult 結果
 	 */
 	function dumpLogData(){
 		// check log folder exist
@@ -884,10 +989,11 @@ class Repository_Action_Edit_Log_Move extends RepositoryAction
 	}
 	
 	/**
-	 * delete log data
+	 * Delete log data
 	 * between start date to end date
+	 * ログ削除
 	 *
-	 * @return bool retult
+	 * @return bool Retult 結果
 	 */
 	function deleteLogData(){
 		$start_date = $this->start_year."-".$this->start_month."-01 00:00:00.000";
@@ -912,7 +1018,8 @@ class Repository_Action_Edit_Log_Move extends RepositoryAction
      * write custom report accesss data(log per host)
      * ホスト単位のカスタムレポートを作成
      *
-     * @param array $log_per_host
+     * @param array $log_per_host The number of accesses per month and year 年月ごとのアクセス数
+     *                            array[YYYYMM][ipAddoress]["record_date"|"ip_address"|"host"|"item_count"|"download_count"|"view_count"]
      */
     private function writeLogPerHost($log_per_host){
         // ------------------------------------------
@@ -945,10 +1052,11 @@ class Repository_Action_Edit_Log_Move extends RepositoryAction
     }
     
     /**
-     * write custom report access data(log per item)
+     * Write custom report access data(log per item)
      * アイテム毎のカスタムレポートを作成
      *
-     * @param array $log_per_item
+     * @param array $log_per_item The number of accesses per month and year 年月ごとのアクセス数
+     *                            array[YYYYMM][ipAddoress]["record_date"|"item_id"|"download_count"|"download_count"|"view_count"]
      */
     private function writeLogPerItem($log_per_item){
         // ------------------------------------------

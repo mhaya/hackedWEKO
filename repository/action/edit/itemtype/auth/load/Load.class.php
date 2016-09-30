@@ -1,39 +1,77 @@
 <?php
+
+/**
+ * Action class for load the item type authority
+ * アイテムタイプ権限読込用アクションクラス
+ *
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Load.class.php 48623 2015-02-18 11:48:38Z tomohiro_ichikawa $
+// $Id: Load.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
-// Copyright (c) 2007 - 2008, National Institute of Informatics, 
+// Copyright (c) 2007 - 2008, National Institute of Informatics,
 // Research and Development Center for Scientific Information Resources
 //
 // This program is licensed under a Creative Commons BSD Licence
 // http://creativecommons.org/licenses/BSD/
 //
 // --------------------------------------------------------------------
-
-/* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
+/**
+ * Item type manager class
+ * アイテムタイプ管理クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/ItemtypeManager.class.php';
+/**
+ * NC2 user authority manager class
+ * NC2ユーザー権限管理クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryUserAuthorityManager.class.php';
 
 /**
- * [[機能説明]]
+ * Action class for load the item type authority
+ * アイテムタイプ権限読込用アクションクラス
  *
- * @package     [[package名]]
- * @access      public
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class Repository_Action_Edit_Itemtype_Auth_Load extends RepositoryAction
 {
+    /**
+     * Exclusive base auth JSON string
+     * 除外ベース権限JSON出力文字列
+     */
     const EXCLUSIVE_BASE_AUTH = "exclusive_base_auth";
+    /**
+     * Base auth JSON string
+     * ベース権限JSON出力文字列
+     */
     const BASE_AUTH = "base_auth";
+    /**
+     * Room auth JSON string
+     * ルーム権限JSON出力文字列
+     */
     const ROOM_AUTH = "room_auth";
-    
+
+    /**
+     * Item type ID
+     * アイテムタイプID
+     *
+     * @var int
+     */
     var $item_type_id = null;
 
     /**
-     * [[機能説明]]
-     *
-     * @access  public
+     * Execute
+     * 実行
      */
     function executeApp()
     {
@@ -120,8 +158,11 @@ class Repository_Action_Edit_Itemtype_Auth_Load extends RepositoryAction
     
     /**
      * escape JSON
+     * JSON文字列用エスケープ処理
      *
-     * @param array $user_data
+     * @param string $str string 文字列
+     * @param bool $lineFlg new line flag 改行フラグ
+     * @return string escaped JSON string エスケープ済JSON用文字列
      */
     function escapeJSON($str, $lineFlg=false){
         

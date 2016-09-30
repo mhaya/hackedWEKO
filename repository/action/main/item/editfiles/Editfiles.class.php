@@ -1,30 +1,53 @@
 <?php
+
+/**
+ * Item registration: input processing action class from the file selection screen
+ * アイテム登録：ファイル選択画面からの入力処理アクションクラス
+ *
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Editfiles.class.php 53594 2015-05-28 05:25:53Z kaede_matsushita $
+// $Id: Editfiles.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
-// Copyright (c) 2007 - 2008, National Institute of Informatics, 
+// Copyright (c) 2007 - 2008, National Institute of Informatics,
 // Research and Development Center for Scientific Information Resources
 //
 // This program is licensed under a Creative Commons BSD Licence
 // http://creativecommons.org/licenses/BSD/
 //
 // --------------------------------------------------------------------
-
-/* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
+/**
+ * Item register manager class
+ * アイテム登録管理クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/ItemRegister.class.php';
+/**
+ * Action base class for WEKO
+ * WEKO用アクション基底クラス
+ */
+require_once WEBAPP_DIR. '/modules/repository/components/common/WekoAction.class.php';
 
 /**
- * アイテム登録：ファイル選択画面からの入力処理アクション
+ * Item registration: input processing action class from the file selection screen
+ * アイテム登録：ファイル選択画面からの入力処理アクションクラス
  *
- * @package     [[package名]]
- * @access      public
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
-class Repository_Action_Main_Item_Editfiles extends RepositoryAction
+class Repository_Action_Main_Item_Editfiles extends WekoAction
 {
     // リクエストパラメーター
     /**
+     * Process mode
      * 処理モード
      *   'selecttype'   : アイテムタイプ選択画面
      *   'files'        : ファイル選択画面
@@ -43,43 +66,67 @@ class Repository_Action_Main_Item_Editfiles extends RepositoryAction
     public $save_mode = null;
     
     /**
+     * Meta data number to be processed
      * 処理対象のメタデータ番号
+     *
      * @var string
      */
     public $target = null;
     
     /**
+     * Attribute number of the processing target
      * 処理対象の属性番号
+     *
      * @var string
      */
     public $attridx = null;
     
     /**
-     * ファイルのid配列
-     *   ("TILL", "NO", "YES"), ファイル入力欄の数と対応
+     * id array of files ( "TILL", "NO", "YES"), corresponding to the number of file input field
+     * ファイルのid配列("TILL", "NO", "YES"), ファイル入力欄の数と対応
+     *
      * @var array
      */
     public $input_ids_file = null;
     
     /**
-     * サムネイルのid配列
-     *   ("TILL", "NO", "YES"), サムネイル入力欄の数と対応
+     * id array of thumbnail ( "TILL", "NO", "YES"), corresponding to the number of thumbnail input field
+     * サムネイルのid配列("TILL", "NO", "YES"), サムネイル入力欄の数と対応
+     *
      * @var array
      */
     public $input_ids_thumbnail = null; 
     
     // メンバ変数
+    /**
+     * Warning message
+     * 警告メッセージ
+     *
+     * @var array
+     */
     private $warningMsg = array();  // 警告メッセージ
     
     /**
-     * 実行処理
-     * @see RepositoryAction::executeApp()
+     * Instance in order to use the function of RepositoryAction
+     * RepositoryActionの関数を利用するためのインスタンス
+     *
+     * @var RepositoryAction
+     */
+    private $repositoryAction = null;
+    
+    /**
+     * Execute
+     * 実行
+     *
+     * @return string "success"/"error" success/failed 成功/失敗
+     * @throws AppException
      */
     protected function executeApp()
     {
         // Uploadアクションでサーバに上げたファイルのUploadレコードを取得
         // これは前ページのファイル入力項の数だけ渡る(空白、エラー分を含む)
         $filelist = $this->Session->getParameter("filelist");
+        $this->Session->removeParameter("filelist");
         
         // セッション情報取得
         $item_attr_type = $this->Session->getParameter("item_attr_type");   // 2.アイテム属性タイプ (Nレコード, Order順) : ""[N][''], アイテム属性タイプの必要部分を連想配列で保持したものである。
@@ -223,7 +270,7 @@ class Repository_Action_Main_Item_Editfiles extends RepositoryAction
                                     $file["pub_year"] = $def_pub_year;
                                     $file["pub_month"] = $def_pub_month;
                                     $file["pub_day"] = $def_pub_day;
-                                    $file["license_id"] = '0';
+                                    $file["license_id"] = 'licence_free';
                                     $file["license_notation"] = '';
                                     $result = $ItemRegister->entryFile($file, $error);
                                     if($result === false){
@@ -233,6 +280,7 @@ class Repository_Action_Main_Item_Editfiles extends RepositoryAction
                                         $exception->addError($error);
                                         throw $exception;
                                     }
+                                    
                                     if($item_attr_type[$ii]['input_type']=='file'){
                                         $newfile = array(
                                             'item_id'  => $file["item_id"],
@@ -298,9 +346,11 @@ class Repository_Action_Main_Item_Editfiles extends RepositoryAction
                                         }
                                         // Add registered info save action 2009/02/04 Y.Nakao --end--
                                     }
-                                // Add file price Y.Nakao 2008/08/28 --end--
-                                // uploadレコード を保存
-                                $item_attr[$ii][$jj] = $newfile;
+                                    // Add file price Y.Nakao 2008/08/28 --end--
+                                    // ファイル差替えを行った時、古いファイルのデータをセッションデータとして引き継ぐ
+                                    $newfile = $this->loadOldFileInfo($item_attr[$ii][$jj], $newfile);
+                                    // uploadレコード を保存
+                                    $item_attr[$ii][$jj] = $newfile;
                                 } else {
                                     // ファイルアップロードに失敗もしくは未入力の分
                                     //$item_attr[$ii][$jj] = null;
@@ -415,8 +465,6 @@ class Repository_Action_Main_Item_Editfiles extends RepositoryAction
                 }
             }
         }
-        // item_attrに移し変えたら、もう不要
-        $this->Session->removeParameter("filelist");
         
         // Add toll file 2008/08/12 Y.Nakao --start--
         // ------------------------------------------------------------
@@ -425,7 +473,7 @@ class Repository_Action_Main_Item_Editfiles extends RepositoryAction
         // get group list
         $all_group = array();
         $user_error_msg = "";
-        $result = $this->getGroupList($all_group, $user_error_msg);
+        $result = $this->getRepositoryActionInstance()->getGroupList($all_group, $user_error_msg);
         if($result === false){
             $this->errorLog($user_error_msg, __FILE__, __CLASS__, __LINE__);
             $exception = new AppException($user_error_msg);
@@ -484,10 +532,10 @@ class Repository_Action_Main_Item_Editfiles extends RepositoryAction
                             $tmp1_file_no = $item_attr[$idx][$ii]["file_no"] + 1;
                             if(isset($item_attr[$idx][$attridx]['item_id']))
                             {
-                                $tmp2_file_no = $this->getFileNo($item_attr[$idx][$attridx]['item_id'], 
-                                                                 $item_attr[$idx][$attridx]['item_no'], 
-                                                                 $item_attr[$idx][$attridx]['attribute_id'], 
-                                                                 $error);
+                                $tmp2_file_no = $this->getRepositoryActionInstance()->getFileNo($item_attr[$idx][$attridx]['item_id'], 
+                                                                                                $item_attr[$idx][$attridx]['item_no'], 
+                                                                                                $item_attr[$idx][$attridx]['attribute_id'], 
+                                                                                                $error);
                                 if($tmp2_file_no===false){
                                     $this->errorLog($error, __FILE__, __CLASS__, __LINE__);
                                     $exception = new AppException($error);
@@ -616,8 +664,8 @@ class Repository_Action_Main_Item_Editfiles extends RepositoryAction
                     if($item_num_attr[$idx] == 0){
                         $file_no = 1;
                         if($item_attr_type[$idx]['input_type']=='thumbnail'){
-                            $file_no = $this->calcMaxThumbnailNo( $item_attr[$idx][$attridx]['item_id'], $item_attr[$idx][$attridx]['item_no']
-                                                                 , $item_attr[$idx][$attridx]['attribute_id'], $error)+1;
+                            $file_no = $this->getRepositoryActionInstance()->calcMaxThumbnailNo( $item_attr[$idx][$attridx]['item_id'], $item_attr[$idx][$attridx]['item_no']
+                                                                                                , $item_attr[$idx][$attridx]['attribute_id'], $error)+1;
                             if($file_no===false){
                                 $this->errorLog($error, __FILE__, __CLASS__, __LINE__);
                                 $exception = new AppException($error);
@@ -625,8 +673,8 @@ class Repository_Action_Main_Item_Editfiles extends RepositoryAction
                                 throw $exception;
                             }
                         } else {
-                            $file_no = $this->getFileNo( $item_attr[$idx][$attridx]['item_id'], $item_attr[$idx][$attridx]['item_no']
-                                                                 , $item_attr[$idx][$attridx]['attribute_id'], $error);
+                            $file_no = $this->getRepositoryActionInstance()->getFileNo( $item_attr[$idx][$attridx]['item_id'], $item_attr[$idx][$attridx]['item_no']
+                                                                                        , $item_attr[$idx][$attridx]['attribute_id'], $error);
                             if($file_no===false){
                                 $this->errorLog($error, __FILE__, __CLASS__, __LINE__);
                                 $exception = new AppException($error);
@@ -689,7 +737,7 @@ class Repository_Action_Main_Item_Editfiles extends RepositoryAction
                         $file_no = 1;
                         if($item_id != null && $item_no != null){
                             if($item_attr_type[$ii]['input_type']=='thumbnail'){
-                                $file_no = $this->calcMaxThumbnailNo($item_id, $item_no, $ii + 1, $error)+1;
+                                $file_no = $this->getRepositoryActionInstance()->calcMaxThumbnailNo($item_id, $item_no, $ii + 1, $error)+1;
                                 if($file_no===false){
                                     $this->errorLog($error, __FILE__, __CLASS__, __LINE__);
                                     $exception = new AppException($error);
@@ -697,7 +745,7 @@ class Repository_Action_Main_Item_Editfiles extends RepositoryAction
                                     throw $exception;
                                 }
                             } else {
-                                $file_no = $this->getFileNo($item_id, $item_no, $ii + 1, $error);
+                                $file_no = $this->getRepositoryActionInstance()->getFileNo($item_id, $item_no, $ii + 1, $error);
                                 if($file_no===false){
                                     $this->errorLog($error, __FILE__, __CLASS__, __LINE__);
                                     $exception = new AppException($error);
@@ -748,7 +796,112 @@ class Repository_Action_Main_Item_Editfiles extends RepositoryAction
             $request->setParameter("warningMsg", $this->warningMsg);
         }
         
+        // ゴミファイルを削除する
+        $uploadPath = WEBAPP_DIR. "/uploads/repository/";
+        if(isset($filelist) && is_array($filelist))
+        {
+            foreach($filelist as $key => $value)
+            {
+                // webapp/uploads/repository/直下に移動したアップロードファイルを削除する
+                $this->deleteUploadFile($uploadPath. $filelist[$key]["upload_id"]. ".". $filelist[$key]["extension"]);
+                // NC2側で作成した画像ファイルの縮小画像ファイルを削除する
+                $this->deleteUploadFile($uploadPath. $filelist[$key]["upload_id"]. "_mobile_240.". $filelist[$key]["extension"]);
+                $this->deleteUploadFile($uploadPath. $filelist[$key]["upload_id"]. "_mobile_480.". $filelist[$key]["extension"]);
+            }
+        }
+        
         return $ret;
+    }
+    
+    /**
+     * It returns an instance of the class RepositoryAction
+     * RepositoryActionクラスのインスタンスを返す
+     *
+     * @return RepositoryAction Instance for the function of the old base class 旧基底クラスの関数用のインスタンス
+     */
+    private function getRepositoryActionInstance(){
+        if(!isset($this->repositoryAction)){
+            $this->repositoryAction = new RepositoryAction();
+            $this->repositoryAction->Session = $this->Session;
+            $this->repositoryAction->Db = $this->Db;
+            $this->repositoryAction->TransStartDate = $this->accessDate;
+        }
+        
+        return $this->repositoryAction;
+    }
+    
+    /**
+     * When you replace the file, reads the old version of the file data
+     * ファイルを差し替えたとき、古いバージョンのファイルデータを読込む
+     *
+     * @param string $session Session data containing the set value of the old file 古いファイルの設定値が入ったセッションデータ
+     * @param string $fileInfo  new file data新しいファイルのデータ
+     * @return array file data replaced by old data 古いファイルのデータで置き換えたファイルデータ
+     */
+    private function loadOldFileInfo($session, $fileInfo){
+        if(isset($session["licence"])){
+            $fileInfo["licence"] = $session["licence"];
+        }
+        if(isset($session["freeword"])){
+            $fileInfo["freeword"] = $session["freeword"];
+        }
+        if(isset($session["embargo_flag"])){
+            $fileInfo["embargo_flag"] = $session["embargo_flag"];
+        }
+        if(isset($session["embargo_year"])){
+            $fileInfo["embargo_year"] = $session["embargo_year"];
+        }
+        if(isset($session["embargo_month"])){
+            $fileInfo["embargo_month"] = $session["embargo_month"];
+        }
+        if(isset($session["embargo_day"])){
+            $fileInfo["embargo_day"] = $session["embargo_day"];
+        }
+        if(isset($session["auth_room_id"])){
+            $fileInfo["auth_room_id"] = $session["auth_room_id"];
+        }
+        if(isset($session["auth_num"])){
+            $fileInfo["auth_num"] = $session["auth_num"];
+        }
+        if(isset($session["flash_embargo_flag"])){
+            $fileInfo["flash_embargo_flag"] = $session["flash_embargo_flag"];
+        }
+        if(isset($session["flash_embargo_year"])){
+            $fileInfo["flash_embargo_year"] = $session["flash_embargo_year"];
+        }
+        if(isset($session["flash_embargo_month"])){
+            $fileInfo["flash_embargo_month"] = $session["flash_embargo_month"];
+        }
+        if(isset($session["flash_embargo_day"])){
+            $fileInfo["flash_embargo_day"] = $session["flash_embargo_day"];
+        }
+        if(isset($session["price_value"])){
+            $fileInfo["price_value"] = $session["price_value"];
+        }
+        if(isset($session["room_id"])){
+            $fileInfo["room_id"] = $session["room_id"];
+        }
+        if(isset($session["price_num"])){
+            $fileInfo["price_num"] = $session["price_num"];
+        }
+        return $fileInfo;
+    }
+    
+    /**
+     * To delete the uploaded files
+     * アップロードしたファイルを削除する
+     *
+     * @param string $path Delete the file path 削除ファイルパス
+     */
+    private function deleteUploadFile($path){
+        try{
+            if(file_exists($path)){
+                Repository_Components_Util_OperateFileSystem::unlink($path);
+            }
+        } catch(AppException $ex){
+            // 削除できなくてもゴミファイルが残るだけなので、警告ログを出力し例外は握りつぶす
+            $this->warnLog("[". __FUNCTION__. "] Failed unlink path: ". $path, __FILE__, __CLASS__, __LINE__);
+        }
     }
 }
 ?>

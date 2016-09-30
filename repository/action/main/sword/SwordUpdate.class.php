@@ -1,7 +1,15 @@
 <?php
+
+/**
+ * Common class item batch update process by the SWORD protocol
+ * SWORDプロトコルによるアイテム一括更新処理共通クラス
+ * 
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: SwordUpdate.class.php 58676 2015-10-10 12:33:17Z tatsuya_koyasu $
+// $Id: SwordUpdate.class.php 71165 2016-08-22 09:20:28Z keiya_sugimoto $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics,
 // Research and Development Center for Scientific Information Resources
@@ -12,46 +20,124 @@
 // --------------------------------------------------------------------
 
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
-
+/**
+ * ZIP file manipulation library
+ * ZIPファイル操作ライブラリ
+ */
 include_once MAPLE_DIR.'/includes/pear/File/Archive.php';
+
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
+
+/**
+ * Import process common class
+ * インポート処理汎用クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/action/edit/import/ImportCommon.class.php';
+
+/**
+ * Item registration and editing process common classes
+ * アイテム登録・編集処理共通クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/ItemRegister.class.php';
+
+/**
+ * Name authority common classes
+ * 著者名典拠共通クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/NameAuthority.class.php';
+/**
+ * Mail operation class
+ * メール操作クラス
+ */
 require_once WEBAPP_DIR. '/components/mail/Main.class.php';
+
+/**
+ * String format conversion common classes
+ * 文字列形式変換共通クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryOutputFilter.class.php';
+
+/**
+ * Common classes for creating and updating the search table that holds the metadata and file contents of each item to search speed improvement
+ * 検索速度向上のためアイテム毎のメタデータおよびファイル内容を保持する検索テーブルの作成・更新を行う共通クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositorySearchTableProcessing.class.php';
+
+/**
+ * Handle management common classes
+ * ハンドル管理共通クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryHandleManager.class.php';
+
+/**
+ * Check grant doi class
+ * DOI付与チェックビジネスクラス
+ */
+require_once WEBAPP_DIR. '/modules/repository/components/business/doi/Checkdoi.class.php';
+
+/**
+ * ZIP file manipulation common classes
+ * ZIPファイル操作共通クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/util/ZipUtility.class.php';
 
 /**
- * Sword update class
- *
+ * String operator class
+ * 文字列操作クラス
+ */
+require_once WEBAPP_DIR. '/modules/repository/components/util/StringOperator.class.php';
+
+/**
+ * Common class item batch update process by the SWORD protocol
+ * SWORDプロトコルによるアイテム一括更新処理共通クラス
+ * 
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class SwordUpdate extends RepositoryAction
 {
     // member
     /**
+     * Item id
+     * アイテムID
      * @var int
      */
     private $itemId = null;
 
     /**
+     * Item serial number
+     * アイテム通番
+     * 
      * @var int
      */
     private $itemNo = null;
 
     /**
+     * Insert user id
+     * 挿入ユーザID
+     * 
      * @var string
      */
     private $insertUser = null;
 
     /**
+     * Administrator login ID
+     * 管理者ログインID
+     *
      * @var string
      */
     private $loginId = null;
 
     /**
+     * Administrator password
+     * 管理者パスワード
+     *
      * @var string
      */
     private $password = null;
@@ -60,6 +146,7 @@ class SwordUpdate extends RepositoryAction
      * Index id string separated by "|"
      *  delimiter is "|"
      *  index_id|index_id|index_id|...
+     * インデックスID一覧
      *
      * @var string
      */
@@ -69,28 +156,47 @@ class SwordUpdate extends RepositoryAction
      * New index data
      *  delimiter is "," and "|"
      *  pid,name,pubdate|pid,name,pubdate|...
+     * 新規インデックスID一覧
      *
      * @var string
      */
     private $newIndex = null;
 
     /**
+     * Change Doi flag
+     * DOI変更フラグ
+     *
+     * @var int
+     */
+    private $changeDoiFlag = null;
+
+    /**
+     * ImportCommon object
+     * ImportCommonオブジェクト
+     * 
      * @var ImportCommon
      */
     private $importCommon_ = null;
 
     /**
+     * ItemRegister object
+     * ItemRegisterオブジェクト
+     * 
      * @var ItemRegister
      */
     private $itemRegister_ = null;
 
     /**
+     * Encode
+     * エンコード
+     * 
      * @var string
      */
     private $encode_ = _CHARSET;
 
     /**
      * Log file name
+     * ログファイル名
      *
      * @var string
      */
@@ -99,6 +205,8 @@ class SwordUpdate extends RepositoryAction
     /**
      * Whether to create a log
      *  default: true
+     * ログ作成フラグ
+     * 
      * @var bool
      */
     private $isCreateLog = true;
@@ -106,6 +214,8 @@ class SwordUpdate extends RepositoryAction
     /**
      * Whether put a date in log file name
      *  default: false
+     * ログ名に日時を挿入するか否か
+     * 
      * @var bool
      */
     private $isAddDateToLogName = false;
@@ -113,92 +223,498 @@ class SwordUpdate extends RepositoryAction
     /**
      * Whether to delete uploaded file
      *  default: true
+     * アップロードファイル削除フラグ
+     * 
      * @var bool
      */
     private $deleteUploadFile = true;
 
     /**
      * RepositoryHandleManager instance
+     * RepositoryHandleMnagerオブジェクト
      *
      * @var RepositoryHandleManager
      */
     private $repositoryHandleManager = null;
 
     // Metadata array for ItemRegister
+    /**
+     * Key name
+     * キー名
+     *
+     * @var string
+     */
     const KEY_ITEM_ID = "item_id";
+    /**
+     * Key name
+     * キー名
+     *
+     * @var string
+     */
     const KEY_ITEM_NO = "item_no";
     // Add add fix number T.Koyasu 2014/09/12 --start--
+    /**
+     * Key name
+     * キー名
+     *
+     * @var string
+     */
     const KEY_REVISION_NO = "revision_no";
     // Add add fix number T.Koyasu 2014/09/12 --end--
+    /**
+     * Key name
+     * キー名
+     *
+     * @var string
+     */
     const KEY_ITEM_TYPE_ID = "item_type_id";
     // Add add fix number T.Koyasu 2014/09/12 --start--
+    /**
+     * Key name
+     * キー名
+     *
+     * @var string
+     */
     const KEY_PREV_REVISION_NO = "prev_revision_no";
     // Add add fix number T.Koyasu 2014/09/12 --end--
+    /**
+     * Key name
+     * キー名
+     *
+     * @var string
+     */
     const KEY_TITLE = "title";
+    /**
+     * Key name
+     * キー名
+     *
+     * @var string
+     */
     const KEY_TITLE_EN = "title_english";
+    /**
+     * Key name
+     * キー名
+     *
+     * @var string
+     */
     const KEY_LANGUAGE = "language";
+    /**
+     * Key name
+     * キー名
+     *
+     * @var string
+     */
     const KEY_PUB_YEAR = "pub_year";
+    /**
+     * Key name
+     * キー名
+     *
+     * @var string
+     */
     const KEY_PUB_MONTH = "pub_month";
+    /**
+     * Key name
+     * キー名
+     *
+     * @var string
+     */
     const KEY_PUB_DAY = "pub_day";
+    /**
+     * Key name
+     * キー名
+     *
+     * @var string
+     */
     const KEY_SEARCH_KEY = "serch_key";
+    /**
+     * Key name
+     * キー名
+     *
+     * @var string
+     */
     const KEY_SEARCH_KEY_EN = "serch_key_english";
+    /**
+     * Key name
+     * キー名
+     *
+     * @var string
+     */
     const KEY_SHOWN_STATUS = "shown_status";
+    /**
+     * Key name
+     * キー名
+     *
+     * @var string
+     */
     const KEY_ATTR_ID = "attribute_id";
+    /**
+     * Key name
+     * キー名
+     *
+     * @var string
+     */
     const KEY_ATTR_NO = "attribute_no";
+    /**
+     * Key name
+     * キー名
+     *
+     * @var string
+     */
     const KEY_INPUT_TYPE = "input_type";
+    /**
+     * Key name
+     * キー名
+     *
+     * @var string
+     */
     const KEY_ATTR_VALUE = "attribute_value";
+    /**
+     * Key name
+     * キー名
+     *
+     * @var string
+     */
     const KEY_FAMILY = "family";
+    /**
+     * Key name
+     * キー名
+     *
+     * @var string
+     */
     const KEY_NAME = "name";
+    /**
+     * Key name
+     * キー名
+     *
+     * @var string
+     */
     const KEY_FAMILY_RUBY = "family_ruby";
+    /**
+     * Key name
+     * キー名
+     *
+     * @var string
+     */
     const KEY_NAME_RUBY = "name_ruby";
+    /**
+     * Key name
+     * キー名
+     *
+     * @var string
+     */
     const KEY_EMAIL = "e_mail_address";
+    /**
+     * Key name
+     * キー名
+     *
+     * @var string
+     */
     const KEY_AUTHOR_ID = "author_id";
+    /**
+     * Key name
+     * キー名
+     *
+     * @var string
+     */
     const KEY_NAME_NO = "personal_name_no";
+    /**
+     * Key name
+     * キー名
+     *
+     * @var string
+     */
     const KEY_PREFIX_ID = "prefix_id";
+    /**
+     * Key name
+     * キー名
+     *
+     * @var string
+     */
     const KEY_SUFFIX = "suffix";
+    /**
+     * Key name
+     * キー名
+     *
+     * @var string
+     */
     const KEY_EX_AUTHOR_ID = "external_author_id";
+    /**
+     * Key name
+     * キー名
+     *
+     * @var string
+     */
     const KEY_BIBLIO_NAME = "biblio_name";
+    /**
+     * Key name
+     * キー名
+     *
+     * @var string
+     */
     const KEY_BIBLIO_NAME_EN = "biblio_name_english";
+    /**
+     * Key name
+     * キー名
+     *
+     * @var string
+     */
     const KEY_VOLUME = "volume";
+    /**
+     * Key name
+     * キー名
+     *
+     * @var string
+     */
     const KEY_ISSUE = "issue";
+    /**
+     * Key name
+     * キー名
+     *
+     * @var string
+     */
     const KEY_SPAGE = "start_page";
+    /**
+     * Key name
+     * キー名
+     *
+     * @var string
+     */
     const KEY_EPAGE = "end_page";
+    /**
+     * Key name
+     * キー名
+     *
+     * @var string
+     */
     const KEY_DATE_OF_ISSUED = "date_of_issued";
+    /**
+     * Key name
+     * キー名
+     *
+     * @var string
+     */
     const KEY_BIBLIO_NO = "biblio_no";
+    /**
+     * Key name
+     * キー名
+     *
+     * @var string
+     */
     const KEY_FILE_NAME = "file_name";
+    /**
+     * Key name
+     * キー名
+     *
+     * @var string
+     */
     const KEY_SHOW_ORDER = "show_order";
+    /**
+     * Key name
+     * キー名
+     *
+     * @var string
+     */
     const KEY_MIMETYPE = "mimetype";
+    /**
+     * Key name
+     * キー名
+     *
+     * @var string
+     */
     const KEY_EXTENSION = "extension";
+    /**
+     * Key name
+     * キー名
+     *
+     * @var string
+     */
     const KEY_PHYSICAL_FILE_NAME = "physical_file_name";
+    /**
+     * Key name
+     * キー名
+     *
+     * @var string
+     */
     const KEY_FILE_NO = "file_no";
+    /**
+     * Key name
+     * キー名
+     *
+     * @var string
+     */
     const KEY_UPLOAD = "upload";
+    /**
+     * Key name
+     * キー名
+     *
+     * @var string
+     */
     const KEY_WIDTH = "width";
+    /**
+     * Key name
+     * キー名
+     *
+     * @var string
+     */
     const KEY_HEIGHT = "height";
+    /**
+     * Key name
+     * キー名
+     *
+     * @var string
+     */
     const KEY_FILE_DIR = "file_dir";
+    /**
+     * Key name
+     * キー名
+     *
+     * @var string
+     */
     const KEY_DISPLAY_NAME = "display_name";
+    /**
+     * Key name
+     * キー名
+     *
+     * @var string
+     */
     const KEY_DISPLAY_TYPE = "display_type";
+    /**
+     * Key name
+     * キー名
+     *
+     * @var string
+     */
     const KEY_LICENSE_ID = "license_id";
+    /**
+     * Key name
+     * キー名
+     *
+     * @var string
+     */
     const KEY_LICENSE_NOTATION = "license_notation";
+    /**
+     * Key name
+     * キー名
+     *
+     * @var string
+     */
     const KEY_EMBARGO_FLAG = "embargo_flag";
+    /**
+     * Key name
+     * キー名
+     *
+     * @var string
+     */
     const KEY_EMBARGO_YEAR = "embargo_year";
+    /**
+     * Key name
+     * キー名
+     *
+     * @var string
+     */
     const KEY_EMBARGO_MONTH = "embargo_month";
+    /**
+     * Key name
+     * キー名
+     *
+     * @var string
+     */
     const KEY_EMBARGO_DAY = "embargo_day";
+    /**
+     * Key name
+     * キー名
+     *
+     * @var string
+     */
     const KEY_FLASH_EMBARGO_FLAG = "flash_embargo_flag";
+    /**
+     * Key name
+     * キー名
+     *
+     * @var string
+     */
     const KEY_FLASH_EMBARGO_YEAR = "flash_embargo_year";
+    /**
+     * Key name
+     * キー名
+     *
+     * @var string
+     */
     const KEY_FLASH_EMBARGO_MONTH = "flash_embargo_month";
+    /**
+     * Key name
+     * キー名
+     *
+     * @var string
+     */
     const KEY_FLASH_EMBARGO_DAY = "flash_embargo_day";
+    /**
+     * Key name
+     * キー名
+     *
+     * @var string
+     */
     const KEY_PRICE_NUM = "price_num";
+    /**
+     * Key name
+     * キー名
+     *
+     * @var string
+     */
     const KEY_ROOM_ID = "room_id";
+    /**
+     * Key name
+     * キー名
+     *
+     * @var string
+     */
     const KEY_PRICE_VALUE = "price_value";
+    /**
+     * Key name
+     * キー名
+     *
+     * @var string
+     */
     const KEY_INDEX_ID = "index_id";
     // add e-person 2013/10/23 R.Matsuura
+    /**
+     * Key name
+     * キー名
+     *
+     * @var string
+     */
     const KEY_FEEDBACK_MAILADDRESS = "feedback_mailaddress";
     // add cnri handle 2014/09/22 T.Ichikawa
+    /**
+     * Key name
+     * キー名
+     *
+     * @var string
+     */
     const KEY_CNRI_SUFFIX = "cnri_suffix";
     
     // add revision no 2014/09/11 T.Ichikawa
+    /**
+     * Key name
+     * キー名
+     *
+     * @var string
+     */
     const KEY_SELF_DOI = "selfdoi";
+    /**
+     * Revision number
+     * リビジョン番号
+     *
+     * @var string
+     */
     const REVISION_NO = 1;
+    
+    /**
+     * Old revision number
+     * 古いリビジョン番号
+     *
+     * @var string
+     */
     const PREV_REVISION_NO = 0;
     
     //-----------------------------------------------
@@ -206,11 +722,12 @@ class SwordUpdate extends RepositoryAction
     //-----------------------------------------------
     /**
      * Constructor
+     * コンストラクタ
      *
-     * @param Session $session
-     * @param Db $db
-     * @param string $transStartDate
-     * @param bool $isCreateLog
+     * @param Session $sesssion Session management objects Session管理オブジェクト
+     * @param DbObject $db Database management objects データベース管理オブジェクト
+     * @param string $transStartDate Transaction start date トランザクション開始日時
+     * @param bool $isCreateLog Is create log ログ作成フラグ
      * @access public
      */
     public function SwordUpdate($session, $db, $transStartDate, $isCreateSwordLog=false)
@@ -256,26 +773,30 @@ class SwordUpdate extends RepositoryAction
             fwrite($logFh, "\n");
             fclose($logFh);
         }
+        // ロガー
+        $this->Logger = WekoBusinessFactory::getFactory()->logger;
     }
 
     /**
      * Init
+     * 初期化
      *
-     * @param int $itemId
-     * @param int $itemNo
-     * @param string $loginId
-     * @param string $password
-     * @param string $checkedIds
-     * @param string $newIndex
-     * @param string $insertUser
+     * @param int $itemId Item id アイテムID
+     * @param int $itemNo Item serial number アイテム通番
+     * @param string $loginId Login id ログインID
+     * @param string $password Password パスワード
+     * @param string $checkedIds Index id list to insert 登録先インデックスID一覧
+     * @param string $newIndex New index id list 新規インデックスID一覧
+     * @param string $insertUser Insert user id 挿入ユーザID
      */
-    public function init($itemId, $itemNo, $loginId, $password, $checkedIds, $newIndex, $insertUser="")
+    public function init($itemId, $itemNo, $loginId, $password, $checkedIds, $newIndex, $changeDoiFlag, $insertUser="")
     {
         $this->itemId = $itemId;
         $this->itemNo = $itemNo;
         $this->loginId = $loginId;
         $this->password = $password;
         $this->checkedIds = $checkedIds;
+        $this->changeDoiFlag = $changeDoiFlag;
         $this->newIndex = $newIndex;
 
         if(strlen($insertUser)>0)
@@ -293,14 +814,18 @@ class SwordUpdate extends RepositoryAction
         $this->writeLog("  loginId: ".$this->loginId."\n");
         $this->writeLog("  checkedIds: ".$this->checkedIds."\n");
         $this->writeLog("  newIndex: ".$this->newIndex."\n");
+        $this->writeLog("  changeDoiFlag: ".$this->changeDoiFlag."\n");
         $this->writeLog("  insertUser: ".$this->insertUser."\n\n");
     }
 
     /**
      * Execute sword update
+     * 更新実行
      *
-     * @param int $statusCode
-     * @return bool
+     * @param int $statusCode Status code ステータスコード
+     * @param array $error_list Error list エラー一覧
+     *                          array[$ii]
+     * @return boolean Result 結果
      */
     public function executeSwordUpdate(&$statusCode, &$error_list)
     {
@@ -403,6 +928,7 @@ class SwordUpdate extends RepositoryAction
             {
                 $this->removeDirectory($tmpDir);
             }
+            $this->exeptionLog($ex, __FILE__, __CLASS__, __LINE__);
             $this->writeLog("  Failed: Exception occurred.\n");
             $this->writeLog("-- End executeSwordUpdate (".date("Y/m/d H:i:s").") --\n\n");
             fclose($logFh);
@@ -412,25 +938,30 @@ class SwordUpdate extends RepositoryAction
 
     /**
      * Execute update item
+     * アイテム更新
      *
      * 戻り値の仕様
      *   正常完了の場合： $errorMsg を空にして、true を返す
      *   更新はしないが、処理続行の場合： $errorMsg を詰めて、true を返す
      *   エラーにより処理中断の場合： $errorMsg を詰めて、false を返す
      *
-     * @param array $xmlItemData
-     * @param array $xmlItemTypeData
-     * @param string $tmpDir
-     * @param string $userId
-     * @param int $itemId
-     * @param int $itemNo
-     * @param array $itemInfo
-     * @param array $insIndexArray
-     * // Add param item_type_info 2013/09/09 R.Matsuura
-     * @param array $item_type_info
-     * @param string $detailUrl
-     * @param string $errorMsg
-     * @param string $waringMsg
+     * @param array $xmlItemData XML item information XMLアイテム情報
+     *                           array['item_array'][0]["TITLE"|"TITLE_ENGLISH"]
+     * @param array $xmlItemTypeData XML item type information XMLアイテムタイプ情報
+     *                               array["item_type_array"][$ii]
+     * @param string $tmpDir Temporary directory path 一時ディレクトリパス
+     * @param string $userId User id ユーザID
+     * @param int $itemId Item id アイテムID
+     * @param int $itemNo Item serial number アイテム通番
+     * @param array $itemInfo Item information アイテム情報
+     *                             array[$ii]["item_id"|"item_no"|"revision_no"|"item_type_id"|"prev_revision_no"|"title"|"title_english"|"language"]
+     * @param array $insIndexArray Insert index list 挿入インデックス一覧
+     *                             array[$ii]
+     * @param array $item_type_info Item type information アイテムタイプ情報
+     *                              array[$ii]
+     * @param string $detailUrl Detail url 詳細画面URL
+     * @param string $errorMsg Error message エラーメッセージ
+     * @param string $waringMsg Warning message 警告メッセージ
      * @return bool
      */
     public function executeUpdate(
@@ -512,10 +1043,11 @@ class SwordUpdate extends RepositoryAction
 
     /**
      * Check sword login
+     * SWORDログインチェック
      *
-     * @param int $statusCode
-     * @param string $userId
-     * @return bool
+     * @param int $statusCode Status code ステータスコード
+     * @param string $userId User id ユーザID
+     * @return boolean Result 結果
      */
     public function checkSwordLogin(&$statusCode, &$userId)
     {
@@ -594,8 +1126,11 @@ class SwordUpdate extends RepositoryAction
 
     /**
      * Set http header
+     * HTTPヘッダ設定
      *
-     * @param int $code
+     * @param int $code Code コード
+     * @param array $error_list Error list エラー一覧
+     *                          array[$ii]
      */
     public function setHeader($code, $error_list=array())
     {
@@ -656,9 +1191,10 @@ class SwordUpdate extends RepositoryAction
 
     /**
      * Get item_id by URL
+     * URLからアイテムID取得
      *
-     * @param string $url
-     * @return int
+     * @param string $url URL URL
+     * @return int Item id アイテムID
      */
     public function getUrlItemId($url)
     {
@@ -679,8 +1215,15 @@ class SwordUpdate extends RepositoryAction
     //-----------------------------------------------
     /**
      * Get update XML data
+     * XMLデータ取得
      *
-     * @return bool
+     * @param array $filedata File information ファイル情報
+     *                        array["upload_dir"|"physical_file_name"]
+     * @param array $xmlData XML data XMLデータ
+     * @param string $tmpDir Temporary directory path 一時ディレクトリパス
+     * @param array $error_list Error list エラー一覧
+     *                          array[$ii]
+     * @return boolean Result 結果
      */
     private function getUpdateXmlData($filedata, &$xmlData, &$tmpDir, &$error_list)
     {
@@ -711,13 +1254,18 @@ class SwordUpdate extends RepositoryAction
 
     /**
      * Execute update from XML data
+     * アイテム更新
      *
-     * @param array $xmlData
-     * @param string $tmpDir
-     * @param string $userId
-     * @param int $itemId
-     * @param array $insIndexArray
-     * @return bool
+     * @param array $xmlData XML data XMLデータ
+     * @param string $tmpDir Temporary directory path 一時ディレクトリパス
+     * @param string $userId User id ユーザID
+     * @param int $itemId Item id アイテムID
+     * @param int $itemNo Item serial number アイテム通番
+     * @param array $insIndexArray Insert index list 挿入インデックス一覧
+     *                             array[$ii]
+     * @param array $error_list Error list エラー一覧
+     *                          array[$ii]
+     * @return boolean update result 更新結果
      */
     private function executeUpdateFromXmlData($xmlData, $tmpDir, $userId, $itemId, $itemNo, $insIndexArray,&$error_list)
     {
@@ -754,6 +1302,19 @@ class SwordUpdate extends RepositoryAction
             }
             else if(!$result)
             {
+                if(strlen($xmlData['item'][$nCnt]["item_array"][0]["TITLE"]) > 0) {
+                    $title = $xmlData['item'][$nCnt]["item_array"][0]["TITLE"]; 
+                } else {
+                    $title = $xmlData['item'][$nCnt]["item_array"][0]["TITLE_ENGLISH"]; 
+                }
+                $error_list[] = new DetailErrorInfo($xmlData['item'][$nCnt]["item_array"][0]["ITEM_ID"],       // item id
+                                                    $title,                                                    // title
+                                                    $errorMsg,                                                 // error
+                                                    "",                                                        // attr name
+                                                    "",                                                        // input value
+                                                    "",                                                        // regist value
+                                                    0                                                          // error number
+                                                    );
                 $this->writeLog("  Update error:\n");
                 $this->writeLog("    XML_item_id:".$xmlData['item'][$nCnt]["item_array"][0]["ITEM_ID"]."\n");
                 $this->writeLog("    ".$errorMsg."\n");
@@ -788,20 +1349,22 @@ class SwordUpdate extends RepositoryAction
 
     /**
      * Check update
-     *
+     * 更新チェック
      * 戻り値の仕様
      *   正常完了の場合： $errorMsg を空にして、true を返す
      *   更新はしないが、処理続行の場合： $errorMsg を詰めて、true を返す
      *   エラーにより処理中断の場合： $errorMsg を詰めて、false を返す
      *
-     * @param array $xmlItemData
-     * @param array $xmlItemTypeData
-     * @param string $itemTypeName
-     * @param int $itemId
-     * @param int $itemNo
-     * @param string $userId
-     * @param string $errorMsg
-     * @return bool
+     * @param array $xmlItemData XML item information XMLアイテム情報
+     *                           array['item_array'][0]["TITLE"|"TITLE_ENGLISH"]
+     * @param array $xmlItemTypeData XML item type information XMLアイテムタイプ情報
+     *                               array["item_type_array"][$ii]
+     * @param string $itemTypeName Item type name アイテムタイプ名
+     * @param int $itemId Item id アイテムID
+     * @param int $itemNo Item serial number アイテム通番
+     * @param string $userId User id ユーザID
+     * @param string $errorMsg Error message エラーメッセージ
+     * @return boolean Result 結果
      */
     private function checkUpdate(&$xmlItemData, &$xmlItemTypeData, &$itemTypeName, $itemId, $itemNo, $userId, &$errorMsg)
     {
@@ -925,9 +1488,11 @@ class SwordUpdate extends RepositoryAction
 
     /**
      * Check item exists
+     * アイテム存在チェック
      *
-     * @param array $dbItemData
-     * @return bool
+     * @param array $dbItemData Item information アイテム情報
+     *                          array["item"][0]["is_delete"]
+     * @return boolean Result 結果
      */
     private function checkItemExists($dbItemData)
     {
@@ -940,12 +1505,16 @@ class SwordUpdate extends RepositoryAction
 
     /**
      * Check item type match
+     * アイテムタイプが一致するか否かをチェック
      *
-     * @param array $dbItemData
-     * @param array $xmlItemData
-     * @param array $xmlItemTypeData
-     * @param string $itemTypeName
-     * @return bool
+     * @param array $dbItemData Item information アイテム情報
+     *                          array["item"][$ii]["item_id"|"item_no"|"revision_no"|"item_type_id"|"prev_revision_no"|"title"|"title_english"|"language"|"review_status"|"review_date"|"shown_status"|"shown_date"|"reject_status"|"reject_date"|"reject_reason"|"serch_key"|"serch_key_english"|"remark"|"uri"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     * @param array $xmlItemData XML item information XMLアイテム情報
+     *                           array['item_array'][0]["TITLE"|"TITLE_ENGLISH"]
+     * @param array $xmlItemTypeData XML item type information XMLアイテムタイプ情報
+     *                               array["item_type_array"][$ii]
+     * @param string $itemTypeName Item type name アイテムタイプ名
+     * @return boolean Whether or not the match to 一致するか否か
      */
     private function checkItemTypeMatch($dbItemData, &$xmlItemData, &$xmlItemTypeData, &$itemTypeName)
     {
@@ -996,10 +1565,14 @@ class SwordUpdate extends RepositoryAction
 
     /**
      * Replace xml item data
+     * アイテムタイプIDの置換
      *
-     * @param array $dbItemData
-     * @param array $xmlItemData
-     * @param array $xmlItemTypeData
+     * @param array $dbItemData Item information アイテム情報
+     *                          array["item"][$ii]["item_id"|"item_no"|"revision_no"|"item_type_id"|"prev_revision_no"|"title"|"title_english"|"language"|"review_status"|"review_date"|"shown_status"|"shown_date"|"reject_status"|"reject_date"|"reject_reason"|"serch_key"|"serch_key_english"|"remark"|"uri"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     * @param array $xmlItemData XML item information XMLアイテム情報
+     *                           array['item_array'][0]["TITLE"|"TITLE_ENGLISH"]
+     * @param array $xmlItemTypeData XML item type information XMLアイテムタイプ情報
+     *                               array["item_type_array"][$ii]
      */
     private function replaceXmlItemData($dbItemData, &$xmlItemData, &$xmlItemTypeData)
     {
@@ -1050,11 +1623,12 @@ class SwordUpdate extends RepositoryAction
 
     /**
      * Check update authority
+     * 更新権限チェック
      *
-     * @param int $itemId
-     * @param int $itemNo
-     * @param string $userId
-     * @return bool
+     * @param int $itemId Item id アイテムID
+     * @param int $itemNo Item serial number アイテム通番
+     * @param string $userId User id ユーザID
+     * @return boolean Result 結果
      */
     private function checkUpdateAuthority($itemId, $itemNo, $userId)
     {
@@ -1122,25 +1696,31 @@ class SwordUpdate extends RepositoryAction
 
     /**
      * Set item data array for ItemRegister
+     * ItemRegister用にデータを作成する
      *
      * 戻り値の仕様
      *   正常完了の場合： $errorMsg を空にして、true を返す
      *   更新はしないが、処理続行の場合： $errorMsg を詰めて、true を返す
      *   エラーにより処理中断の場合： $errorMsg を詰めて、false を返す
-     *
-     * @param array $xmlItemData
-     * @param array $xmlItemTypeData
-     * @param int $itemId
-     * @param int $itemNo
-     * // Add param itemTypeId 2013/09/09 R.Matsuura
-     * @param int $itemTypeId
-     * @param array $indexArray
-     * @param string $tmpDir
-     * @param array $irBasic
-     * @param array $irMetadataArray
-     * @param array $indexInfo
-     * @param string $errorMsg
-     * @return bool
+     * 
+     * @param array $xmlItemData XML item information XMLアイテム情報
+     *                           array['item_array'][0]["TITLE"|"TITLE_ENGLISH"]
+     * @param array $xmlItemTypeData XML item type information XMLアイテムタイプ情報
+     *                               array["item_type_array"][$ii]
+     * @param int $itemId Item id アイテムID
+     * @param int $itemNo Item serial number アイテム通番
+     * @param int $itemTypeId Item type id アイテムタイプID
+     * @param array $indexArray Index list インデックス情報
+     *                          array[$ii]["index_id"]
+     * @param string $tmpDir Temporary directory path 一時ディレクトリパス
+     * @param array $irBasic Item basic information アイテム基本情報
+     *                       array["item_id"|"item_no"|"item_type_id"|"title"|"title_english"|"language"|"shown_status"|"shown_date"|"serch_key"|"serch_key_english"]
+     * @param array $irMetadataArray Item metadata information アイテム追加情報
+     *                               array[$ii]["item_id"|"item_no"|"item_type_id"|"attribute_id"|"attribute_no"|"input_type"|"attribute_value"]
+     * @param array $indexInfo Index information インデック情報
+     *                         array[$ii]
+     * @param string $errorMsg Error message エラーメッセージ
+     * @return boolean Result 結果
      */
     private function setItemDataForItemRegister(
         $xmlItemData, $xmlItemTypeData, $itemId, $itemNo, $itemTypeId, $indexArray, $tmpDir, &$irBasic, &$irMetadataArray, &$indexInfo, &$errorMsg)
@@ -1565,6 +2145,7 @@ class SwordUpdate extends RepositoryAction
 
         $existingFileData = array();
         $nextFileNo = array();
+        $fileNoCnt = array();
         // file_array
         for($ii=0; $ii<count($xmlItemData["file_array"]); $ii++)
         {
@@ -1615,14 +2196,15 @@ class SwordUpdate extends RepositoryAction
             }
 
             if(!array_key_exists($attrId, $existingFileData)){
+                // 属性IDから登録済ファイルデータを取得する
                 $query = " SELECT file_no, file_name, show_order ".
                          " FROM ". DATABASE_PREFIX ."repository_file ".
                          " WHERE item_id = ? ".
                          " AND item_no = ? ".
                          " AND attribute_id = ? ".
-                         " AND is_delete = ? ;";
-
-                $params = null;
+                         " AND is_delete = ? ".
+                         " ORDER BY show_order ASC ;";
+                $params = array();
                 $params[] = $itemId;
                 $params[] = $itemNo;
                 $params[] = $attrId;
@@ -1630,30 +2212,34 @@ class SwordUpdate extends RepositoryAction
                 // SELECT実行
                 $result = $this->Db->execute($query, $params);
                 if($result === false){
-                    $Error_Msg = $this->Db->ErrorMsg();
+                    $errorMsg = $this->Db->ErrorMsg();
                     $this->Session->setParameter("error_cord",-1);
                     return false;
                 }
                 $existingFileData[$attrId] = $result;
+                
+                // 新規登録フラグを設定する（falseになった場合は更新として扱われる）
                 for($jj = 0; $jj < count($existingFileData[$attrId]); $jj++){
                     $existingFileData[$attrId][$jj]['entry_flag'] = true;
                 }
+                // 新規発番用のファイルNoを取得する
                 $fileNo = $this->getFileNo($itemId, $itemNo, $attrId, $errMsg);
                 $nextFileNo[$attrId] = $fileNo;
+                // ファイルは表示順に上から差替えが行われるため属性ID毎のカウンタを追加する
+                $fileNoCnt[$attrId] = 0;
             }
-            $setFileNoFlag = false;
-            for($jj = 0; $jj < count($existingFileData[$attrId]); $jj++){
-                if($existingFileData[$attrId][$jj]['entry_flag'] && $fileName == $existingFileData[$attrId][$jj][self::KEY_FILE_NAME]){
-                    $attrNo = $existingFileData[$attrId][$jj][self::KEY_FILE_NO];
-                    $show_order = $existingFileData[$attrId][$jj]['show_order'];
-                    $existingFileData[$attrId][$jj]['entry_flag'] = false;
-                    $setFileNoFlag = true;
-                }
-            }
-            if(!$setFileNoFlag){
+            
+            if(count($existingFileData[$attrId]) > $fileNoCnt[$attrId]) {
+                // 差替えが行われるファイル通番を設定する
+                $attrNo = $existingFileData[$attrId][$fileNoCnt[$attrId]][self::KEY_FILE_NO];
+                $show_order = $existingFileData[$attrId][$fileNoCnt[$attrId]]['show_order'];
+                $existingFileData[$attrId][$fileNoCnt[$attrId]]['entry_flag'] = false;
+                $fileNoCnt[$attrId]++;
+            } else {
+                // 登録済ファイルデータ数より今回登録のファイルが多かった場合は新しくファイル通番を発番する
                 $attrNo = $nextFileNo[$attrId];
                 $show_order = $attrNo;
-                $nextFileNo[$attrId] += 1;
+                $nextFileNo[$attrId]++;
             }
             // 2. 更新用ファイル配列を作成
             //    -> 課金ファイルの場合は課金情報もまとめておく
@@ -1781,20 +2367,24 @@ class SwordUpdate extends RepositoryAction
 
     /**
      * Execute update by ItemRegister
+     * アイテム更新実行
      *
      * 戻り値の仕様
      *   正常完了の場合： $errorMsg を空にして、true を返す
      *   更新はしないが、処理続行の場合： $errorMsg を詰めて、true を返す
      *   エラーにより処理中断の場合： $errorMsg を詰めて、false を返す
      *
-     * @param array $irBasic
-     * @param array $irMetadataArray
-     * @param array $indexInfo
-     * @param string $userId
-     * @param string $detailUrl
-     * @param string $errorMsg
-     * @param int $reviewStatus
-     * @param string $warningMsg
+     * @param array $irBasic Item basic information アイテム基本情報
+     *                       array["item_id"|"item_no"|"item_type_id"|"title"|"title_english"|"language"|"shown_status"|"shown_date"|"serch_key"|"serch_key_english"]
+     * @param array $irMetadataArray Item metadata information アイテム追加情報
+     *                               array[$ii]["item_id"|"item_no"|"item_type_id"|"attribute_id"|"attribute_no"|"input_type"|"attribute_value"]
+     * @param array $indexInfo Index information インデック情報
+     *                         array[$ii]
+     * @param string $userId User ユーザID
+     * @param string $detailUrl Detail url 詳細画面URL
+     * @param string $errorMsg Error message エラーメッセージ
+     * @param int $reviewStatus Review status レビュ状態
+     * @param string $warningMsg Warning message 警告メッセージ
      * @return bool
      */
     private function executeUpdateByItemRegister($irBasic, $irMetadataArray, $indexInfo, $userId, &$detailUrl, &$errorMsg, &$reviewStatus, &$warningMsg)
@@ -1851,18 +2441,33 @@ class SwordUpdate extends RepositoryAction
         }
         $this->writeLog(" ...complete.\n");
 
-        // ファイル情報全削除 ＆ サムネイル情報全削除 / Delete file and thumbnail
-        $this->writeLog("  Call deleteFileAndThumbnail.");
-        $result = $this->deleteFileAndThumbnail($itemId, $itemNo);
+        // サムネイル情報全削除 / Delete thumbnail
+        $this->writeLog("  Call deleteThumbnail.");
+        $result = $this->deleteThumbnail($itemId, $itemNo);
         if($result === false)
         {
             // [Error]
-            $errorMsg = "UPDATE ERROR: Failed delete files.";
+            $errorMsg = "UPDATE ERROR: Failed delete thumbnails.";
             $this->writeLog("\n  ".$errorMsg."\n");
             $this->writeLog("-- End executeUpdateByItemRegister (".date("Y/m/d H:i:s").") --\n\n");
             return false;
         }
         $this->writeLog(" ...complete.\n");
+        
+        // Add File replace T.Koyasu 2016/02/29 --start--
+        // ZIPファイルに存在しないファイルに関して削除を実施する
+        $this->writeLog("  Call deleteFile");
+        $result = $this->deleteNoUpdateFile($itemId, $itemNo, $irMetadataArray, $userId, $errorMsg);
+        if($result === false){
+            // [Error]
+            $errorMsg = "UPDATE ERROR: Failed delete no update files.";
+            $this->writeLog("\n  ".$errorMsg."\n");
+            $this->writeLog("-- End executeUpdateByItemRegister (".date("Y/m/d H:i:s").") --\n\n");
+            return false;
+        }
+        $this->writeLog(" ...complete.\n");
+        
+        // Add File replace T.Koyasu 2016/02/29 --end--
 
         // メタデータ更新
         $this->writeLog("  Start loop for metadata regist.\n");
@@ -1872,7 +2477,36 @@ class SwordUpdate extends RepositoryAction
                 $irMetadata[self::KEY_INPUT_TYPE] == RepositoryConst::ITEM_ATTR_TYPE_FILEPRICE)
             {
                 // ファイル情報登録
-                $result = $this->itemRegister_->entryFile($irMetadata, $tmpErrorMsg, $irMetadata[self::KEY_FILE_DIR], false, true);
+                
+                // Add File replace T.Koyasu 2016/02/29 --start--
+                $flashList = null;
+                // 表示形式を見て、flashである場合、変換する
+                if($irMetadata[self::KEY_DISPLAY_TYPE] == RepositoryConst::FILE_DISPLAY_TYPE_FLASH){
+                    $this->writeLog("  Call convertToFlash.");
+                    $convertToFlash = BusinessFactory::getFactory()->getBusiness("businessConverttoflash");
+                    $filePath = $irMetadata[self::KEY_FILE_DIR]. DIRECTORY_SEPARATOR. $irMetadata['upload']['physical_file_name'];
+                    $isConvertedFlash = $convertToFlash->convertFileToFlash($itemId, $filePath, $irMetadata['upload']['mimetype'], $irMetadata['upload']['extension'], $flashList, $errorMsg);
+                    $this->debugLog(print_r($flashList, true), __FILE__, __CLASS__, __LINE__);
+                    if(!$isConvertedFlash)
+                    {
+                        // [Warning]
+                        $errorMsg = "UPDATE WARNING: Failed to file convert to flash.";
+                        $this->writeLog("\n  ".$errorMsg."\n");
+                        $irMetadata[self::KEY_DISPLAY_TYPE] = RepositoryConst::FILE_DISPLAY_TYPE_DETAIL;
+                        $irMetadata[self::KEY_FLASH_EMBARGO_YEAR] = "";
+                        $irMetadata[self::KEY_FLASH_EMBARGO_MONTH] = "";
+                        $irMetadata[self::KEY_FLASH_EMBARGO_DAY] = "";
+                    }
+                    else
+                    {
+                        $this->writeLog("  convert is success.\n");
+                        $this->writeLog("  converted flash list: ". print_r($flashList, true). ".\n");
+                    }
+                    $this->writeLog("  ...complete.\n");
+                }
+                
+                $result = $this->itemRegister_->entryFile($irMetadata, $tmpErrorMsg, $irMetadata[self::KEY_FILE_DIR], false, true, $flashList);
+                // Add File replace T.Koyasu 2016/02/29 --end--
                 if($result === false)
                 {
                     // [Error]
@@ -1944,21 +2578,6 @@ class SwordUpdate extends RepositoryAction
         }
         $this->writeLog("  End loop for metadata regist.\n");
         
-        // BugFix when before and after update, assignment doi is failed T.Koyasu 2015/03/09 --start--
-        // must check self_doi when after update item metadatas
-        $this->writeLog("  Check self doi and Add self doi");
-        try{
-            $this->itemRegister_->updateSelfDoi($irBasic);
-        } catch(AppException $ex){
-            $smartyAssign = $this->Session->getParameter('smartyAssign');
-            if(strlen($warningMsg) > 0){
-                $warningMsg .= "/";
-            }
-            $warningMsg .= $smartyAssign->getLang($ex->getMessage());
-            $this->debugLog($ex->getMessage(). "::itemId=". $itemId, __FILE__, __CLASS__, __LINE__);
-        }
-        // BugFix when before and after update, assignment doi is failed T.Koyasu 2015/03/09 --end--
-
         // attribute_no 振り直し
         $this->writeLog("  Call reissueAttrNo at importCommon.");
         $result = $this->importCommon_->reissueAttrNo($itemId, $itemNo, $tmpErrorMsg);
@@ -1984,7 +2603,6 @@ class SwordUpdate extends RepositoryAction
             return false;
         }
         $this->writeLog("  ...complete.\n");
-
 
         // 必須項目チェック
         $this->writeLog("  Call requiredCheck at importCommon.\n");
@@ -2036,18 +2654,6 @@ class SwordUpdate extends RepositoryAction
             }
             $this->writeLog("  ...complete.\n");
             
-            // ファイルFlash化
-            $this->writeLog("  Call convertToFlash.");
-            if(!$this->importCommon_->convertToFlash($itemId, $itemNo, $errorMsg))
-            {
-                // [Warning]
-                $errorMsg = "UPDATE ERROR: Failed to file convert to flash.";
-                $this->writeLog("\n  ".$errorMsg."\n");
-                $this->writeLog("-- End executeUpdateByItemRegister (".date("Y/m/d H:i:s").") --\n\n");
-                return true;
-            }
-            $this->writeLog("  ...complete.\n");
-
             // アイテム公開状態変更処理
             $this->writeLog("  Call setItemStatus at importCommon.");
             if(!$this->importCommon_->setItemStatus($itemId, $itemNo, $userId, $indexIds, $irBasic[self::KEY_SHOWN_STATUS], $reviewStatus))
@@ -2071,6 +2677,27 @@ class SwordUpdate extends RepositoryAction
             return false;
         }
 
+        // BugFix when before and after update, assignment doi is failed T.Koyasu 2015/03/09 --start--
+        // must check self_doi when after update item metadatas
+        $this->writeLog("  Check self doi and Add self doi");
+        try{
+            $result = $this->checkAndEntrySelfDoi($irBasic['item_id'], $irBasic['item_no'], $irBasic['selfdoi'], $errorMsg, $warningMsg);
+            if(!$result) {
+                $this->writeLog("  " . $errorMsg . "\n");
+                $this->writeLog("-- End executeUpdateByItemRegister (" . date("Y/m/d H:i:s") . ") --\n\n");
+                return false;
+            }
+        } catch(AppException $ex){
+            $smartyAssign = $this->Session->getParameter('smartyAssign');
+            if(strlen($warningMsg) > 0){
+                $warningMsg .= "/";
+            }
+            $warningMsg .= $smartyAssign->getLang($ex->getMessage());
+            $this->debugLog($ex->getMessage(). "::itemId=". $itemId, __FILE__, __CLASS__, __LINE__);
+        }
+        // BugFix when before and after update, assignment doi is failed T.Koyasu 2015/03/09 --end--
+        $this->writeLog("  ...complete.\n");
+
         // フルテキストデータ更新
         $this->writeLog("  Call updateSearchTableForItem.");
         // Add detail search 2013/11/25 K.Matsuo --start--
@@ -2087,40 +2714,15 @@ class SwordUpdate extends RepositoryAction
     }
 
     /**
-     * Delete file and thumbnail
+     * Remove all the string attached to the item thumbnail
+     * アイテムに紐付くサムネイルを全て削除する
      *
-     * @param int $itemId
-     * @param int $itemNo
-     * @return bool
+     * @param int $itemId Item ID for identifying the item アイテムを特定するためのアイテムID
+     * @param int $itemNo Item serial number used to identify the item アイテムを特定するためのアイテム通番
+     * @return bool Execution result 実行結果
      */
-    private function deleteFileAndThumbnail($itemId, $itemNo)
+    private function deleteThumbnail($itemId, $itemNo)
     {
-        // アイテムに紐づく論理削除済みデータを含むファイル情報取得
-        $query = "SELECT ".RepositoryConst::DBCOL_REPOSITORY_FILE_ITEM_ID.", ".
-                           RepositoryConst::DBCOL_REPOSITORY_FILE_ITEM_NO.", ".
-                           RepositoryConst::DBCOL_REPOSITORY_FILE_ATTRIBUTE_ID.", ".
-                           RepositoryConst::DBCOL_REPOSITORY_FILE_FILE_NO." ".
-                 "FROM ".DATABASE_PREFIX.RepositoryConst::DBTABLE_REPOSITORY_FILE." ".
-                 "WHERE ".RepositoryConst::DBCOL_REPOSITORY_FILE_ITEM_ID." = ? ".
-                 "AND ".RepositoryConst::DBCOL_REPOSITORY_FILE_ITEM_NO." = ? ;";
-        $params = array();
-        $params[] = $itemId;
-        $params[] = $itemNo;
-        $result = $this->Db->execute($query, $params);
-        if($result === false)
-        {
-            return false;
-        }
-        for($ii=0; $ii<count($result); $ii++)
-        {
-            // ファイル削除処理
-            $ret = $this->itemRegister_->deleteFile($result[$ii], true, $errMsg);
-            if($ret === false)
-            {
-                return false;
-            }
-        }
-
         // アイテムに紐づく論理削除済みデータを含むサムネイル情報取得
         $query = "SELECT ".RepositoryConst::DBCOL_REPOSITORY_THUMB_ITEM_ID.", ".
                            RepositoryConst::DBCOL_REPOSITORY_THUMB_ITEM_NO.", ".
@@ -2152,10 +2754,11 @@ class SwordUpdate extends RepositoryAction
 
     /**
      * Send review mail
+     * レビューメール送信
      *
-     * @param int $itemId
-     * @param int $itemNo
-     * @return bool
+     * @param int $itemId Item id アイテムID
+     * @param int $itemNo Item serial number アイテム通番
+     * @return boolean Result 結果
      */
     private function sendReviewMail($itemId, $itemNo)
     {
@@ -2278,11 +2881,13 @@ class SwordUpdate extends RepositoryAction
 
     /**
      * Set insert index id array
+     * 挿入インデックス一覧作成
      *
-     * @param string $newIndex
-     * @param string $checkedIds
-     * @param string $userId
-     * @param array $insIndexArray
+     * @param string $newIndex New index list 新インデックス一覧
+     * @param string $checkedIds Index list 登録先インデックス一覧
+     * @param string $userId User id ユーザID
+     * @param array $insIndexArray Insert index list 挿入インデックス一覧
+     *                             array[$ii]
      */
     private function setInsertIndexIdArray($newIndex, $checkedIds, $userId, &$insIndexArray)
     {
@@ -2355,11 +2960,13 @@ class SwordUpdate extends RepositoryAction
         return true;
     }
 
-    /*
+    /**
      * zip file extract to tmpDirPath
-     * @param ファイルパス $filePath string
-     * @param 出力先パス $tmpDirPath string
-     * @return ファイルの出力の成功失敗
+     * ZIPファイル解凍
+     * 
+     * @param string $filePath File path ファイルパス
+     * @param string $tmpDirPath Destination directory path 出力先ディレクトリパス
+     * @return boolean Result ファイルの出力の成功失敗
      */
     private function extraction($filePath, $tmpDirPath){
 
@@ -2384,6 +2991,7 @@ class SwordUpdate extends RepositoryAction
 
     /**
      * Set encode charset
+     * エンコード文字列設定
      */
     private function setEncode()
     {
@@ -2406,10 +3014,11 @@ class SwordUpdate extends RepositoryAction
 
     /**
      * Write log to file
+     * ログファイルへの書き込み
      *
-     * @param string $string
-     * @param int $length [optional]
-     * @return int
+     * @param string $string Message メッセージ
+     * @param int $length Length 長さ
+     * @return int Write length 書込み数
      */
     private function writeLog($string, $length=null)
     {
@@ -2435,6 +3044,10 @@ class SwordUpdate extends RepositoryAction
         }
     }
 
+    /**
+     * Set RepositoryHandleManager object
+     * RepositoryHandleManagerオブジェクト設定
+     */
     private function getRepositoryHandleManager()
     {
         if(!isset($this->repositoryHandleManager))
@@ -2443,6 +3056,15 @@ class SwordUpdate extends RepositoryAction
         }
     }
 
+    /**
+     * Get index id and owner user id
+     * インデックスIDとオーナユーザID一覧取得
+     *
+     * @param int $itemId Item id アイテムID
+     * @param int $itemNo Item serial number アイテム通番
+     * @param array $itemIndexData Index list インデックス一覧
+     *                             array[$ii]["index_id"|"owner_user_id"]
+     */
     private function getIndexIdAndOwner($itemId, $itemNo, &$itemIndexData)
     {
         // get index ID and index owner user from item Id and item No
@@ -2480,12 +3102,14 @@ class SwordUpdate extends RepositoryAction
 
     // Add suppleContentsEntry Y.Yamazawa --start-- 2015/03/30 --start--
     /**
+     * Entry supple mental contents
      * サプリコンテンツを登録する
      *
-     * @param アイテムID $itemId string
-     * @param アイテムNo $itemNo string
-     * @param XML内のサプリコンテンツ情報 $supple_info_array array
-     * @param エラーメッセージ string
+     * @param int $itemId Item id アイテムID
+     * @param int $itemNo Item serial number アイテム通番
+     * @param array $supple_info_array Supple mental contents information XML内のサプリコンテンツ情報
+     *                                 array[$ii]["item_id"|"item_no"|"attribute_id"|"supple_no"|"item_type_id"|"supple_weko_item_id"|"supple_title"|"supple_title_en"|"uri"|"supple_item_type_name"|"mime_type"|"file_id"|"supple_review_status"|"supple_review_date"|"supple_reject_status"|"supple_reject_date"|"supple_reject_reason"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     * @param string $error_msg Error message エラーメッセージ
      */
     private function entrySupple($itemId,$itemNo,$supple_info_array,&$error_msg)
     {
@@ -2532,9 +3156,11 @@ class SwordUpdate extends RepositoryAction
 
     // Add suppleContentsEntry Y.Yamazawa --start-- 2015/03/30 --start--
     /**
+     * Output to xml in error
      * エラー時のXML出力
      *
-     * @param エラー情報 $error_list array array
+     * @param array $error_list error list エラー情報
+     * @param string $text Error code エラーコード
      */
     private function outputErrorXML($error_list,$text)
     {
@@ -2545,9 +3171,7 @@ class SwordUpdate extends RepositoryAction
         // -------------------------
         // XML
         // -------------------------
-        $ret_xml = '<?xml version="1.0" encoding="UTF-8" ?>'."\n";
-        // change sword ns 20151113 mhaya
-        //$ret_xml .= '<sword:error xmlns="http://www.w3.org/2005/Atom" xmlns:sword="http://purl.org/net/sword/" xmlns:arxiv="http://arxiv.org/schemas/atom" href="http://example.org/errors/BadManifest">'."\n";
+        $ret_xml = '<?xml version="1.0" encoding="utf-8" ?>'."\n";
         $ret_xml .= '<sword:error xmlns="http://www.w3.org/2005/Atom" xmlns:sword="http://purl.org/net/sword/terms/" xmlns:arxiv="http://arxiv.org/schemas/atom" href="http://example.org/errors/BadManifest">'."\n";
         $ret_xml .= '<title>ERROR</title>'."\n";
         $ret_xml .= '<version>2.0</version>'."\n";
@@ -2565,12 +3189,12 @@ class SwordUpdate extends RepositoryAction
             // sword description
             $description = "";
             for($ii = 0; $ii < count($error_list); $ii++) {
-                $description .= "ERROR: ".$error_list[$ii]->error." ";
+                $description .= "ERROR: ".Repository_Components_Util_Stringoperator::replaceSemicolonToDouble($error_list[$ii]->error)." ";
                 if($error_list[$ii]->item_id > 0) {
                     $description .= "at Item ID ".$error_list[$ii]->item_id.";";
                 }
             }
-            $ret_xml .= '<sword:verboseDescription>'.$description.'</sword:verboseDescription>';
+            $ret_xml .= '<sword:verboseDescription>'.htmlspecialchars($description, ENT_QUOTES, 'UTF-8').'</sword:verboseDescription>';
         }
         $ret_xml .= "</sword:error>" . "\n";
         
@@ -2579,10 +3203,11 @@ class SwordUpdate extends RepositoryAction
     // Add suppleContentsEntry Y.Yamazawa --end-- 2015/03/30 --end--
 
     /**
+     * Output xml
      * アイテム更新成功時のXML出力
      *
-     * @param アイテムID $item_id string
-     * @param 警告 $warning_msg array
+     * @param int $item_id Item id アイテムID
+     * @param array $warning_msg Warning list 警告一覧
      */
     private function outputSuccessXML($item_id,$warning_msg)
     {
@@ -2591,9 +3216,7 @@ class SwordUpdate extends RepositoryAction
         // -------------------------
         // XML
         // -------------------------
-        $ret_xml = '<?xml version="1.0" encoding="UTF-8" ?>'."\n";
-        // change sword ns 20151113 mhaya
-        //$ret_xml .= '<entry xmlns="http://www.w3.org/2005/Atom" xmlns:sword="http://purl.org/net/sword/">'."\n";
+        $ret_xml = '<?xml version="1.0" encoding="utf-8" ?>'."\n";
         $ret_xml .= '<entry xmlns="http://www.w3.org/2005/Atom" xmlns:sword="http://purl.org/net/sword/terms/">'."\n";
         $ret_xml .= '<title>Repository Review</title>'."\n";
         $ret_xml .= '<version>2.0</version>'."\n";
@@ -2631,11 +3254,12 @@ class SwordUpdate extends RepositoryAction
 
     // Add suppleContentsEntry Y.Yamazawa --start-- 2015/03/24 --start--
     /**
+     * Get email address
      * Emailアドレスの取得
      *
-     * @param ユーザーID $user_id string
-     * @param メールアドレス $email string
-     * @return boolean 取得結果
+     * @param string $user_id User id ユーザID
+     * @param string $email Email address メールアドレス
+     * @return boolean Result 取得結果
      */
     private function emailAddress($user_id, &$email)
     {
@@ -2666,10 +3290,12 @@ class SwordUpdate extends RepositoryAction
         // Add suppleContentsEntry Y.Yamazawa --end-- 2015/03/24 --end--
 
     /**
-     * アイテムIDをキーとしてサプリコンテンツ情報を取得する
-     * @param string $itemID アイテムID
-     * @throws AppException
-     * @return boolean|mixed
+     * Get supple mental contents URL
+     * アイテムIDをキーとしてサプリコンテンツURLを取得する
+     * 
+     * @param int $itemID アイテムID
+     * @return array Supple mental contents url サプリURL
+     *               array[$ii]["uri"]
      */
     private function suppleContentInfo($itemID)
     {
@@ -2688,8 +3314,9 @@ class SwordUpdate extends RepositoryAction
     
     /**
      * get OS's encode
+     * OSの文字コード取得
      *
-     * @return string
+     * @return string Character set 文字コード
      */
     private function getEncodeByOS(){
         if(stristr(php_uname(), "Linux")){
@@ -2699,6 +3326,155 @@ class SwordUpdate extends RepositoryAction
         } else {
             return _CHARSET;
         }
+    }
+    
+    /**
+     * There is in the database, to implement the Delete for files that are not in the XML data
+     * データベースにはあるが、XMLデータ内にないファイルについて削除を実施する
+     *
+     * @param int $itemId Item ID of the item to be updated 更新するアイテムのアイテムID
+     * @param int $itemNo Item serial number of the item to be updated 更新するアイテムのアイテム通番
+     * @param array $irMetadataArray Updating metadata 更新メタデータ
+     *                               array[$ii]["input_type"|"attribute_id"|"file_no"]
+     * @param string $delUserId The user ID of the user to implement the Delete 削除を実施するユーザのユーザID
+     * @param $errorMsg Error message エラーメッセージ
+     */
+    private function deleteNoUpdateFile($itemId, $itemNo, $irMetadataArray, $delUserId, &$errorMsg){
+        // XML内に存在するファイルの情報を収集する
+        $attrIdList = array();
+        $fileNoList = array();
+        foreach($irMetadataArray as $irMetadata)
+        {
+            if( $irMetadata[self::KEY_INPUT_TYPE] == RepositoryConst::ITEM_ATTR_TYPE_FILE ||
+                $irMetadata[self::KEY_INPUT_TYPE] == RepositoryConst::ITEM_ATTR_TYPE_FILEPRICE)
+            {
+                array_push($attrIdList, $irMetadata["attribute_id"]);
+                array_push($fileNoList, $irMetadata["file_no"]);
+            }
+        }
+        
+        // XML内に属性IDとファイル通番がないファイルのデータを検索する
+        // XML内にファイルの情報が一つもないのであれば全て削除する
+        $query = "SELECT item_id, item_no, attribute_id, file_no ". 
+                 " FROM ". DATABASE_PREFIX. "repository_file ".
+                 " WHERE item_id = ? ". 
+                 " AND item_no = ? ";
+        $params = array();
+        $params[] = $itemId;
+        $params[] = $itemNo;
+        for($ii = 0; $ii < count($attrIdList); $ii++){
+            $query .= " AND NOT (item_id = ? AND item_no = ? AND attribute_id = ? AND file_no = ?)";
+            $params[] = $itemId;
+            $params[] = $itemNo;
+            $params[] = $attrIdList[$ii];
+            $params[] = $fileNoList[$ii];
+        }
+        $query .= " AND is_delete = ?;";
+        $params[] = 0;
+        try{
+            $deleteFileList = $this->executeSql($query, $params);
+        } catch(AppException $ex){
+            $errorMsg = $ex->getMessage();
+            return false;
+        }
+        
+        $business = BusinessFactory::getFactory()->getBusiness("businessContentfiletransaction");
+        
+        // 更新を実施しないデータは削除する(データベースに登録されているデータが空の場合は無視する)
+        for($ii = 0; $ii < count($deleteFileList); $ii++){
+            $query = "UPDATE ". DATABASE_PREFIX. "repository_file ". 
+                     " SET is_delete = ?, ". 
+                     " mod_date = ?, ". 
+                     " mod_user_id = ?, ". 
+                     " del_date = ?, ". 
+                     " del_user_id = ? ". 
+                     " WHERE item_id = ? ". 
+                     " AND item_no = ? ". 
+                     " AND attribute_id = ? ". 
+                     " AND file_no = ?;";
+            $params = array();
+            $params[] = 1;
+            $params[] = $this->TransStartDate;
+            $params[] = $delUserId;
+            $params[] = $this->TransStartDate;
+            $params[] = $delUserId;
+            $params[] = $deleteFileList[$ii]["item_id"];
+            $params[] = $deleteFileList[$ii]["item_no"];
+            $params[] = $deleteFileList[$ii]["attribute_id"];
+            $params[] = $deleteFileList[$ii]["file_no"];
+            try{
+                $this->executeSql($query, $params);
+            } catch(AppException $ex){
+                $errorMsg = $ex->getMessage();
+                return false;
+            }
+            
+            // 実ファイルの削除を実施する
+            try{
+                $business->delete($deleteFileList[$ii]["item_id"], 
+                                  $deleteFileList[$ii]["attribute_id"], 
+                                  $deleteFileList[$ii]["file_no"]);
+            } catch(AppException $ex){
+                $errorMsg = $ex->getMessage();
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    /**
+     * Check and Entry DOI
+     * DOIのチェックおよび登録を実施する
+     *
+     * @param int $itemId Item ID of the item to be updated 更新するアイテムのアイテムID
+     * @param int $itemNo Item serial number of the item to be updated 更新するアイテムのアイテム通番
+     * @param array $selfDoiInfo selfDOI information selfDOI情報
+     *                           array[$ii]["RA"|"selfdoi"]
+     * @param string $errorMsg Error message エラーメッセージ
+     * @param string $waringMsg Warning message 警告メッセージ
+     * @return boolean Whether or not be able to entry DOI DOIを登録できたかどうか
+     */
+    private function checkAndEntrySelfDoi($itemId, $itemNo, $selfDoiInfo, &$errorMsg, &$warningMsg){
+        $handleManager = new RepositoryHandleManager($this->Session, $this->Db, $this->TransStartDate);
+        $ConvertResultCheckDoi = BusinessFactory::getFactory()->getBusiness("businessConvertresultcheckdoi");
+        if(isset($selfDoiInfo) && is_array($selfDoiInfo) && count($selfDoiInfo) > 0 && $this->importCommon_->checkRaInputFormat($selfDoiInfo[0]['RA']))
+        {
+            $resultCheckDoi = $handleManager->entrySelfdoi($itemId, $itemNo, $selfDoiInfo[0]['RA'], $selfDoiInfo[0]['SELFDOI'], $this->changeDoiFlag);
+            if(!$resultCheckDoi->isGrantDoi) {
+                $errorMsg = implode(" ", $ConvertResultCheckDoi->chooseDoiErrMsg($itemId, $itemNo, $resultCheckDoi));
+                
+                return false;
+            } else {
+                $tmpWarningMsg = implode(" ", $ConvertResultCheckDoi->chooseDoiWarnMsg($resultCheckDoi));
+                if(strlen($warningMsg) > 0){
+                    $warningMsg .= "/";
+                }
+                $warningMsg .= $tmpWarningMsg;
+            }
+        }
+        else
+        {
+            // DOI付与済みアイテムの更新に対して、selfDOI未記入であってもチェックする
+            $CheckDoi = BusinessFactory::getFactory()->getBusiness("businessCheckdoi");
+            $doiStatus = $CheckDoi->getDoiStatus($itemId, $itemNo);
+            if($doiStatus == 1)
+            {
+                $resultCheckDoi = $handleManager->checkItemEntriedDoi($itemId, $itemNo, Repository_Components_Business_Doi_Checkdoi::CHECKING_STATUS_IMPORT_SWORD, $this->changeDoiFlag);
+                if(!$resultCheckDoi->isGrantDoi) {
+                    $errorMsg = implode(" ", $ConvertResultCheckDoi->chooseDoiErrMsg($itemId, $itemNo, $resultCheckDoi));
+                    
+                    return false;
+                } else {
+                    $tmpWarningMsg = implode(" ", $ConvertResultCheckDoi->chooseDoiWarnMsg($resultCheckDoi));
+                    if(strlen($warningMsg) > 0){
+                        $warningMsg .= "/";
+                    }
+                    $warningMsg .= $tmpWarningMsg;
+                }
+            }
+        }
+        
+        return true;
     }
 }
 ?>

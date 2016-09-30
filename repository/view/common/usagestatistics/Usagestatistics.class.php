@@ -1,24 +1,36 @@
 <?php
+
+/**
+ * Usage statistics common view class
+ * 利用統計画面表示汎用クラス
+ *
+ * @package     WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Usagestatistics.class.php 53594 2015-05-28 05:25:53Z kaede_matsushita $
+// $Id: Usagestatistics.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
-// Copyright (c) 2007 - 2008, National Institute of Informatics, 
+// Copyright (c) 2007 - 2008, National Institute of Informatics,
 // Research and Development Center for Scientific Information Resources
 //
 // This program is licensed under a Creative Commons BSD Licence
 // http://creativecommons.org/licenses/BSD/
 //
 // --------------------------------------------------------------------
-
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
 
 /**
- * Usage statistics
+ * Usage statistics common view class
+ * 利用統計画面表示汎用クラス
  *
- * @package     NetCommons
- * @author      A.Suzuki(IVIS)
- * @project     NetCommons Project, supported by National Institute of Informatics
+ * @package     WEKO
+ * @copyright   (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license     http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
  * @access      public
  */
 class Repository_View_Common_Usagestatistics extends RepositoryAction
@@ -27,14 +39,16 @@ class Repository_View_Common_Usagestatistics extends RepositoryAction
     // member
     // -------------------------------------
     /**
-     * item_id
+     * Item ID
+     * アイテムID
      *
      * @var int
      */
     public $itemId = null;
     
     /**
-     * item_no
+     * item number
+     * アイテム通番
      *
      * @var int
      */
@@ -42,6 +56,7 @@ class Repository_View_Common_Usagestatistics extends RepositoryAction
     
     /**
      * year
+     * 年
      *
      * @var int
      */
@@ -49,6 +64,7 @@ class Repository_View_Common_Usagestatistics extends RepositoryAction
     
     /**
      * month
+     * 月
      *
      * @var int
      */
@@ -56,32 +72,26 @@ class Repository_View_Common_Usagestatistics extends RepositoryAction
     
     /**
      * views data
+     * 閲覧統計データ
      *
-     * @var array $usagesViews["total"] = int
-     *                        ["byDomain"][DOMAINNAME]["cnt"] = int
-     *                                                ["rate"] = double
-     *                                                ["img"] = string
+     * @var array $usagesViews["total"|
+     *                         "byDomain"][DOMAINNAME]["cnt"|"rate"|"img"]
      */
     public $usagesViews = array();
     
     /**
      * downloads data
+     * ダウンロード統計データ
      *
-     * @var array $usagesDownloads[NUM]["item_id"] = int
-     *                                 ["item_no"] = int
-     *                                 ["attribute_id"] = int
-     *                                 ["file_no"] = int
-     *                                 ["file_name"] = string
-     *                                 ["display_name"] = string
-     *                                 ["usagestatistics"]["total"] = int
-     *                                                    ["byDomain"][DOMAINNAME]["cnt"] = int
-     *                                                                            ["rate"] = double
-     *                                                                            ["img"] = string
+     * @var array $usagesDownloads[NUM]["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"display_name"|
+     *                                  "usagestatistics"]["total"|
+     *                                                    "byDomain"][DOMAINNAME]["cnt"|"rate"|"img"]
      */
     public $usagesDownloads = array();
     
     /**
      * date list
+     * 日付リスト
      *
      * @var array
      */
@@ -89,6 +99,7 @@ class Repository_View_Common_Usagestatistics extends RepositoryAction
     
     /**
      * title
+     * タイトル
      *
      * @var string
      */
@@ -96,6 +107,7 @@ class Repository_View_Common_Usagestatistics extends RepositoryAction
     
     /**
      * display date
+     * 表示日
      *
      * @var string
      */
@@ -106,8 +118,10 @@ class Repository_View_Common_Usagestatistics extends RepositoryAction
     // -------------------------------------
     /**
      * Execute
-     * 
-     * @return string
+     * 実行
+     *
+     * @return string "success"/"error" success/failed 成功/失敗
+     * @throws RepositoryException
      */
     public function executeApp()
     {
@@ -168,9 +182,11 @@ class Repository_View_Common_Usagestatistics extends RepositoryAction
     // private
     // -------------------------------------
     /**
-     * Set date List for pulldown
+     * Set date List for pull down
+     * プルダウンメニューの日付をセットする
      *
-     * @return array
+     * @return array pull down dates 日付プルダウンデータ
+     *                array[$ii]["value"|"display"|"selected"]
      */
     private function setDateList()
     {
@@ -249,9 +265,10 @@ class Repository_View_Common_Usagestatistics extends RepositoryAction
     }
     
     /**
-     * Get the oldest date at usagestatistics table
+     * Get the oldest date at usage statistics table
+     * 利用統計テーブルから最も古い日付を取得する
      *
-     * @return string
+     * @return string date 日付
      */
     private function getOldestDateAtUsageStatisticsTable()
     {
@@ -269,8 +286,9 @@ class Repository_View_Common_Usagestatistics extends RepositoryAction
     
     /**
      * Get previous month
+     * 前月を取得する
      *
-     * @return string
+     * @return string previous month 前月
      */
     private function getPreviousMonth()
     {
@@ -286,7 +304,8 @@ class Repository_View_Common_Usagestatistics extends RepositoryAction
     }
     
     /**
-     * Get item title
+     * Set item title
+     * アイテム名をセットする
      *
      */
     private function setItemTitle()

@@ -1,7 +1,15 @@
 <?php
+
+/**
+ * Action class for OAI-PMH output
+ * OAI-PMH出力用アクションクラス
+ *
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Oaipmh.class.php 53594 2015-05-28 05:25:53Z kaede_matsushita $
+// $Id: Oaipmh.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics,
 // Research and Development Center for Scientific Information Resources
@@ -10,79 +18,123 @@
 // http://creativecommons.org/licenses/BSD/
 //
 // --------------------------------------------------------------------
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
+/**
+ * Repository module constant class
+ * WEKO共通定数クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryConst.class.php';
+
+/**
+ * Item authority common classes
+ * アイテム権限共通クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryItemAuthorityManager.class.php';
+
+/**
+ * Common classes for the index operation
+ * インデックス操作用共通クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryIndexManager.class.php';
+
+/**
+ * Index rights management common classes
+ * インデックス権限管理共通クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryIndexAuthorityManager.class.php';
 
 /**
- * Output metadata format OAI-PMH(DublinCore, JuNii2, Learning Object Metadata).
+ * Constant class that defines the constants necessary to Oaipmh output in Spase format
+ * Spase形式でのOaipmh出力に必要な定数を定義した定数クラス
+ */
+require_once WEBAPP_DIR. '/modules/repository/components/business/oaipmh/SpaseConst.class.php';
+
+/**
+ * Action class for OAI-PMH output
+ * OAI-PMH出力用アクションクラス
  *
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class Repository_Oaipmh extends RepositoryAction
 {
     /**
-     * Session components
+     * Session management objects
+     * Session管理オブジェクト
      *
-     * @var Object
+     * @var Session
      */
     public $Session = null;
     /**
-     * database components
+     * Database management objects
+     * データベース管理オブジェクト
      *
-     * @var Object
+     * @var DbObject
      */
     public $Db = null;
 
 
     /*******************************************************************/
     /**
-     * requestParameter
+     * To specify the output content
+     * 出力内容を指定する
      *
      * @var string GetRecord, Identify, ListIdentifiers,
      *             ListMetadataFormats, ListRecords, ListSets
      */
     public $verb = null;
     /**
-     * requestParameter
+     * To specify the resumptionToken
+     * resumptionTokenを指定する
      *
      * @var string
      */
     public $resumptionToken = null;
     /**
-     * requestParameter
+     * To specify the identifier of the item
+     * アイテムの識別子を指定する
      *
      * @var string
      */
     public $identifier = null;
     /**
-     * requestParameter
+     * To specify the setSpec of index
+     * インデックスのsetSpecを指定する
      *
      * @var string
      */
     public $set = null;
     /**
-     * requestParameter
+     * To specify the schema name to be output
+     * 出力するスキーマ名を指定する
      *
      * @var strnig
      */
     public $metadataPrefix = null;
     /**
-     * requestParameter
+     * To specify the search start date and time
+     * 検索開始日時を指定する
      *
      * @var string
      */
     public $from = null;
     /**
-     * requestParameter
+     * To specify the search end date and time
+     * 検索終了日時を指定する
      *
      * @var string
      */
     public $until = null;
 
     /**
-     * set resumptionToken start position
+     * Search start number that is specified in the resumptionToken
+     * resumptionTokenで指定された検索開始番号
      *
      * @var int
      */
@@ -90,23 +142,23 @@ class Repository_Oaipmh extends RepositoryAction
 
     /*******************************************************************/
     /**
-     * error code
+     * Error code
+     * エラーコード
      *
      * @var string
      */
     private $errorCode = '';
     /**
-     * error message
+     * Error message
+     * エラーメッセージ
      *
      * @var string
      */
     private $errorMessage = array();
 
     /**
-     * output metadata tag class
-     *   - DublinCore
-     *   - JuNii2
-     *   - LearningObjectMetadata
+     * Meta data conversion classes
+     * メタデータ変換クラス
      *
      * @var Object
      */
@@ -114,29 +166,33 @@ class Repository_Oaipmh extends RepositoryAction
 
     // Mod OpenDepo 2014/01/31 S.Arata --start--
     /**
-     * public index query
+     * Public index ID list
+     * 公開インデックスID一覧
      *
-     * @var String
+     * @var string
      */
     private $publicIndexQuery = "";
     // Mod OpenDepo 2014/01/31 S.Arata --end--
 
     /**
-     * max item list for resumptionToken.
+     * The number of items that can be output in a single request
+     * 1回のリクエストで出力可能なアイテム数
      *
      * @var int
      */
     private $maxItemList = 0;
 
     /**
-     * harvest public index list
+     * Harvest public index ID list
+     * ハーベスト公開インデックスID一覧
      *
      * @var array
      */
     private $harvestPublicIndex = array();
     
     /**
-     * setSpec full string
+     * setSpec listed all to a hierarchical format
+     * 階層形式まで全て記載されたsetSpec
      *
      * @var string
      */
@@ -144,42 +200,139 @@ class Repository_Oaipmh extends RepositoryAction
 
     /*******************************************************************/
     /**
-     * verb list
+     * verb of choice candidates (GetRecord)
+     * verbの選択肢候補(GetRecord)
+     *
+     * @var string
      */
     const VERB_GETRECORD = 'GetRecord';
+    /**
+     * verb of choice candidates (Identify)
+     * verbの選択肢候補(Identify)
+     *
+     * @var string
+     */
     const VERB_IDENTIFY  = 'Identify';
+    /**
+     * verb of choice candidates (ListIdentifiers)
+     * verbの選択肢候補(ListIdentifiers)
+     *
+     * @var string
+     */
     const VERB_LISTIDENTIFIERS = 'ListIdentifiers';
+    /**
+     * verb of choice candidates (ListMetadataFormats)
+     * verbの選択肢候補(ListMetadataFormats)
+     *
+     * @var string
+     */
     const VERB_LISTMETADATAFORMATS = 'ListMetadataFormats';
+    /**
+     * verb of choice candidates (ListRecords)
+     * verbの選択肢候補(ListRecords)
+     *
+     * @var string
+     */
     const VERB_LISTRECORDS= 'ListRecords';
+    /**
+     * verb of choice candidates (ListSets)
+     * verbの選択肢候補(ListSets)
+     *
+     * @var string
+     */
     const VERB_LISTSETS = 'ListSets';
 
     /**
-     * error code
+     * Error code(Argument illegal)
+     * エラーコード(引数不正)
      *
+     * @var string
      */
     const ERRORCODE_BAD_ARGUMENT = 'badArgument';
+    /**
+     * Error code(resumptionToken fraud)
+     * エラーコード(resumptionToken不正)
+     *
+     * @var string
+     */
     const ERRORCODE_BAD_RESUMPTION_TOKEN = 'badResumptionToken';
+    /**
+     * Error code(verb fraud)
+     * エラーコード(verb不正)
+     *
+     * @var string
+     */
     const ERRORCODE_BAD_VERB = 'badVerb';
+    /**
+     * Error code(metadataPrefix fraud)
+     * エラーコード(metadataPrefix不正)
+     *
+     * @var string
+     */
     const ERRORCODE_CAN_NOT_DISSEMINATE_FORMAT = 'cannotDisseminateFormat';
+    /**
+     * Error code(Item information output disabled)
+     * エラーコード(アイテム情報出力不可)
+     *
+     * @var string
+     */
     const ERRORCODE_ID_DOES_NOT_EXIST = 'idDoesNotExist';
+    /**
+     * Error code(Can not find the item)
+     * エラーコード(アイテムが見つからない)
+     *
+     * @var string
+     */
     const ERRORCODE_NO_RECORDS_MATCH = 'noRecordsMatch';
+    /**
+     * Error code(metadataFormat fraud)
+     * エラーコード(metadataFormat不正)
+     *
+     * @var string
+     */
     const ERRORCODE_NO_METADATA_FORMATS = 'noMetadataFormats';
+    /**
+     * Error code(set fraud)
+     * エラーコード(set不正)
+     *
+     * @var string
+     */
     const ERRORCODE_NO_SET_HIERARCHY = 'noSetHierarchy';
     /**
-     * max item
+     * The maximum number of outputs of one request
+     * 1リクエストの最大出力数
      *
+     * @var int
      */
     const MAX_ITEM = 100;
 
+    /**
+     * Minimum date and time
+     * 最小日時
+     *
+     * @var string
+     */
     const MIN_DATE = '0001-01-01T00:00:00Z';
+    
+    /**
+     * Up to date and time
+     * 最大日時
+     *
+     * @var string
+     */
     const MAX_DATE = '9999-12-31T23:59:59Z';
 
     /*******************************************************************/
 
-    public function execute()
+    /**
+     * And outputs the OAI-PMH in accordance with the request parameters
+     * リクエストパラメータに従ってOAI-PMHを出力する
+     *
+     * @return string Null character 空文字
+     */
+    public function executeApp()
     {
-        // start action
-        $this->initAction();
+        $this->exitFlag = true;
 
         // init member variable
         $this->initializeOaipmh();
@@ -238,16 +391,12 @@ class Repository_Oaipmh extends RepositoryAction
         header("Content-Type: text/xml; charset=utf-8");
         echo $xml;
 
-        // exit
-        $this->exitAction();
-        exit();
+        return "";
     }
 
     /**
-     * initialize
-     * 
-     * ActionBaseのメソッド名と被るため関数名変更
-     *
+     * Initialization
+     * 初期化
      */
     private function initializeOaipmh()
     {
@@ -267,9 +416,10 @@ class Repository_Oaipmh extends RepositoryAction
     }
 
     /**
-     * check request parameter 'identifier'
+     * Scrutiny of Identifier
+     * Identifierの精査
      *
-     * @param bool $required must
+     * @param boolean $must Whether or not it is an essential item 必須項目であるか否か
      */
     private function checkIdentifier($must=false)
     {
@@ -299,11 +449,11 @@ class Repository_Oaipmh extends RepositoryAction
             $this->errorCode = self::ERRORCODE_ID_DOES_NOT_EXIST;
         }
     }
-
     /**
-     * check resumptionToken
+     * Scrutiny of resumptionToken
+     * resumptionTokenの精査
      *
-     * @param bool $required must
+     * @param boolean $must Whether or not it is an essential item 必須項目であるか否か
      */
     private function checkResumptionToken($must=false)
     {
@@ -321,7 +471,8 @@ class Repository_Oaipmh extends RepositoryAction
         $prefixPattern = RepositoryConst::OAIPMH_METADATA_PREFIX_DC."|".
                          RepositoryConst::OAIPMH_METADATA_PREFIX_JUNII2."|".
                          RepositoryConst::OAIPMH_METADATA_PREFIX_LOM."|".
-                         RepositoryConst::OAIPMH_METADATA_PREFIX_LIDO;
+                         RepositoryConst::OAIPMH_METADATA_PREFIX_LIDO."|".
+                         SpaseConst::METADATA_PREFIX;
         if (preg_match("/^[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]T[0-9][0-9]:[0-9][0-9]:[0-9][0-9]Z\/[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]T[0-9][0-9]:[0-9][0-9]:[0-9][0-9]Z\/[0-9]*\/($prefixPattern)\/[0-9]+$/", $this->resumptionToken))
         {
             // split
@@ -359,9 +510,10 @@ class Repository_Oaipmh extends RepositoryAction
     }
 
     /**
-     * check request parameter from
+     * Scrutiny of until
+     * untilの精査
      *
-     * @param bool $required must
+     * @param boolean $must Whether or not it is an essential item 必須項目であるか否か
      */
     private function checkFromUntil($must=false)
     {
@@ -418,9 +570,10 @@ class Repository_Oaipmh extends RepositoryAction
     }
 
     /**
-     * check request parameter set
+     * Scrutiny of set
+     * setの精査
      *
-     * @param bool $required must
+     * @param boolean $must Whether or not it is an essential item 必須項目であるか否か
      */
     private function checkSet($must=false) {
         if($must && strlen($this->set) == 0) {
@@ -450,9 +603,10 @@ class Repository_Oaipmh extends RepositoryAction
     }
 
     /**
-     * check request parameter metadataPrefix
+     * Scrutiny of metadataPrefix
+     * metadataPrefixの精査
      *
-     * @param bool $required must
+     * @param boolean $must Whether or not it is an essential item 必須項目であるか否か
      */
     private function checkMetadataPrefix($must=false)
     {
@@ -496,6 +650,9 @@ class Repository_Oaipmh extends RepositoryAction
                 $this->errorCode = self::ERRORCODE_NO_METADATA_FORMATS;
             }
         }
+        else if($this->metadataPrefix == SpaseConst::METADATA_PREFIX){
+            // spaseではクラスの直接参照を実施しないため、ここでの処理は実施しない
+        }
         else
         {
             $this->errorCode = self::ERRORCODE_NO_METADATA_FORMATS;
@@ -503,8 +660,10 @@ class Repository_Oaipmh extends RepositoryAction
     }
 
     /**
-     * output header
-     *
+     * Header output
+     * ヘッダ出力
+     * 
+     * @return string The output string 出力文字列
      */
     private function outputHeader()
     {
@@ -552,8 +711,10 @@ class Repository_Oaipmh extends RepositoryAction
     }
 
     /**
-     * output Identify
-     *
+     * Identifier output
+     * 識別子出力
+     * 
+     * @return string The output string 出力文字列
      */
     private function outputIdentify()
     {
@@ -612,9 +773,10 @@ class Repository_Oaipmh extends RepositoryAction
     }
 
     /**
-     * output list metadata formats
-     * IN DublinCore(oai_dc), JuNii2(junii2), Learning Object Metadata(oai_lom)
-     *
+     * Output the meta-data format available from WEKO
+     * WEKOから入手可能なメタデータフォーマットを出力する
+     * 
+     * @return string The output string 出力文字列
      */
     private function outputListMetadataFormats()
     {
@@ -675,17 +837,29 @@ class Repository_Oaipmh extends RepositoryAction
         $xml .= 'http://www.lido-schema.org';
         $xml .= '</'.RepositoryConst::OAIPMH_TAG_META_NAMESP.'>';
         $xml .= '</'.RepositoryConst::OAIPMH_TAG_MATA_FORMT.'>';
-
+        // Spase
+        $xml .= '<'.RepositoryConst::OAIPMH_TAG_MATA_FORMT.'>';
+        $xml .= '<'.RepositoryConst::OAIPMH_TAG_META_PREFIX.'>';
+        $xml .= SpaseConst::METADATA_PREFIX;
+        $xml .= '</'.RepositoryConst::OAIPMH_TAG_META_PREFIX.'>';
+        $xml .= '<'.RepositoryConst::OAIPMH_TAG_SCHEMA.'>';
+        $xml .= SpaseConst::SCHEMA;
+        $xml .= '</'.RepositoryConst::OAIPMH_TAG_SCHEMA.'>';
+        $xml .= '<'.RepositoryConst::OAIPMH_TAG_META_NAMESP.'>';
+        $xml .= SpaseConst::NAME_SPACE;
+        $xml .= '</'.RepositoryConst::OAIPMH_TAG_META_NAMESP.'>';
+        $xml .= '</'.RepositoryConst::OAIPMH_TAG_MATA_FORMT.'>';
+        
         $xml .= '</'.RepositoryConst::OAIPMH_TAG_LIST_MATA_FORMT.'>';
 
         return $xml;
     }
 
     /**
-     * output list sets
-     *
-     * sets = index information
-     *
+     * When the verb is ListSets, and outputs the information of the index
+     * verbがListSetsである時、インデックスの情報を出力する
+     * 
+     * @return string The output string 出力文字列
      */
     private function outputListSets()
     {
@@ -768,13 +942,15 @@ class Repository_Oaipmh extends RepositoryAction
     }
 
     /**
-     * Enter description here...
+     * And outputs the index information
+     * インデックス情報を出力する
      *
-     * @param array $index
-     * @param string $indexKey
-     * @param string $parentSpec
-     * @param int $skipNum
-     * @param int $displayNum
+     * @param array $index Index information インデックス情報
+     * @param int $indexKey Index id インデックスID
+     * @param string $parentSpec Parent index setSpec 親インデックスsetSpec
+     * @param int $skipNum The number of skip スキップ数
+     * @param int $displayNum The number of display 表示数
+     * @return string The output string 出力文字列
      */
     public function outputListSetsSet($index, $indexKey, $parentSpec, &$skipNum, &$displayNum)
     {
@@ -813,9 +989,11 @@ class Repository_Oaipmh extends RepositoryAction
     }
 
     /**
-     * output list identifiers
+     * The output of the ListRecords and ListIdentifiers
+     * ListRecordsおよびListIdentifiersの出力
      *
-     * @param bool $metadata true:output header and metadata, false:output header only
+     * @param boolean $metadata Meta-data output flag メタデータ出力フラグ
+     * @return string The output string 出力文字列
      */
     private function outputMetadata($metadata=true)
     {
@@ -877,22 +1055,33 @@ class Repository_Oaipmh extends RepositoryAction
                 {
                     $ret = $this->getItemData($itemId, $itemNo, $itemData, $log, false, false);
                 }
+                else if($this->metadataPrefix == SpaseConst::METADATA_PREFIX)
+                {
+                    $businessOaipmhMapper = BusinessFactory::getFactory()->getBusiness("businessOaipmhmapper");
+                    $oaipmhItem = $businessOaipmhMapper->createOaipmhItem(SpaseConst::METADATA_PREFIX, $itemId);
+                }
                 else
                 {
                     $ret = $this->getItemData($itemId, $itemNo, $itemData, $log, false, true);
                 }
-                if($ret)
-                {
-                    $ret = $this->getItemReference($itemId, $itemNo, $itemData, $log);
-                }
-                if($ret)
-                {
-                    $itemData['item'][0]['mod_date'] = $datestamp;
-                    $xmlMetadata = $this->metadataClass->outputRecord($itemData);
+                
+                if($this->metadataPrefix == SpaseConst::METADATA_PREFIX){
+                    $businessGenerateSpaseMetadata = BusinessFactory::getFactory()->getBusiness("businessGeneratespasemetadata");
+                    $xmlMetadata = $businessGenerateSpaseMetadata->generateMetadataByOaipmhItem($oaipmhItem);
+                } else {
+                    if($ret)
+                    {
+                        $ret = $this->getItemReference($itemId, $itemNo, $itemData, $log);
+                    }
+                    if($ret)
+                    {
+                        $itemData['item'][0]['mod_date'] = $datestamp;
+                        $xmlMetadata = $this->metadataClass->outputRecord($itemData);
+                    }
                 }
             }
             
-            if($pubflg && strlen($xmlMetadata) == 0) {
+            if($pubflg && !isset($xmlMetadata) && strlen($xmlMetadata) == 0) {
                 if(count($itemList) == 1){
                     $this->errorCode = self::ERRORCODE_ID_DOES_NOT_EXIST;
                 }
@@ -940,8 +1129,10 @@ class Repository_Oaipmh extends RepositoryAction
 
     /**
      * output resumption tooken.
+     * resumptionTokenの出力
      *
-     * @param unknown_type $nextToken
+     * @param int $nextToken  resumptionToken
+     * @return string The output string 出力文字列
      */
     private function outputResumptionToken($nextToken)
     {
@@ -985,11 +1176,14 @@ class Repository_Oaipmh extends RepositoryAction
 
     /**
      * output item information
+     * アイテム情報出力
      *
-     * @param int $itemId
-     * @param int $itemNo
-     * @param string $datestamp
-     * @param bool $pubflg
+     * @param int $itemId Item id アイテムID
+     * @param int $itemNo Item serial number アイテム通番
+     * @param string $datestamp Datestamp Datestamp
+     * @param bool $pubflg Public flg 公開状況
+     * 
+     * @return string The output string 出力文字列
      */
     private function outputIdentifier($itemId, $itemNo, $datestamp, $pubflg)
     {
@@ -1030,7 +1224,9 @@ class Repository_Oaipmh extends RepositoryAction
 
     /**
      * output error
-     *
+     * エラー出力
+     * 
+     * @return string The output string 出力文字列
      */
     private function outputError()
     {
@@ -1043,7 +1239,9 @@ class Repository_Oaipmh extends RepositoryAction
 
     /**
      * output footer
-     *
+     * フッター出力
+     * 
+     * @return string The output string 出力文字列
      */
     private function outputFooter()
     {
@@ -1053,8 +1251,10 @@ class Repository_Oaipmh extends RepositoryAction
 
     /**
      * get parameter value
+     * 設定値取得
      *
-     * @param string $key
+     * @param string $key Parameter name パラメータ名
+     * @return string The output string 出力文字列
      */
     private function getParamValue($key)
     {
@@ -1073,8 +1273,9 @@ class Repository_Oaipmh extends RepositoryAction
 
     /**
      * get OAI-PMH base url
+     * OAI-PMHベースURL取得
      *
-     * @return unknown
+     * @return string OAI-PMH base url OAI-PMHベースURL
      */
     private function getOaiPmhBaseUrl()
     {
@@ -1130,11 +1331,10 @@ class Repository_Oaipmh extends RepositoryAction
 
     /**
      * get Local time to Greenwich Mean Time
-     * Add care Greenwich Mean Time T.Koyasu
+     * グリニッジ時間取得
      *
-     * @param $time ListRecords -> YYYY-MM-DDThh:mm:ssZ
-     *              ListIdentifiers -> null
-     * @return $time + $diff
+     * @param $time Time 時刻(ListRecords:YYYY-MM-DDThh:mm:ssZ, ListIdentifiers:null)
+     * @return string Greenwich Mean Time グリニッジ時間
      */
     private function getLocalTime($time)
     {
@@ -1192,9 +1392,10 @@ class Repository_Oaipmh extends RepositoryAction
 
     /**
      * get standard time
+     * 標準時取得
      *
-     * @param string $time
-     * @return string
+     * @param string $time Time 時刻
+     * @return string Standard time 標準時
      */
     function getStandardTime($time)
     {
@@ -1247,9 +1448,11 @@ class Repository_Oaipmh extends RepositoryAction
     }
 
     /**
-     * date calc
+     * To get the specified time worth advanced date and time
+     * 指定した時刻分進んだ日時を取得する
      *
-     * @param int $time calc date / hour
+     * @param int $time Time 時刻
+     * @return string Date 日時
      */
     private function calcDate($time = 0)
     {
@@ -1267,11 +1470,11 @@ class Repository_Oaipmh extends RepositoryAction
     }
 
     /**
-     * get access time + 1 day
-     * for get expirationDate
+     * To get the next date
+     * 次の日付を取得する
      *
-     * @param date $time
-     * @return date(yy-mm-ddThh:mm:ssZ)
+     * @param string $time Date 日時
+     * @return string Date(yy-mm-ddThh:mm:ssZ) 日時(yy-mm-ddThh:mm:ssZ)
      */
     private function getNextDay($time)
     {
@@ -1295,10 +1498,11 @@ class Repository_Oaipmh extends RepositoryAction
     }
 
     /**
-     * change date format
+     * To get the date and time of the ISO format
+     * ISO形式の日時を取得する
      *
-     * @param string $time date
-     * @return string
+     * @param string $time Date 日時
+     * @return string Date(yy-mm-dd hh:mm:ss) 日時(yy-mm-dd hh:mm:ss)
      */
     private function convertDateForISO($time)
     {
@@ -1333,8 +1537,8 @@ class Repository_Oaipmh extends RepositoryAction
     }
 
     /**
-     * set public index
-     *
+     * Query for creating public index acquisition
+     * 公開インデックス取得用クエリ作成
      */
     private function setPublicIndexQuery()
     {
@@ -1359,8 +1563,12 @@ class Repository_Oaipmh extends RepositoryAction
     
     // ADD OpenDepo 2014/06/02 S.arata --start--
     /**
-     * get public item flg
+     * Get public item flg
+     * アイテム公開状況取得
      *
+     * @param int $itemId Item id アイテムID
+     * @param int $itemNo Item serial number アイテム通番
+     * @return boolean Public item flg 公開状況
      */
     private function getItemPublicFlg($itemId, $itemNo)
     {
@@ -1381,9 +1589,11 @@ class Repository_Oaipmh extends RepositoryAction
     // ADD OpenDepo 2014/06/02 S.arata --end--
 
     /**
-     * get item list , where from, until, set
+     * To get a list of items in accordance with the terms of the request
+     * リクエストの条件に従ってアイテムの一覧を取得する
      *
-     * @return array
+     * @return array Item list アイテム一覧
+     *               array[$ii]["item_id"|"item_no"|"datestamp"]
      */
     private function getItemList()
     {
@@ -1621,13 +1831,14 @@ class Repository_Oaipmh extends RepositoryAction
     }
 
     /**
-     * return setSpec
-     * setSpec is item position index_id, implode ':'
-     * index_id format => %05d
+     * To get the SetSpec of the index that the item belongs to
+     * アイテムが所属するインデックスのSetSpecを取得する
      *
-     * @param int item_id
-     * @param int item_no
-     * @return string setSpec
+     * @param int $item_id Item id アイテムID
+     * @param int $item_no Item serial number アイテム通番
+     * @param boolean $recursiveFlag Whether or not to get the value that contains the SetSpec of the parent index 親インデックスのSetSpecを含んだ値を取得するか否か
+     * @return array SetSpec list SetSpec一覧
+     *               array[$ii]
      */
     private function getSetSpec($item_id, $item_no, $recursiveFlag=false)
     {
@@ -1677,9 +1888,10 @@ class Repository_Oaipmh extends RepositoryAction
     }
     
     /**
-     * check setSpec position index
+     * Hierarchy of the specified set to check whether all correct
+     * 指定されたsetの階層が全て正しいかチェックする
      *
-     * @return bool
+     * @return boolean Whether or not the set of the hierarchy is correct setの階層が正しいか否か
      */
     private function checkSetspecPosition() {
         // 指定されたsetの階層が全て正しいかチェックする

@@ -1,73 +1,102 @@
 <?php
+
+/**
+ * Action for input by item type select view
+ * アイテム登録：アイテムタイプ選択画面からの入力処理アクション
+ *
+ * @package     WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Selecttype.class.php 53145 2015-05-13 10:58:06Z keiya_sugimoto $
+// $Id: Aggregatesitelicenseusagestatistics.class.php 68463 2016-06-06 06:05:40Z tomohiro_ichikawa $
 //
-// Copyright (c) 2007 - 2008, National Institute of Informatics, 
+// Copyright (c) 2007 - 2008, National Institute of Informatics,
 // Research and Development Center for Scientific Information Resources
 //
 // This program is licensed under a Creative Commons BSD Licence
 // http://creativecommons.org/licenses/BSD/
 //
 // --------------------------------------------------------------------
-
-/* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
-
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
+/**
+ * Name metadata manager class
+ * 氏名メタデータ管理クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/NameAuthority.class.php';
-require_once WEBAPP_DIR. '/modules/repository/components/Checkdoi.class.php';
+/**
+ * Check grant doi business class
+ * DOI付与チェックビジネスクラス
+ */
+require_once WEBAPP_DIR. '/modules/repository/components/business/doi/Checkdoi.class.php';
 
 /**
+ * Action for input by item type select view
  * アイテム登録：アイテムタイプ選択画面からの入力処理アクション
  *
- * @package     [[package名]]
+ * @package     WEKO
+ * @copyright   (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license     http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
  * @access      public
- * @version 1.0 新規作成
- *          2.0 登録フロー表示改善対応 2008/06/26 Y.Nakao  
  */
 class Repository_Action_Main_Item_Selecttype extends RepositoryAction
 {
     // 使用コンポーネントを受け取るため
     /**
+     * User view components
      * usersViewコンポーネント
+     *
      * @var Users_View
      */
     public $usersView = null;
     
     // リクエストパラメーター
     /**
+     * Item type ID
      * アイテムタイプID(新規作成時)
+     *
      * @var int
      */
     public $itemtype_id = null;
     
     /**
+     * Item ID
      * アイテムID(既存編集時)
+     *
      * @var int
      */
     public $item_id = null;
     
     /**
+     * Item number
      * アイテムNo(既存編集時)
+     *
      * @var int
      */
     public $item_no = null;
     
     /**
-     * 呼び出し元画面番号
-     *  アイテム詳細画面から来た場合："1"
-     *  ワークフロー画面から来た場合："2"
+     * Calling screen number(1: Detail, 2: Workflow)
+     * 呼び出し元画面番号(1: 詳細画面, 2: ワークフロー画面)
+     *
      * @var string
      */
     public $return_screen = null;
     
     /**
+     * Workflow tab number
      * ワークフロータブ番号
+     *
      * @var string
      */
     public $workflow_active_tab = null;
     
     /**
+     * Process mode
      * 処理モード
      *   'selecttype'   : アイテムタイプ選択画面
      *   'files'        : ファイル選択画面
@@ -82,11 +111,20 @@ class Repository_Action_Main_Item_Selecttype extends RepositoryAction
     public $save_mode = null;
     
     // メンバ変数
+    /**
+     * Warning message
+     * 警告メッセージ
+     *
+     * @var array
+     */
     private $warningMsg = array();  // 警告メッセージ
     
     /**
-     * 実行処理
-     * @see RepositoryAction::executeApp()
+     * Execute
+     * 実行
+     *
+     * @return string "success"/"error" success/failed 成功/失敗
+     * @throws AppException
      */
     protected function executeApp()
     {
@@ -1050,12 +1088,12 @@ class Repository_Action_Main_Item_Selecttype extends RepositoryAction
         $this->Session->setParameter("item_contributor", $item_contributor);
         
         // DOI付与可能フラグ
-        $CheckDoi = new Repository_Components_Checkdoi($this->Session, $this->Db, $this->TransStartDate);
+        $CheckDoi = BusinessFactory::getFactory()->getBusiness("businessCheckdoi");
         $doi_itemtype_flag = false;
-        if($CheckDoi->checkDoiGrantItemtype($this->itemtype_id, Repository_Components_Checkdoi::TYPE_JALC_DOI) || 
-           $CheckDoi->checkDoiGrantItemtype($this->itemtype_id, Repository_Components_Checkdoi::TYPE_CROSS_REF) ||
-           $CheckDoi->checkDoiGrantItemtype($this->itemtype_id, Repository_Components_Checkdoi::TYPE_LIBRARY_JALC_DOI) ||
-           $CheckDoi->checkDoiGrantItemtype($this->itemtype_id, Repository_Components_Checkdoi::TYPE_DATACITE) ||
+        if($CheckDoi->checkDoiGrantItemtype($this->itemtype_id, Repository_Components_Business_Doi_Checkdoi::TYPE_JALC_DOI) || 
+           $CheckDoi->checkDoiGrantItemtype($this->itemtype_id, Repository_Components_Business_Doi_Checkdoi::TYPE_CROSS_REF) ||
+           $CheckDoi->checkDoiGrantItemtype($this->itemtype_id, Repository_Components_Business_Doi_Checkdoi::TYPE_LIBRARY_JALC_DOI) ||
+           $CheckDoi->checkDoiGrantItemtype($this->itemtype_id, Repository_Components_Business_Doi_Checkdoi::TYPE_DATACITE) ||
            $CheckDoi->getDoiStatus($this->item_id, $this->item_no) >= 1)
         {
             $doi_itemtype_flag = true;
@@ -1103,10 +1141,10 @@ class Repository_Action_Main_Item_Selecttype extends RepositoryAction
     
     /**
      * set redirect screen
+     * リダイレクト先画面を設定する
      *
-     * @param $item_id
-     * @param $item_no
-     * @access  private
+     * @param int $item_id item ID アイテムID
+     * @param int $item_no item number アイテム通番
      */
     private function setRedirectScreen($item_id, $item_no){
         if($this->Session->getParameter("return_screen") != null){
@@ -1135,10 +1173,12 @@ class Repository_Action_Main_Item_Selecttype extends RepositoryAction
     
     /**
      * get Feedback author
+     * 著者情報を取得する
      *
-     * @param $item_id
-     * @param $item_no
-     * @return  array
+     * @param int $itemId item ID アイテムID
+     * @param int $itemNo item number アイテム通番
+     * @return  array author data 著者情報
+     *                 array[$ii]["name"|"family"|"suffix"]
      */
     private function getFeedbackAuthor($itemId, $itemNo)
     {
@@ -1184,8 +1224,11 @@ class Repository_Action_Main_Item_Selecttype extends RepositoryAction
     
     /**
      * set Session Feedback author
+     * セッションに著者情報を設定する
      *
-     * @param $authorData
+     * @param array $authorData author data 著者情報
+     *                           array[$ii]["name"|"family"|"suffix"]
+     * @return bool true/false success/failed 成功/失敗
      */
     private function setFeedbackAuthor($authorData)
     {

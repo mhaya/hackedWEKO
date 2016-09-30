@@ -1,0 +1,271 @@
+<!--// ---------------------------------------------------------------------->
+<!--//                                                                     -->
+<!--// $Id: repository_edit_tree_metadata.html 59810 2015-11-05 04:18:28Z yuko_nakao $          -->
+<!--//                                                                     -->
+<!--// Copyright (c) 2007 - 2008, National Institute of Informatics,        -->
+<!--// Research and Development Center for Scientific Information Resources -->
+<!--//                                                                     -->
+<!--// This program is licensed under a Creative Commons BSD Licence       -->
+<!--// http://creativecommons.org/licenses/BSD/                            -->
+<!--//                                                                     -->
+<!--// ---------------------------------------------------------------------->
+<div class="mtb10">
+    <form id="sitelicense_send_form<{$id}>">
+        <table class="tb01 w850px mr10 ml10 box_center">
+            <{* ヘッダー部分 *}>
+            <tr><th class="al th_col_repos" colspan=2><{$lang.repository_log_sitelicense_feedback_mail}></th></tr>
+            <tr>
+                <{* 項目名部分 *}>
+                <td class="vt al item_edit_list normal w30"><{$lang.repository_log_sitelicense_cron_setting}></td>
+                <{* 値部分 *}>
+                <td class="item_edit_list al">
+                    <table class="full">
+                        <tr>
+                            <td class="item_edit_list" colspan="2">
+                                <label for="cron_allow<{$id}>">
+                                    <input id="cron_allow<{$id}>" type="checkbox" onChange="javascript: changeSendSitelicenseStatus(this.id);" <{if $action.sitelicense_send_allow > 0}>CHECKED<{/if}> <{if $action.sitelicense_send_status == 1}>disabled<{/if}>>
+                                    <{$lang.repository_log_sitelicense_cron_allow}>
+                                </label>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="item_edit_list"></td>
+                            <td class="item_edit_list" style="text-indent: 8px">
+                                <{$lang.repository_log_sitelicense_cron_url}>
+                                <dt>
+                                <{$lang.repository_admin_adminconf_uri_comment}>
+                                <dt>
+                                <input class="full al" type="text" onclick="this.select(); return false;" value="<{$action.sitelicense_send_url}>" readonly>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+            <{* 集計期間設定 *}>
+            <tr>
+                <td colspan="2" class="item_edit_list">
+                    <table class="full" border="0">
+                        <tr>
+                            <td>
+                                <{$lang.repository_log_sitelicense_range}>
+                                <dt>&nbsp;
+                                <select id="scope_start_year<{$id}>" name="scope_start_year" type="text">
+                                    <{foreach from=$action.sitelicense_year_option_start item=metadata name=loop}>
+                                      <{assign var="loop_num" value=$smarty.foreach.loop.iteration-1}>
+                                      <{if $action.sitelicense_year_option_start[$loop_num][1]=="1"}>
+                                        <option value="<{$action.sitelicense_year_option_start[$loop_num][0]}>" selected><{$action.sitelicense_year_option_start[$loop_num][0]}></option>
+                                      <{else}>
+                                        <option value="<{$action.sitelicense_year_option_start[$loop_num][0]}>"><{$action.sitelicense_year_option_start[$loop_num][0]}></option>
+                                      <{/if}>
+                                    <{/foreach}>
+                                </select>
+                                <{$lang.repository_log_year}>
+                                <select id="scope_start_month<{$id}>" name="scope_start_month" type="text">
+                                    <{foreach from=$action.sitelicense_month_option_start item=metadata name=loop}>
+                                      <{assign var="loop_num" value=$smarty.foreach.loop.iteration-1}>
+                                      <{if $action.sitelicense_month_option_start[$loop_num][1]=="1"}>
+                                        <option value="<{$action.sitelicense_month_option_start[$loop_num][0]}>" selected><{$action.sitelicense_month_option_start[$loop_num][0]}></option>
+                                      <{else}>
+                                        <option value="<{$action.sitelicense_month_option_start[$loop_num][0]}>"><{$action.sitelicense_month_option_start[$loop_num][0]}></option>
+                                      <{/if}>
+                                    <{/foreach}>
+                                </select>
+                                <{$lang.repository_log_month}>
+                                
+                                <{$lang.repository_search_from_until}>
+                                
+                                <select id="scope_end_year<{$id}>" name="scope_end_year" type="text">
+                                    <{foreach from=$action.sitelicense_year_option_end item=metadata name=loop}>
+                                      <{assign var="loop_num" value=$smarty.foreach.loop.iteration-1}>
+                                      <{if $action.sitelicense_year_option_end[$loop_num][1]=="1"}>
+                                        <option value="<{$action.sitelicense_year_option_end[$loop_num][0]}>" selected><{$action.sitelicense_year_option_end[$loop_num][0]}></option>
+                                      <{else}>
+                                        <option value="<{$action.sitelicense_year_option_end[$loop_num][0]}>"><{$action.sitelicense_year_option_end[$loop_num][0]}></option>
+                                      <{/if}>
+                                    <{/foreach}>
+                                </select>
+                                <{$lang.repository_log_year}>
+                                <select id="scope_end_month<{$id}>" name="scope_end_month" type="text">
+                                    <{foreach from=$action.sitelicense_month_option_end item=metadata name=loop}>
+                                      <{assign var="loop_num" value=$smarty.foreach.loop.iteration-1}>
+                                      <{if $action.sitelicense_month_option_end[$loop_num][1]=="1"}>
+                                        <option value="<{$action.sitelicense_month_option_end[$loop_num][0]}>" selected><{$action.sitelicense_month_option_end[$loop_num][0]}></option>
+                                      <{else}>
+                                        <option value="<{$action.sitelicense_month_option_end[$loop_num][0]}>"><{$action.sitelicense_month_option_end[$loop_num][0]}></option>
+                                      <{/if}>
+                                    <{/foreach}>
+                                </select>
+                                <{$lang.repository_log_month}>
+                                <dt>
+                                <div style="color: red">&nbsp;<{$lang.repository_log_sitelicense_note_longrange}></div>
+                            </td>
+                            <{if $action.sitelicense_send_status == 0}>
+                            <td>
+                                <{$lang.repository_log_sitelicense_status_execute}>
+                                <dt>
+                                <div class="success_msg">
+                                    <{$action.sitelicense_send_date}>&nbsp;&nbsp;<{$lang.repository_log_sitelicense_status_performed}>
+                                </div>
+                            </td>
+                            <{elseif $action.sitelicense_send_status == 1}>
+                            <td>
+                                <{$lang.repository_log_sitelicense_status_execute}>
+                                <dt>
+                                <div class="warning_msg">
+                                    <{$action.sitelicense_send_date}>&nbsp;&nbsp;<{$lang.repository_log_sitelicense_status_performing}>
+                                </div>
+                            </td>
+                            <{/if}>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2" class="item_edit_list">
+                    <{$lang.repository_log_sitelicense_note_check_organization}>
+
+                    <table class="tb01 m05" style="width: 830px">
+                        <tr class="brd01">
+                            <th class="brd01 item_edit_list">
+                                <input type="checkbox" id="column_check_sitelicense_info<{$id}>" onChange="changeCheckAllOrg();">
+                            </th>
+                            <th class="brd01 w20 item_edit_list">
+                                <label><{$lang.repository_log_organization}></label>
+                            </th>
+                            <th class="brd01 full item_edit_list">
+                                <label><{$lang.repository_admin_site_license_mail_address}></label>
+                            </th>
+                        </tr>
+                    </table>
+                    <div style="height: 200px; overflow-y: scroll;">
+                        <table class="tb01 m05" style="width: 830px">
+                            <{section name=i loop=$action.sitelicense_info}>
+                            <{assign var="sitelicense_info" value=$action.sitelicense_info}>
+                            <tr class="brd01 line_report_list">
+                                <{* 送信対象選択チェックボックス *}>
+                                <td class="brd01 item_edit_list" align="center">
+                                    <input type="checkbox" id="check_sitelicense_org_<{$sitelicense_info[i].organization_id}><{$id}>" name="sitelicense_id" value="<{$sitelicense_info[i].organization_id}>">
+                                </td>
+                                <{* 機関名 *}>
+                                <td class="brd01 w20 item_edit_list" onClick="changeCheckStatus('check_sitelicense_org_<{$sitelicense_info[i].organization_id}><{$id}>');">
+                                    <label><{$sitelicense_info[i].organization_name}></label>
+                                </td>
+                                <{* メールアドレス *}>
+                                <td class="brd01 full item_edit_list" onClick="changeCheckStatus('check_sitelicense_org_<{$sitelicense_info[i].organization_id}><{$id}>');">
+                                    <{section name=j loop=$sitelicense_info[i].mail_address}>
+                                    <label><{$sitelicense_info[i].mail_address[j]}></label>
+                                    <dt>
+                                        <{/section}>
+                                </td>
+                            </tr>
+                            <{/section}>
+                        </table>
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </form>
+    <br>
+    <div class="btn-bottom full mt10 mb10">
+        <input class="btn_white" type="button" id="sendSitelicenseMailButton<{$id}>" value="<{$lang.repository_log_sitelicense_sendmail}>" onclick="javascript: sendSitelicenseMail();" <{if $action.sitelicense_send_allow == 0 || $action.sitelicense_send_status == 1 || $action.sitelicense_set_php_path_flag == false}>disabled<{/if}>>
+    </div>
+</div>
+
+<script class="nc_script" type="text/javascript">
+    changeCheckAllOrg = function(){
+        var checks = document.getElementsByName("sitelicense_id");
+        for(var i=0; i < checks.length; i++) {
+            checks[i].checked = document.getElementById("column_check_sitelicense_info<{$id}>").checked;
+        }
+    }
+</script>
+
+<script class="nc_script" type="text/javascript">
+    changeCheckStatus = function(id){
+        var check = document.getElementById(id);
+        if(check.checked == true) {
+            check.checked = false;
+        } else {
+            check.checked = true;
+        }
+    }
+</script>
+
+<script class="nc_script" type="text/javascript">
+    changeSendSitelicenseStatus = function(id){
+        var pars = "action=repository_action_edit_sitelicense_sendstatus";
+        // チェック状態
+        if(document.getElementById(id).checked == true) {
+            pars += "&status=1";
+            var buttonDisabled = false;
+        } else {
+            pars += "&status=0";
+            var buttonDisabled = true;
+        }
+        pars += "&page_id="+<{$page_id}>+
+                "&block_id="+<{$block_id}>;
+        var url = "<{$smarty.const.BASE_URL}>/index.php";
+        
+        var myAjax = new Ajax.Request(
+                url,
+                {
+                    method: 'get',
+                    parameters: pars,
+                    onComplete: function(req) {
+                        document.getElementById("sendSitelicenseMailButton<{$id}>").disabled = buttonDisabled;
+                        alert("変更しました");
+                    }
+                }
+        );
+    }
+</script>
+
+<script class="nc_script" type="text/javascript">
+    sendSitelicenseMail = function() {
+        <{* 日付妥当性チェック *}>
+        var tmpFromMonth = document.getElementById("scope_start_month<{$id}>").value;
+        if(tmpFromMonth < 10) { tmpFromMonth = "0"+tmpFromMonth; }
+        var tmpToMonth = document.getElementById("scope_end_month<{$id}>").value;
+        if(tmpToMonth < 10) { tmpToMonth = "0"+tmpToMonth; }
+        var tmpFromDate = document.getElementById("scope_start_year<{$id}>").value+tmpFromMonth;
+        var tmpToDate = document.getElementById("scope_end_year<{$id}>").value+tmpToMonth;
+        <{* 現在時刻取得 *}>
+        var date = new Date();
+        var nowYear = date.getFullYear();
+        var nowMonth = date.getMonth()+1;
+        if(nowMonth < 10) { nowMonth = "0"+nowMonth; }
+        var nowDate = nowYear+nowMonth;
+        // 開始月 > 終了月、開始月or終了月が実行月以降であると実行不可
+        if(tmpFromDate > tmpToDate || tmpFromDate >= nowDate || tmpToDate >= nowDate) {
+            alert("<{$lang.repository_log_sitelicense_aggregate_range_error}>");
+            return false;
+        }
+        <{* サイトライセンス機関一覧 *}>
+        var sitelicenseIdList = document.getElementsByName("sitelicense_id");
+        var sitelicense_ids = "";
+        for(var i=0; i < sitelicenseIdList.length; i++) {
+            if(sitelicenseIdList[i].checked == false) { continue; }
+            if(sitelicense_ids.length > 0) { sitelicense_ids += ","; }
+            sitelicense_ids += sitelicenseIdList[i].value;
+        }
+        <{* サイトライセンス機関未選択時 *}>
+        if(sitelicense_ids.length == 0) {
+            alert("<{$lang.repository_log_sitelicense_unselected_organization}>");
+            return false;
+        }
+
+        <{* 確認ダイアログ *}>
+        if(!commonCls.confirm("<{$lang.repository_log_sitelicense_send_sitelicensemail_confirm}>")) {
+            return false;
+        }
+
+        <{* 送信実行 *}>
+        repositoryCls['<{$id}>'].repositorySendSitelicenseMail("<{$page_id}>",
+                                                               "<{$block_id}>",
+                                                               sitelicense_ids,
+                                                               document.getElementById("scope_start_year<{$id}>").value,
+                                                               document.getElementById("scope_start_month<{$id}>").value,
+                                                               document.getElementById("scope_end_year<{$id}>").value,
+                                                               document.getElementById("scope_end_month<{$id}>").value);
+    }
+</script>

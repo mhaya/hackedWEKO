@@ -86,9 +86,11 @@
 					<{/if}>
 				</div>
 				
-				<div class="th_classic_content content text_color" id="itemSettingTab4" align="center">
-					<{include file="repository_item_doi.html"}>
-				</div>
+				<{if !defined("_REPOSITORY_WEKO_DOISUFFIX_FREE") || !$smarty.const._REPOSITORY_WEKO_DOISUFFIX_FREE}>
+					<div class="th_classic_content content text_color" id="itemSettingTab4" align="center">
+						<{include file="repository_item_doi.html"}>
+					</div>
+				<{/if}>
 				
 			</div>
 			<input type="hidden" value="0" id="item_setting_active_tab_id" />
@@ -124,12 +126,15 @@
 		initSettingTree<{$id}>(3);
 		changeSideDiv<{$id}>(3);
 	}
-	changeActiveTab4 = function(){
-		var active_tab = "item_setting_active_tab_id";
-		$(active_tab).value = 3;
-		initSettingTree<{$id}>(4);
-		changeSideDiv<{$id}>(4);
-	}
+	<{if !defined("_REPOSITORY_WEKO_DOISUFFIX_FREE") || !$smarty.const._REPOSITORY_WEKO_DOISUFFIX_FREE}>
+		changeActiveTab4 = function(){
+			var active_tab = "item_setting_active_tab_id";
+			$(active_tab).value = 3;
+			initSettingTree<{$id}>(4);
+			changeSideDiv<{$id}>(4);
+		}
+	<{/if}>
+
 
 	initSettingTree<{$id}> = function(num){
 		var id = num;
@@ -176,7 +181,9 @@
 		tabset.addTabset("<{$lang.repository_item_sortorder}>", changeActiveTab1);
 		tabset.addTabset("<{$lang.repository_item_embargo}>", changeActiveTab2);
 		tabset.addTabset("<{$lang.repository_item_listdelete}>", changeActiveTab3);
-		tabset.addTabset("<{$lang.repository_item_enterdoi}>", changeActiveTab4);
+		<{if !defined("_REPOSITORY_WEKO_DOISUFFIX_FREE") || !$smarty.const._REPOSITORY_WEKO_DOISUFFIX_FREE}>
+			tabset.addTabset("<{$lang.repository_item_enterdoi}>", changeActiveTab4);
+		<{/if}>
 		tabset.render();
 </script>
 

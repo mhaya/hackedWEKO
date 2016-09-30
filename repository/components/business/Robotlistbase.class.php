@@ -1,21 +1,51 @@
 <?php
+/**
+ * Business clas for robotlist management base
+ * ロボットリスト管理基底ビジネスクラス
+ * 
+ * @package WEKO
+ */
+
+// --------------------------------------------------------------------
+//
+// $Id: Robotlistbase.class.php 69174 2016-06-22 06:43:30Z tatsuya_koyasu $
+//
+// Copyright (c) 2007 - 2008, National Institute of Informatics, 
+// Research and Development Center for Scientific Information Resources
+//
+// This program is licensed under a Creative Commons BSD Licence
+// http://creativecommons.org/licenses/BSD/
+//
+// --------------------------------------------------------------------
+/**
+ * Business Logic base class
+ * ビジネスロジック基底クラス
+ * 
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/FW/BusinessBase.class.php';
 
 /**
- * $Id: Robotlistbase.class.php 51832 2015-04-09 05:04:44Z shota_suzuki $
+ * Business clas for robotlist management base
+ * ロボットリスト管理基底ビジネスクラス
  * 
- * ロボットリスト管理基底クラス
- * 
- * @author IVIS
- * @since 2014/11/11
+ * @package     WEKO
+ * @copyright   (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license     http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access      public
  */
 class Repository_Components_Business_Robotlistbase extends BusinessBase
 {
     /**
-    * ロボットリストを取得する
-    * 
-    * @return bool
-    */
+     * Get robotlist master file
+     * ロボットリストマスタファイルを取得する
+     * 
+     * @param $listId Robotlist master ID
+     *                ロボットリストマスタ通番
+     *
+     * @return array Robotlist master information
+     *               ロボットリストマスタ情報
+     *               array["header"|"word"]["Version"|"Date"|"Revision"|...]
+     */
     public function getRobotList($listId)
     {
         $query = "SELECT robotlist_url " . 
@@ -52,10 +82,15 @@ class Repository_Components_Business_Robotlistbase extends BusinessBase
     }
     
     /**
-    * ロボットリストテーブルを更新する
-    * 
-    * @return bool
-    */
+     * Update robotlist table
+     * ロボットリストテーブルを更新する
+     * 
+     * @param int $robotlistId Robotlist master ID
+     *                         ロボットリストマスタ通番
+     * @param array $robotList Robotlist data list
+     *                         ロボットリストデータ一覧
+     *                         array["word"][$ii]
+     */
     public function updateRobotList($robotlistId, $robotList)
     {
         $result = $this->getRobotMaster($robotlistId);
@@ -74,8 +109,15 @@ class Repository_Components_Business_Robotlistbase extends BusinessBase
     }
     
     /**
-    * 新しいロボットリストにないデータを削除
-    */
+     * Delete data not to exist new robotlist data
+     * 新しいロボットリストにないデータを削除
+     * 
+     * @param int $robotlistId Robotlist master ID
+     *                         ロボットリストマスタ通番
+     * @param array $robotList Robotlist data list
+     *                         ロボットリストデータ一覧
+     *                         array["word"][$ii]
+     */
     private function deleteNotExistRobotList($robotlistId, $robotList)
     {
         $current = $this->getCurrentRobotListData($robotlistId);
@@ -113,10 +155,17 @@ class Repository_Components_Business_Robotlistbase extends BusinessBase
     }
     
     /**
-    * 取得したロボットリスト情報を整理する
-    * 
-    * @return bool
-    */
+     * Organize robotlist master information gotten
+     * 取得したロボットリストマスタ情報を整理する
+     * 
+     * @param array $info Robotlist master information
+     *                    ロボットリストマスタ情報
+     *                    array[$ii]
+     *
+     * @return array Robotlist master information organized
+     *               整理したロボットリストマスタ情報
+     *               array["header"|"word"]["Version"|"Date"|"Revision"|...]
+     */
     private function createRobotListArray($info)
     {
         $headers = array("Version", "Date", "Revision", "Author");
@@ -167,8 +216,12 @@ class Repository_Components_Business_Robotlistbase extends BusinessBase
     }
     
     /**
-    * 現在登録されているロボットリストマスタを取得する
-    */
+     * Get robotlist master current registed
+     * 現在登録されているロボットリストマスタを取得する
+     *
+     * @param int $robotlistId Robotlist master ID
+     *                         ロボットリストマスタ通番
+     */
     private function getRobotMaster($robotlistId) {
         $query = "SELECT * " . 
                  "FROM " . DATABASE_PREFIX . "repository_robotlist_master " . 
@@ -187,8 +240,15 @@ class Repository_Components_Business_Robotlistbase extends BusinessBase
     }
     
     /**
-    * ロボットリストマスタテーブルのバージョン等を更新する
-    */
+     * Update version etc of robotlist master table
+     * ロボットリストマスタテーブルのバージョン等を更新する
+     *
+     * @param int $robotlistId Robotlist master ID
+     *                         ロボットリストマスタ通番
+     * @param array $header Robotlist master header information
+     *                      ロボットリストマスタヘッダ情報
+     *                      array["Version"|"Date"|"Revision"|...]
+     */
     private function updateRobotListMaster($robotlistId, $header) {
         $query = "UPDATE " . DATABASE_PREFIX . "repository_robotlist_master " . 
                  "SET robotlist_version = ?, " . 
@@ -217,10 +277,17 @@ class Repository_Components_Business_Robotlistbase extends BusinessBase
     }
     
     /**
-    * 現在のロボットリストを取得する
-    * 
-    * @return array
-    */
+     * Get current robotlist data
+     * 現在のロボットリストデータを取得する
+     *
+     * @param int $robotlistId Robotlist master ID
+     *                         ロボットリストマスタ通番
+     * 
+     * @return array Current robotlist data
+     *               現在のロボットリストデータ
+     *               array[$ii]["list_id"|"robotlist_id"|"word"|...]
+     *               
+     */
     private function getCurrentRobotListData($robotlistId){
         $query = "SELECT * " . 
                  "FROM " . DATABASE_PREFIX . "repository_robotlist_data " .
@@ -241,8 +308,15 @@ class Repository_Components_Business_Robotlistbase extends BusinessBase
     }
     
     /**
-    * ロボットリストテーブルを更新する
-    */
+     * Update robotlist data table
+     * ロボットリストデータテーブルを更新する
+     *
+     * @param int $robotlistId Robotlist master ID
+     *                         ロボットリストマスタ通番
+     * @param array $robotList Robotlist data list
+     *                         ロボットリストデータ一覧
+     *                         array["word"][$ii]
+     */
     private function updateRobotListData($robotlistId, $robotList)
     {
         $current = $this->getCurrentRobotListData($robotlistId);
@@ -287,8 +361,14 @@ class Repository_Components_Business_Robotlistbase extends BusinessBase
     }
     
     /**
-    * ロボットリストデータを追加する
-    */
+     * Insert robotlist data
+     * ロボットリストデータを追加する
+     *
+     * @param int $robotlistId Robotlist master ID
+     *                         ロボットリストマスタ通番
+     * @param string $word IP address or user agent of robotlist
+     *                     ロボットリストのIPアドレスまたはユーザーエージェント
+     */
     private function insertRobotListData($robotlistId, $word){
         $query = "INSERT INTO " . DATABASE_PREFIX . "repository_robotlist_data " . 
                  "(robotlist_id, word, status, ins_user_id , mod_user_id, ins_date, mod_date, is_delete) " . 
@@ -313,22 +393,30 @@ class Repository_Components_Business_Robotlistbase extends BusinessBase
     }
     
     /**
-    * ロボットリストデータをロックする
-    */
+     * Lock process deleting robotlist log
+     * ロボットリストログ削除処理用のロックを取得する
+     *
+     */
     public function lockRobotListTable() {
         $this->updateRobotListStatus(1);
     }
     
     /**
-    * ロボットリストデータを解放する
-    */
+     * Unlock process deleting robotlist log
+     * ロボットリストログ削除処理用のロックを解放する
+     *
+     */
     public function unlockRobotListTable() {
         $this->updateRobotListStatus(0);
     }
     
     /**
-    * ロボットリストデータバックグラウンドのステータスを更新する
-    */
+     * Update status of process deleting robotlist log
+     * ロボットリストログ削除処理のステータスを更新する
+     *
+     * @param int $status Status of process deleting robotlist log(0: unlock, 1: lock)
+     *                    ロボットリストログ削除処理のステータス(0：ロック解除、1:ロック取得)
+     */
     private function updateRobotListStatus($status)
     {
         $query = "UPDATE ". DATABASE_PREFIX. "repository_lock ". 
@@ -344,45 +432,6 @@ class Repository_Components_Business_Robotlistbase extends BusinessBase
         if($result === false) {
             $this->errorLog($this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
             throw new AppException($this->Db->ErrorMsg());
-        }
-    }
-    
-    /**
-    * URLと使用有無をロボットマスターテーブルに登録する
-    * 
-    * @return bool
-    */
-    public function updateRobotListURL($listId, $url, $useFlag)
-    {
-        if ($useFlag === true) {
-            if ($listId == 0 || $listId == 1) {
-                $query = "UPDATE " . DATABASE_PREFIX . "repository_robotlist_master " . 
-                         "SET robotlist_url = ?, is_robotlist_use = ? " . 
-                         "WHERE robotlist_id = ? ; ";
-                
-                if ($useFlag === true) {
-                    $userFlagVal = 1;
-                }
-                else {
-                    $userFlagVal = 0;
-                }
-                
-                $params = array();
-                $params[] = $url;
-                $params[] = $userFlagVal;
-                $params[] = $listId;
-                
-                $result = $this->Db->execute($query, $params);
-                
-                if($result === false)
-                {
-                    $this->errorLog($this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
-                    throw new AppException($this->Db->ErrorMsg());
-                }
-            }
-            else {
-                return false;
-            }
         }
     }
 }

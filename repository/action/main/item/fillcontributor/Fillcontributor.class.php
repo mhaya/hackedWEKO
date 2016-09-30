@@ -1,28 +1,47 @@
 <?php
+/**
+ * Action class for proxy contributor information automatic input
+ * 代理投稿者情報自動入力用アクションクラス
+ *
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Fillcontributor.class.php 57381 2015-08-31 00:32:36Z tatsuya_koyasu $
+// $Id: Fillcontributor.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
-// Copyright (c) 2007 - 2008, National Institute of Informatics, 
+// Copyright (c) 2007 - 2008, National Institute of Informatics,
 // Research and Development Center for Scientific Information Resources
 //
 // This program is licensed under a Creative Commons BSD Licence
 // http://creativecommons.org/licenses/BSD/
 //
 // --------------------------------------------------------------------
-
-/* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
+/**
+ * JSON library class
+ * JSONライブラリクラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/JSON.php';
 
 /**
- * Search user from NC2 by form input data.
- *
+ * Action class for proxy contributor information automatic input
+ * 代理投稿者情報自動入力用アクションクラス
+ * 
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class Repository_Action_Main_Item_Fillcontributor extends RepositoryAction
 {
     /**
      * Conponent : Session
+     * セッションオブジェクト
      *
      * @var Session
      */
@@ -30,13 +49,15 @@ class Repository_Action_Main_Item_Fillcontributor extends RepositoryAction
     
     /**
      * Conponent : Db
+     * DBオブジェクト
      *
-     * @var Db
+     * @var DbObjectAdodb
      */
     public $Db = null;
     
     /**
      * Request parameter : handle
+     * ハンドル名
      *
      * @var string
      */
@@ -44,6 +65,7 @@ class Repository_Action_Main_Item_Fillcontributor extends RepositoryAction
     
     /**
      * Request parameter : name
+     * 会員氏名
      *
      * @var string
      */
@@ -51,6 +73,7 @@ class Repository_Action_Main_Item_Fillcontributor extends RepositoryAction
     
     /**
      * Request parameter : email
+     * メールアドレス
      *
      * @var string
      */
@@ -58,6 +81,7 @@ class Repository_Action_Main_Item_Fillcontributor extends RepositoryAction
     
     /**
      * Request parameter : mode
+     * 実行モード
      *
      * @var string
      */
@@ -65,6 +89,7 @@ class Repository_Action_Main_Item_Fillcontributor extends RepositoryAction
     
     /**
      * Form data : base info
+     * アイテム基本情報
      *
      * @var array
      */
@@ -72,6 +97,7 @@ class Repository_Action_Main_Item_Fillcontributor extends RepositoryAction
     
     /**
      * Form data : pub_date(year)
+     * アイテム公開年
      *
      * @var string
      */
@@ -79,6 +105,7 @@ class Repository_Action_Main_Item_Fillcontributor extends RepositoryAction
     
     /**
      * Form data : pub_date(month)
+     * アイテム公開月
      *
      * @var int
      */
@@ -86,6 +113,7 @@ class Repository_Action_Main_Item_Fillcontributor extends RepositoryAction
     
     /**
      * Form data : pub_date(day)
+     * アイテム公開日
      *
      * @var int
      */
@@ -93,6 +121,7 @@ class Repository_Action_Main_Item_Fillcontributor extends RepositoryAction
     
     /**
      * Form data : keyword
+     * アイテム検索キーワード
      *
      * @var string
      */
@@ -100,6 +129,7 @@ class Repository_Action_Main_Item_Fillcontributor extends RepositoryAction
     
     /**
      * Form data : keyword_english
+     * アイテム検索キーワード(英)
      *
      * @var string
      */
@@ -107,6 +137,7 @@ class Repository_Action_Main_Item_Fillcontributor extends RepositoryAction
     
     /**
      * Form data : text
+     * テキストメタデータ配列
      *
      * @var array
      */
@@ -114,6 +145,7 @@ class Repository_Action_Main_Item_Fillcontributor extends RepositoryAction
     
     /**
      * Form data : textarea
+     * テキストエリアメタデータ配列
      *
      * @var array
      */
@@ -121,6 +153,7 @@ class Repository_Action_Main_Item_Fillcontributor extends RepositoryAction
     
     /**
      * Form data : checkbox
+     * チェックボックスメタデータ配列
      *
      * @var array
      */
@@ -128,6 +161,7 @@ class Repository_Action_Main_Item_Fillcontributor extends RepositoryAction
     
     /**
      * Form data : name(surname)
+     * 氏名メタデータ姓情報配列
      *
      * @var array
      */
@@ -135,6 +169,7 @@ class Repository_Action_Main_Item_Fillcontributor extends RepositoryAction
     
     /**
      * Form data : name(given name)
+     * 氏名メタデータ名前情報配列
      *
      * @var array
      */
@@ -142,6 +177,7 @@ class Repository_Action_Main_Item_Fillcontributor extends RepositoryAction
     
     /**
      * Form data : name(surname ruby)
+     * 氏名メタデータ姓(ルビ)情報配列
      *
      * @var array
      */
@@ -149,6 +185,7 @@ class Repository_Action_Main_Item_Fillcontributor extends RepositoryAction
     
     /**
      * Form data : name(given name ruby)
+     * 氏名メタデータ名前(ルビ)情報配列
      *
      * @var array
      */
@@ -156,6 +193,7 @@ class Repository_Action_Main_Item_Fillcontributor extends RepositoryAction
     
     /**
      * Form data : name(e-mail)
+     * 氏名メタデータメール情報配列
      *
      * @var array
      */
@@ -163,6 +201,7 @@ class Repository_Action_Main_Item_Fillcontributor extends RepositoryAction
     
     /**
      * Form data : name(authorID prefix)
+     * 氏名メタデータ著者PrefixID配列
      *
      * @var array
      */
@@ -170,6 +209,7 @@ class Repository_Action_Main_Item_Fillcontributor extends RepositoryAction
     
     /**
      * Form data : name(authorID suffix)
+     * 氏名メタデータ著者SuffixID配列
      *
      * @var array
      */
@@ -177,6 +217,7 @@ class Repository_Action_Main_Item_Fillcontributor extends RepositoryAction
     
     /**
      * Form data : select
+     * プルダウンメタデータ配列
      *
      * @var array
      */
@@ -184,6 +225,7 @@ class Repository_Action_Main_Item_Fillcontributor extends RepositoryAction
     
     /**
      * Form data : link(value)
+     * リンクメタデータURL情報配列
      *
      * @var array
      */
@@ -191,6 +233,7 @@ class Repository_Action_Main_Item_Fillcontributor extends RepositoryAction
     
     /**
      * Form data : link(name)
+     * リンクメタデータ表示名配列
      *
      * @var array
      */
@@ -198,6 +241,7 @@ class Repository_Action_Main_Item_Fillcontributor extends RepositoryAction
     
     /**
      * Form data : radio
+     * ラジオボタンメタデータ配列
      *
      * @var array
      */
@@ -205,6 +249,7 @@ class Repository_Action_Main_Item_Fillcontributor extends RepositoryAction
     
     /**
      * Form data : biblio_info(title)
+     * 書誌情報メタデータ雑誌名情報配列
      *
      * @var array
      */
@@ -212,6 +257,7 @@ class Repository_Action_Main_Item_Fillcontributor extends RepositoryAction
     
     /**
      * Form data : biblio_info(title_english)
+     * 書誌情報メタデータ雑誌名(英)配列
      *
      * @var array
      */
@@ -219,6 +265,7 @@ class Repository_Action_Main_Item_Fillcontributor extends RepositoryAction
     
     /**
      * Form data : biblio_info(volume)
+     * 書誌情報メタデータ巻情報配列
      *
      * @var array
      */
@@ -226,6 +273,7 @@ class Repository_Action_Main_Item_Fillcontributor extends RepositoryAction
     
     /**
      * Form data : biblio_info(issue)
+     * 書誌情報メタデータ号情報配列
      *
      * @var array
      */
@@ -233,6 +281,7 @@ class Repository_Action_Main_Item_Fillcontributor extends RepositoryAction
     
     /**
      * Form data : biblio_info(start_page)
+     * 書誌情報メタデータ開始ページ情報配列
      *
      * @var array
      */
@@ -240,6 +289,7 @@ class Repository_Action_Main_Item_Fillcontributor extends RepositoryAction
     
     /**
      * Form data : biblio_info(end_page)
+     * 書誌情報メタデータ終了ページ情報配列
      *
      * @var array
      */
@@ -247,6 +297,7 @@ class Repository_Action_Main_Item_Fillcontributor extends RepositoryAction
     
     /**
      * Form data : biblio_info(year)
+     * 書誌情報メタデータ発行年情報配列
      *
      * @var array
      */
@@ -254,6 +305,7 @@ class Repository_Action_Main_Item_Fillcontributor extends RepositoryAction
     
     /**
      * Form data : biblio_info(month)
+     * 書誌情報メタデータ発行月情報配列
      *
      * @var array
      */
@@ -261,6 +313,7 @@ class Repository_Action_Main_Item_Fillcontributor extends RepositoryAction
     
     /**
      * Form data : biblio_info(day)
+     * 書誌情報メタデータ発行日情報配列
      *
      * @var array
      */
@@ -268,6 +321,7 @@ class Repository_Action_Main_Item_Fillcontributor extends RepositoryAction
     
     /**
      * Form data : date(year)
+     * 日付メタデータ年情報配列
      *
      * @var array
      */
@@ -275,6 +329,7 @@ class Repository_Action_Main_Item_Fillcontributor extends RepositoryAction
     
     /**
      * Form data : date(month)
+     * 日付メタデータ月情報配列
      *
      * @var array
      */
@@ -282,6 +337,7 @@ class Repository_Action_Main_Item_Fillcontributor extends RepositoryAction
     
     /**
      * Form data : date(day)
+     * 日付メタデータ日情報配列
      *
      * @var array
      */
@@ -289,6 +345,7 @@ class Repository_Action_Main_Item_Fillcontributor extends RepositoryAction
     
     /**
      * Form data : heading
+     * 見出しメタデータ大見出し情報配列
      *
      * @var array
      */
@@ -296,6 +353,7 @@ class Repository_Action_Main_Item_Fillcontributor extends RepositoryAction
     
     /**
      * Form data : heading(english)
+     * 見出しメタデータ大見出し(英)情報配列
      *
      * @var array
      */
@@ -303,6 +361,7 @@ class Repository_Action_Main_Item_Fillcontributor extends RepositoryAction
     
     /**
      * Form data : subheading
+     * 見出しメタデータ小見出し情報配列
      *
      * @var array
      */
@@ -310,6 +369,7 @@ class Repository_Action_Main_Item_Fillcontributor extends RepositoryAction
     
     /**
      * Form data : subheading(english)
+     * 見出しメタデータ小見出し(英)情報配列
      *
      * @var array
      */
@@ -317,6 +377,7 @@ class Repository_Action_Main_Item_Fillcontributor extends RepositoryAction
     
     /**
      * Form data : contributor radio button select
+     * Contributorボタン選択情報
      *
      * @var int
      */
@@ -324,6 +385,7 @@ class Repository_Action_Main_Item_Fillcontributor extends RepositoryAction
     
     /**
      * Form data : contributor(handle)
+     * Contributorハンドル名
      *
      * @var string
      */
@@ -331,6 +393,7 @@ class Repository_Action_Main_Item_Fillcontributor extends RepositoryAction
     
     /**
      * Form data : contributor(name)
+     * Contributor会員氏名
      *
      * @var string
      */
@@ -338,15 +401,18 @@ class Repository_Action_Main_Item_Fillcontributor extends RepositoryAction
     
     /**
      * Form data : contributor(email)
+     * Contributorメールアドレス
      *
      * @var string
      */
     public $item_contributor_email = null;
     
     /**
-     * 
+     * Execute
+     * 実行
      *
-     * @access  public
+     * @return string "success"/"error" success/failed 成功/失敗
+     * @throws RepositoryException
      */
     function execute()
     {
@@ -426,6 +492,7 @@ class Repository_Action_Main_Item_Fillcontributor extends RepositoryAction
                 }
             }
             echo $str;
+            $this->finalize();
             exit();
         } catch ( RepositoryException $Exception) {
             //エラーログ出力
@@ -445,8 +512,9 @@ class Repository_Action_Main_Item_Fillcontributor extends RepositoryAction
     
     /**
      * Fill suggest data to session
+     * サジェスト情報をセッションにセットする
      *
-     * @param string $fillData
+     * @param string $fillData fill data Fillしてきたデータ
      */
     function fillSuggestData($fillData){
         // Fill data
@@ -461,7 +529,7 @@ class Repository_Action_Main_Item_Fillcontributor extends RepositoryAction
     
     /**
      * Save form data to session
-     *
+     * フォーム入力情報をセッションにセットする
      */
     function saveFormData(){
         // Get session data
@@ -848,8 +916,11 @@ class Repository_Action_Main_Item_Fillcontributor extends RepositoryAction
     
     /**
      * escape JSON
+     * JSON文字列をエスケープする
      *
-     * @param array $index_data
+     * @param string $str JSON string JSON文字列
+     * @param bool $lineFlg new line/or not 改行する/しない
+     * @return string escaped JSON string エスケープ済JSON文字列
      */
     function escapeJSON($str, $lineFlg=false){
         
@@ -868,11 +939,13 @@ class Repository_Action_Main_Item_Fillcontributor extends RepositoryAction
     
     /**
      * Search user data for suggest
+     * サジェスト用のユーザー情報を取得する
      *
-     * @param string $handle
-     * @param string $name
-     * @param string $email
-     * @return array()
+     * @param string $handle handle name ハンドル名
+     * @param string $name name 会員氏名
+     * @param string $email mail address メールアドレス
+     * @return array user data ユーザー情報
+     *                array[$ii]["user_id"|"handle"|"name"|"email"]
      */
     private function searchSuggestData($handle, $name, $email){
         $handle = trim($handle);

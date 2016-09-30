@@ -1,7 +1,15 @@
 <?php
+
+/**
+ * Common processing class for SWORD Service Document
+ * SWORD Service Document用共通処理クラス
+ * 
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: SwordUtility.class.php 24783 2013-08-20 07:31:46Z yuko_nakao $
+// $Id: SwordUtility.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -12,19 +20,58 @@
 // --------------------------------------------------------------------
 
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
+
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
 
 // Add xml escape string 2008/10/15 Y.Nakao --start--
+
 /**
- * SWORD for WEKO Utility
+ * Common processing class for SWORD Service Document
+ * SWORD Service Document用共通処理クラス
+ * 
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class SwordUtility extends RepositoryAction
 {
 	// component
+	
+    /**
+     * Session management objects
+     * Session管理オブジェクト
+     *
+     * @var Session
+     */
 	var $Session = null;
+    /**
+     * Database management objects
+     * データベース管理オブジェクト
+     *
+     * @var DbObject
+     */
 	var $Db = null;
+	/**
+	 * Transaction start date and time
+	 * トランザクション開始日時
+	 *
+	 * @var string
+	 */
 	var $TransStartDate = null;
 	
+	/**
+	 * Constructor
+	 * コンストラクタ
+	 *
+	 * @param Session $session Session management objects Session管理オブジェクト
+	 * @param DbObject $db Database management objects データベース管理オブジェクト
+	 * @param string $ins_date Transaction start date and time トランザクション開始日時
+	 */
 	function SwordUtility($session, $db, $ins_date){
 		if($session!=null){
 			$this->Session = $session;
@@ -40,6 +87,14 @@ class SwordUtility extends RepositoryAction
 
 	// Generate SWORD element for WEKO
     // 2008/11/05 S.Kawasaki
+    /**
+     * To return a fixed value in accordance with the SWORD element
+     * SWORDエレメントに応じた固定値を返却する
+     *
+     * @param string $element Element name エレメント名
+     * @param string $error_msg Error message エラーメッセージ
+     * @return string
+     */
     function generateSwordElements($element, &$error_msg){
     	$value = '';
     	// switch by element name
@@ -64,6 +119,12 @@ class SwordUtility extends RepositoryAction
     
     // Get SWORD Collections for WEKO
     // 2008/11/05 S.Kawasaki
+    /**
+     * Pack the URL of the request for the XML output
+     * XML出力用にリクエストのURLを詰める
+     *
+     * @return unknown
+     */
     function getSwordCollections(){
     	$collections = array();
     	// 2008/11/05 0-th : for WEKO Import
@@ -75,6 +136,16 @@ class SwordUtility extends RepositoryAction
 	// $workspace['workspace']       : Repository Common Information
 	// $workspace['collections'][ii] : ii-th Collection Information
 	// 2008/11/10 S.Kawasaki
+	/**
+	 * To obtain information for the XML output
+	 * XML出力用の情報を取得する
+	 *
+	 * @param array $workspace Information for the XML output XML出力用の情報
+	 *                         array["workspace"]["repository_name"|"noOp"|"verbose"|"level"|"version"|"maxUploadSize"]
+	 *                         array["collections"][$ii]["collection"|"repository_name"|"collection_name"|"accept"|"abstract"|"collectionPolicy"|"formatNamespace"|"treatment"|"mediation"|"acceptPackaging"|"acceptPackaging"|"service"]
+	 * @param string $Error_Msg Error message エラーメッセージ
+	 * @return boolean Get results 取得結果
+	 */
 	function getSwordWorkspace(&$workspace,&$Error_Msg)
 	{
 		$workspace = array();	// output value, workspace
@@ -127,8 +198,6 @@ class SwordUtility extends RepositoryAction
 		// V1.2 => V1.3 : <sword:level> removed...
 //	    $root['level']           = '1';								// Server Level	
 		// V1.2 => V1.3 : <sword:version> added.(mandately)
-        // change 2.0 > '2.0' 2015/11/13 mhaya
-        // V2.0 : The SWORD server MUST specify the sword:version element with a value of 2.0
 	    $root['version']         = '2.0';								// Server Version
 	    // V1.2 => V1.3 : <sword:maxUploadSize> added.(option)
 	    $root['maxUploadSize']   = intval($upload_max_capacity_group)/1024;	// maxUploadSize (KB)	

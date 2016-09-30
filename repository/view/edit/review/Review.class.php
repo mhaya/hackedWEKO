@@ -1,7 +1,15 @@
 <?php
+
+/**
+ * View class for peer review and approval screen display
+ * 査読・承認画面表示用ビュークラス
+ *
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Review.class.php 1603 2010-10-05 06:03:04Z atsushi_suzuki $
+// $Id: Review.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -12,35 +20,80 @@
 // --------------------------------------------------------------------
 
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
 
+
 /**
- * [[機能説明]]
+ * View class for peer review and approval screen display
+ * 査読・承認画面表示用ビュークラス
  *
- * @package     [[package名]]
- * @access      public
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class Repository_View_Edit_Review extends RepositoryAction
 {
 	// セッションとデータベースのオブジェクトを受け取る
+    /**
+     * Session management objects
+     * Session管理オブジェクト
+     *
+     * @var Session
+     */
     var $Session = null;
+    /**
+     * Database management objects
+     * データベース管理オブジェクト
+     *
+     * @var DbObject
+     */
     var $Db = null;
 	
     // htmlの表示に使用
+    /**
+     * 
+     * アイテムレビュー情報
+     *
+     * @var array[$ii]["title"|"title_en"|"item_type_name"|"item_id"|"item_no"]
+     */
     var $item_review_info = null;
     
-    
+    /**
+     * 
+     * サプリレビュー情報
+     *
+     * @var array[$ii]["supple_title"|"supple_title_en"|"item_title"|"item_title_en"|"item_id"|"item_no"|"attribute_id"|"supple_no"|"supple_url"]
+     */
     var $supple_review_info = null;
+    /**
+     * active tab info
+     * 選択されているタブ情報
+     *
+     * @var int
+     */
 	var $review_active_tab	= null;	// 選択されているタブ情報 active tab info
     
     // Set help icon setting 2010/02/10 K.Ando --start--
+    /**
+     * Help icon display flag
+     * ヘルプアイコン表示フラグ
+     *
+     * @var int
+     */
     var $help_icon_display =  null;
     // Set help icon setting 2010/02/10 K.Ando --end--
 	
 	/**
-     * [[機能説明]]
+     * Peer review and approval screen display
+     * 査読・承認画面表示
      *
      * @access  public
+     * @return string Result 結果
      */
     function execute()
     {
@@ -252,7 +305,7 @@ class Repository_View_Edit_Review extends RepositoryAction
 	            throw $exception;
 			}
 	        // Set help icon setting 2010/02/10 K.Ando --end--
-
+            $this->finalize();
 			return 'success';
     	}
 		catch ( RepositoryException $Exception) {

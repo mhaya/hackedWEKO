@@ -1,248 +1,1106 @@
 <?php
+
+/**
+ * Search query generate class
+ * 検索クエリ作成クラス
+ *
+ * @package     WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: QueryGenerator.class.php 53594 2015-05-28 05:25:53Z kaede_matsushita $
+// $Id: QueryGenerator.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
-// Copyright (c) 2007 - 2008, National Institute of Informatics, 
+// Copyright (c) 2007 - 2008, National Institute of Informatics,
 // Research and Development Center for Scientific Information Resources
 //
 // This program is licensed under a Creative Commons BSD Licence
 // http://creativecommons.org/licenses/BSD/
 //
 // --------------------------------------------------------------------
+/**
+ * Query generator interface
+ * クエリ作成クラスインターフェース
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/QueryGeneratorInterFace.class.php';
+/**
+ * WEKO business factory class
+ * WEKO用ファクトリークラス
+ */
+require_once WEBAPP_DIR.'/modules/repository/components/FW/WekoBusinessFactory.class.php';
 
 /**
- * repository search class
- * 
+ * Search query generate class
+ * 検索クエリ作成クラス
+ *
+ * @package     WEKO
+ * @copyright   (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license     http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access      public
  */
 class Repository_Components_Querygenerator implements Repository_Components_Querygeneratorinterface
 {
     // search table name
+    /**
+     * Search table name const
+     * 検索テーブル名
+     */
     const ALLMETADATA_TABLE = "repository_search_allmetadata";
+    /**
+     * Search table name const
+     * 検索テーブル名
+     */
     const FILEDATA_TABLE = "repository_search_filedata";
+    /**
+     * Search table name const
+     * 検索テーブル名
+     */
     const TITLE_TABLE = "repository_search_title";
+    /**
+     * Search table name const
+     * 検索テーブル名
+     */
     const AUTHOR_TABLE = "repository_search_author";
+    /**
+     * Search table name const
+     * 検索テーブル名
+     */
     const KEYWORD_TABLE = "repository_search_keyword";
+    /**
+     * Search table name const
+     * 検索テーブル名
+     */
     const NIISUBJECT_TABLE = "repository_search_niisubject";
+    /**
+     * Search table name const
+     * 検索テーブル名
+     */
     const NDC_TABLE = "repository_search_ndc";
+    /**
+     * Search table name const
+     * 検索テーブル名
+     */
     const NDLC_TABLE = "repository_search_ndlc";
+    /**
+     * Search table name const
+     * 検索テーブル名
+     */
     const BSH_TABLE = "repository_search_bsh";
+    /**
+     * Search table name const
+     * 検索テーブル名
+     */
     const NDLSH_TABLE = "repository_search_ndlsh";
+    /**
+     * Search table name const
+     * 検索テーブル名
+     */
     const MESH_TABLE = "repository_search_mesh";
+    /**
+     * Search table name const
+     * 検索テーブル名
+     */
     const DDC_TABLE = "repository_search_ddc";
+    /**
+     * Search table name const
+     * 検索テーブル名
+     */
     const LCC_TABLE = "repository_search_lcc";
+    /**
+     * Search table name const
+     * 検索テーブル名
+     */
     const UDC_TABLE = "repository_search_udc";
+    /**
+     * Search table name const
+     * 検索テーブル名
+     */
     const LCSH_TABLE = "repository_search_lcsh";
+    /**
+     * Search table name const
+     * 検索テーブル名
+     */
     const DESCTIPTION_TABLE = "repository_search_description";
+    /**
+     * Search table name const
+     * 検索テーブル名
+     */
     const PUBLISHER_TABLE = "repository_search_publisher";
+    /**
+     * Search table name const
+     * 検索テーブル名
+     */
     const CONTRIBUTOR_TABLE = "repository_search_contributor";
+    /**
+     * Search table name const
+     * 検索テーブル名
+     */
     const DATE_TABLE = "repository_search_date";
+    /**
+     * Search table name const
+     * 検索テーブル名
+     */
     const TYPE_TABLE = "repository_search_type";
+    /**
+     * Search table name const
+     * 検索テーブル名
+     */
     const FORMAT_TABLE = "repository_search_format";
+    /**
+     * Search table name const
+     * 検索テーブル名
+     */
     const IDENTIFER_TABLE = "repository_search_identifier";
+    /**
+     * Search table name const
+     * 検索テーブル名
+     */
     const URI_TABLE = "repository_search_uri";
+    /**
+     * Search table name const
+     * 検索テーブル名
+     */
     const FULLTEXTURL_TABLE = "repository_search_fulltexturl";
+    /**
+     * Search table name const
+     * 検索テーブル名
+     */
     const SELFDOI_TABLE = "repository_search_selfdoi";
+    /**
+     * Search table name const
+     * 検索テーブル名
+     */
     const ISBN_TABLE = "repository_search_isbn";
+    /**
+     * Search table name const
+     * 検索テーブル名
+     */
     const ISSN_TABLE = "repository_search_issn";
+    /**
+     * Search table name const
+     * 検索テーブル名
+     */
     const NCID_TABLE = "repository_search_ncid";
+    /**
+     * Search table name const
+     * 検索テーブル名
+     */
     const PMID_TABLE = "repository_search_pmid";
+    /**
+     * Search table name const
+     * 検索テーブル名
+     */
     const DOI_TABLE = "repository_search_doi";
+    /**
+     * Search table name const
+     * 検索テーブル名
+     */
     const NAID_TABLE = "repository_search_naid";
+    /**
+     * Search table name const
+     * 検索テーブル名
+     */
     const ICHUSHI_TABLE = "repository_search_ichushi";
+    /**
+     * Search table name const
+     * 検索テーブル名
+     */
     const JTITLE_TABLE = "repository_search_jtitle";
+    /**
+     * Search table name const
+     * 検索テーブル名
+     */
     const DATAODISSUED_TABLE = "repository_search_dateofissued";
+    /**
+     * Search table name const
+     * 検索テーブル名
+     */
     const LANGUAGE_TABLE = "repository_search_language";
+    /**
+     * Search table name const
+     * 検索テーブル名
+     */
     const RELATION_TABLE = "repository_search_relation";
+    /**
+     * Search table name const
+     * 検索テーブル名
+     */
     const COVERAGE_TABLE = "repository_search_coverage";
+    /**
+     * Search table name const
+     * 検索テーブル名
+     */
     const RIGHTS_TABLE = "repository_search_rights";
+    /**
+     * Search table name const
+     * 検索テーブル名
+     */
     const TEXTVERSION_TABLE = "repository_search_textversion";
+    /**
+     * Search table name const
+     * 検索テーブル名
+     */
     const GRANTID_TABLE = "repository_search_grantid";
+    /**
+     * Search table name const
+     * 検索テーブル名
+     */
     const DATEOFGRANTED_TABLE = "repository_search_dateofgranted";
+    /**
+     * Search table name const
+     * 検索テーブル名
+     */
     const DEGREENAME_TABLE = "repository_search_degreename";
+    /**
+     * Search table name const
+     * 検索テーブル名
+     */
     const GRANTOR_TABLE = "repository_search_grantor";
+    /**
+     * Sort table name
+     * ソートテーブル名
+     */
     const SORT_TABLE = "repository_search_sort";
+    /**
+     * Item table
+     * アイテムテーブル
+     */
     const ITEM_TABLE = "repository_item";
+    /**
+     * Position index table
+     * 所属インデックステーブル
+     */
     const POS_INDEX_TABLE = "repository_position_index";
+    /**
+     * Index table
+     * インデックステーブル
+     */
     const INDEX_TABLE = "repository_index";
+    /**
+     * Index browsing authority table
+     * インデックス閲覧権限テーブル
+     */
     const INDEX_RIGHT_TABLE = "repository_index_browsing_authority";
+    /**
+     * Index browsing group table
+     * インデックス閲覧グループテーブル
+     */
     const INDEX_GROUP_TABLE = "repository_index_browsing_groups";
+    /**
+     * Item type table
+     * アイテムタイプテーブル
+     */
     const ITEMTYPE_TABLE = "repository_item_type";
+    /**
+     * File table
+     * ファイルテーブル
+     */
     const FILE_TABLE = "repository_file";
+    /**
+     * Suffix table
+     * サフィックステーブル
+     */
     const SUFFIX_TABLE = "repository_suffix";
+    /**
+     * Search table name const
+     * 検索テーブル名
+     */
     const DATEOFISSUED_YMD_TABLE = "repository_search_dateofissued_ymd";
-    
+    /**
+     * Name of personal name table
+     * 氏名テーブルのテーブル名
+     */
+    const PERSONAL_NAME_TABLE = "repository_personal_name";
+
+    /**
+     * Search table short name const
+     * 検索テーブル短縮名
+     */
     const ALL_TABLE_SHORT_NAME = "allmeta";
+    /**
+     * Search table short name const
+     * 検索テーブル短縮名
+     */
     const FILEDATA_TABLE_SHORT_NAME = "filedata";
+    /**
+     * Search table short name const
+     * 検索テーブル短縮名
+     */
     const TITLE_TABLE_SHORT_NAME = "title";
+    /**
+     * Search table short name const
+     * 検索テーブル短縮名
+     */
     const AUTHOR_TABLE_SHORT_NAME = "auth";
+    /**
+     * Search table short name const
+     * 検索テーブル短縮名
+     */
     const KEYWORD_TABLE_SHORT_NAME = "kw";
+    /**
+     * Search table short name const
+     * 検索テーブル短縮名
+     */
     const NIISUBJECT_TABLE_SHORT_NAME = "niisubj";
+    /**
+     * Search table short name const
+     * 検索テーブル短縮名
+     */
     const NDC_TABLE_SHORT_NAME = "ndc";
+    /**
+     * Search table short name const
+     * 検索テーブル短縮名
+     */
     const NDLC_TABLE_SHORT_NAME = "ndlc";
+    /**
+     * Search table short name const
+     * 検索テーブル短縮名
+     */
     const BSH_TABLE_SHORT_NAME = "bsh";
+    /**
+     * Search table short name const
+     * 検索テーブル短縮名
+     */
     const NDLSH_TABLE_SHORT_NAME = "ndlsh";
+    /**
+     * Search table short name const
+     * 検索テーブル短縮名
+     */
     const MESH_TABLE_SHORT_NAME = "mesh";
+    /**
+     * Search table short name const
+     * 検索テーブル短縮名
+     */
     const DDC_TABLE_SHORT_NAME = "ddc";
+    /**
+     * Search table short name const
+     * 検索テーブル短縮名
+     */
     const LCC_TABLE_SHORT_NAME = "lcc";
+    /**
+     * Search table short name const
+     * 検索テーブル短縮名
+     */
     const UDC_TABLE_SHORT_NAME = "udc";
+    /**
+     * Search table short name const
+     * 検索テーブル短縮名
+     */
     const LCSH_TABLE_SHORT_NAME = "lcsh";
+    /**
+     * Search table short name const
+     * 検索テーブル短縮名
+     */
     const DESCTIPTION_TABLE_SHORT_NAME = "descr";
+    /**
+     * Search table short name const
+     * 検索テーブル短縮名
+     */
     const PUBLISHER_TABLE_SHORT_NAME = "pub";
+    /**
+     * Search table short name const
+     * 検索テーブル短縮名
+     */
     const CONTRIBUTOR_TABLE_SHORT_NAME = "contr";
+    /**
+     * Search table short name const
+     * 検索テーブル短縮名
+     */
     const DATE_TABLE_SHORT_NAME = "date";
+    /**
+     * Search table short name const
+     * 検索テーブル短縮名
+     */
     const TYPE_TABLE_SHORT_NAME = "type";
+    /**
+     * Search table short name const
+     * 検索テーブル短縮名
+     */
     const FORMAT_TABLE_SHORT_NAME = "form";
+    /**
+     * Search table short name const
+     * 検索テーブル短縮名
+     */
     const IDENTIFER_TABLE_SHORT_NAME = "id";
+    /**
+     * Search table short name const
+     * 検索テーブル短縮名
+     */
     const URI_TABLE_SHORT_NAME = "uri";
+    /**
+     * Search table short name const
+     * 検索テーブル短縮名
+     */
     const FULLTEXTURL_TABLE_SHORT_NAME = "fullurl";
+    /**
+     * Search table short name const
+     * 検索テーブル短縮名
+     */
     const SELFDOI_TABLE_SHORT_NAME = "selfdoi";
+    /**
+     * Search table short name const
+     * 検索テーブル短縮名
+     */
     const ISBN_TABLE_SHORT_NAME = "isbn";
+    /**
+     * Search table short name const
+     * 検索テーブル短縮名
+     */
     const ISSN_TABLE_SHORT_NAME = "issn";
+    /**
+     * Search table short name const
+     * 検索テーブル短縮名
+     */
     const NCID_TABLE_SHORT_NAME = "ncid";
+    /**
+     * Search table short name const
+     * 検索テーブル短縮名
+     */
     const PMID_TABLE_SHORT_NAME = "pmid";
+    /**
+     * Search table short name const
+     * 検索テーブル短縮名
+     */
     const DOI_TABLE_SHORT_NAME = "doi";
+    /**
+     * Search table short name const
+     * 検索テーブル短縮名
+     */
     const NAID_TABLE_SHORT_NAME = "naid";
+    /**
+     * Search table short name const
+     * 検索テーブル短縮名
+     */
     const ICHUSHI_TABLE_SHORT_NAME = "ichushi";
+    /**
+     * Search table short name const
+     * 検索テーブル短縮名
+     */
     const JTITLE_TABLE_SHORT_NAME = "jtitle";
+    /**
+     * Search table short name const
+     * 検索テーブル短縮名
+     */
     const DATAODISSUED_TABLE_SHORT_NAME = "dtissue";
+    /**
+     * Search table short name const
+     * 検索テーブル短縮名
+     */
     const LANGUAGE_TABLE_SHORT_NAME = "lang";
+    /**
+     * Search table short name const
+     * 検索テーブル短縮名
+     */
     const RELATION_TABLE_SHORT_NAME = "cove";
+    /**
+     * Search table short name const
+     * 検索テーブル短縮名
+     */
     const COVERAGE_TABLE_SHORT_NAME = "relat";
+    /**
+     * Search table short name const
+     * 検索テーブル短縮名
+     */
     const RIGHTS_TABLE_SHORT_NAME = "rights";
+    /**
+     * Search table short name const
+     * 検索テーブル短縮名
+     */
     const TEXTVERSION_TABLE_SHORT_NAME = "textv";
+    /**
+     * Search table short name const
+     * 検索テーブル短縮名
+     */
     const GRANTID_TABLE_SHORT_NAME = "grantid";
+    /**
+     * Search table short name const
+     * 検索テーブル短縮名
+     */
     const DATEOFGRANTED_TABLE_SHORT_NAME = "dtgrant";
+    /**
+     * Search table short name const
+     * 検索テーブル短縮名
+     */
     const DEGREENAME_TABLE_SHORT_NAME = "dgname";
+    /**
+     * Search table short name const
+     * 検索テーブル短縮名
+     */
     const GRANTOR_TABLE_SHORT_NAME = "grantor";
+    /**
+     * Sort table short name
+     * ソートテーブル短縮名
+     */
     const SORT_TABLE_SHORT_NAME = "sort";
+    /**
+     * Item table short name
+     * アイテムテーブル短縮名
+     */
     const ITEM_TABLE_SHORT_NAME = "item";
+    /**
+     * Position index table short name
+     * 所属インデックステーブル短縮名
+     */
     const POS_INDEX_TABLE_SHORT_NAME = "pos";
+    /**
+     * Index table short name
+     * インデックステーブル短縮名
+     */
     const INDEX_TABLE_SHORT_NAME = "idx";
+    /**
+     * Index browsing authority table short name
+     * インデックス権限テーブル短縮名
+     */
     const INDEX_RIGHT_TABLE_SHORT_NAME = "idxrt";
+    /**
+     * Index browsing group table short name
+     * インデックスグループテーブル短縮名
+     */
     const INDEX_GROUP_TABLE_SHORT_NAME = "idxgr";
+    /**
+     * Item type table short name
+     * アイテムタイプテーブル短縮名
+     */
     const ITEMTYPE_TABLE_SHORT_NAME = "itemtype";
+    /**
+     * File table short name
+     * ファイルテーブル短縮名
+     */
     const FILE_TABLE_SHORT_NAME = "file";
+    /**
+     * Search table short name const
+     * 検索テーブル短縮名
+     */
     const DATEOFISSUED_YMD_TABLE_SHORT_NAME = "pubdate";
+    /**
+     * Suffix table short name
+     * サフィックステーブル短縮名
+     */
     const SUFFIX_TABLE_SHORT_NAME = "suf";
+    /**
+     * External search word table
+     * 外部検索キーワードテーブル
+     */
     const EXTERNAL_SEARCHWORD_TABLE = "repository_search_external_searchword";
+    /**
+     * External search word table short name
+     * 外部検索キーワードテーブル短縮名
+     */
     const EXTERNAL_SEARCHWORD_TABLE_SHORT_NAME = "externalsearch";
-    
+    /**
+     * Short name of personal name table
+     * 氏名テーブルのテーブル省略名
+     */
+    const PERSONAL_NAME_TABLE_SHORT_NAME = "name";
+
+    /**
+     * title ASC
+     * タイトル昇順
+     */
     const ORDER_TITLE_ASC           =  1;
+    /**
+     * title DESC
+     * タイトル降順
+     */
     const ORDER_TITLE_DESC          =  2;
+    /**
+     * Insert user ID ASC
+     * 登録ユーザーID昇順
+     */
     const ORDER_INS_USER_ASC        =  3;
+    /**
+     * Insert user ID DESC
+     * 登録ユーザーID降順
+     */
     const ORDER_INS_USER_DESC       =  4;
+    /**
+     * Item type ID ASC
+     * アイテムタイプID昇順
+     */
     const ORDER_ITEM_TYPE_ID_ASC    =  5;
+    /**
+     * Item type ID DESC
+     * アイテムタイプID降順
+     */
     const ORDER_ITEM_TYPE_ID_DESC   =  6;
+    /**
+     * WEKO ID ASC
+     * WEKO ID昇順
+     */
     const ORDER_WEKO_ID_ASC         =  7;
+    /**
+     * WEKO ID DESC
+     * WEKO ID降順
+     */
     const ORDER_WEKO_ID_DESC        =  8;
+    /**
+     * Mod date ASC
+     * 更新日時昇順
+     */
     const ORDER_MOD_DATE_ASC        =  9;
+    /**
+     * Mod date DESC
+     * 更新日時降順
+     */
     const ORDER_MOD_DATE_DESC       = 10;
+    /**
+     * Insert date ASC
+     * 登録日時昇順
+     */
     const ORDER_INS_DATE_ASC        = 11;
+    /**
+     * Insert date DESC
+     * 登録日時降順
+     */
     const ORDER_INS_DATE_DESC       = 12;
+    /**
+     * Review date ASC
+     * 査読日時昇順
+     */
     const ORDER_REVIEW_DATE_ASC     = 13;
+    /**
+     * Review date DESC
+     * 査読日時降順
+     */
     const ORDER_REVIEW_DATE_DESC    = 14;
+    /**
+     * Date of issued ASC
+     * 発行年月日昇順
+     */
     const ORDER_DATEOFISSUED_ASC    = 15;
+    /**
+     * Date of issued DESC
+     * 発行年月日昇降順
+     */
     const ORDER_DATEOFISSUED_DESC   = 16;
+    /**
+     * Custom sort order ASC
+     * カスタムソート順序昇順
+     */
     const ORDER_CUSTOM_SORT_ASC     = 17;
+    /**
+     * Custom sort order DESC
+     * カスタムソート順序降順
+     */
     const ORDER_CUSTOM_SORT_DESC    = 18;
     
     // request parameter
+    /**
+     * Search request parameter key
+     * 検索リクエストパラメータキー
+     */
     const REQUEST_META = "meta";
+    /**
+     * Search request parameter key
+     * 検索リクエストパラメータキー
+     */
     const REQUEST_ALL = "all";
+    /**
+     * Search request parameter key
+     * 検索リクエストパラメータキー
+     */
     const REQUEST_TITLE = "title";
+    /**
+     * Search request parameter key
+     * 検索リクエストパラメータキー
+     */
     const REQUEST_CREATOR = "creator";
+    /**
+     * Search request parameter key
+     * 検索リクエストパラメータキー
+     */
     const REQUEST_KEYWORD = "kw";
+    /**
+     * Search request parameter key
+     * 検索リクエストパラメータキー
+     */
     const REQUEST_SUBJECT_LIST = "scList";
+    /**
+     * Search request parameter key
+     * 検索リクエストパラメータキー
+     */
     const REQUEST_SUBJECT_DESC = "scDes";
+    /**
+     * Search request parameter key
+     * 検索リクエストパラメータキー
+     */
     const REQUEST_DESCRIPTION = "des";
+    /**
+     * Search request parameter key
+     * 検索リクエストパラメータキー
+     */
     const REQUEST_PUBLISHER = "pub";
+    /**
+     * Search request parameter key
+     * 検索リクエストパラメータキー
+     */
     const REQUEST_CONTRIBUTOR = "con";
+    /**
+     * Search request parameter key
+     * 検索リクエストパラメータキー
+     */
     const REQUEST_DATE = "date";
+    /**
+     * Search request parameter key
+     * 検索リクエストパラメータキー
+     */
     const REQUEST_ITEMTYPE_LIST = "itemTypeList";
+    /**
+     * Search request parameter key
+     * 検索リクエストパラメータキー
+     */
     const REQUEST_TYPE_LIST = "typeList";
+    /**
+     * Search request parameter key
+     * 検索リクエストパラメータキー
+     */
     const REQUEST_FORMAT = "form";
+    /**
+     * Search request parameter key
+     * 検索リクエストパラメータキー
+     */
     const REQUEST_ID_LIST = "idList";
+    /**
+     * Search request parameter key
+     * 検索リクエストパラメータキー
+     */
     const REQUEST_ID_DESC = "idDes";
+    /**
+     * Search request parameter key
+     * 検索リクエストパラメータキー
+     */
     const REQUEST_JTITLE = "jtitle";
+    /**
+     * Search request parameter key
+     * 検索リクエストパラメータキー
+     */
     const REQUEST_PUBYEAR_FROM = "pubYearFrom";
+    /**
+     * Search request parameter key
+     * 検索リクエストパラメータキー
+     */
     const REQUEST_PUBYEAR_UNTIL = "pubYearUntil";
+    /**
+     * Search request parameter key
+     * 検索リクエストパラメータキー
+     */
     const REQUEST_LANGUAGE = "ln";
+    /**
+     * Search request parameter key
+     * 検索リクエストパラメータキー
+     */
     const REQUEST_AREA = "sp";
+    /**
+     * Search request parameter key
+     * 検索リクエストパラメータキー
+     */
     const REQUEST_ERA = "era";
+    /**
+     * Search request parameter key
+     * 検索リクエストパラメータキー
+     */
     const REQUEST_RIGHT_LIST = "riList";
+    /**
+     * Search request parameter key
+     * 検索リクエストパラメータキー
+     */
     const REQUEST_RITHT_DESC = "riDes";
+    /**
+     * Search request parameter key
+     * 検索リクエストパラメータキー
+     */
     const REQUEST_TEXTVERSION = "textver";
+    /**
+     * Search request parameter key
+     * 検索リクエストパラメータキー
+     */
     const REQUEST_GRANTID = "grantid";
+    /**
+     * Search request parameter key
+     * 検索リクエストパラメータキー
+     */
     const REQUEST_GRANTDATE_FROM = "grantDateFrom";
+    /**
+     * Search request parameter key
+     * 検索リクエストパラメータキー
+     */
     const REQUEST_GRANTDATE_UNTIL = "grantDateUntil";
+    /**
+     * Search request parameter key
+     * 検索リクエストパラメータキー
+     */
     const REQUEST_DEGREENAME = "degreename";
+    /**
+     * Search request parameter key
+     * 検索リクエストパラメータキー
+     */
     const REQUEST_GRANTOR = "grantor";
+    /**
+     * Search request parameter key
+     * 検索リクエストパラメータキー
+     */
     const REQUEST_IDX = "idx";
+    /**
+     * Search request parameter key
+     * 検索リクエストパラメータキー
+     */
     const REQUEST_SHOWORDER = "order";
+    /**
+     * Search request parameter key
+     * 検索リクエストパラメータキー
+     */
     const REQUEST_COUNT = "count";
+    /**
+     * Search request parameter key
+     * 検索リクエストパラメータキー
+     */
     const REQUEST_PAGENO = "pn";
+    /**
+     * Search request parameter key
+     * 検索リクエストパラメータキー
+     */
     const REQUEST_LIST_RECORDS = "listRecords";
+    /**
+     * Search request parameter key
+     * 検索リクエストパラメータキー
+     */
     const REQUEST_OUTPUT_TYPE = "format";
+    /**
+     * Search request parameter key
+     * 検索リクエストパラメータキー
+     */
     const REQUEST_INDEX_ID = "index_id";
+    /**
+     * Search request parameter key
+     * 検索リクエストパラメータキー
+     */
     const REQUEST_PAGE_ID = "page_id";
+    /**
+     * Search request parameter key
+     * 検索リクエストパラメータキー
+     */
     const REQUEST_BLOCK_ID = "block_id";
+    /**
+     * Search request parameter key
+     * 検索リクエストパラメータキー
+     */
     const REQUEST_WEKO_ID = "weko_id";
+    /**
+     * Search request parameter key
+     * 検索リクエストパラメータキー
+     */
     const REQUEST_ITEM_IDS = "item_ids";
+    /**
+     * Search request parameter key
+     * 検索リクエストパラメータキー
+     */
     const REQUEST_DISPLAY_LANG = "lang";
+    /**
+     * Search request parameter key
+     * 検索リクエストパラメータキー
+     */
     const REQUEST_SEARCH_TYPE = "st";
+    /**
+     * Search request parameter key
+     * 検索リクエストパラメータキー
+     */
     const REQUEST_MODULE_ID = "module_id";
+    /**
+     * Search request parameter key
+     * 検索リクエストパラメータキー
+     */
     const REQUEST_HEADER = "_header";
+    /**
+     * Search request parameter key
+     * 検索リクエストパラメータキー
+     */
     const REQUEST_OLD_SEARCH_TYPE = "search_type";
+    /**
+     * Search request parameter key
+     * 検索リクエストパラメータキー
+     */
     const REQUEST_OLD_KEYWORD = "keyword";
+    /**
+     * Search request parameter key
+     * 検索リクエストパラメータキー
+     */
     const REQUEST_OLD_PAGENO = "page_no";
+    /**
+     * Search request parameter key
+     * 検索リクエストパラメータキー
+     */
     const REQUEST_OLD_COUNT = "list_view_num";
+    /**
+     * Search request parameter key
+     * 検索リクエストパラメータキー
+     */
     const REQUEST_OLD_SHOWORDER = "sort_order";
     // Add OpenSearch WekoId K.Matsuo 2014/04/04 --start--
+    /**
+     * Search request parameter key
+     * 検索リクエストパラメータキー
+     */
     const REQUEST_PUBDATE_FROM = "pubDateFrom";
+    /**
+     * Search request parameter key
+     * 検索リクエストパラメータキー
+     */
     const REQUEST_PUBDATE_UNTIL = "pubDateUntil";
     // Add OpenSearch WekoId K.Matsuo 2014/04/04 --end--
+    /**
+     * Key of request parameter for WEKO author id
+     * WEKO著者ID用のリクエストパラメータのキー
+     */
+    const REQUEST_WEKO_AUTHOR_ID = "wekoAuthorId";
     
     // search type ID
+    /**
+     * NII subject ID
+     * NII subject ID
+     */
     const NIISUBJECT_ID = 1;
+    /**
+     * NDC ID
+     * NDC ID
+     */
     const NDC_ID = 2;
+    /**
+     * NDLC ID
+     * NDLC ID
+     */
     const NDLC_ID = 3;
+    /**
+     * BSH ID
+     * BSH ID
+     */
     const BSH_ID = 4;
+    /**
+     * NDLSH ID
+     * NDLSH ID
+     */
     const NDLSH_ID = 5;
+    /**
+     * MESH ID
+     * MESH ID
+     */
     const MESH_ID = 6;
+    /**
+     * DDC ID
+     * DDC ID
+     */
     const DDC_ID = 7;
+    /**
+     * LCC ID
+     * LCC ID
+     */
     const LCC_ID = 8;
+    /**
+     * UDC ID
+     * UDC ID
+     */
     const UDC_ID = 9;
+    /**
+     * LCSH ID
+     * LCSH ID
+     */
     const LCSH_ID = 10;
+    /**
+     * Identifier ID
+     * Identifier ID
+     */
     const IDENTIFER_ID = 1;
+    /**
+     * URI ID
+     * URI ID
+     */
     const URI_ID = 2;
+    /**
+     * FullText ID
+     * FullText ID
+     */
     const FULLTEXTURL_ID = 3;
+    /**
+     * selfDOI ID
+     * selfDOI ID
+     */
     const SELFDOI_ID = 4;
+    /**
+     * ISBN ID
+     * ISBN ID
+     */
     const ISBN_ID = 5;
+    /**
+     * ISSN ID
+     * ISSN ID
+     */
     const ISSN_ID = 6;
+    /**
+     * NCID ID
+     * NCID ID
+     */
     const NCID_ID = 7;
+    /**
+     * PMID ID
+     * PMID ID
+     */
     const PMID_ID = 8;
+    /**
+     * DOI ID
+     * DOI ID
+     */
     const DOI_ID = 9;
+    /**
+     * NAID ID
+     * NAID ID
+     */
     const NAID_ID = 10;
+    /**
+     * ICHUSHI ID
+     * 医中誌ID
+     */
     const ICHUSHI = 11;
-    
+
+    /**
+     * Inner join flag string
+     * InnerJoinフラグ文字列
+     */
     const INNER_JOIN = "innerJoin";
     
     /**
      * set fulltext index flag
+     * フルテキストインデックスフラグ
      *
      * @var bool
      */
     private $setTableList = false;
-    
+    /**
+     * Table prefix
+     * テーブル名プレフィックス文字列
+     *
+     * @var string
+     */
     public $db_prefix = null;
+    /**
+     * User ID
+     * ユーザーID
+     *
+     * @var string
+     */
     public $user_id = null;
+    /**
+     * Search engine
+     * 検索エンジン
+     *
+     * @var string
+     */
     public $searchEngine = null;
     
     
     /**
      * construct
+     * コンストラクタ
+     *
+     * @param string $db_prefix table prefix テーブル名プレフィックス文字列
      */
     function __construct($db_prefix)
     {
@@ -251,10 +1109,13 @@ class Repository_Components_Querygenerator implements Repository_Components_Quer
     
     /**
      * create detail search Query
+     * 詳細検索クエリ文字列を作成する
      *
-     * @param SearchQueryParameter I   information for search
-     * @param string               I/O search query
-     * @param array                I/O search query parameter
+     * @param SearchQueryParameter $searchInfo search parameter object 検索パラメータオブジェクト
+     * @param string               $searchQuery search query string 検索クエリ文字列
+     * @param array                $connectQueryParam search qeury parameter 検索クエリパラメータ
+     *                                                        array[$ii]
+     * @return bool true/false success/failed 成功/失敗
      */
     public function createDetailSearchQuery($searchInfo, &$searchQuery, &$connectQueryParam)
     {
@@ -318,20 +1179,33 @@ class Repository_Components_Querygenerator implements Repository_Components_Quer
         foreach($searchInfo->search_term as $request => $value){
             switch($request){
                 case self::REQUEST_META:
+                    $tmpTermQuery = "";
+                    if($connectFlag){
+                        $tmpTermQuery .= "AND ((";
+                    } else {
+                        $tmpTermQuery .= "WHERE ((";
+                    }
+                    $tmpFlag = true;
+                    $andor = "";
                     $result1 = $this->createFullTextQuery(self::SORT_TABLE_SHORT_NAME, self::ALLMETADATA_TABLE, self::ALL_TABLE_SHORT_NAME, $value, 
-                                               "AND", "AND", $connectQuery, $connectTermQuery, $connectQueryParam, $connectFlag, $connectType);
+                                               $andor, "AND", $connectQuery, $tmpTermQuery, $connectQueryParam, $tmpFlag, $connectType);
+                    if($result1){
+                        $andor = "OR";
+                    }
                     $result2 = $this->createFullTextQuery(self::SORT_TABLE_SHORT_NAME, self::EXTERNAL_SEARCHWORD_TABLE, self::EXTERNAL_SEARCHWORD_TABLE_SHORT_NAME, $value, 
-                                               "OR", "AND", $connectQuery, $connectTermQuery, $connectQueryParam, $connectFlag, $connectType, $request);
+                                               $andor, "AND", $connectQuery, $tmpTermQuery, $connectQueryParam, $tmpFlag, $connectType, $request);
                     if($result1 || $reuslt2){
+                        $connectTermQuery .= $tmpTermQuery .")) ";
+                        $connectFlag = true;
                         $searchFlag = true;
                     }
                     break;
                 case self::REQUEST_ALL:
                     $tmpTermQuery = "";
                     if($connectFlag){
-                        $tmpTermQuery .= "AND (";
+                        $tmpTermQuery .= "AND ((";
                     } else {
-                        $tmpTermQuery .= "WHERE (";
+                        $tmpTermQuery .= "WHERE ((";
                     }
                     $tmpFlag = true;
                     $andor = "";
@@ -345,7 +1219,7 @@ class Repository_Components_Querygenerator implements Repository_Components_Quer
                     $result3 = $this->createFullTextQuery(self::SORT_TABLE_SHORT_NAME, self::EXTERNAL_SEARCHWORD_TABLE, self::EXTERNAL_SEARCHWORD_TABLE_SHORT_NAME, $value, 
                                                $andor, "AND", $connectQuery, $tmpTermQuery, $connectQueryParam, $tmpFlag, $connectType, $request);
                     if($result1 || $result2 || $result3){
-                        $connectTermQuery .= $tmpTermQuery .") ";
+                        $connectTermQuery .= $tmpTermQuery .")) ";
                         $connectFlag = true;
                         $searchFlag = true;
                     }
@@ -598,6 +1472,17 @@ class Repository_Components_Querygenerator implements Repository_Components_Quer
                     }
                     $addPubDate = true;
                     break;
+                
+                case self::REQUEST_WEKO_AUTHOR_ID:
+                    $result = $this->createINSearchColumnQuery(self::SORT_TABLE_SHORT_NAME, self::PERSONAL_NAME_TABLE, self::PERSONAL_NAME_TABLE_SHORT_NAME, $value, "author_id", 
+                                               "AND", $connectQuery, $connectTermQuery, $connectQueryParam, $connectFlag, $connectType);
+                    
+                    if($result){
+                        $searchFlag = true;
+                    }
+                    
+                    break;
+
                 default:
                     break;
             }
@@ -718,15 +1603,21 @@ class Repository_Components_Querygenerator implements Repository_Components_Quer
     
     /**
      * create search index rights Query
+     * 「権利」検索クエリ作成
      *
-     * @param connectToTableName I Connection place table name
-     * @param baseRights I Connecting agency table name
-     * @param roomRights I Search string 
-     * @param groupIDList I The flag which connects only conditions
-     * @param connectQuery I/O Connection query sentence 
-     * @param connectTermQuery I/O Connection query conditional sentence
-     * @param connectQueryParam I/O Connection query conditional parameter
-     * @param connectFlag I/O The flag of whether to have performed connection 
+     * @param string $connectToTableName connect to table name 結合先テーブル名
+     * @param int $baseRights base authority ベース権限
+     * @param int $roomRights room authority ルーム権限
+     * @param array $groupIDList group ID list グループIDリスト
+     *                            array[$ii]
+     * @param string $connectQuery query クエリベース文
+     * @param string $connectTermQuery where query クエリWHERE条件文
+     * @param array $connectQueryParam query parameter クエリパラメータ
+     *                                  array[$ii]
+     * @param bool $connectFlag join flag 結合フラグ
+     * @param string $connectType join type 結合タイプ
+     * @param bool $isAdminUser admin flag 管理者ユーザーフラグ
+     * @return bool true/false success/failed 成功/失敗
      */
     private function createIndexRightsQuery($connectToTableName, $baseRights, $roomRights, $groupIDList,
                                          &$connectQuery, &$connectTermQuery, &$connectQueryParam, &$connectFlag, $connectType, $isAdminUser)
@@ -844,16 +1735,22 @@ class Repository_Components_Querygenerator implements Repository_Components_Quer
     
     /**
      * create search fulltext Query
+     * 全文検索クエリ作成
      *
-     * @param connectToTableName I Connection place table name
-     * @param connetFromTableName I Connecting agency table name
-     * @param shortName I Connecting agency table short name
-     * @param searchValue I Search string 
-     * @param andor I Junction condition
-     * @param connectQuery I/O Connection query sentence 
-     * @param connectTermQuery I/O Connection query conditional sentence
-     * @param connectQueryParam I/O Connection query conditional parameter
-     * @param connectFlag I/O The flag of whether to have performed connection 
+     * @param string $connectToTableName connect to table name 結合先テーブル名
+     * @param string $connetFromTableName connect from table name 結合元テーブル名
+     * @param string $shortName table short name テーブル短縮名
+     * @param string $searchValue search value 検索文字列
+     * @param string $outorAndor "AND" or "OR" in where sentence WHERE句部分のクエリ結合時の条件タイプ式
+     * @param string $innerAndor "AND" or "OR" in join sentence JOIN句部分のクエリ結合時の条件タイプ式
+     * @param string $connectQuery query クエリベース文
+     * @param string $connectTermQuery where query クエリWHERE条件文
+     * @param array $connectQueryParam query parameter クエリパラメータ
+     *                                  array[$ii]
+     * @param bool $connectFlag join flag 結合フラグ
+     * @param string $connectType join type 結合タイプ
+     * @param string $request search request parameter key 検索リクエストパラメータのキー文字列
+     * @return bool true/false success/failed 成功/失敗
      */
     private function createFullTextQuery($connectToTableName, $connetFromTableName, $shortName, $searchValue,
                                          $outorAndor, $innerAndor, &$connectQuery, &$connectTermQuery, &$connectQueryParam, &$connectFlag, $connectType, $request='')
@@ -899,7 +1796,14 @@ class Repository_Components_Querygenerator implements Repository_Components_Quer
             }
             // Add Senna judge T.Ichikawa 2014/12/01 --start--
             if($this->searchEngine == "mroonga") {
-                $tmpTermQuery .= "MATCH(".$shortName.".metadata) AGAINST(mroonga_escape(?, '()~><-*`\"\\\') IN BOOLEAN MODE) ";
+                // 括弧は勝手にエスケープされると困るので手動でエスケープに変更
+                $tmpTermQuery .= "MATCH(".$shortName.".metadata) AGAINST(mroonga_escape(?, '~><-*`\"') IN BOOLEAN MODE) ";
+                $searchStringList[$ii] = str_replace("\\", "\\\\", $searchStringList[$ii]);
+                $searchStringList[$ii] = str_replace("(", "\\(", $searchStringList[$ii]);
+                $searchStringList[$ii] = str_replace(")", "\\)", $searchStringList[$ii]);
+                // 検索文字列パラメータを異体字に変換する
+                $convertSearchWord = BusinessFactory::getFactory()->getBusiness("businessConvertsearchword");
+                $searchStringList[$ii] = $convertSearchWord->convertSearchWordToCorrespondVariants($searchStringList[$ii]);
                 $connectQueryParam[] = "+".$searchStringList[$ii];
             } else if($this->searchEngine == "senna") {
                 $tmpTermQuery .= "MATCH(".$shortName.".metadata) AGAINST(? IN BOOLEAN MODE) ";
@@ -950,17 +1854,22 @@ class Repository_Components_Querygenerator implements Repository_Components_Quer
     
     /**
      * create search date Query
+     * 「日付」検索クエリ作成
      *
-     * @param connectToTableName I Connection place table name
-     * @param connetFromTableName I Connecting agency table name
-     * @param shortName I Connecting agency table short name
-     * @param fromDate I Search string 
-     * @param untilDate I Search string 
-     * @param andor I Junction condition
-     * @param connectQuery I/O Connection query sentence 
-     * @param connectTermQuery I/O Connection query conditional sentence
-     * @param connectQueryParam I/O Connection query conditional parameter
-     * @param connectFlag I/O The flag of whether to have performed connection 
+     * @param string $connectToTableName connect to table name 結合先テーブル名
+     * @param string $connetFromTableName connect from table name 結合元テーブル名
+     * @param string $shortName table short name テーブル短縮名
+     * @param string $fromDate from date search value 日付範囲(from)
+     * @param string $untilDate until date search value 日付範囲(until)
+     * @param bool $onlyYear only year flag 範囲が1年以内に収まってるかのフラグ
+     * @param string $andor "AND" or "OR" in where sentence WHERE句部分のクエリ結合時の条件タイプ式
+     * @param string $connectQuery query クエリベース文
+     * @param string $connectTermQuery where query クエリWHERE条件文
+     * @param array $connectQueryParam query parameter クエリパラメータ
+     *                                  array[$ii]
+     * @param bool $connectFlag join flag 結合フラグ
+     * @param string $connectType join type 結合タイプ
+     * @return bool true/false success/failed 成功/失敗
      */
     private function createDateQuery($connectToTableName, $connetFromTableName, $shortName, $fromDate, $untilDate, $onlyYear, 
                                          $andor, &$connectQuery, &$connectTermQuery, &$connectQueryParam, &$connectFlag, $connectType)
@@ -1018,10 +1927,14 @@ class Repository_Components_Querygenerator implements Repository_Components_Quer
     }
     
     /**
-     * create search date Query
+     * Validate date format
+     * 日付文字列をバリデートする
      *
-     * @param dateArray I Connection place table name
-     * @param onlyYear I Connecting agency table name
+     * @param array $dateArray date array 日付配列
+     *                          array[$ii]
+     * @param bool $onlyYear only year flag 範囲が1年以内に収まってるかのフラグ
+     * @param bool $isFrom day of start flag 月初フラグ
+     * @return string date string 日付文字列
      */
     private function validateDate($dateArray, $onlyYear, $isFrom)
     {
@@ -1089,16 +2002,19 @@ class Repository_Components_Querygenerator implements Repository_Components_Quer
     
     /**
      * create search subject Query
+     * 「件名・分類」検索クエリ作成
      *
-     * @param connectToTableName I Connection place table name
-     * @param connetFromTableName I Connecting agency table name
-     * @param shortName I Connecting agency table short name
-     * @param searchValue I Search string 
-     * @param andor I Junction condition
-     * @param connectQuery I/O Connection query sentence 
-     * @param connectTermQuery I/O Connection query conditional sentence
-     * @param connectQueryParam I/O Connection query conditional parameter
-     * @param connectFlag I/O The flag of whether to have performed connection 
+     * @param string $connectToTableName connect to table name 結合先テーブル名
+     * @param int $idString ID string ID文字列
+     * @param string $searchValue search value 検索文字列
+     * @param string $andor "AND" or "OR" in where sentence WHERE句部分のクエリ結合時の条件タイプ式
+     * @param string $connectQuery query クエリベース文
+     * @param string $connectTermQuery where query クエリWHERE条件文
+     * @param array $connectQueryParam query parameter クエリパラメータ
+     *                                  array[$ii]
+     * @param bool $connectFlag join flag 結合フラグ
+     * @param string $connectType join type 結合タイプ
+     * @return bool true/false success/failed 成功/失敗
      */
     private function createSubjectQuery($connectToTableName, $idString, $searchValue,
                                          $andor, &$connectQuery, &$connectTermQuery, &$connectQueryParam, &$connectFlag, $connectType)
@@ -1255,16 +2171,20 @@ class Repository_Components_Querygenerator implements Repository_Components_Quer
         
     /**
      * create NIItype date Query
+     * 「NIIタイプ」検索クエリ作成
      *
-     * @param connectToTableName I Connection place table name
-     * @param connetFromTableName I Connecting agency table name
-     * @param shortName I Connecting agency table short name
-     * @param searchValue I Search string 
-     * @param andor I Junction condition
-     * @param connectQuery I/O Connection query sentence 
-     * @param connectTermQuery I/O Connection query conditional sentence
-     * @param connectQueryParam I/O Connection query conditional parameter
-     * @param connectFlag I/O The flag of whether to have performed connection 
+     * @param string $connectToTableName connect to table name 結合先テーブル名
+     * @param string $connetFromTableName connect from table name 結合元テーブル名
+     * @param string $shortName table short name テーブル短縮名
+     * @param string $searchValue search value 検索文字列
+     * @param string $andor "AND" or "OR" in where sentence WHERE句部分のクエリ結合時の条件タイプ式
+     * @param string $connectQuery query クエリベース文
+     * @param string $connectTermQuery where query クエリWHERE条件文
+     * @param array $connectQueryParam query parameter クエリパラメータ
+     *                                  array[$ii]
+     * @param bool $connectFlag join flag 結合フラグ
+     * @param string $connectType join type 結合タイプ
+     * @return bool true/false success/failed 成功/失敗
      */
     private function createTypeQuery($connectToTableName, $connetFromTableName, $shortName, $searchValue, 
                                          $andor, &$connectQuery, &$connectTermQuery, &$connectQueryParam, &$connectFlag, $connectType)
@@ -1383,15 +2303,19 @@ class Repository_Components_Querygenerator implements Repository_Components_Quer
     
     /**
      * create search ID Query
+     * 「ID」検索クエリ作成
      *
-     * @param connectToTableName I Connection place table name
-     * @param idString I IDString
-     * @param searchValue I Search string 
-     * @param andor I Junction condition
-     * @param connectQuery I/O Connection query sentence 
-     * @param connectTermQuery I/O Connection query conditional sentence
-     * @param connectQueryParam I/O Connection query conditional parameter
-     * @param connectFlag I/O The flag of whether to have performed connection 
+     * @param string $connectToTableName connect to table name 結合先テーブル名
+     * @param int $idString ID string ID文字列
+     * @param string $searchValue search value 検索文字列
+     * @param string $andor "AND" or "OR" in where sentence WHERE句部分のクエリ結合時の条件タイプ式
+     * @param string $connectQuery query クエリベース文
+     * @param string $connectTermQuery where query クエリWHERE条件文
+     * @param array $connectQueryParam query parameter クエリパラメータ
+     *                                  array[$ii]
+     * @param bool $connectFlag join flag 結合フラグ
+     * @param string $connectType join type 結合タイプ
+     * @return bool true/false success/failed 成功/失敗
      */
     private function createIDQuery($connectToTableName, $idString, $searchValue,
                                          $andor, &$connectQuery, &$connectTermQuery, &$connectQueryParam, &$connectFlag, $connectType)
@@ -1562,17 +2486,21 @@ class Repository_Components_Querygenerator implements Repository_Components_Quer
 
     /**
      * create Query
+     * IN句の検索クエリ作成
      *
-     * @param connectToTableName I Connection place table name
-     * @param connetFromTableName I Connecting agency table name
-     * @param shortName I Connecting agency table short name
-     * @param searchValue I search value
-     * @param columnName I column name 
-     * @param andor I Junction condition
-     * @param connectQuery I/O Connection query sentence 
-     * @param connectTermQuery I/O Connection query conditional sentence
-     * @param connectQueryParam I/O Connection query conditional parameter
-     * @param connectFlag I/O The flag of whether to have performed connection 
+     * @param string $connectToTableName connect to table name 結合先テーブル名
+     * @param string $connetFromTableName connect from table name 結合元テーブル名
+     * @param string $shortName table short name テーブル短縮名
+     * @param string $searchValue search value 検索文字列
+     * @param string $columnName column name カラム名
+     * @param string $andor "AND" or "OR" in where sentence WHERE句部分のクエリ結合時の条件タイプ式
+     * @param string $connectQuery query クエリベース文
+     * @param string $connectTermQuery where query クエリWHERE条件文
+     * @param array $connectQueryParam query parameter クエリパラメータ
+     *                                  array[$ii]
+     * @param bool $connectFlag join flag 結合フラグ
+     * @param string $connectType join type 結合タイプ
+     * @return bool true/false success/failed 成功/失敗
      */
     private function createINSearchColumnQuery($connectToTableName, $connetFromTableName, $shortName, $searchValue, $columnName,
                                          $andor, &$connectQuery, &$connectTermQuery, &$connectQueryParam, &$connectFlag, $connectType)

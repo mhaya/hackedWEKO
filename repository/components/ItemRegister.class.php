@@ -1,7 +1,15 @@
 <?php
+
+/**
+ * Item registration and editing process common classes
+ * アイテム登録・編集処理共通クラス
+ * 
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: ItemRegister.class.php 58688 2015-10-11 08:21:12Z tatsuya_koyasu $
+// $Id: ItemRegister.class.php 70936 2016-08-09 09:53:57Z keiya_sugimoto $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -11,25 +19,89 @@
 //
 // --------------------------------------------------------------------
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
-require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
-require_once WEBAPP_DIR. '/modules/repository/components/NameAuthority.class.php';
-require_once WEBAPP_DIR. '/modules/repository/components/Checkdoi.class.php';
 
+/**
+ * Extended Log class for the WEKO
+ * WEKO用拡張ログクラス
+ */
+require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
+
+/**
+ * Name authority common classes
+ * 著者名典拠共通クラス
+ */
+require_once WEBAPP_DIR. '/modules/repository/components/NameAuthority.class.php';
+
+/**
+ * Common class to operate string
+ * 文字列の操作を行う共通クラス
+ */
+require_once WEBAPP_DIR. '/modules/repository/components/util/StringOperator.class.php';
+
+/**
+ * Item registration and editing process common classes
+ * アイテム登録・編集処理共通クラス
+ * 
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
+ */
 class ItemRegister extends RepositoryAction
 {
     // member
+    /**
+     * Session management objects
+     * Session管理オブジェクト
+     *
+     * @var Session
+     */
     var $Session = null;
+    /**
+     * DB object
+     * Dbコンポーネントを受け取る
+     *
+     * @var DbObjectAdodb
+     */
     var $Db = null;
+    /**
+     * Insert user id
+     * 挿入ユーザID
+     *
+     * @var string
+     */
     private $ins_user_id = null;
+    /**
+     * Update user id
+     * 更新ユーザID
+     *
+     * @var string
+     */
     private $mod_user_id = null;
+    /**
+     * Edit start date
+     * 編集開始日時
+     *
+     * @var string
+     */
     private $edit_start_date = null;
     
     // Add multimedia support 2012/08/27 T.Koyasu -start-
+    /**
+     * ffmpeg valid flag
+     * ffmpeg有効フラグ
+     *
+     * @var boolean
+     */
     private $isValidFfmpeg = null;
     // Add multimedia support 2012/08/27 T.Koyasu -end-
     
     /**
-     * INIT
+     * Constructor
+     * コンストラクタ
+     *
+     * @param Session $Session Session management objects Session管理オブジェクト
+     * @param DbObject $Db Database management objects データベース管理オブジェクト
      */
     function ItemRegister($Session, $Db){
         if($Session){
@@ -47,12 +119,16 @@ class ItemRegister extends RepositoryAction
         $this->ins_user_id = $this->Session->getParameter("_user_id");
         $this->mod_user_id = $this->Session->getParameter("_user_id");
         $this->del_user_id = $this->Session->getParameter("_user_id");
+        
+        // ロガー
+        $this->Logger = WekoBusinessFactory::getFactory()->logger;
     }
     
     /**
      * Set ins_user_id
+     * 挿入ユーザID設定
      *
-     * @param string $user_id
+     * @param string $user_id Insert user id 挿入ユーザID
      */
     public function setInsUserId($user_id)
     {
@@ -61,8 +137,9 @@ class ItemRegister extends RepositoryAction
     
     /**
      * Set mod_user_id
+     * 更新ユーザID設定
      *
-     * @param string $user_id
+     * @param string $user_id Update user id 更新ユーザID
      */
     public function setModUserId($user_id)
     {
@@ -71,8 +148,9 @@ class ItemRegister extends RepositoryAction
     
     /**
      * Set del_user_id
+     * 削除ユーザID設定
      *
-     * @param string $user_id
+     * @param string $user_id Delet user id 削除ユーザID
      */
     public function setDelUserId($user_id)
     {
@@ -80,8 +158,9 @@ class ItemRegister extends RepositoryAction
     }
     /**
      * Set edit_start_date
+     * 編集開始日時設定
      *
-     * @param string $date
+     * @param string $date Date 日時
      */
     public function setEditStartDate($date)
     {
@@ -90,10 +169,14 @@ class ItemRegister extends RepositoryAction
     }
     
     /**
-     * アイテム登録 entry item
+     * Entry item
+     * アイテム登録
      * 
-     * @param $item
-     * @param $errMsg エラーメッセージ
+     * @param array $item Item information アイテム情報
+     *                    array["item_id"|"item_no"|"revision_no"|"item_type_id"|"title"|"title_english"|"language"|"serch_key"|"serch_key_english"|"pub_year"|"pub_month"|"pub_day"]
+     * @param string $errMsg Error message エラーメッセージ
+     * @param boolean $harvestingFlag Havest flag ハーベストフラグ
+     * @return boolean Result 結果
      */
     function entryItem($item, &$errMsg, $harvestingFlag=false){
         $query = "INSERT INTO ". DATABASE_PREFIX ."repository_item ".
@@ -149,10 +232,13 @@ class ItemRegister extends RepositoryAction
     }
     
     /**
+     * Change the public status of the item while editing private, peer-reviewed approval
      * アイテムの公開状況を非公開、査読承認を編集中に変更
      * 
-     * @param $item
-     * @param $errMsg エラーメッセージ
+     * @param int $item_id Item id アイテムID
+     * @param int $item_no Item serial number アイテム通番
+     * @param string $errMsg Error message エラーメッセージ
+     * @return boolean Result 結果
      */
     function editItem($item_id, $item_no, &$errMsg){
         // コンテンツ数対応 add count contents 2009/02/17 A.Suzuki --start--
@@ -264,11 +350,13 @@ class ItemRegister extends RepositoryAction
     }
 
     /**
-     * アイテム情報更新 update item info
+     * update item info
+     * アイテム情報更新
      * 
-     * @param $item
-     * @param $errMsg エラーメッセージ
-     * @param $warningMsg 警告メッセージ
+     * @param array $item Item information アイテム情報
+     *                    array["item_id"|"item_no"|"revision_no"|"item_type_id"|"title"|"title_english"|"language"|"serch_key"|"serch_key_english"|"pub_year"|"pub_month"|"pub_day"]
+     * @param string $errMsg Error message エラーメッセージ
+     * @param string $warningMsg Warning message 警告メッセージ
      */
     function updateItem($item, &$errMsg, &$warningMsg = ""){
         $query = "UPDATE ". DATABASE_PREFIX ."repository_item ".
@@ -366,85 +454,15 @@ class ItemRegister extends RepositoryAction
         return true;
     }
     
-    // BugFix when before and after update, assignment doi is failed T.Koyasu 2015/03/09 --start--
-    /**
-     * update self doi
-     *
-     * @param unknown_type $item
-     */
-    public function updateSelfDoi($item)
-    {
-        // self DOI
-        if(isset($item['selfdoi']) && is_array($item['selfdoi']))
-        {
-            if(isset($item['selfdoi'][0]['RA']) && strlen($item['selfdoi'][0]['RA']) > 0)
-            {
-                $item['selfdoi'][0]['RA'] = strtoupper($item['selfdoi'][0]['RA']);
-                $checkdoi = new Repository_Components_Checkdoi($this->Session, $this->Db, $this->TransStartDate);
-                if($item['selfdoi'][0]['RA'] === strtoupper(RepositoryConst::JUNII2_SELFDOI_RA_JALC))
-                {
-                    $selfdoiPrefixSuffix = explode("/", $item['selfdoi'][0]['SELFDOI']);
-                    $handleManager = new RepositoryHandleManager($this->Session, $this->Db, $this->TransStartDate);
-                    $libraryJalcdoiPrefix = $handleManager->getLibraryJalcDoiPrefix();
-                    if($selfdoiPrefixSuffix[0] === $libraryJalcdoiPrefix)
-                    {
-                        $checkRegist = $checkdoi->checkDoiGrant($item['item_id'], $item['item_no'], Repository_Components_Checkdoi::TYPE_LIBRARY_JALC_DOI, Repository_Components_Checkdoi::CHECKING_STATUS_ITEM_REGISTRATION);
-                        if($checkRegist)
-                        {
-                            $handleManager->registLibraryJalcdoiSuffix($item['item_id'], $item['item_no'], $item['selfdoi'][0]['SELFDOI']);
-                        }
-                        else
-                        {
-                            $checkRegist = $checkdoi->checkDoiGrant($item['item_id'], $item['item_no'], Repository_Components_Checkdoi::TYPE_JALC_DOI, Repository_Components_Checkdoi::CHECKING_STATUS_ITEM_REGISTRATION);
-                            if($checkRegist)
-                            {
-                                $suffix = $handleManager->getYHandleSuffix($item['item_id'], $item['item_no']);
-                                $handleManager->registJalcdoiSuffix($item['item_id'], $item['item_no'], $suffix);
-                            }
-                        }
-                    }
-                    else
-                    {
-                        $checkRegist = $checkdoi->checkDoiGrant($item['item_id'], $item['item_no'], Repository_Components_Checkdoi::TYPE_JALC_DOI, Repository_Components_Checkdoi::CHECKING_STATUS_ITEM_REGISTRATION);
-                        if($checkRegist)
-                        {
-                            $suffix = $handleManager->getYHandleSuffix($item['item_id'], $item['item_no']);
-                            $handleManager->registJalcdoiSuffix($item['item_id'], $item['item_no'], $suffix);
-                        }
-                    }
-                }
-                else if($item['selfdoi'][0]['RA'] === strtoupper(RepositoryConst::JUNII2_SELFDOI_RA_CROSSREF))
-                {
-                    $checkRegist = $checkdoi->checkDoiGrant($item['item_id'], $item['item_no'], Repository_Components_Checkdoi::TYPE_CROSS_REF, Repository_Components_Checkdoi::CHECKING_STATUS_ITEM_REGISTRATION);
-                    if($checkRegist)
-                    {
-                        $handleManager = new RepositoryHandleManager($this->Session, $this->Db, $this->TransStartDate);
-                        $suffix = $handleManager->getYHandleSuffix($item['item_id'], $item['item_no']);
-                        $handleManager->registCrossrefSuffix($item['item_id'], $item['item_no'], $suffix);
-                    }
-                }
-                else if($item['selfdoi'][0]['RA'] === strtoupper(RepositoryConst::JUNII2_SELFDOI_RA_DATACITE))
-                {
-                    $checkRegist = $checkdoi->checkDoiGrant($item['item_id'], $item['item_no'], Repository_Components_Checkdoi::TYPE_DATACITE, Repository_Components_Checkdoi::CHECKING_STATUS_ITEM_REGISTRATION);
-                    if($checkRegist)
-                    {
-                        $handleManager = new RepositoryHandleManager($this->Session, $this->Db, $this->TransStartDate);
-                        $suffix = $handleManager->getYHandleSuffix($item['item_id'], $item['item_no']);
-                        $handleManager->registDataciteSuffix($item['item_id'], $item['item_no'], $suffix);
-                    }
-                }
-            }
-        }
-    }
-    // BugFix when before and after update, assignment doi is failed T.Koyasu 2015/03/09 --end--
-
     /**
      * get file no
+     * ファイル通番取得
      *
-     * @param $item_id
-     * @param $item_no
-     * @param $attribute_id
-     * @return file_no
+     * @param int $item_id Item id アイテムID
+     * @param int $item_no Item serial number アイテム通番
+     * @param int $attribute_id Attribute id 属性ID
+     * @param string $file_thumb Table name テーブル名
+     * @return int file no ファイル通番
      */
     function getNewFileNo($item_id, $item_no, $attribute_id, $file_thumb){
         $query = "SELECT count(*) ".
@@ -464,329 +482,25 @@ class ItemRegister extends RepositoryAction
     }
     
     /**
-     * get file no
-     *
-     * @param $item_id
-     * @param $item_no
-     * @param $attribute_id
-     * @return file_no
-     */
-    function sortFileNo(&$file_sort, $file_type, &$errMsg){
-        $db_name = '';
-        if($file_type == 'file'){
-            $db_name = 'repository_file';
-        } else if($file_type == 'file_price'){
-            $file = $file_sort;
-            $result = $this->sortFileNo($file, 'file', $errMsg);
-            if($result === false){
-                return false;
-            }
-            $db_name = 'repository_file_price';
-        } else if($file_type == 'thumbnail'){
-            $db_name = 'repository_thumbnail';
-        } else {
-            $errMsg = 'unknown file type';
-            return false;
-        }
-        // Add separate file from DB 2009/04/21 Y.Nakao --start--
-        // コンテンツファイル本体リネーム
-        // Move upload file and rename.
-        $contents_path = $this->getFileSavePath("file");
-        if(strlen($contents_path) == 0){
-            // default directory
-            $contents_path = BASE_DIR.'/webapp/uploads/repository/files';
-            if( !(file_exists($contents_path)) ){
-                mkdir ( $contents_path, 0777);
-            }
-        }
-        // check directory exists 
-        if( file_exists($contents_path) ){
-            // check this folder write right.
-            $ex_file = fopen ($contents_path.'/test.txt', "w");
-            if( $ex_file === false ){
-                // folder is not find, file save at default directory
-                $contents_path = BASE_DIR.'/webapp/uploads/repository/files';
-                if( !(file_exists($contents_path)) ){
-                    mkdir ( $contents_path, 0777);
-                }
-                chmod($contents_path, 0777 );
-            } else {
-                fclose($ex_file);
-                unlink($contents_path.'/test.txt');
-            }
-        } else {
-            // folder is not find, file save at default directory
-            $contents_path = BASE_DIR.'/webapp/uploads/repository/files';
-            if( !(file_exists($contents_path)) ){
-                mkdir ( $contents_path, 0777);
-            }
-            chmod($contents_path, 0777 );
-        }
-        // Add separate file from DB 2009/04/21 Y.Nakao --end--
-        
-        // Add multiple FLASH files download 2011/02/04 Y.Nakao --start--
-        // Add convert to flash 2010/01/26 A.Suzuki --start--
-        // フラッシュファイル本体リネーム
-        $flash_contents_path = $this->getFlashFolder();
-        // Add convert to flash 2010/01/26 A.Suzuki --end--
-        // Add multiple FLASH files download 2011/02/04 Y.Nakao --end--
-        
-        for($ii=0; $ii<count($file_sort); $ii++){
-            // 入れ替えていない場合はスルー
-            if($file_sort[$ii]['new_file_no'] == ''){
-                continue;
-            }
-            // file_noがnew_file_noの奴を探す
-            for($jj=0; $jj<count($file_sort); $jj++){
-                if($ii != $jj)
-                {
-                    if($file_sort[$ii]['new_file_no'] == $file_sort[$jj]['file_no']){
-                        $file_sort[$jj]['file_no'] = $file_sort[$ii]['file_no'];
-                        break;
-                    }
-                }
-            }
-            // Add separate file from DB 2009/04/21 Y.Nakao --start--
-            $query = "SELECT  extension ".
-                    " FROM ". DATABASE_PREFIX ."repository_file ".
-                    " WHERE item_id = ? AND ".
-                    " item_no = ? AND ".
-                    " attribute_id = ? AND ".
-                    " file_no = ?; ";
-            $params = array();
-            $params[] = $file_sort[$ii]['item_id'];
-            $params[] = $file_sort[$ii]['item_no'];
-            $params[] = $file_sort[$ii]['attribute_id'];
-            $params[] = $file_sort[$ii]['file_no'];
-            $ret = $this->Db->execute($query, $params);
-            if($ret === false){
-                $errMsg = $this->Db->ErrorMsg();
-                $this->failTrans();             //トランザクション失敗を設定(ROLLBACK)
-                return false;
-            }
-            $extension_one = $ret[0]['extension'];
-            $params[3] = $file_sort[$ii]['new_file_no'];
-            $ret = $this->Db->execute($query, $params);
-            if($ret === false){
-                $errMsg = $this->Db->ErrorMsg();
-                $this->failTrans();             //トランザクション失敗を設定(ROLLBACK)
-                return false;
-            }
-            $extension_two = $ret[0]['extension'];
-            // Add separate file from DB 2009/04/21 Y.Nakao --start--
-            $query = "UPDATE ". DATABASE_PREFIX .$db_name." ".
-                     "SET file_no = ?, ".
-                     "mod_date = ?, ".
-                     "mod_user_id = ? ".
-                     "WHERE item_id = ? AND ".
-                     "item_no = ? AND ".
-                     "attribute_id = ? AND ".
-                     "file_no = ?; ";
-            $params = array();
-            $params[] = 0;
-            $params[] = $this->edit_start_date;
-            $params[] = $this->mod_user_id;
-            $params[] = $file_sort[$ii]['item_id'];
-            $params[] = $file_sort[$ii]['item_no'];
-            $params[] = $file_sort[$ii]['attribute_id'];
-            $params[] = $file_sort[$ii]['new_file_no'];
-            $ret = $this->Db->execute($query, $params);
-            if($ret === false){
-                $errMsg = $this->Db->ErrorMsg();
-                $this->failTrans();             //トランザクション失敗を設定(ROLLBACK)
-                return false;
-            }
-            // Add separate file from DB 2009/04/21 Y.Nakao --start--
-            $filepath = $contents_path.
-                        DIRECTORY_SEPARATOR.
-                        $file_sort[$ii]['item_id'].'_'.
-                        $file_sort[$ii]['attribute_id'].'_'.
-                        $file_sort[$ii]['new_file_no'].'.'.
-                        $extension_two;
-            $new_filepath = $contents_path.
-                            DIRECTORY_SEPARATOR.
-                            $file_sort[$ii]['item_id'].'_'.
-                            $file_sort[$ii]['attribute_id'].'_'.
-                            '0.'.
-                            $extension_two;
-            if(file_exists($filepath)){
-                if( file_exists($new_filepath) ){
-                    unlink($new_filepath);
-                }
-                rename($filepath, $new_filepath);
-            }
-            // Add separate file from DB 2009/04/21 Y.Nakao --end--
-            
-            // Add multiple FLASH files download 2011/02/04 Y.Nakao --start--
-            // Add convert to flash 2010/01/26 A.Suzuki --start--
-            // フラッシュファイル本体リネーム
-            $flashpath = $flash_contents_path.
-                         DIRECTORY_SEPARATOR.
-                         $file_sort[$ii]['item_id'].'_'.
-                         $file_sort[$ii]['attribute_id'].'_'.
-                         $file_sort[$ii]['new_file_no'];
-            $new_flashpath = $flash_contents_path.
-                             DIRECTORY_SEPARATOR.
-                             $file_sort[$ii]['item_id'].'_'.
-                             $file_sort[$ii]['attribute_id'].'_'.
-                             '0';
-            if(file_exists($flashpath)){
-                if( file_exists($new_flashpath) ){
-                    $this->removeDirectory($new_flashpath);
-                }
-                rename($flashpath, $new_flashpath);
-            }
-            // Add convert to flash 2010/01/26 A.Suzuki --end--
-            // Add multiple FLASH files download 2011/02/04 Y.Nakao --end--
-            
-            $query = "UPDATE ". DATABASE_PREFIX .$db_name." ".
-                     "SET file_no = ?, ".
-                     "mod_date = ?, ".
-                     "mod_user_id = ? ".
-                     "WHERE item_id = ? AND ".
-                     "item_no = ? AND ".
-                     "attribute_id = ? AND ".
-                     "file_no = ?; ";
-            $params = array();
-            $params[] = $file_sort[$ii]['new_file_no'];
-            $params[] = $this->edit_start_date;
-            $params[] = $this->mod_user_id;
-            $params[] = $file_sort[$ii]['item_id'];
-            $params[] = $file_sort[$ii]['item_no'];
-            $params[] = $file_sort[$ii]['attribute_id'];
-            $params[] = $file_sort[$ii]['file_no'];
-            $ret = $this->Db->execute($query, $params);
-            if($ret === false){
-                $errMsg = $this->Db->ErrorMsg();
-                $this->failTrans();             //トランザクション失敗を設定(ROLLBACK)
-                return false;
-            }
-            // Add separate file from DB 2009/04/21 Y.Nakao --start--
-            // コンテンツファイル本体リネーム
-            $filepath = $contents_path.
-                        DIRECTORY_SEPARATOR.
-                        $file_sort[$ii]['item_id'].'_'.
-                        $file_sort[$ii]['attribute_id'].'_'.
-                        $file_sort[$ii]['file_no'].'.'.
-                        $extension_one;
-            $new_filepath = $contents_path.
-                            DIRECTORY_SEPARATOR.
-                            $file_sort[$ii]['item_id'].'_'.
-                            $file_sort[$ii]['attribute_id'].'_'.
-                            $file_sort[$ii]['new_file_no'].'.'.
-                            $extension_one;
-            if(file_exists($filepath)){
-                if( file_exists($new_filepath) ){
-                    unlink($new_filepath);
-                }
-                rename($filepath, $new_filepath);
-            }
-            // Add separate file from DB 2009/04/21 Y.Nakao --end--
-            
-            // Add multiple FLASH files download 2011/02/04 Y.Nakao --start--
-            // Add convert to flash 2010/01/26 A.Suzuki --start--
-            // フラッシュファイル本体リネーム
-            $flashpath = $flash_contents_path.
-                         DIRECTORY_SEPARATOR.
-                         $file_sort[$ii]['item_id'].'_'.
-                         $file_sort[$ii]['attribute_id'].'_'.
-                         $file_sort[$ii]['file_no'];
-            $new_flashpath = $flash_contents_path.
-                             DIRECTORY_SEPARATOR.
-                             $file_sort[$ii]['item_id'].'_'.
-                             $file_sort[$ii]['attribute_id'].'_'.
-                             $file_sort[$ii]['new_file_no'];
-            if(file_exists($flashpath)){
-                if( file_exists($new_flashpath) ){
-                    $this->removeDirectory($new_flashpath);
-                }
-                rename($flashpath, $new_flashpath);
-            }
-            // Add convert to flash 2010/01/26 A.Suzuki --end--
-            // Add multiple FLASH files download 2011/02/04 Y.Nakao --end--
-            
-            $query = "UPDATE ". DATABASE_PREFIX .$db_name." ".
-                     "SET file_no = ?, ".
-                     "mod_date = ?, ".
-                     "mod_user_id = ? ".
-                     "WHERE item_id = ? AND ".
-                     "item_no = ? AND ".
-                     "attribute_id = ? AND ".
-                     "file_no = ?; ";
-            $params = array();
-            $params[] = $file_sort[$ii]['file_no'];
-            $params[] = $this->edit_start_date;
-            $params[] = $this->mod_user_id;
-            $params[] = $file_sort[$ii]['item_id'];
-            $params[] = $file_sort[$ii]['item_no'];
-            $params[] = $file_sort[$ii]['attribute_id'];
-            $params[] = 0;
-            $ret = $this->Db->execute($query, $params);
-            if($ret === false){
-                $errMsg = $this->Db->ErrorMsg();
-                $this->failTrans();             //トランザクション失敗を設定(ROLLBACK)
-                return false;
-            }
-            // Add separate file from DB 2009/04/21 Y.Nakao --start--
-            // コンテンツファイル本体リネーム
-            $filepath = $contents_path.
-                        DIRECTORY_SEPARATOR.
-                        $file_sort[$ii]['item_id'].'_'.
-                        $file_sort[$ii]['attribute_id'].'_'.
-                        '0.'.
-                        $extension_two;
-            $new_filepath = $contents_path.
-                            DIRECTORY_SEPARATOR.
-                            $file_sort[$ii]['item_id'].'_'.
-                            $file_sort[$ii]['attribute_id'].'_'.
-                            $file_sort[$ii]['file_no'].'.'.
-                            $extension_two;
-            if(file_exists($filepath)){
-                if( file_exists($new_filepath) ){
-                    unlink($new_filepath);
-                }
-                rename($filepath, $new_filepath);
-            }
-            // Add separate file from DB 2009/04/21 Y.Nakao --end--
-            
-            // Add multiple FLASH files download 2011/02/04 Y.Nakao --start--
-            // フラッシュファイル本体リネーム
-            $flashpath = $flash_contents_path.
-                         DIRECTORY_SEPARATOR.
-                         $file_sort[$ii]['item_id'].'_'.
-                         $file_sort[$ii]['attribute_id'].'_'.
-                         '0';
-            $new_flashpath = $flash_contents_path.
-                             DIRECTORY_SEPARATOR.
-                             $file_sort[$ii]['item_id'].'_'.
-                             $file_sort[$ii]['attribute_id'].'_'.
-                             $file_sort[$ii]['file_no'];
-            if(file_exists($flashpath)){
-                if( file_exists($new_flashpath) ){
-                    $this->removeDirectory($new_flashpath);
-                }
-                rename($flashpath, $new_flashpath);
-            }
-            // Add multiple FLASH files download 2011/02/04 Y.Nakao --end--
-            
-            $file_sort[$ii]['file_no'] = $file_sort[$ii]['new_file_no'];
-            $file_sort[$ii]['new_file_no'] = '';
-        }
-        return true;
-    }
-    
-    /**
-     * ファイル登録 entry file
+     * entry file
+     * ファイル登録
      * entry to
      *  ・ file name ファイル名
      *  ・ thubnail for PDF PDFのサムネ
      *  ・ file contents(BLOB) ファイル本体(BLOB)
-     * @param $file_info アップロードファイル情報
-     * @param $errMsg エラーメッセージ
-     * @param $filePath [optional]
-     * @param bool $delFileFlag [optional]
+     * 
+     * @param array $file_info file information アップロードファイル情報
+     *                         array["item_id"|"item_no"|"attribute_id"|"file_no"]
+     *                         array["upload"]["mimetype"|"extension"|"file_name"]
+     * @param string $errMsg Error message エラーメッセージ
+     * @param string $filePath File path ファイルパス
+     * @param boolean $delFileFlag Delete file flag ファイル削除フラグ
+     * @param boolean $duplicateUpdate Duplicate update flag 更新フラグ
+     * @param array $flashList Flash file list Flashファイル一覧
+     *                         array[$ii]
+     * @return boolean Result 結果
      */
-    function entryFile(&$file_info, &$errMsg, $filePath="", $delFileFlag=true, $duplicateUpdate=false){
+    function entryFile(&$file_info, &$errMsg, $filePath="", $delFileFlag=true, $duplicateUpdate=false, $flashList = null){
         // アイテム登録から移動
         // PDFのプレビュー化処理を追加 2008/07/22 Y.Nakao --start--
         // 外部コマンドをDBから取得する 2008/08/07 Y.Nakao --start--
@@ -803,7 +517,18 @@ class ItemRegister extends RepositoryAction
             $filePath = rtrim($filePath, '\/').DIRECTORY_SEPARATOR;
         }
         
-        if($file_info['upload']['extension'] == "pdf"){
+        // アップロードしたファイルを一時ディレクトリにリネーム
+        // (Actionなどでアップロードしたファイルを削除することがあるため、一時ディレクトリにファイルを退避する)
+        $businessWorkdirectory = BusinessFactory::getFactory()->getBusiness('businessWorkdirectory');
+        $tempDirPath = $businessWorkdirectory->create();
+        
+        // ファイル名は相対パスで指定されることがあるため、リネーム先のディレクトリにリネーム元と同じ階層を作成する
+        $this->makeRecursiveDirectory($tempDirPath, $file_info['upload']['physical_file_name']);
+        
+        Repository_Components_Util_OperateFileSystem::rename($filePath.$file_info['upload']['physical_file_name'], $tempDirPath. $file_info['upload']['physical_file_name']);
+        $filePath = $tempDirPath;
+        
+        if(strtolower(strtolower($file_info['upload']['extension'])) == "pdf"){
             // ファイル名格納
             $fileName = $file_info['upload']['physical_file_name'];
             
@@ -872,16 +597,18 @@ class ItemRegister extends RepositoryAction
                 $pdfPagesize = array();
                 exec($cmd_getVertical, $pdfPagesize);
                 exec($cmd_getHorizontal, $pdfPagesize);
-                if($pdfPagesize[0] >= 1 && $pdfPagesize[1] >= 1){
-                    if($pdfPagesize[1] < $pdfPagesize[0]){
-                        // 縦長
-                        $cmd = sprintf("\"". $cmd_path[0]['param_value']. "convert\" -quality 100 -density 200x200 -resize 200x ". $filePath.$fileName. "[0] ". $filePath.$fileName. ".png");
-                    } else {
-                        // 横長
-                        $cmd = sprintf("\"". $cmd_path[0]['param_value']. "convert\" -quality 100 -density 200x200 -resize x280 ". $filePath.$fileName. "[0] ". $filePath.$fileName. ".png");
+                if(count($pdfPagesize) === 2){
+                    if($pdfPagesize[0] >= 1 && $pdfPagesize[1] >= 1){
+                        if($pdfPagesize[1] < $pdfPagesize[0]){
+                            // 縦長
+                            $cmd = sprintf("\"". $cmd_path[0]['param_value']. "convert\" -quality 100 -density 200x200 -resize 200x ". $filePath.$fileName. "[0] ". $filePath.$fileName. ".png");
+                        } else {
+                            // 横長
+                            $cmd = sprintf("\"". $cmd_path[0]['param_value']. "convert\" -quality 100 -density 200x200 -resize x280 ". $filePath.$fileName. "[0] ". $filePath.$fileName. ".png");
+                        }
+                        exec($cmd);
+                        // Fix 2013/10/28 R.Matsuura --end--
                     }
-                    exec($cmd);
-                    // Fix 2013/10/28 R.Matsuura --end--
                 }
                 if(file_exists($filePath.$fileName.".png")){
                     // サムネイル作成OK
@@ -953,132 +680,54 @@ class ItemRegister extends RepositoryAction
         // Add separate file from DB 2009/04/17 Y.Nakao --start--
         // Move upload file and rename.
         $upload_filepath = $filePath.$fileName;
-        $contents_path = $this->getFileSavePath("file");
-        if(strlen($contents_path) == 0){
-            // default directory
-            $contents_path = BASE_DIR.'/webapp/uploads/repository/files';
-            if( !(file_exists($contents_path)) ){
-                mkdir ( $contents_path, 0777);
-            }
-        }
-        // check directory exists 
-        if( file_exists($contents_path) ){
-            // check this folder write right.
-            $ex_file = fopen ($contents_path.'/test.txt', "w");
-            if( $ex_file === false ){
-                // folder is not find, file save at default directory
-                $contents_path = BASE_DIR.'/webapp/uploads/repository/files';
-                if( !(file_exists($contents_path)) ){
-                    mkdir ( $contents_path, 0777);
-                }
-                chmod($contents_path, 0777 );
-            } else {
-                fclose($ex_file);
-                unlink($contents_path.'/test.txt');
-            }
-        } else {
-            // folder is not find, file save at default directory
-            $contents_path = BASE_DIR.'/webapp/uploads/repository/files';
-            if( !(file_exists($contents_path)) ){
-                mkdir ( $contents_path, 0777);
-            }
-            chmod($contents_path, 0777 );
-        }
         
-        $contents_path .= DIRECTORY_SEPARATOR.
-                        $file_info['item_id'].'_'.
-                        $file_info['attribute_id'].'_'.
-                        $file_info['file_no'].'.'.
-                        $file_info['upload']['extension'];
-        if( file_exists($contents_path) ){
-            unlink($contents_path);
-        }
-        // file upload check 2015/04/02 K.Sugimoto --start--
-        $result = copy($upload_filepath, $contents_path);
-        if(!$result || !(file_exists($contents_path))){
-	        $smarty_assign = $this->Session->getParameter("smartyAssign");
-	        if(!isset($smarty_assign))
-	        {
-	            $this->setLangResource();
-	            $smarty_assign = $this->Session->getParameter("smartyAssign");
-	        }
-	        $errMsg = sprintf($smarty_assign->getLang("repository_file_upload_failed"), $file_info['upload']['file_name']);
-	        return false;
-        }
-        // file upload check 2015/04/02 K.Sugimoto --end--
-        // Add separate file from DB 2009/04/17 Y.Nakao --end--
-        // Insert
+        // Add File replace T.Koyasu 2016/02/29 --start--
+        // 登録するファイルが既に存在しているか否か
+        $query = "SELECT * ". 
+                 " FROM ". DATABASE_PREFIX. "repository_file ". 
+                 " WHERE item_id = ? ".
+                 " AND item_no = ? ".
+                 " AND attribute_id = ? ".
+                 " AND file_no = ?;";
         $params = array();
-        $params[] = $file_info['item_id'];  // item_id
-        $params[] = $file_info['item_no'];  // item_no
-        $params[] = $file_info['attribute_id']; // "attribute_id"
-        $params[] = $file_info['file_no'];  // "file_no"
-        $params[] = $file_info['upload']['file_name'];  // "file_name"
-        $params[] = $file_info['display_name']; // "display_name"
-        if($file_info['display_type'] != ""){
-            $params[] = $file_info['display_type']; // "display_type"
+        $params[] = $file_info['item_id'];
+        $params[] = $file_info['item_no'];
+        $params[] = $file_info['attribute_id'];
+        $params[] = $file_info['file_no'];
+        $result = $this->executeSql($query, $params);
+        
+        $businessContentFileTransaction = BusinessFactory::getFactory()->getBusiness("businessContentfiletransaction");
+        // count 1 or 0
+        if(count($result) === 0){
+            $this->insertRepositoryFile($file_info, $upload_filepath, $flashList, $duplicateUpdate);
         } else {
-            $params[] = 0;  // "display_type"空
+            // アップロードしたファイルパスはNC2で作成されたIDのファイル名となっている
+            // 内部でファイルテーブルの更新も行っているため、ファイルパスは物理ファイル名となっている必要がある
+            // そのため、一時ディレクトリにコピーする必要がある
+            // ファイル名は相対パスで指定されることがあるため、リネーム先のディレクトリにリネーム元と同じ階層を作成する
+            $tmpDir = $businessWorkdirectory->create();
+            $this->makeRecursiveDirectory($tmpDir, $file_info['upload']['file_name']);
+            $uploadFilePath = $tmpDir. $file_info['upload']['file_name'];
+            Repository_Components_Util_OperateFileSystem::copy($upload_filepath, $uploadFilePath);
+            
+            $businessContentFileTransaction->update($file_info['item_id'], $file_info['attribute_id'], $file_info['file_no'], $uploadFilePath, $file_info['upload']['mimetype'], $flashList);
         }
-        $params[] = $file_info['show_order'];  // "show_order"
-        $params[] = $file_info['upload']['mimetype'];       // "mime_type"
-        $params[] = $file_info['upload']['extension'];  // "extension"
-        $params[] = 0;  // PDF_preview_ID Add separate file from DB 2009/04/20 Y.Nakao 
-        $params[] = ""; // "file_prev", まずは空で登録 2008/07/22 追加
-        if($prev_flg == "true"){
-            // PDFの場合、プレビュー用の名前を事前登録する。
-            // プレビューの画像をアップロードした後でレコードをアップデートできない(insertがコミットされていないのにupdateはできないため)
-            // Mod params (For create image-file thumbnail using gd)  2010/02/16 K.Ando --start--
-            //$params[] = str_replace("pdf","png",$file_info['upload']['file_name']);
-            $params[] = $file_info['upload']['physical_file_name'].".png";
-            // Mod params (For create image-file thumbnail using gd)  2010/02/16 K.Ando --end--
-        } else {
-            $params[] = "";             // "file_prev_name"空
-        }
-        $params[] = $file_info['license_id'];   // "license_id"
-        $params[] = $file_info['license_notation']; // "license_notation"
-        $params[] = ""; // "pub_date"
-        $params[] = ""; // "flash_pub_date"
-        $params[] = $file_info['item_type_id']; // "item_type_id"
-        $params[] = 0;  // "browsing_flag"
-        $params[] = 0;  // "create_cover_flag"
-        $params[] = $this->ins_user_id; // "ins_user_id"
-        $params[] = $this->mod_user_id; // "mod_user_id"
-        $params[] = ""; // "del_user_id"
-        $params[] = $this->edit_start_date; // "ins_date"
-        $params[] = $this->edit_start_date; // "mod_date" 
-        $params[] = ""; // "del_date"
-        $params[] = 0;  // "is_delete"
-        //INSERT実行
-        if($duplicateUpdate){
-            $result = $this->insertOrUpdateFile($params, $errMsg);  
-        } else {
-            $result = $this->insertFile($params, $errMsg);  
-        }        
-        if ($result === false) {
-            $this->failTrans(); 
-            // delete upload file and make thumbnail file
-            if(file_exists($filePath.$fileName)){
-                unlink($filePath.$fileName);
-                if(file_exists($filePath.$fileName.".png")){
-                    unlink($filePath.$fileName.".png");
-                }
-            } 
-            return false;
-        }
+        // Add File replace T.Koyasu 2016/02/29 --end--
         
         // PDFのプレビュー化処理を追加 2008/07/22 Y.Nakao --start--
         // 外部コマンドをDBから取得する 2008/08/07 Y.Nakao --start--
         if($prev_flg == "true"){
+            $businessContentFileTransaction->updateFilePrevName($file_info['item_id'], $file_info['attribute_id'], $file_info['file_no'], $file_info['upload']['physical_file_name'].".png");
+            
             // PDFのプレビューファイルをBLOBのカラムへ登録
             $ret = $this->Db->updateBlobFile(
                 'repository_file',
                 'file_prev',
                 $filePath.$fileName. ".png", 
-                'item_id = '. $params[0]. " AND ".
-                'item_no = '. $params[1]. " AND ".
-                'attribute_id = '. $params[2]. " AND ".
-                'file_no = '. $params[3],
+                'item_id = '. $file_info['item_id']. " AND ".
+                'item_no = '. $file_info['item_no']. " AND ".
+                'attribute_id = '. $file_info['attribute_id']. " AND ".
+                'file_no = '. $file_info['file_no'],
                 'LONGBLOB'
             );
             if ($ret === false) {
@@ -1094,26 +743,19 @@ class ItemRegister extends RepositoryAction
                 return false;
             }
         }
-        // delete upload file and make thumbnail file
-        if($delFileFlag)
-        {
-            if(file_exists($filePath.$fileName)){
-                unlink($filePath.$fileName);
-            }
-            if(file_exists($filePath.$fileName.".png")){
-                unlink($filePath.$fileName.".png");
-            }
-        }
+        
         return true;
     }
     
     /**
-     * delete file recorde
+     * delete file record
+     * ファイル削除
      *
-     * @param $file
-     * @param $file_price
-     * @param $errMsg
-     * @return unknown
+     * @param array $file File information ファイル情報
+     *                    array["item_id"|"item_no"|"attribute_id"|"file_no"]
+     * @param boolean $file_price Price file flag 課金ファイルフラグ
+     * @param string $errMsg Error message エラーメッセージ
+     * @return boolean Result 結果
      */
     function deleteFile($file, $file_price, &$errMsg){
         // ファイル削除用クエリ
@@ -1180,20 +822,24 @@ class ItemRegister extends RepositoryAction
             }
         }
         
-        // コンテンツの物理削除 2013/6/12 A.Jin --start--
-        $this->removePhysicalFileAndFlashDirectory($file[RepositoryConst::DBCOL_REPOSITORY_FILE_ITEM_ID],        //item_id
-                                                   $file[RepositoryConst::DBCOL_REPOSITORY_FILE_ATTRIBUTE_ID],   //attribute_id
-                                                   $file[RepositoryConst::DBCOL_REPOSITORY_FILE_FILE_NO]);       //file_no
-        // コンテンツの物理削除 2013/6/12 A.Jin --end--
+        // Mod remove physical file T.Koyasu 2016/02/29 --start--
+        $businessName = "businessContentfiletransaction";
+        $business = BusinessFactory::getFactory()->getBusiness($businessName);
+        $business->delete($file['item_id'], $file['attribute_id'], $file['file_no']);
+        // Mod remove physical file T.Koyasu 2016/02/29 --end--
         
         return true;
     }
     
     /**
-     * ファイル情報更新 upload file info
-     * entry to
-     *  ・ライセンス license
-     *  ・課金 price
+     * upload file info
+     * ファイル情報更新
+     * 
+     * @param array $file file information アップロードファイル情報
+     *                    array["item_id"|"item_no"|"attribute_id"|"file_no"]
+     *                    array["upload"]["mimetype"|"extension"|"file_name"]
+     * @param string $errMsg Error message エラーメッセージ
+     * @return boolean Result 結果
      */
     function updateFileLicense($file, &$errMsg){
         $query = "UPDATE ". DATABASE_PREFIX ."repository_file ".
@@ -1265,11 +911,8 @@ class ItemRegister extends RepositoryAction
             $params[] = $this->generateDateStr(9999, 1, 1);
         }
         
-        // flash_pub_date
-        // Add multimedia support 2012/08/27 T.Koyasu -start-
-        $flashDirPath = $this->getFlashFolder($file['item_id'], $file['attribute_id'], $file['file_no']);
         // add flash pub date of multimedia file
-        if($file['display_type'] == 2 || file_exists($flashDirPath. "/weko.flv") || $file['upload']['extension'] == "swf"){
+        if($file['display_type'] == 2){
         // Add multimedia support 2012/08/27 T.Koyasu -end-
             if($file['flash_embargo_flag'] == 1) {
                 // 公開日が過去日なら変更なし、未来日なら今日の日付
@@ -1314,10 +957,15 @@ class ItemRegister extends RepositoryAction
     }
     
     /**
-     * 課金ファイル情報登録 entry file info
-     * entry to
-     *  ・ライセンス license
-     *  ・課金 price
+     * entry file info
+     * 課金ファイル情報登録
+     *
+     * @param array $file file information アップロードファイル情報
+     *                    array["item_id"|"item_no"|"attribute_id"|"file_no"]
+     *                    array["upload"]["mimetype"|"extension"|"file_name"]
+     * @param string $errMsg Error message エラーメッセージ
+     * @param boolean $duplicateUpdate Duplicate update flag 更新フラグ
+     * @return boolean Result 結果
      */
     function entryFilePrice($file, &$errMsg, $duplicateUpdate=false){
         $params = array();
@@ -1346,10 +994,14 @@ class ItemRegister extends RepositoryAction
     }
     
     /**
-     * 課金ファイル情報更新 upload file price info
-     * entry to
-     *  ・ライセンス license
-     *  ・課金 price
+     * Update file price info
+     * 課金ファイル情報更新
+     * 
+     * @param array $file file information アップロードファイル情報
+     *                    array["item_id"|"item_no"|"attribute_id"|"file_no"]
+     *                    array["upload"]["mimetype"|"extension"|"file_name"]
+     * @param string $errMsg Error message エラーメッセージ
+     * @return boolean Result 結果
      */
     function updatePrice($file, &$errMsg){
         $price = "";
@@ -1390,15 +1042,20 @@ class ItemRegister extends RepositoryAction
     }
     
     /**
-     * サムネイル登録 entry thumbnail
+     * entry thumbnail
+     * サムネイル登録
      * entry to
      *  ・ file name ファイル名
      *  ・ file contents(BLOB) ファイル本体(BLOB)
-     * @param $file_info アップロードファイル情報
-     * @param $errMsg エラーメッセージ
-     * @param $filePath [optional]
-     * @param bool $delFileFlag [optional]
-     *
+     * 
+     * @param array $thumbnail file information アップロードファイル情報
+     *                         array["item_id"|"item_no"|"attribute_id"|"file_no"]
+     *                         array["upload"]["mimetype"|"extension"|"file_name"]
+     * @param string $errMsg Error message エラーメッセージ
+     * @param string $filePath file path ファイルパス
+     * @param bool $delFileFlag Delete file flag ファイル削除フラグ
+     * @param boolean $duplicateUpdate Duplicate update flag ファイル更新フラグ
+     * @return boolean Result 結果
      */
     function entryThumbnail(&$thumbnail, &$errMsg, $filePath="", $delFileFlag=true, $duplicateUpdate=false){
         // file upload path
@@ -1425,13 +1082,17 @@ class ItemRegister extends RepositoryAction
             }
             return false;
         }
+        
+        // ディレクトリセパレータが含まれないようにファイル名を抽出する
+        $thumbnailName = Repository_Components_Util_Stringoperator::extractFileNameFromFilePath($thumbnail['upload']['file_name']);
+        
         // Thumbnail
         $params = array();
         $params[] = $thumbnail['item_id'];  // item_id
         $params[] = $thumbnail['item_no'];  // item_no
         $params[] = $thumbnail['attribute_id']; // "attribute_id"
         $params[] = $thumbnail['file_no'];  // "file_no"
-        $params[] = $thumbnail['upload']['file_name'];  // "file_name"
+        $params[] = $thumbnailName;  // "file_name"
         $params[] = $thumbnail['show_order'];  // "show_order"
         $params[] = $thumbnail['upload']['mimetype'];       // "mime_type"
         $params[] = $thumbnail['upload']['extension'];  // "extension"
@@ -1472,7 +1133,7 @@ class ItemRegister extends RepositoryAction
             'LONGBLOB'
         );
         if ($ret === false) {
-            $errMsg = $this->Db->ErrorMsg(); 
+            $errMsg = "repository_error_failed_entry_thumbnail";
             $this->failTrans();             //トランザクション失敗を設定(ROLLBACK)
             // delete upload file
             if(file_exists($filePath.$fileName)){
@@ -1504,11 +1165,13 @@ class ItemRegister extends RepositoryAction
     }
     
     /**
-     * delete thumbnail recorde
+     * delete thumbnail record
+     * サムネイル削除
      *
-     * @param $file
-     * @param $errMsg
-     * @return unknown
+     * @param array $file file information ファイル情報
+     *                    array["item_id"|"item_no"|"attribute_id"|"file_no"]
+     * @param string $errMsg Error message エラーメッセージ
+     * @return boolean Result 結果
      */
     function deleteThumbnail($file, &$errMsg){
         // ファイル削除用クエリ
@@ -1544,10 +1207,18 @@ class ItemRegister extends RepositoryAction
     }
     
     /**
-     * メタデータ登録 entry meta data info
+     * entry meta data info
+     * メタデータ登録
      *
-     * @param $metadata entry metadata info
-     * @param $errMsg for return error message
+     * @param array $metadata entry metadata info メタデータ一覧
+     *                        array["item_id"|"item_no"|"attribute_id"|"personal_name_no"|"family"|"name"|"family_ruby"|"name_ruby"|"e_mail_address"|"item_type_id"|"author_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"show_order"|"mime_type"|"extension"|"file"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"display_name"|"display_type"|"show_order"|"mime_type"|"extension"|"prev_id"|"file_prev"|"file_prev_name"|"license_id"|"license_notation"|"pub_date"|"flash_pub_date"|"item_type_id"|"browsing_flag"|"cover_created_flag"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_id"|"item_no"|"attribute_id"|"biblio_no"|"biblio_name"|"biblio_name_english"|"volume"|"issue"|"start_page"|"end_page"|"date_of_issued"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"display_name"|"display_type"|"show_order"|"mime_type"|"extension"|"prev_id"|"file_prev"|"file_prev_name"|"license_id"|"license_notation"|"pub_date"|"flash_pub_date"|"item_type_id"|"browsing_flag"|"cover_created_flag"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"|"price"]
+     *                        array["item_id"|"item_no"|"attribute_id"|"supple_no"|"item_type_id"|"supple_weko_item_id"|"supple_title"|"supple_title_en"|"uri"|"supple_item_type_name"|"mime_type"|"file_id"|"supple_review_status"|"supple_review_date"|"supple_reject_status"|"supple_reject_date"|"supple_reject_reason"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_id"|"item_no"|"attribute_id"|"attribute_no"|"attribute_value"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     * @param string $errMsg Error message エラーメッセージ
      * @return true : success
      *         false: error
      */
@@ -1735,11 +1406,15 @@ class ItemRegister extends RepositoryAction
     }
     
     /**
-     * 所属インデックス登録 entry position index info
+     * entry position index info
+     * 所属インデックス登録
      * 
-     * @param array $item
-     * @param array $index
-     * @param string $errMsg
+     * @param array $item Item information アイテム情報
+     *                    array["item"][$ii]["item_id"|"item_no"]
+     * @param array $index Index information インデックス情報
+     *                     array[$ii]["index_id"]
+     * @param string $errMsg Error message エラーメッセージ
+     * @return boolean Result 結果
      */
     function entryPositionIndex($item, $index, &$errMsg){
         // Fix check index_id Y.Nakao 2013/06/07 --start--
@@ -1889,10 +1564,18 @@ class ItemRegister extends RepositoryAction
     }
     
     /**
-     * リンク情報登録 entry link info
+     * entry link info
+     * リンク情報登録 
      * entry to
      *  ・アイテム登録先インデックス position index
      *  ・アイテム間リンク reference
+     * 
+     * @param array $item Item information アイテム情報
+     *                    array["item_id"|"item_no"]
+     * @param array $link Link information リンク情報
+     *                    array[$ii]["item_id"|"item_no"|"relation"]
+     * @param string $errMsg Error message エラーメッセージ
+     * @return boolean Result 結果
      */
     function entryReference($item, $link, &$errMsg){
         // 参照(リンク)用クエリー (挿入)
@@ -2001,7 +1684,25 @@ class ItemRegister extends RepositoryAction
     }
     
     /**
+     * All registration information scrutiny
      * 全登録情報精査
+     *
+     * @param array $item_attr_type Item attr type information メタデータ項目情報
+     *                              array[$ii]["item_type_id"|"attribute_id"|"show_order"|"attribute_name"|"attribute_short_name"|"input_type"|"is_required"|"plural_enable"|"line_feed_enable"|"list_view_enable"|"hidden"|"junii2_mapping"|"dublin_core_mapping"|"lom_mapping"|"lido_mapping"|"spase_mapping"|"display_lang_type"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     * @param array $item_num_attr Item number information メタデータ数情報
+     *                             array[$ii]
+     * @param array $item_attr Item attr information メタデータ情報
+     *                         array[$ii][$jj]["item_id"|"item_no"|"attribute_id"|"personal_name_no"|"family"|"name"|"family_ruby"|"name_ruby"|"e_mail_address"|"item_type_id"|"author_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                         array[$ii][$jj]["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"show_order"|"mime_type"|"extension"|"file"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                         array[$ii][$jj]["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"display_name"|"display_type"|"show_order"|"mime_type"|"extension"|"prev_id"|"file_prev"|"file_prev_name"|"license_id"|"license_notation"|"pub_date"|"flash_pub_date"|"item_type_id"|"browsing_flag"|"cover_created_flag"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                         array[$ii][$jj]["item_id"|"item_no"|"attribute_id"|"biblio_no"|"biblio_name"|"biblio_name_english"|"volume"|"issue"|"start_page"|"end_page"|"date_of_issued"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                         array[$ii][$jj]["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"display_name"|"display_type"|"show_order"|"mime_type"|"extension"|"prev_id"|"file_prev"|"file_prev_name"|"license_id"|"license_notation"|"pub_date"|"flash_pub_date"|"item_type_id"|"browsing_flag"|"cover_created_flag"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"|"price"]
+     *                         array[$ii][$jj]["item_id"|"item_no"|"attribute_id"|"supple_no"|"item_type_id"|"supple_weko_item_id"|"supple_title"|"supple_title_en"|"uri"|"supple_item_type_name"|"mime_type"|"file_id"|"supple_review_status"|"supple_review_date"|"supple_reject_status"|"supple_reject_date"|"supple_reject_reason"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                         array[$ii][$jj]["item_id"|"item_no"|"attribute_id"|"attribute_no"|"attribute_value"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     * @param string $type Input type 入力タイプ
+     * @param string $errMsg Error message エラーメッセージ
+     * @param string $warning Warning message 警告メッセージ
+     * @return boolean Result 結果
      */
     function checkEntryInfo($item_attr_type, $item_num_attr, $item_attr, $type, &$err_msg, &$warning){
         $smarty_assign = $this->Session->getParameter("smartyAssign");
@@ -2063,8 +1764,8 @@ class ItemRegister extends RepositoryAction
                                     array_push($err_msg, $msg);
                                     $istest = false;
                                 }
-                                if($room_id_array[$price_num] == "" || 
-                                    $price_array[$price_num] == "" || 
+                                if(strlen($room_id_array[$price_num]) == 0 || 
+                                    strlen($price_array[$price_num]) == 0 || 
                                     !is_numeric($price_array[$price_num])){
                                     // ルームIDもしくは価格が設定されていない場合、価格が数字ではない場合、エラー
                                     $msg = $smarty_assign->getLang("repository_item_error_price");
@@ -2074,7 +1775,7 @@ class ItemRegister extends RepositoryAction
                             }
                         }
                         // オープンアクセス日指定のみ精査
-                        if($item_attr[$ii][$jj]['embargo_flag'] != 2){
+                        if(!isset($item_attr[$ii][$jj]['embargo_flag']) || $item_attr[$ii][$jj]['embargo_flag'] != 2){
                             continue;
                         }
                         // 公開日指定のみチェック
@@ -2195,6 +1896,16 @@ class ItemRegister extends RepositoryAction
         return true;
     }
     
+    /**
+     * Item basic information scrutiny
+     * アイテム基本情報精査
+     *
+     * @param array $item Item information アイテム情報
+     *                    array["item_id"|"item_no"|"revision_no"|"item_type_id"|"title"|"title_english"|"language"|"serch_key"|"serch_key_english"|"pub_year"|"pub_month"|"pub_day"]
+     * @param string $errMsg Error message エラーメッセージ
+     * @param string $warning Warning message 警告メッセージ
+     * @return boolean Result 結果
+     */
     function checkBaseInfo($item, &$err_msg, &$warning){
         $smarty_assign = $this->Session->getParameter("smartyAssign");
         if(is_null($smarty_assign))
@@ -2281,11 +1992,14 @@ class ItemRegister extends RepositoryAction
     }
     
     /**
+     * Registration index check
      * 登録インデックスチェック
      *
-     * @param unknown_type $indice 検査対象インデックス情報
-     * @param unknown_type $err_msg エラーメッセージ
-     * @param unknown_type $warning 警告
+     * @param array $indice Index inforamtion 検査対象インデックス情報
+     *                      array[$ii]
+     * @param string $errMsg Error message エラーメッセージ
+     * @param string $warning Warning message 警告メッセージ
+     * @return boolean Result 結果
      */
     function checkIndex($indice, &$err_msg, &$warning){
         $smarty_assign = $this->Session->getParameter("smartyAssign");
@@ -2302,8 +2016,13 @@ class ItemRegister extends RepositoryAction
     }
     
     /**
-     * [[機能説明]]
+     * Return date of data (int) in the date string
      * 年月日のデータ(int)を日付文字列にして返す
+     * 
+     * @param int $year Year 年
+     * @param int $month Month 月
+     * @param int $day Day 日
+     * @return string Date 日付
      */
     function generateDateStr($year, $month, $day){
         $str_year = strval($year);
@@ -2318,10 +2037,12 @@ class ItemRegister extends RepositoryAction
     
     // create image-file thumbnail using gd 2010/02/16 K.Ando --start--
     /**
-     * create thumnail image using GD 
+     * create thumnail image using GD
+     * ファイルプレビュー画像を作成
      *
-     * @param $image image file
-     * @param $filepath upload file path
+     * @param resource $image image file 画像イメージ
+     * @param string $filepath upload file path ファイルパス
+     * @return boolean Result 結果
      */
     function createThumbnailImage(&$image, $filepath)
     {
@@ -2373,10 +2094,11 @@ class ItemRegister extends RepositoryAction
     
     /**
      * Convert bmp to GD Object
+     * BMPに変換
      *
-     * @param $src
-     * @param $dest
-     * @return GD image
+     * @param string $src Input file path 入力ファイルパス
+     * @param string $dest Output file path 出力ファイルパス
+     * @return boolean Result 結果
      */
     function ConvertBMP2GD($src, $dest = false) {
         if(!($src_f = fopen($src, "rb"))) {
@@ -2484,9 +2206,10 @@ class ItemRegister extends RepositoryAction
     
     /**
      * create GD image by bmp  
+     * GD画像を作成する
      *
-     * @param $filename bmp file path
-     * @return GD image
+     * @param string $filename bmp file path ファイルパス
+     * @return resource Image イメージ
      */
     function imagecreatefrombmp($filename) {
         $tmp_name = $filename."bk"; 
@@ -2503,51 +2226,23 @@ class ItemRegister extends RepositoryAction
     // Add Contributor(Posted agency) A.Suzuki 2011/12/13 --start--
     /**
      * Update ins_user_id For Contributor
+     * 挿入ユーザIDを更新
      *
-     * @param int $item_id
-     * @param string $user_id
+     * @param int $item_id Item id アイテムID
+     * @param string $user_id User id ユーザID
+     * @return boolean Result 結果
      */
     function updateInsertUserIdForContributor($item_id, $user_id)
     {
         // Update ins_user_id
-        $query = "UPDATE ".DATABASE_PREFIX.RepositoryConst::DBTABLE_REPOSITORY_ITEM." AS item ".
-                 "LEFT JOIN ".DATABASE_PREFIX.RepositoryConst::DBTABLE_REPOSITORY_BIBLIO_INFO." AS biblio ".
-                 "ON item.item_id = biblio.item_id AND item.item_no = biblio.item_no ".
-                 "LEFT JOIN ".DATABASE_PREFIX.RepositoryConst::DBTABLE_REPOSITORY_FILE." AS file ".
-                 "ON item.item_id = file.item_id AND item.item_no = file.item_no ".
-                 "LEFT JOIN ".DATABASE_PREFIX.RepositoryConst::DBTABLE_REPOSITORY_FILE_PRICE." AS filePrice ".
-                 "ON item.item_id = filePrice.item_id AND item.item_no = filePrice.item_no ".
-                 "LEFT JOIN ".DATABASE_PREFIX.RepositoryConst::DBTABLE_REPOSITORY_ITEM_ATTR." AS attr ".
-                 "ON item.item_id = attr.item_id AND item.item_no = attr.item_no ".
-                 "LEFT JOIN ".DATABASE_PREFIX.RepositoryConst::DBTABLE_REPOSITORY_PERSONAL_NAME." AS name ".
-                 "ON item.item_id = name.item_id AND item.item_no = name.item_no ".
-                 "LEFT JOIN ".DATABASE_PREFIX.RepositoryConst::DBTABLE_REPOSITORY_POSITION_INDEX." AS posIndex ".
-                 "ON item.item_id = posIndex.item_id AND item.item_no = posIndex.item_no ".
-                 "LEFT JOIN ".DATABASE_PREFIX.RepositoryConst::DBTABLE_REPOSITORY_REFERENCE." AS reference ".
-                 "ON item.item_id = reference.org_reference_item_id AND item.item_no = reference.org_reference_item_no ".
-                 "LEFT JOIN ".DATABASE_PREFIX.RepositoryConst::DBTABLE_REPOSITORY_THUMBNAIL." AS thumbnail ".
-                 "ON item.item_id = thumbnail.item_id AND item.item_no = thumbnail.item_no ".
-                 "SET ".
-                 "biblio.ins_user_id = ?, ".
-                 "file.ins_user_id = ?, ".
-                 "filePrice.ins_user_id = ?, ".
-                 "item.ins_user_id = ?, ".
-                 "attr.ins_user_id = ?, ".
-                 "name.ins_user_id = ?, ".
-                 "posIndex.ins_user_id = ?, ".
-                 "reference.ins_user_id = ?, ".
-                 "thumbnail.ins_user_id = ? ".
-                 "WHERE item.item_id = ? ".
-                 "AND item.item_no = ?;";
+        $query = "UPDATE ".DATABASE_PREFIX.RepositoryConst::DBTABLE_REPOSITORY_ITEM." ".
+                 "SET ins_user_id = ? ".
+                 "WHERE item_id = ? ".
+                 "AND item_no = ?;";
         $params = array();
-        for($ii=0; $ii<9; $ii++)
-        {
-            // ins_user_id
-            $params[] = $user_id;
-        }
-        // item_id, item_no
-        $params[] = $item_id;
-        $params[] = 1;
+        $params[] = $user_id; // ins_user_id
+        $params[] = $item_id; // item_id
+        $params[] = 1;        // item_no
         $result = $this->Db->execute($query, $params);
         if($result===false){
             return false;
@@ -2559,8 +2254,9 @@ class ItemRegister extends RepositoryAction
     
     /**
      * Get isValidFfmpeg parameter
+     * isValidFfmpeg取得
      *
-     * @return bool
+     * @return boolean isValidFfmpeg ffmpegが有効か
      */
     public function getIsValidFfmpeg()
     {
@@ -2574,8 +2270,7 @@ class ItemRegister extends RepositoryAction
     // Add multimedia support 2012/08/27 T.Koyasu -start-
     /**
      * check ffmpeg command
-     * 
-     * @return bool 
+     * ffmpegコマンドパスチェック
      */
     private function checkPathForFfmpeg()
     {
@@ -2609,15 +2304,19 @@ class ItemRegister extends RepositoryAction
     }
     
     /**
-     * convert upload file to flv
+     * A file with a specific mimetype converted to flash files, returns the path list of the flash file after return
+     * 特定のmimetypeを持つファイルをflashファイルに変換し、返還後のflashファイルのパス一覧を返す
      *
-     * @param array $fileInfo
-     * @param string $errMsg
-     * @param string $uploadFilePath
-     * @return bool
+     * @param string $uploadFilePath File path ファイルパス
+     * @param string $extension Extension 拡張子
+     * @param string $mimetype mimetype mimetype
+     * @param string $errMsg Error message エラーメッセージ
+     * @return array Flash file list flash化したファイルの一覧
+     *               array[$ii]
      */
-    public function convertFileToFlv($fileInfo, &$errMsg, $uploadFilePath)
+    public function convertFileToFlv($uploadFilePath, $extension, $mimeType, &$errMsg)
     {
+        $flashList = null;
         if(!isset($this->isValidFfmpeg)){
             $this->checkPathForFfmpeg();
         }
@@ -2668,9 +2367,9 @@ class ItemRegister extends RepositoryAction
         // ffmpeg有効時
         if($this->isValidFfmpeg){
             // 基本的にはMIMETYPEから動画ファイルかを判別する(nutだけは拡張子で判定)
-            if(preg_match('/^(audio|video)\/((x-(m(4v|s-asf|svideo|s-wmv)|flv|matroska|monkeys-audio|mpeg(url|2|2a|)|omg|tta|twinvq(-plugin|)|wav))|(3gpp|avi|mp([3-4]|eg(url|)|g)|ogg)|tta|vnd\.wave|msvideo|quicktime|wavelet)$/', $fileInfo['upload']['mimetype']) === 1 || 
-               preg_match('/^application\/(vnd\.smaf|x-smaf|ogg)$/', $fileInfo['upload']['mimetype']) === 1 || 
-               $fileInfo['upload']['extension'] == "nut"){
+            if(preg_match('/^(audio|video)\/((x-(m(4v|s-asf|svideo|s-wmv)|flv|matroska|monkeys-audio|mpeg(url|2|2a|)|omg|tta|twinvq(-plugin|)|wav))|(3gpp|avi|mp([3-4]|eg(url|)|g)|ogg)|tta|vnd\.wave|msvideo|quicktime|wavelet)$/', $mimeType) === 1 || 
+               preg_match('/^application\/(vnd\.smaf|x-smaf|ogg)$/', $mimeType) === 1 || 
+               $extension == "nut"){
                 // コマンドのパスを取得
                 $query = "SELECT `param_value` ".
                          "FROM `". DATABASE_PREFIX. RepositoryConst::DBTABLE_REPOSITORY_PARAMETER. "` ".
@@ -2684,9 +2383,6 @@ class ItemRegister extends RepositoryAction
                 $ffmpegDirPath = $result[0]['param_value'];
                 
                 if(file_exists($ffmpegDirPath."ffmpeg") || file_exists($ffmpegDirPath."ffmpeg.exe")){
-                    // create flash directory
-                    $flashDirPath = $this->makeFlashFolder($fileInfo['item_id'], $fileInfo['attribute_id'], $fileInfo['file_no']);
-                    
                     // create temp directory
                     $this->infoLog("businessWorkdirectory", __FILE__, __CLASS__, __LINE__);
                     $businessWorkdirectory = BusinessFactory::getFactory()->getBusiness('businessWorkdirectory');
@@ -2704,40 +2400,31 @@ class ItemRegister extends RepositoryAction
                     exec($cmd, $out, $result);
                     if($result !== 0){
                         $errMsg = "ffmpeg convert error";
-                        // remove temp directory & temp file
-                        unlink($tempFilePath);
-                        $this->removeDirectory($tempDirPath);
-                        return false;
+                        return array();
                     }
                     
-                    // file copy to flash directory
-                    $flvFilePath = $flashDirPath. DIRECTORY_SEPARATOR. "weko.flv";
-                    // remove existing flv file
-                    if(file_exists($flvFilePath)){
-                        unlink($flvFilePath);
-                    }
-                    copy($tempFilePath, $flvFilePath);
-                    
-                    // remove temp directory & temp file
-                    unlink($tempFilePath);
-                    $this->removeDirectory($tempDirPath);
+                    $flashList = array();
+                    array_push($flashList, $tempFilePath);
                 }
             }
         }
         
-        return true;
+        return $flashList;
     }
     // Add multimedia support 2012/08/27 T.Koyasu -end-
     
     // Add multimedia support 2013/10/02 K.Matsuo --start--
     /**
      * swap show_order
+     * 表示順序入替
      *
-     * @param $file1
-     * @param $file2
-     * @param $dbName
-     * @param $errMsg
-     * @return swapFlag
+     * @param array $file1 File information ファイル情報
+     *                     array["item_id"|"item_no"|"file_no"|"attribute_id"]
+     * @param array $file2 File information ファイル情報
+     *                     array["item_id"|"item_no"|"file_no"|"attribute_id"]
+     * @param string $dbName
+     * @param string $errMsg Error message エラーメッセージ
+     * @return boolean Result 結果
      */
     function swapFileShowOrder($file1, $file2, $dbName, &$errMsg)
     {
@@ -2794,12 +2481,12 @@ class ItemRegister extends RepositoryAction
     // Add e-person 2013/10/22  R.Matsuura --start--
     /**
      * insert send feedback mail author id
+     * 利用統計フィードバックメール送信著者挿入
      *
-     * @param int $itemId
-     * @param int $itemNo
-     * @param int $authorIdNo
-     * @param int $authorId
-     * @return bool
+     * @param int $itemId Item id アイテムID
+     * @param int $itemNo Item serial number アイテム通番
+     * @param int $authorIdNo Author id number 著者ID通番
+     * @param int $authorId Author id 著者ID
      */
     public function insertFeedbackMailAuthorId($itemId, $itemNo, $authorIdNo, $authorId)
     {
@@ -2826,10 +2513,11 @@ class ItemRegister extends RepositoryAction
     
     /**
      * delete record from send_feedback_author_id table by itemID and itemNo
+     * 利用統計フィードバックメール送信著者削除
      *
-     * @param int $itemId
-     * @param int $itemNo
-     * @return bool
+     * @param int $itemId Item id アイテムID
+     * @param int $itemNo Item serial number アイテム通番
+     * @return boolean Result 結果
      */
     public function deleteFeedbackMailAuthorId($itemId, $itemNo)
     {
@@ -2851,9 +2539,10 @@ class ItemRegister extends RepositoryAction
     
     /**
      * get Author ID by mail address
+     * 著者ID取得
      *
-     * @param string $feedbackMailaddress
-     * @return author_id
+     * @param string $feedbackMailaddress Mail address メールアドレス
+     * @return author_id Author id 著者ID
      */
     public function getAuthorIdByMailAddress($feedbackMailaddress)
     {
@@ -2874,6 +2563,131 @@ class ItemRegister extends RepositoryAction
         return $result_select[0]['author_id'];
     }
     // Add e-person 2013/10/22  R.Matsuura --end--
+    
+    /**
+     * Registering a new file
+     * ファイルを新規登録する
+     *
+     * @param array $fileInfo Table preserving information of the registered file 登録するファイルのテーブル保存用情報
+     * @param string $insertFilePath The path of the registration file 登録するファイルのパス
+     * @param string $insertFlashFilePathList Path list of flash files to be registered 登録するflashファイルのパス一覧
+     * @param bool $duplicateUpdate Overwrite flag 上書きフラグ
+     */
+    private function insertRepositoryFile(&$fileInfo, $insertFilePath, $insertFlashFilePathList, $duplicateUpdate=false){
+        $businessContentFileTransaction = BusinessFactory::getFactory()->getBusiness("businessContentfiletransaction");
+        $fileInfo["file_no"] = $businessContentFileTransaction->insert($fileInfo['item_id'], $fileInfo['attribute_id'], $insertFilePath, $insertFlashFilePathList);
+        
+        // ディレクトリセパレータが含まれないようにファイル名を抽出する
+        $fileName = Repository_Components_Util_Stringoperator::extractFileNameFromFilePath($fileInfo['upload']['file_name']);
+        
+        // Insert
+        $params = array();
+        $params[] = $fileInfo['item_id'];  // item_id
+        $params[] = $fileInfo['item_no'];  // item_no
+        $params[] = $fileInfo['attribute_id']; // "attribute_id"
+        $params[] = $fileInfo['file_no'];  // "file_no"
+        $params[] = $fileName;  // "file_name"
+        $params[] = $fileInfo['display_name']; // "display_name"
+        if($fileInfo['display_type'] != ""){
+            $params[] = $fileInfo['display_type']; // "display_type"
+        } else {
+            $params[] = 0;  // "display_type"空
+        }
+        $params[] = $fileInfo['show_order'];  // "show_order"
+        $params[] = $fileInfo['upload']['mimetype'];       // "mime_type"
+        $params[] = $fileInfo['upload']['extension'];  // "extension"
+        $params[] = 0;  // PDF_preview_ID Add separate file from DB 2009/04/20 Y.Nakao 
+        $params[] = ""; // "file_prev", まずは空で登録 2008/07/22 追加
+        $params[] = "";             // "file_prev_name" まずは空で登録
+        $params[] = $fileInfo['license_id'];   // "license_id"
+        $params[] = $fileInfo['license_notation']; // "license_notation"
+        $params[] = ""; // "pub_date"
+        $params[] = ""; // "flash_pub_date"
+        $params[] = $fileInfo['item_type_id']; // "item_type_id"
+        $params[] = 0;  // "browsing_flag"
+        $params[] = 0;  // "create_cover_flag"
+        $params[] = $this->ins_user_id; // "ins_user_id"
+        $params[] = $this->mod_user_id; // "mod_user_id"
+        $params[] = ""; // "del_user_id"
+        $params[] = $this->edit_start_date; // "ins_date"
+        $params[] = $this->edit_start_date; // "mod_date" 
+        $params[] = ""; // "del_date"
+        $params[] = 0;  // "is_delete"
+        //INSERT実行
+        if($duplicateUpdate){
+            $query = "INSERT INTO ". DATABASE_PREFIX ."repository_file ".
+                 "VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ";
+            $query .= " ON DUPLICATE KEY UPDATE  ".
+                  " display_name=VALUES(`display_name`), ".
+                  " display_type=VALUES(`display_type`), show_order=VALUES(`show_order`), ".
+                  " prev_id=VALUES(`prev_id`), file_prev=VALUES(`file_prev`), ".
+                  " file_prev_name=VALUES(`file_prev_name`), ".
+                  " license_id=VALUES(`license_id`), license_notation=VALUES(`license_notation`), ".
+                  " pub_date=VALUES(`pub_date`), item_type_id=VALUES(`item_type_id`), ".
+                  " browsing_flag=VALUES(`browsing_flag`), cover_created_flag=0, mod_user_id=VALUES(`mod_user_id`), ".
+                  " del_user_id=VALUES(`del_user_id`), mod_date=VALUES(`mod_date`), ".
+                  " del_date=VALUES(`del_date`), is_delete=VALUES(`is_delete`); ";
+        } else {
+            $query = "INSERT INTO ". DATABASE_PREFIX ."repository_file ".
+                     " VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?); ";
+        }
+        //INSERT実行
+        $this->executeSql($query, $params);
+    }
+    
+    /**
+     * Create the file name from (with path) directories recursively
+     * ファイル名（パス付）からディレクトリを再帰的に作成する
+     *
+     * @param string $baseDir ディレクトリの作成元ディレクトリ
+     * @param string $fileNameWithPath ファイル名（パス付）
+     */
+    private function makeRecursiveDirectory($baseDir, $fileNameWithPath) {
+        // ファイル名は相対パスで指定されることがあるため、リネーム先のディレクトリにリネーム元と同じ階層を作成する
+        $filePathSplited = preg_split('/[\/\\\\]+/', $fileNameWithPath);
+        if(count($filePathSplited) > 1) {
+            $relativePath = $baseDir;
+            for($ii = 0; $ii < count($filePathSplited)-1; $ii++) {
+                $relativePath .= $filePathSplited[$ii]."/";
+                Repository_Components_Util_OperateFileSystem::mkdir($relativePath);
+            }
+        }
+    }
+    
+    /**
+     * Entry model of item base information
+     * アイテム基本情報の雛形を登録する
+     *
+     * @param int $item_id Item ID アイテムID
+     * @param int $item_no Item No アイテム通番
+     * @param int $item_type_id Item type ID アイテムタイプID
+     * @param string $title Title タイトル
+     * @param string $title_english English title 英語タイトル
+     * @param string $language Language 言語
+     */
+    public function entryItemModel($item_id, $item_no, $item_type_id, $title, $title_english, $language) {
+        $item = array();
+        $item["item_id"] = $item_id;
+        $item["item_no"] = $item_no;
+        $item["title"] = $title;
+        $item["title_english"] = $title_english;
+        $item["language"] = $language;
+        $item["item_type_id"] = $item_type_id;
+        $item["serch_key"] = "";
+        $item["serch_key_english"] = "";
+        $item["pub_year"] = "";
+        $item["pub_month"] = "";
+        $item["pub_day"] = "";
+        $result = $this->entryItem($item, $error);
+        if($result === false){
+            // upload failed
+            $this->errorLog($error, __FILE__, __CLASS__, __LINE__);
+            $exception = new AppException($error);
+            $exception->addError($error);
+            throw $exception;
+        }
+    }
+
 }
 
 ?>

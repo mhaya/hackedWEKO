@@ -3,7 +3,7 @@
 /**
 // --------------------------------------------------------------------
 //
-// $Id: style.css 49367 2015-03-05 00:45:00Z shota_suzuki $
+// $Id: style.css 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics,
 // Research and Development Center for Scientific Information Resources
@@ -641,6 +641,7 @@ a.white:hover { color:#fff !important; }
 
 /* 背景 */
 .bg_eee { background-color:#eeeeee !important; }
+.bg_fff { background-color:#ffffff !important; }
 
 /* ime-mode
 ---------------------------------------------*/
@@ -1504,6 +1505,14 @@ th.th_detail_line_repos, td.td_detail_line_repos {
 	font-weight:bold;
 	background:#fffaf4;
 	border:1px solid #ffead5;
+}
+.success_msg {
+	margin-bottom:10px;
+	padding:10px;
+	color:#49B492;
+	font-weight:bold;
+	background:#C8FFC8;
+	border:1px solid #B3F9B3;
 }
 #doc_title {
 	margin-bottom:10px;
@@ -2528,6 +2537,21 @@ img.draganddrop {
 	overflow-x:hidden;
 	padding:10px 15px 5px 10px;
 }
+.dotImage{
+	background-image: url("<{$smarty.const.CORE_BASE_URL}>/images/repository/default/dot.gif");
+	background-repeat: repeat-x;
+	background-position: 0% 50%;
+	margin: 0px;
+	padding: 0px;
+}
+.imageSize{
+	width: 60%;
+//	max-width: 200px;
+}
+.iframeSize{
+	max-width: 600px;
+}
+
 /**
  * link color setting for galleryView
  */
@@ -2544,12 +2568,13 @@ img.draganddrop {
 	color: #FFEEFF;
 }
 
-// hackedWeko
-iframe.hackedWekoItem{
-    width: 60%;
-    //height: 320px;
-}
-img.hackedWekoItem{
-    width: 60%;
-    //height: 200px;
+/**
+ * tr list mouse over
+ */
+.line_report_list {}
+.line_report_list:hover
+{
+	color:#e26507 !important;
+    background-color: #F6FAF7 !important;
+	cursor: default;
 }

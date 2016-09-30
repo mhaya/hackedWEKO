@@ -1,25 +1,36 @@
 <?php
+
+/**
+ * Send usage statistics feddback mail class
+ * 利用統計フィードバックメール送信クラス
+ *
+ * @package     WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Usagestatisticsmail.class.php 53594 2015-05-28 05:25:53Z kaede_matsushita $
+// $Id: Usagestatisticsmail.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
-// Copyright (c) 2007 - 2008, National Institute of Informatics, 
+// Copyright (c) 2007 - 2008, National Institute of Informatics,
 // Research and Development Center for Scientific Information Resources
 //
 // This program is licensed under a Creative Commons BSD Licence
 // http://creativecommons.org/licenses/BSD/
 //
 // --------------------------------------------------------------------
-
-/* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
 
 /**
- * Usagestatisticsmail
+ * Send usage statistics feddback mail class
+ * 利用統計フィードバックメール送信クラス
  *
- * @package     NetCommons
- * @author      A.Suzuki(IVIS)
- * @project     NetCommons Project, supported by National Institute of Informatics
+ * @package     WEKO
+ * @copyright   (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license     http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
  * @access      public
  */
 class Repository_Action_Common_Usagestatisticsmail extends RepositoryAction
@@ -28,54 +39,84 @@ class Repository_Action_Common_Usagestatisticsmail extends RepositoryAction
     // Request parameters
     //----------------------------
     /**
-     * login_id
+     * login id
+     * NC2ログインID
      *
      * @var string
      */
     public $login_id = null;
     /**
      * password to login
+     * NC2ログインパスワード
      *
      * @var string
      */
     public $password = null;
     /**
-     * year
+     * year for feedback
+     * フィードバック対象年
      *
      * @var int
      */
     public $year = null;
     /**
-     * month
+     * month for feedback
+     * フィードバック対象月
+     *
      *
      * @var int
      */
     public $month = null;
     /**
-     * user_authority_id
+     * user authority id
+     * ユーザーベース権限
      *
      * @var int
      */
     public $user_authority_id = "";
     /**
-     * authority_id
+     * authority id
+     * ユーザールーム権限
      *
      * @var int
      */
     public $authority_id = "";
     /**
-     * user_id
+     * user id
+     * ユーザーID
      *
      * @var string
      */
     public $user_id = "";
     /**
      * language
+     * 表示言語
      *
      * @var string
      */
     public $lang = "";
-    
+    /**
+     * Wait time of retrying socket open (sec)
+     * ソケットオープン再試行時の待ち時間 (秒)
+     *
+     * @var int
+     */
+    const SOCKOPEN_WAIT_SEC_TIME_RETRY = 1;
+    /**
+     * Try count of socket open
+     * ソケットオープンの試行回数
+     *
+     * @var int
+     */
+    const SOCKOPEN_TRY_COUNT = 4;
+
+    /**
+     * Execute
+     * 実行
+     *
+     * @return null
+     * @throws AppException
+     */
     function executeApp() {
         //アクション初期化処理
         $result = $this->initAction();
@@ -204,11 +245,13 @@ class Repository_Action_Common_Usagestatisticsmail extends RepositoryAction
     }
     
     /**
-     * Call another process by async
+     * Call next request of usage statistics mail
+     * 次のフィードバックメール送信のリクエストを呼び出す
      *
-     * @return bool
+     * @return bool Whether or not to success calling request
+     *               リクエスト呼び出しが成功したか否か
      */
-    public function callAnotherProcessByAsync() {
+    private function callAnotherProcessByAsync() {
         // Request parameter for next URL
         $nextRequest = BASE_URL."/?action=repository_action_common_usagestatisticsmail".
                        "&year=".$this->year."&month=".$this->month."&lang=".$this->lang.
@@ -228,8 +271,23 @@ class Repository_Action_Common_Usagestatisticsmail extends RepositoryAction
             $hostSock = "ssl://".$hostName;
         }
         
-        $handle = fsockopen($hostSock, $_SERVER["SERVER_PORT"]);
+        $handle = false;
+        for($count = 0; $count < self::SOCKOPEN_TRY_COUNT; $count++) {
+            $handle = fsockopen($hostSock, $_SERVER["SERVER_PORT"], $errno, $errstr);
+            if($handle) {
+                break;
+            }
+            $this->errorLog("fsockopen error. hostName = ".$hostSock.", port = ".$_SERVER["SERVER_PORT"].", errorNo = ".$errno.", errorStr = ".$errstr, __FILE__, __CLASS__, __LINE__);
+            
+            // 最後のfsockopenで失敗した場合、処理は待たない
+            if($count < self::SOCKOPEN_TRY_COUNT-1) {
+                // fsockopenが失敗した場合、一定時間処理を待つ
+                sleep(self::SOCKOPEN_WAIT_SEC_TIME_RETRY);
+                $this->errorLog("Retry fsockopen ".($count+1)." time. ", __FILE__, __CLASS__, __LINE__);
+            }
+        }
         if (!$handle) {
+            $this->errorLog("Retry fsockopen ".(self::SOCKOPEN_TRY_COUNT-1)." time, but all failed ", __FILE__, __CLASS__, __LINE__);
             return false;
         }
         
@@ -242,6 +300,7 @@ class Repository_Action_Common_Usagestatisticsmail extends RepositoryAction
     
     /**
      * Set year and month
+     * 年月をセットする
      */
     private function setYearAndMonth() {
         if( strlen($this->year) == 0 || intval($this->year) < 1 || strlen($this->month) == 0 || intval($this->month) < 1 || intval($this->month) > 12) {
@@ -257,8 +316,10 @@ class Repository_Action_Common_Usagestatisticsmail extends RepositoryAction
     
     /**
      * Get previous month
+     * 前月を取得する
      *
-     * @return string
+     * @return string previous month 前月
+     * @throws AppException
      */
     private function getPreviousMonth() {
         // Get previous month (format: YYYY-MM)
@@ -278,8 +339,10 @@ class Repository_Action_Common_Usagestatisticsmail extends RepositoryAction
     
     /**
      * Get send feedback mail activate flag
+     * フィードバックメール送信可否フラグを取得する
      *
-     * @return bool
+     * @return bool true/false allow sending/or not 送信可/不可
+     * @throws AppException
      */
     private function getSendFeedbackMailActivateFlag() {
         $rtn = false;
@@ -303,8 +366,9 @@ class Repository_Action_Common_Usagestatisticsmail extends RepositoryAction
     
     /**
      * check execute authority
+     * 実行権限があるかチェックする
      *
-     * @return bool
+     * @return bool true/false admin/general 権限がある/ない
      */
     private function checkExecuteAuthority() {
         // Init user authorities

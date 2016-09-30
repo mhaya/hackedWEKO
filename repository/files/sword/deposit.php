@@ -1,7 +1,15 @@
 <?php
+
+/**
+ * SWORD item registration source file
+ * SWORDアイテム登録ソースファイル
+ * 
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: deposit.php 56954 2015-08-24 04:17:54Z keiya_sugimoto $
+// $Id: deposit.php 70936 2016-08-09 09:53:57Z keiya_sugimoto $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics,
 // Research and Development Center for Scientific Information Resources
@@ -27,6 +35,14 @@ $isAddDateToLogName = false;     // false: Log name without date
 //error_reporting(E_ALL);
 session_start();
 // path transform
+
+/**
+ * To convert the backslash in the path to slash
+ * パス内のバックスラッシュをスラッシュに変換する
+ *
+ * @param string $path Path パス
+ * @return string Converted string 変換後文字列
+ */
 function transPathSeparator($path) {
     if ( DIRECTORY_SEPARATOR != '/' ) {
         // IIS6 doubles the \ chars
@@ -477,7 +493,6 @@ if(isset($header_params['contentMd5'])){
     fwrite($fh, "Check Point 15-B: contentMd5 is not set.\n");
 }
 
-
 // --------------------------------------------------------------
 // Import the contents. Call "WEKO Import Action".
 // --------------------------------------------------------------
@@ -509,6 +524,10 @@ if(isset($checkedIds)){
 }
 if(isset($newIndex)) {
     $param .= "&newIndex=".$newIndex;
+}
+if(isset($_SERVER['HTTP_CHANGE_SELFDOI'])){
+	$param .= "&changeDoiFlag=".$_SERVER['HTTP_CHANGE_SELFDOI'];
+	fwrite($fh, "DOI change mode.\n");
 }
 $param .= "&login_id=".rawurlencode($_SERVER['PHP_AUTH_USER'])."&password=".rawurlencode($_SERVER['PHP_AUTH_PW']);
 

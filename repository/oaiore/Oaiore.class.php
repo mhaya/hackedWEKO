@@ -1,7 +1,15 @@
 <?php
+
+/**
+ * Action class for OAI-ORE output
+ * OAI-ORE出力用アクションクラス
+ *
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Oaiore.class.php 53594 2015-05-28 05:25:53Z kaede_matsushita $
+// $Id: Oaiore.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -12,54 +20,135 @@
 // --------------------------------------------------------------------
 
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
-
+/**
+ * ZIP file manipulation library
+ * ZIPファイル操作ライブラリ
+ */
 include_once MAPLE_DIR.'/includes/pear/File/Archive.php';
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
+/**
+ * Item export processing common classes
+ * アイテムエクスポート処理共通クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/action/main/export/ExportCommon.class.php';
+/**
+ * Index rights management common classes
+ * インデックス権限管理共通クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryIndexAuthorityManager.class.php';
+/**
+ * String format conversion common classes
+ * 文字列形式変換共通クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryOutputFilter.class.php';
 
 /**
- * [[機能説明]]
+ * Action class for OAI-ORE output
+ * OAI-ORE出力用アクションクラス
  *
- * @package     [[package名]]
- * @access      public
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class Repository_Oaiore extends RepositoryAction
 {
 	// 使用コンポーネントを受け取るため
 	//var $session = null;
+    /**
+     * Database management objects
+     * データベース管理オブジェクト
+     *
+     * @var DbObject
+     */
 	var $db = null;
 	
 	
 	// リクエストパラメータを受け取るため
+    /**
+     * Item id
+     * アイテムID
+     *
+     * @var int
+     */
 	var $itemId = null;
+    /**
+     * Item serial number
+     * アイテム通番
+     *
+     * @var int
+     */
 	var $itemNo = null;
+    /**
+     * Index id
+     * インデックスID
+     *
+     * @var int
+     */
 	var $indexId = null;
 	
 	// ダウンロード用メンバ
+    /**
+     * Data upload objects
+     * データアップロードオブジェクト
+     *
+     * @var Uploads_View
+     */
 	var $uploadsView = null;
 	
 	// 改行
+    /**
+     * Line feed code
+     * 改行コード
+     *
+     * @var string
+     */
 	var $LF = "\n";
 	// タブシフト
+    /**
+     * Tab character
+     * タブ文字
+     *
+     * @var string
+     */
 	var $TAB_SHIFT = "\t";
 
 	// .atomへのURI
+	/**
+	 * 
+	 * atomのリクエストURL
+	 *
+	 * @var string
+	 */
 	var $atmUri = '';
 	
 	// サーバ名
+	/**
+	 * 
+	 * サーバ名商
+	 *
+	 * @var string
+	 */
 	var $server_name = "";
 	
 	// 公開インデックス取得用インスタンス
 	// Add OpenDepo 2014/01/31 S.Arata --start--
+	/**
+	 * Index rights management common object
+	 * インデックス権限管理共通オブジェクト
+	 *
+	 * @var RepositoryindexAuthorityManager
+	 */
 	var $indexAuthorityManager = null;
 	// Add OpenDepo 2014/01/31 S.Arata --end--
 	
     /**
-     * [[機能説明]]
-     *
-     * @access  public
+     * And outputs the OAI-ORE (index information)
+     * OAI-ORE(インデックス情報)を出力する
      */
     function execute()
     {
@@ -118,12 +207,21 @@ class Repository_Oaiore extends RepositoryAction
        	
 		// 終了処理
 		$this->exitAction();
-		
+		$this->finalize();
 		// XML書き出し終了後にexit関数を呼び出す
     	exit();
 
     }
 	
+    /**
+     * To create a OAI-ORE of Atom format
+     * Atom形式のOAI-OREを作成する
+     *
+     * @param int $itemId Item id アイテムID
+     * @param int $itemNo Item serial number アイテム通番
+     * @param int $indexId Index id インデックスID
+     * @return string The output string 出力文字列
+     */
     function getOaiOreByAtom($itemId, $itemNo, $indexId)
     {
     	// 関連アイテムの検索
@@ -579,9 +677,14 @@ class Repository_Oaiore extends RepositoryAction
     	return $xml;
 
     }
-    /*
+    
+    /**
+     * Header Xml tag generator
      * Header Xmlタグ生成処理
-     * 
+     *
+     * @param string $atomUri  
+     * @param string $siteNameElm
+     * @return string The output string 出力文字列
      */
     private function createOutPutHeaderXml(&$atomUri, &$siteNameElm){
         $atomUri = BASE_URL;
@@ -619,9 +722,21 @@ class Repository_Oaiore extends RepositoryAction
     }
     
     /**
-     * [[機能説明]]
-     * <atom:entry>要素を出力
-     * @access  public
+     * To output the item information to: <atom entry> element
+     * <atom:entry>要素にアイテム情報を出力する
+     *
+     * @param int $itemId Item id アイテムID
+     * @param int $itemNo Item serial number アイテム通番
+     * @param string $title Item Title アイテムタイトル
+     * @param string $title_english English The title of the item 英語のアイテムタイトル
+     * @param string $category Category カテゴリー
+     * @param string $insDate Insert date and time 挿入日時
+     * @param string $modDate Date Modified 更新日時
+     * @param int $indentNum The number of indent インデント数
+     * @param string $supple_base_url URL of supple WEKO サプリWEKOのURL
+     * @param array $supple_creator Supplemental Content author サプリ作成者
+     * @param string $supple_detail_url Supplementalcontents url サプリURL
+     * @return string The output string 出力文字列
      */
 	function getItemEntryElement($itemId, 
 	                             $itemNo, 
@@ -776,6 +891,19 @@ class Repository_Oaiore extends RepositoryAction
     	return $out;
 	}
 
+	/**
+	 * And outputs the index information
+	 * インデックス情報を出力する
+	 *
+	 * @param int $indexId Index id インデックスID
+	 * @param string $title Index Name インデックス名
+	 * @param string $title_english Index English name インデックス英名
+	 * @param int $parentIndexid Parent index ID 親インデックスID
+     * @param string $insDate Insert date and time 挿入日時
+     * @param string $modDate Date Modified 更新日時
+     * @param int $indentNum The number of indent インデント数
+     * @return string The output string 出力文字列
+	 */
 	function getIndexEntryElement($indexId, $title, $title_english, $parentIndexid, $insDate, $modDate, $indentNum) {
 		// インデント調整
 		$indentParent = $this->getTabIndent($indentNum);
@@ -845,6 +973,16 @@ class Repository_Oaiore extends RepositoryAction
 		return $out;
 	}
 	
+	/**
+	 * And outputs the author information
+	 * 著者情報を出力する
+	 *
+     * @param int $itemId Item id アイテムID
+     * @param int $itemNo Item serial number アイテム通番
+	 * @param int $indexId Index id インデックスID
+     * @param int $indentNum The number of indent インデント数
+     * @return string The output string 出力文字列
+	 */
 	function getAuthorElement($itemId, $itemNo, $indexId, $indentNum)
 	{
 		// インデント調整
@@ -1073,9 +1211,12 @@ class Repository_Oaiore extends RepositoryAction
 	}
     
     //2013/3/12 Add jin アイテム間リンク情報のXMLを作成する処理--start--
-    /*
-     * アイテム間リンク情報のXMLを作成
-     */
+	/**
+	 * Output the inter-item link information
+	 * アイテム間リンク情報を出力
+	 *
+     * @return string The output string 出力文字列
+	 */
     private function getItemLinkXml(){
         $xml = "";
         
@@ -1149,8 +1290,9 @@ class Repository_Oaiore extends RepositoryAction
     //2013/3/12 Add jin アイテム間リンク情報のXMLを作成する処理--end--
 
     //2013/3/12 Add jin サプリメンタルコンテンツ情報のXMLを作成する処理--start--
-    /*
-     *  サプリメンタルコンテンツ情報のXMLを作成
+    /**
+     * Output a supplemental content information
+     * サプリメンタルコンテンツ情報を出力
      */
     private function getSuppleItemXml(){
         //戻り値の宣言
@@ -1228,11 +1370,14 @@ class Repository_Oaiore extends RepositoryAction
         
         return $xml;
     }
+    
     /**
+     * From Supplemental WEKO that cooperation, get the RSS format supplemental content XML data
      * 連携しているサプリメンタルWEKOから、RSS形式サプリメンタルコンテンツXMLデータを取得
-     * @param サプリメンタルWEKOのBASE_URL
-     * @param サプリデータのitem_id
-     * @return array 
+     *
+     * @param string $supple_base_url BASE_URL of supple WEKO サプリWEKOのBASE_URL
+     * @param string $item_ids Item ID of supplemental data サプリデータのアイテムID
+     * @return array XML parsing result XMLパース結果
      */
     private function getSuppleDataXMLData($supple_base_url, $item_ids){
         
@@ -1304,10 +1449,16 @@ class Repository_Oaiore extends RepositoryAction
         
         return $vals;
     }
-    /*
+    /**
+     * Get an array from the RSS format XML one by one the data of the item
      * RSS形式XMLからアイテムのデータを1件ずつ配列で取得
-     * @param string xml RSS形式XML
-     * @return array $return_array サプリデータ
+     * 
+     * @param string $supple_base_url BASE_URL of supple WEKO サプリWEKOのBASE_URL
+     * @param string $supple_xml_data RSS format XML RSS形式XML
+     * @param array $supple_item Supple data サプリデータ
+     *                           array["supple_weko_item_id"|"supple_title"|"supple_title_en"|"supple_detail_url"|"supple_item_type"|"supple_creator"|"supple_ins_date"|"supple_mod_date"|"supple_detail_url"]
+     * @return array Supplemental data サプリデータ
+     *               array["supple_base_url"|"supple_weko_item_id"|"supple_title"|"supple_title_en"|"supple_detail_url"|"supple_item_type"|"supple_creator"|"supple_ins_date"|"supple_mod_date"|"supple_detail_url"]
      */
     private function setSuppleData($supple_base_url, $supple_xml_data, $supple_item){
         //戻り値の宣言
@@ -1404,7 +1555,14 @@ class Repository_Oaiore extends RepositoryAction
     }
     //2013/3/12 Add jin サプリメンタルコンテンツ情報のXMLを作成する処理--end--
 
-	
+	/**
+	 * The output of the category information
+	 * カテゴリ情報の出力
+	 *
+	 * @param string $label Label ラベル
+     * @param int $indentNum The number of indent インデント数
+     * @return string The output string 出力文字列
+	 */
 	function getDCCategoryElement($label, $indentNum)
 	{
 		// インデント調整
@@ -1427,6 +1585,13 @@ class Repository_Oaiore extends RepositoryAction
 		return $out;
 	}
 	
+	/**
+	 * To create the indentation
+	 * インデントを作成する
+	 *
+     * @param int $indentNum The number of indent インデント数
+	 * @return string Tab string タブ文字列
+	 */
 	function getTabIndent($indentNum){
 		$indentParent = '';
 		for($i=0; $i<$indentNum; $i++) {
@@ -1435,6 +1600,13 @@ class Repository_Oaiore extends RepositoryAction
 		return $indentParent;
 	}
 	
+	/**
+	 * To convert the date and time of the year, month, day, hour, minute, and second hyphen, the date and time format of colon-separated
+	 * 年月日時分秒の日時をハイフン、コロン区切りの日時形式に変換する
+	 *
+	 * @param string $tmp Date 日時
+	 * @return string A later date and time format conversion 形式変換後の日時
+	 */
 	function dateChg ($tmp) {
 		global $debug;
 		if (ereg("^[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]$", $tmp)) {

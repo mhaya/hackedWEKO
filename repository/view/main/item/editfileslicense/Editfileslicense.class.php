@@ -1,59 +1,95 @@
 <?php
+
+/**
+ * Item register: View for setting file license
+ * アイテム登録：ファイルライセンス設定画面表示
+ *
+ * @package     WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Editfileslicense.class.php 53594 2015-05-28 05:25:53Z kaede_matsushita $
+// $Id: Editfileslicense.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
-// Copyright (c) 2007 - 2008, National Institute of Informatics, 
+// Copyright (c) 2007 - 2008, National Institute of Informatics,
 // Research and Development Center for Scientific Information Resources
 //
 // This program is licensed under a Creative Commons BSD Licence
 // http://creativecommons.org/licenses/BSD/
 //
 // --------------------------------------------------------------------
-
-/* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
-
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/common/WekoAction.class.php';
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
+/**
+ * Item regsiter class
+ * アイテム登録処理クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/ItemRegister.class.php';
+/**
+ * Handle manager class
+ * ハンドル管理クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryHandleManager.class.php';
 
 /**
+ * Item register: View for setting file license
  * アイテム登録：ファイルライセンス設定画面表示
  *
+ * @package     WEKO
+ * @copyright   (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license     http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
  * @access      public
  */
 class Repository_View_Main_Item_Editfileslicense extends WekoAction
 {
     // 表示用パラメーター
     /**
-     * row num
+     * Row number
+     * 行番号
+     *
      * @var array
      */
     public $row_num = array();
     
     /**
+     * Flash display convertible flag array
      * フラッシュ表示選択可能フラグ配列
+     *
      * @var array
      */
     public $flash_convertible = array();
-    
+
     /**
+     * Display help icon flag
      * ヘルプアイコン表示フラグ
+     *
      * @var string
      */
     public $help_icon_display =  "";
     
     // リクエストパラメーター
     /**
+     * Warning message
      * 警告メッセージ配列
+     *
      * @var array
      */
     public $warningMsg = null;
     
     /**
-     * 実行処理
-     * @see ActionBase::executeApp()
+     * Execute
+     * 実行
+     *
+     * @return string "success"/"error" success/failed 成功/失敗
+     * @throws AppException
      */
     protected function executeApp()
     {
@@ -124,6 +160,7 @@ class Repository_View_Main_Item_Editfileslicense extends WekoAction
                                 case "gif":
                                 case "tiff":
                                 case "jpg":
+                                case "jpeg":
                                 case "jp2":
                                     $this->flash_convertible[$ii][$jj] = "true";
                                     break;

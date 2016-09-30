@@ -1,7 +1,15 @@
 <?php
+
+/**
+ * Name authority upload action class
+ * 著者名典拠アップロードアクションクラス
+ * 
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Upload.class.php 53594 2015-05-28 05:25:53Z kaede_matsushita $
+// $Id: Upload.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -13,25 +21,52 @@
 
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
 //require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
+/**
+ * Action base class for WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/common/WekoAction.class.php';
 
-/**
- * [[機能説明]]
- *
- * @package     [[package名]]
- * @access      public
- */
 //class Repository_Action_Edit_Importauthority_Upload extends RepositoryAction
+/**
+ * Name authority file upload action class
+ * 著者名典拠ファイルアップロードアクションクラス
+ * 
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
+ */
 class Repository_Action_Edit_Importauthority_Upload extends WekoAction
 {
 
+    /**
+     * Session management objects
+     * Session管理オブジェクト
+     *
+     * @var Session
+     */
     public $Session = null;
+    /**
+     * Database management objects
+     * データベース管理オブジェクト
+     *
+     * @var DbObject
+     */
     public $Db = null;
+    /**
+     * Upload file management objects
+     * アップロードファイル管理オブジェクト
+     *
+     * @var Uploads_Action
+     */
     public $uploadsAction = null;
     /**
-     * [[機能説明]]
+     * Author name authority file upload
+     * 著者名典拠ファイルアップロード
      *
      * @access  public
+     * @return boolean Result 結果
      */
     public function executeApp()
     {

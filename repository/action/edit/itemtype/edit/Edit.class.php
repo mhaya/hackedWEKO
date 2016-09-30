@@ -1,37 +1,64 @@
 <?php
+
+/**
+ * Action class for meta data item editing stick string to the item type
+ * アイテムタイプに紐付くメタデータ項目編集用アクションクラス
+ *
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Edit.class.php 48455 2015-02-16 10:53:40Z atsushi_suzuki $
+// $Id: Edit.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
-// Copyright (c) 2007 - 2008, National Institute of Informatics, 
+// Copyright (c) 2007 - 2008, National Institute of Informatics,
 // Research and Development Center for Scientific Information Resources
 //
 // This program is licensed under a Creative Commons BSD Licence
 // http://creativecommons.org/licenses/BSD/
 //
 // --------------------------------------------------------------------
-
-/* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
 
 /**
- * [[機能説明]]
- *
- * @package     [[package名]]
- * @access      public
+ * Action class for meta data item editing stick string to the item type
+ * アイテムタイプに紐付くメタデータ項目編集用アクションクラス
+ * 
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class Repository_Action_Edit_Itemtype_Edit extends RepositoryAction
 {
-	// リクエストパラメータを受け取るため
+	// リクエストパラメータを受け取る
+	/**
+	 * Item type name
+	 * アイテムタイプ名
+	 *
+	 * @var string
+	 */
 	var $item_type_name = null;		//前画面で入力したアイテムタイプ名(新規作成時)
+	/**
+	 * Item type ID
+	 * アイテムタイプID
+	 *
+	 * @var int
+	 */
 	var $item_type_id = null;		//前画面で選択したアイテムタイプID(編集時)
 	
 	
-    /**
-     * [[機能説明]]
-     *
-     * @access  public
-     */
+	/**
+	 * Execute
+	 * 実行
+	 *
+	 * @return string "success"/"error"/"error_create"/"error_edit" success/failed/failed create/failed edit 成功/失敗/新規追加失敗/既存編集失敗
+	 * @throws RepositoryException
+	 */
     function execute()
     {
    		 try {
@@ -388,7 +415,7 @@ class Repository_Action_Edit_Itemtype_Edit extends RepositoryAction
 				//$exception->setDetailMsg( $DetailMsg );             //詳細メッセージ設定
 				throw $exception;
 			}
-			
+			$this->finalize();
 	        return 'success';
    		}//catch ( RepositoryException $Exception)
    		catch (RepositoryException $Exception) {

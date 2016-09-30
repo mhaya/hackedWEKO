@@ -1,7 +1,15 @@
 <?php
+
+/**
+ * Y handle (http://id.nii.ac.jp/) cooperative processing common classes
+ * Yハンドル(http://id.nii.ac.jp/)連携処理共通クラス
+ * 
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: IDServer.class.php 57182 2015-08-26 12:57:40Z tatsuya_koyasu $
+// $Id: IDServer.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -11,23 +19,81 @@
 //
 // --------------------------------------------------------------------
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
+/**
+ * Snoopy library
+ * Snoopyライブラリ
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/Snoopy.class.php';
+/**
+ * JSON library
+ * JSON用ライブラリ
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/JSON.php';
+
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
+/**
+ * ZIP file manipulation library
+ * ZIPファイル操作ライブラリ
+ */
 include_once MAPLE_DIR.'/includes/pear/File/Archive.php';
+/**
+ * DB object wrapper Class
+ * DBオブジェクトラッパークラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryDbAccess.class.php';
 
+/**
+ * Y handle (http://id.nii.ac.jp/) cooperative processing common classes
+ * Yハンドル(http://id.nii.ac.jp/)連携処理共通クラス
+ * 
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
+ */
 class IDServer extends RepositoryAction
 {
 	// member
+    /**
+     * Session management objects
+     * Session管理オブジェクト
+     *
+     * @var Session
+     */
 	var $Session = null;
+    /**
+     * Database management objects
+     * データベース管理オブジェクト
+     *
+     * @var DbObject
+     */
 	var $Db = null;
 	// currentdir is nc2/htdocs
+	/**
+	 * 
+	 * 秘密鍵保存ディレクトリパス
+	 *
+	 * @var string
+	 */
 	var $id_dir = "";	//'../webapp/modules/repository/files/id/';	// Modify Directory specification K.Matsuo 2011/9/1
+	/**
+	 * Flash can be converted file size
+	 * Flash変換可能なファイルサイズ
+	 *
+	 * @var int
+	 */
 	private $maxFlashConvertSize_ = 104857600;  // Default: 104857600 = 1024 * 1024 * 100 = 100(MB)
 
 	/**
-	 * INIT
+	 * Constructor
+	 * コンストラクタ
+	 *
+	 * @param Session $Session Session management objects Session管理オブジェクト
+	 * @param Dbobject $Db Database management objects データベース管理オブジェクト
 	 */
 	function IDServer($Session, $Db){
 		if($Session){
@@ -40,12 +106,16 @@ class IDServer extends RepositoryAction
 		} else {
 			return null;
 		}
+		
+        // ロガー
+        $this->Logger = WekoBusinessFactory::getFactory()->logger;
+		
 		$this->id_dir = WEBAPP_DIR.'/modules/repository/files/id/';  // Modify Directory specification BASE_DIR K.Matsuo 2011/9/1
 	}
 
 	/**
-	 * entry prefix
-	 * this function call from repository install action 
+	 * (Deprecated) WEKO during the installation, if there is a secret key prefix registration
+	 * (廃止予定)WEKOインストール時、秘密鍵があった場合prefix登録
 	 */
 	function entryPrefix(){
 		// clearing seacret key 
@@ -58,10 +128,11 @@ class IDServer extends RepositoryAction
 	}
 	
 	/**
-	 * get prefix ID
-	 * 
-	 * $id_flg = true -> get fromIDServer
-	 * $id_flg = false -> get from parameter table
+	 * Get prefix
+	 * prefix取得
+	 *
+	 * @param boolean $id_flg Get the flag from the ID server IDサーバからの取得フラグ
+	 * @return string Prefix Prefix
 	 */
 	function getPrefixID($id_flg=false){
 		if($id_flg){
@@ -175,8 +246,13 @@ class IDServer extends RepositoryAction
 	}
 	
 	/**
-	 * get Suffix
-	 * return item detail uri
+	 * Permalink acquisition of Y handle
+	 * Yハンドルのパーマリンク取得
+	 *
+	 * @param string $title Item title アイテムタイトル
+	 * @param int $item_id Item id アイテムID
+	 * @param string $transStartDate Transaction start date and time トランザクション開始日時
+	 * @return string Suffix Suffix
 	 */
 	function getSuffix($title, $item_id, $transStartDate){
 		//////////////////////////////////
@@ -286,7 +362,16 @@ class IDServer extends RepositoryAction
 		return $url;
 	}
 */
-	
+	/**
+	 * Suffix registration
+	 * Suffix登録
+	 *
+	 * @param string $title Item title アイテムタイトル
+	 * @param string $item_id Item id アイテムID
+	 * @param string $prefix_id Prefix Prefix
+	 * @param string $transStartDate Transaction start date and time トランザクション開始日時
+	 * @return string The response from the ID server IDサーバからの応答
+	 */
 	function entrySuffix($title, $item_id, $prefix_id, $transStartDate){
 		////////////////////////////////
 		// check BASE_URL
@@ -401,6 +486,14 @@ class IDServer extends RepositoryAction
 	 * @return	$create_flg	true	生成成功
 	 * 						false	生成失敗
 	 */
+	/**
+	 * Create Pem File
+	 * 秘密鍵生成
+	 *
+	 * @param string $tmp_dir Temporary directory path 一時ディレクトリパス
+	 * @param string $cmdPath openssl directory path opensslディレクトリパス
+	 * @return boolean Execution result 実行結果
+	 */
 	function createPemFile($tmp_dir, $cmdPath){
 		$prv_key = "ids-weko-key.pem";
 		
@@ -459,9 +552,8 @@ class IDServer extends RepositoryAction
 	 * prefixAutoEntry
 	 * prefix自動取得処理
 	 * 
-	 * @param	$cmdPath	OpenSSLコマンドへの絶対パス
-	 * @return	$create_flg	true	生成成功
-	 * 						false	生成失敗
+	 * @param $cmdPath Absolute path to the OpenSSL command OpenSSLコマンドへの絶対パス
+	 * @return boolean Generation Results 生成結果
 	 */
 	function prefixAutoEntry($cmdPath){
 		// ワークディレクトリ作成
@@ -513,9 +605,11 @@ class IDServer extends RepositoryAction
 	}
 	
 	/**
-	 * postPubliceKey
+	 * Submit pem file
 	 * pemファイルを送信する
-	 * 
+	 *
+	 * @param string $tmp_dir Temporary directory path 一時ディレクトリパス
+	 * @return boolean Submit Result 送信結果
 	 */
 	function postPublicKey($tmp_dir){
         if(_DEBUG_FLG){
@@ -598,12 +692,12 @@ class IDServer extends RepositoryAction
 	}
 	
 	/**
-	 * postCaptchaString
+	 * Transmitting the text of the input image file
 	 * 入力された画像ファイルの文字列を送信する
 	 * 
-	 * @param  $captcha_string	入力された文字列
-	 * @param  $auth_session_id	認証セッションID
-	 * @return $prefix
+	 * @param $captcha_string Input string 入力された文字列
+	 * @param $auth_session_id Authentication session ID 認証セッションID
+	 * @return string Prefix Prefix
 	 */
 	function postCaptchaString($captcha_string, $auth_session_id){
         if(_DEBUG_FLG){
@@ -677,12 +771,22 @@ class IDServer extends RepositoryAction
 	
 	// Add PDF flash 2010/02/04 A.Suzuki --start--
 	/**
-	 * PDF convert to Flash
-	 * 
-	 * @return "true" or "false"
+	 * To convert the file to Flash
+	 * ファイルをFlashに変換する
+	 *
+	 * @param array $item_attr Item information アイテム情報
+	 *                         array["upload"]["extension"|file_name"]
+	 * @param string $detail_url Detail screen display URL 詳細画面表示URL
+	 * @param string $errMsg Error message エラーメッセージ
+	 * @param string $filePath File path ファイルパス
+	 * @param array $flashList Flash list Flash一覧
+	 *                         array[$ii]
+	 * @return string Execution result 実行結果
 	 */
-	function convertToFlash($item_attr, $detail_url, &$errMsg){
+	function convertToFlash($item_attr, $detail_url, &$errMsg, $filePath, &$flashList){
 		try {
+            $flashList = null;
+            
             // Add file convert to SWF for all. Y.Nakao 2011/1/19 --start--
             $convertFlashFlg = false;
             $extension = strtolower($item_attr['upload']['extension']);
@@ -703,50 +807,15 @@ class IDServer extends RepositoryAction
             if(!$convertFlashFlg){
                 return "false";
             }
-            // Add file convert to SWF for all. Y.Nakao 2011/1/19 --end--
-			// check file save directory exists 
-			$contents_path = $this->getFileSavePath("file");
-			if(strlen($contents_path) == 0){
-				// default directory
-				$contents_path = BASE_DIR.'/webapp/uploads/repository/files';
-			}
-			// check directory exists 
-			if( !(file_exists($contents_path)) ){
-				$errMsg = 'Not exists file save point.';
-				return "false";
-			}
-			// Get file path
-			$contents_path .= '/'.$item_attr['item_id'].'_'.$item_attr['attribute_id'].'_'.$item_attr['file_no'].'.'.$item_attr['upload']['extension'];
-			// check file exists 
-			if( !(file_exists($contents_path)) ){
-				$errMsg = 'Not exists \"'.$item_attr['upload']['file_name'].'\".';
-				return "false";
-			}
-			
-			// Add multiple FLASH files download 2011/02/04 Y.Nakao --start--
-			// check flash save directory exists
-			$flash_contents_path = $this->makeFlashFolder(  $item_attr['item_id'],
-                                                            $item_attr['attribute_id'],
-                                                            $item_attr['file_no']);
-			if(strlen($flash_contents_path) == 0 || !(file_exists($flash_contents_path)) ){
-				$errMsg = 'Not exists flash save point.';
-				return "false";
-			}
             
-            // Add file convert to SWF for all. Y.Nakao 2011/1/19 --start--
-            if($extension == "swf"){
-                $swf_path = $flash_contents_path.'/weko.swf';
-                if(file_exists($swf_path)){
-                    unlink($swf_path);
-                }
-                copy($contents_path, $swf_path);
-                return "true";
-            }
-            // Add file convert to SWF for all. Y.Nakao 2011/1/19 --end--
             // Add multiple FLASH files download 2011/02/04 Y.Nakao --end--
             
             // If file size over 100MB, do not convert to flash. 2012/11/19 A.Suzuki --start--
-            if(filesize($contents_path) > $this->maxFlashConvertSize_)
+            // Add File replace T.Koyasu 2016/02/29 --start--
+            $this->infoLog("businessContentfiletransaction", __FILE__, __CLASS__, __LINE__);
+            $business = BusinessFactory::getFactory()->getBusiness("businessContentfiletransaction");
+            // Add File replace T.Koyasu 2016/02/29 --end--
+            if(filesize($filePath) > $this->maxFlashConvertSize_)
             {
                 return "false";
             }
@@ -786,10 +855,10 @@ class IDServer extends RepositoryAction
             );
             $http = new HTTP_Request($url, $option);
             
-//          if(preg_match("/localhost/", BASE_URL)){
-//              // when this site url is localhost, use test url
-//              $repos = "weko.ivis.co.jp";
-//          } else {
+            if(_DEBUG_FLG){
+                // when this site url is localhost, use test url
+                $repos = "weko.ivis.co.jp";
+            } else {
                 // Addition of HTTPS check 2010/02/03 S.Nonomura --start--
                 // bug fix 2010/02/19 Y.Nakao --start--
                 $repos = str_replace("https://", "", BASE_URL);
@@ -798,7 +867,7 @@ class IDServer extends RepositoryAction
                 // Addition of HTTPS check 2010/02/03 S.Nonomura --end--
                 
                 $repos = join(".", array_reverse(explode("/", $repos)));
-//          }
+            }
             $message = "a random message";
             // get private key file
             $prv_key_pass = "";
@@ -830,7 +899,7 @@ class IDServer extends RepositoryAction
             $http->addPostData("signature", base64_encode($signature));
             $http->addPostData("url", $detail_url);
             $http->addPostData("split", "true");
-            $http->addFile("document", $contents_path);
+            $http->addFile("document", $filePath);
             //ini_set('memory_limit', -1);
             
             /////////////////////////////
@@ -864,10 +933,8 @@ class IDServer extends RepositoryAction
                     $errMsg = "\"".$item_attr['upload']['file_name']."\"";
                     return "false";
                 }
-                // setting flash directory.
-                $flashDir = $this->makeFlashFolder($item_attr['item_id'],
-                                                   $item_attr['attribute_id'],
-                                                   $item_attr['file_no']);
+                // create temporary directory
+                $flashDir = $businessWorkdirectory->create();
                 
                 // バージョン違いで解凍できない場合の対応
                 if (version_compare(PHP_VERSION, '5.3.0', '>='))
@@ -883,11 +950,15 @@ class IDServer extends RepositoryAction
                     );
                 }
                 
-                $swf_path = $flashDir.'/weko1.swf';
-                $this->removeDirectory($tmp_dir);
-                if( !(file_exists($swf_path)) ){
-                    $errMsg = "\"".$item_attr['upload']['file_name']."\"";
-                    return "false";
+                // ディレクトリの中身を配列化し、flashの更新処理を実施する
+                $list = scandir($flashDir);
+                $flashList = array();
+                for($ii = 0; $ii < count($list); $ii++){
+                    if($list[$ii] === "." || $list[$ii] === ".." || is_dir($flashDir. DIRECTORY_SEPARATOR. $list[$ii])){
+                        // システムファイルまたはディレクトリであるため、追加しない
+                    } else {
+                        array_push($flashList, $flashDir."/".$list[$ii]);
+                    }
                 }
                 return "true";
                 // Add multiple FLASH files download 2011/02/04 Y.Nakao --end--

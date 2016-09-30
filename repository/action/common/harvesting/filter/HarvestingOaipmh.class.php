@@ -1,7 +1,13 @@
 <?php
+/**
+ * Class for Harvest item registration
+ * ハーベストアイテム登録用クラス
+ * 
+ * @package WEKO
+ */
 // --------------------------------------------------------------------
 //
-// $Id: HarvestingOaipmh.class.php 58676 2015-10-10 12:33:17Z tatsuya_koyasu $
+// $Id: HarvestingOaipmh.class.php 70936 2016-08-09 09:53:57Z keiya_sugimoto $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -11,21 +17,56 @@
 //
 // --------------------------------------------------------------------
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
+/**
+ * Item registration and editing process common classes
+ * アイテム登録・編集処理共通クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/ItemRegister.class.php';
+/**
+ * Action class for the index operation
+ * インデックス操作用アクションクラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/action/edit/tree/Tree.class.php';
+/**
+ * Y handle (http://id.nii.ac.jp/) cooperative processing common classes
+ * Yハンドル(http://id.nii.ac.jp/)連携処理共通クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/IDServer.class.php';
+/**
+ * String format conversion common classes
+ * 文字列形式変換共通クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryOutputFilter.class.php';
+/**
+ * Common classes for creating and updating the search table that holds the metadata and file contents of each item to search speed improvement
+ * 検索速度向上のためアイテム毎のメタデータおよびファイル内容を保持する検索テーブルの作成・更新を行う共通クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositorySearchTableProcessing.class.php';
+/**
+ * Handle management common classes
+ * ハンドル管理共通クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryHandleManager.class.php';
-require_once WEBAPP_DIR. '/modules/repository/components/Checkdoi.class.php';
+
+/**
+ * Exception class
+ * 例外基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/FW/AppException.class.php';
 
 /**
- * Repository module OAI-PMH harvesting class
- *
- * @package repository
- * @access  public
+ * Class for Harvest item registration
+ * ハーベストアイテム登録用クラス
+ * 
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class HarvestingOaipmh extends RepositoryAction
 {
@@ -34,48 +75,56 @@ class HarvestingOaipmh extends RepositoryAction
     // ---------------------------------------------
     /**
      * repository ID
+     * リポジトリID
      *
      * @var int
      */
     private $repositoryId = 0;
     /**
      * repository's baseUrl
+     * リポジトリベースURL
      *
      * @var string
      */
     private $baseUrl = "";
     /**
      * join url and request parameter
+     * リックエストパラメータ接続詞
      *
      * @var string
      */
     private $join = "?";
     /**
      * metadataPrefix
+     * メタデータ接頭辞
      *
      * @var string metadataPrefix:oai_dc/junii2/oai_lom/lido
      */
     private $metadataPrefix = "";
     /**
      * postIndexId
+     * 登録先インデックスID
      *
      * @var int
      */
     private $postIndexId = 0;
     /**
-     * isAutoSoting
+     * isAutoSorting
+     * サブインデックスへの自動振り分けフラグ
      *
      * @var int 0:not exec/1:execute sorting
      */
     private $isAutoSoting = 0;
     /**
      * requestUrl
+     * リクエストURL
      *
      * @var string
      */
     private $requestUrl = "";
     /**
      * response xml file path
+     * レスポンスXMLファイルパス
      *
      * @var string
      */
@@ -83,83 +132,128 @@ class HarvestingOaipmh extends RepositoryAction
     /**
      * harvesting log message
      * in "error message" or "warning message"
+     * ハーベストログ
      * 
      * @var array
      */
     private $logMsg = array();
     /**
      * harvesting status for log
+     * ハーベスト状態
      * 
      * @var int
      */
     private $harvestingLogStatus = RepositoryConst::HARVESTING_LOG_STATUS_OK;
     /**
      * get XML date (responseDate)
+     * レスポンス日時
      *
      * @var string
      */
     private $responseDate = '';
     /**
-     * itemRegister.class.php
+     * Regist item object
+     * アイテム登録オブジェクト
      *
-     * @var classObject
+     * @var itemRegister
      */
     private $itemRegister = array();
     /**
-     * edit/Tree.class.php
+     * Edit tree object
+     * ツリー編集オブジェクト
      *
-     * @var classObject
+     * @var Repository_Action_Edit_Tree
      */
     private $editTree = array();
     /**
      * OAI-PMH filter class
+     * OAI-PMH変換フィルタークラス
      *
-     * @var classObject
+     * @var Object
      */
     private $filter = null;
     
     // Add Selective Harvesting 2013/09/04 R.Matsuura --start--
     /**
      * from date for selective harvesting
+     * FROMパラメータ
      * 
      * @var int
      */
     private $from_date = null;
     /**
      * until date for selective harvesting
+     * UNTILパラメータ
      * 
      * @var int
      */
     private $until_date = null;
     /**
      * set parameter for selective harvesting
+     * SETパラメータ
      * 
      * @var string
      */
     private $set_param = null;
     // Add Selective Harvesting 2013/09/04 R.Matsuura --end--
     
-    // ---------------------------------------------
-    // Const
-    // ---------------------------------------------
-    // metadataPrefix
+    /**
+     * Metadata prefix
+     * メタデータ接頭辞
+     * 
+     * @var string
+     */
     const METADATAPREFIX_OAIDC = RepositoryConst::OAIPMH_METADATA_PREFIX_DC;
+    /**
+     * Metadata prefix
+     * メタデータ接頭辞
+     * 
+     * @var string
+     */
     const METADATAPREFIX_JUNII2 = RepositoryConst::OAIPMH_METADATA_PREFIX_JUNII2;
+    /**
+     * Metadata prefix
+     * メタデータ接頭辞
+     * 
+     * @var string
+     */
     const METADATAPREFIX_OAILOM = RepositoryConst::OAIPMH_METADATA_PREFIX_LOM;
+    /**
+     * Metadata prefix
+     * メタデータ接頭辞
+     * 
+     * @var string
+     */
     const METADATAPREFIX_LIDO = RepositoryConst::OAIPMH_METADATA_PREFIX_LIDO;
     
-    // tag
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const OAIPMH_TAG_IDENTIFIER = RepositoryConst::OAIPMH_TAG_IDENTIFIER;
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const OAIPMH_TAG_DATESTAMP = RepositoryConst::OAIPMH_TAG_DATESTAMP;
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const OAIPMH_TAG_SETSPEC = RepositoryConst::OAIPMH_TAG_SET_SPEC;
     
-    // ---------------------------------------------
-    // Method
-    // ---------------------------------------------
     /**
      * Constructor
-     *
-     * @return HarvestingOaipmh
+     * コンストラクタ
+     * 
+     * @param Session $Session Session object セッション管理オブジェクト
+     * @param DbObject $Db Database object データベース管理オブジェクト
      */
     public function HarvestingOaipmh($Session, $Db){
         $this->Session = $Session;
@@ -168,8 +262,9 @@ class HarvestingOaipmh extends RepositoryAction
     
     /**
      * Get now date
+     * 現在日時取得
      * 
-     * @return string
+     * @return string Now date 現在日時
      */
     private function getNowDate()
     {
@@ -179,8 +274,9 @@ class HarvestingOaipmh extends RepositoryAction
     
     /**
      * Set member: repositoryId
+     * リポジトリID設定
      * 
-     * @param int $repositoryId
+     * @param int $repositoryId Repository id リポジトリID
      */
     public function setRepositoryId($repositoryId)
     {
@@ -189,8 +285,9 @@ class HarvestingOaipmh extends RepositoryAction
     
     /**
      * Set member: baseUrl
+     * ベースURL設定
      * 
-     * @param string $baseUrl
+     * @param string $baseUrl Base url ベースURL
      */
     public function setBaseUrl($baseUrl)
     {
@@ -206,8 +303,9 @@ class HarvestingOaipmh extends RepositoryAction
     
     /**
      * Set member: metadataPrefix
+     * メタデータ接頭辞設定
      * 
-     * @param string $metadataPrefix
+     * @param string $metadataPrefix Metadata prefix メタデータ接頭辞
      */
     public function setMetadataPrefix($metadataPrefix)
     {
@@ -217,8 +315,9 @@ class HarvestingOaipmh extends RepositoryAction
     
     /**
      * Set member: postIndexId
+     * 登録先インデックスID設定
      * 
-     * @param int $postIndexId
+     * @param int $postIndexId Index id インデックスID
      */
     public function setPostIndexId($postIndexId)
     {
@@ -226,9 +325,10 @@ class HarvestingOaipmh extends RepositoryAction
     }
     
     /**
-     * Set member: isAutoSoting
+     * Set member: isAutoSorting
+     * 自動振り分けフラグ設定
      * 
-     * @param int $isAutoSoting
+     * @param int $isAutoSoting Auto sorting flag 自動振り分けフラグ
      */
     public function setIsAutoSoting($isAutoSoting)
     {
@@ -237,8 +337,9 @@ class HarvestingOaipmh extends RepositoryAction
     
     /**
      * Set member: requestUrl
+     * リクエストURL設定
      * 
-     * @param string $requestUrl
+     * @param string $requestUrl Request url リクエストURL
      */
     public function setRequestUrl($requestUrl)
     {
@@ -247,8 +348,9 @@ class HarvestingOaipmh extends RepositoryAction
     
     /**
      * Set member: xmlFile
+     * XMLファイルパス設定
      * 
-     * @param string $xmlFile
+     * @param string $xmlFile XML file path XMLファイルパス
      */
     public function setXmlFile($xmlFile)
     {
@@ -257,8 +359,9 @@ class HarvestingOaipmh extends RepositoryAction
     
     /**
      * Set member: responseDate
+     * レスポンス日時設定
      * 
-     * @param string $responseDate
+     * @param string $responseDate Response date レスポンス日時
      */
     public function setResponseDate($responseDate)
     {
@@ -267,8 +370,9 @@ class HarvestingOaipmh extends RepositoryAction
     
     /**
      * Get Identify URL
+     * Identify URL取得
      * 
-     * @return string 
+     * @return string Identify URL リポジトリ識別URL
      */
     public function getIdentifyUrl()
     {
@@ -282,8 +386,9 @@ class HarvestingOaipmh extends RepositoryAction
     
     /**
      * Get ListSets URL
+     * ListSets URL取得
      * 
-     * @return string 
+     * @return string ListSets URL ListSets URL
      */
     public function getListSetsUrl()
     {
@@ -297,8 +402,9 @@ class HarvestingOaipmh extends RepositoryAction
     
     /**
      * Get ListRecords URL
+     * ListRecords URL取得
      * 
-     * @return string 
+     * @return string ListRecords URL ListRecords URL
      */
     public function getListRecordsUrl()
     {
@@ -315,7 +421,7 @@ class HarvestingOaipmh extends RepositoryAction
     
     /**
      * Set OAI-PMH filter class
-     * 
+     * OAI-PMH変換フィルター設定
      */
     public function setFilter()
     {
@@ -333,9 +439,10 @@ class HarvestingOaipmh extends RepositoryAction
     
     /**
      * Get harvesting start date
+     * ハーベスト開始日時取得
      * 
-     * @param string &$startDate
-     * @return bool
+     * @param string $startDate Start date 開始日時
+     * @return boolean Result 結果
      */
     public function getHarvestingStartDate(&$startDate)
     {
@@ -359,9 +466,10 @@ class HarvestingOaipmh extends RepositoryAction
     
     /**
      * Get harvesting end date
+     * ハーベスト終了日時取得
      * 
-     * @param string &$endDate
-     * @return bool
+     * @param string $endDate End date 終了日時
+     * @return boolean Result 結果
      */
     public function getHarvestingEndDate(&$endDate)
     {
@@ -385,9 +493,10 @@ class HarvestingOaipmh extends RepositoryAction
     
     /**
      * Parse ListSets
+     * ListSetsレスポンス解析
      * 
-     * @param string $nextUrl
-     * @return bool
+     * @param string $nextUrl Request URL リクエストURL
+     * @return boolean Result 結果
      */
     public function parseListSets(&$nextUrl)
     {
@@ -567,9 +676,10 @@ class HarvestingOaipmh extends RepositoryAction
     
     /**
      * Parse Records
+     * ListRecordレスポンス解析
      *
-     * @param string $nextUrl
-     * @return bool
+     * @param string $nextUrl Request url リクエストURL
+     * @return boolean Result 結果
      */
     public function parseListRecords(&$nextUrl)
     {
@@ -773,10 +883,11 @@ class HarvestingOaipmh extends RepositoryAction
     
     /**
      * Regist index by ListSets and regist items by ListRecords
+     *インデックス登録
      *
-     * @param string $nextUrl
-     * @param bool $indexError
-     * @return bool
+     * @param string $nextUrl Request url リクエストURL
+     * @param boolean $indexError Index deleted flag インデックス削除フラグ
+     * @return boolean Result 結果
      */
     public function registIndexAndItems(&$nextUrl, $indexError)
     {
@@ -823,8 +934,9 @@ class HarvestingOaipmh extends RepositoryAction
     
     /**
      * Create progress text
+     * 進捗ファイル作成
      * 
-     * @return string 
+     * @return string File string ファイル内容
      */
     public function createProgressText()
     {
@@ -853,8 +965,9 @@ class HarvestingOaipmh extends RepositoryAction
     
     /**
      * set harvesting log.
+     * ハーベストログ設定
      *
-     * @param string $logMsg log message
+     * @param string $logMsg log message ログメッセージ
      */
     public function setHarvestingLogMsg($logMsg)
     {
@@ -866,8 +979,9 @@ class HarvestingOaipmh extends RepositoryAction
     
     /**
      * set harvesting log status
+     * ハーベスト状態設定
      *
-     * @param int $status
+     * @param int $status Status 状態
      */
     public function setHarvestingLogStatus($status)
     {
@@ -876,8 +990,9 @@ class HarvestingOaipmh extends RepositoryAction
     
     /**
      * make index from ListSets
+     * インデックス作成
      * 
-     * @param string $listSetsXml "<set><setSpec>xxx</setSpec><setName>xxx</setName></set>"
+     * @param string $listSetsXml ListSets XML ListSets XML文字列
      */
     private function makeIndexFromListSets($listSetsXml)
     {
@@ -955,13 +1070,13 @@ class HarvestingOaipmh extends RepositoryAction
         for($ii=0;$ii<count($setSpecArray);$ii++){
             if($this->indexExists($setSpecArray[$ii], $indexId))
             {
-                // setSpecのインデックスが実在するなら、$indexIdはそのインデックスのIDになっている
+                // setSpec縺ｮ繧､繝ｳ繝��ャ繧ｯ繧ｹ縺悟ｮ溷惠縺吶ｋ縺ｪ繧峨��$indexId縺ｯ縺昴��繧､繝ｳ繝��ャ繧ｯ繧ｹ縺ｮID縺ｫ縺ｪ縺｣縺ｦ縺��ｋ
                 // get index data(array)
                 $indexData = $this->editTree->getIndexEditData($indexId);
 
                 // change update data
                 if($indexData['parent_index_id'] != $parentIndexId){
-                    // インデックスの親インデックスIDとsetspecの値が違う場合、ソートする
+                    // 繧､繝ｳ繝��ャ繧ｯ繧ｹ縺ｮ隕ｪ繧､繝ｳ繝��ャ繧ｯ繧ｹID縺ｨsetspec縺ｮ蛟､縺碁＆縺��ｴ蜷医�√た繝ｼ繝医☆繧�
                     $this->editTree->changeParentIndex($indexId, $parentIndexId, 'last');
                     $indexData = $this->editTree->getIndexEditData($indexId);
                 }
@@ -1073,10 +1188,12 @@ class HarvestingOaipmh extends RepositoryAction
     
     /**
      * Get metadata array from ListRecords(header)
+     * メタデータ取得
      *
-     * @param string $headerXml
-     * @param array $metadata
-     * @return bool
+     * @param string $headerXml Header XML ヘッダXML
+     * @param array $metadata Metadata メタデータ
+     *                        array["HEARDER"][0]["attributes"]["STATUS"]
+     * @return boolean Result 結果
      */
     private function getHeaderDataFromListRecords($headerXml, &$metadata)
     {
@@ -1177,11 +1294,12 @@ class HarvestingOaipmh extends RepositoryAction
     
     /**
      * Get metadata array from ListRecords(record)
+     * メタデータ取得
      *
-     * @param string $metadataXml
-     * @param array $metadata metadata[TAGNAME][NUM]["value"]
-     *                                              ["attribute"][KEY]
-     * @return bool
+     * @param string $metadataXml Metadata XML メタデータXML
+     * @param array $metadata Metadata メタデータ
+     *                        array[TAGNAME][$ii]["value"|"attribute"][KEY]
+     * @return boolean Result 結果
      */
     private function getMetadataFromListRecords($metadataXml, &$metadata)
     {
@@ -1243,10 +1361,11 @@ class HarvestingOaipmh extends RepositoryAction
     
     /**
      * check index exists
+     * インデックス存在確認
      * 
-     * @param string $setSpec
-     * @param int $indexId 
-     * @return true = index exists / false = index no exists
+     * @param string $setSpec SetSpec SetSpec
+     * @param int $indexId Index id インデックスID
+     * @return true Is index exist インデックスが存在するか
      */
     private function indexExists($setSpec, &$indexId)
     {
@@ -1283,9 +1402,12 @@ class HarvestingOaipmh extends RepositoryAction
     
     /**
      * Check metadata
+     * メタデータチェック
      *
-     * @param array $metadata
-     * @return bool
+     * @param array $metadata Metadata メタデータ
+     *                        array["HEARDER"][0]["attributes"]["STATUS"]
+     *                        array["TITLE"|"LANGUAGE"|"URI"|"NIITYPE"]
+     * @return boolean Result 結果
      */
     private function checkMetadata($metadata)
     {
@@ -1383,9 +1505,11 @@ class HarvestingOaipmh extends RepositoryAction
     
     /**
      * Upsert item data from ListRecords
+     * メタデータ情報更新
      *
-     * @param array $metadata
-     * @return bool
+     * @param array $metadata Metadata メタデータ
+     *                        aray[KEYNAME]
+     * @return boolean Result 結果
      */
     private function makeItemDataFromListRecords($metadata)
     {
@@ -1680,10 +1804,10 @@ class HarvestingOaipmh extends RepositoryAction
         {
             if($metadata[strtoupper(RepositoryConst::JUNII2_SELFDOI)][0]["attributes"]["RA"] === RepositoryConst::JUNII2_SELFDOI_RA_JALC)
             {
-                $checkdoi = new Repository_Components_Checkdoi($this->Session, $this->Db, $this->TransStartDate);
+                $checkdoi = BusinessFactory::getFactory()->getBusiness("businessCheckdoi");
                 
-                $checkRegist = $checkdoi->checkDoiGrant($itemId, $itemNo, 2, 0);
-                if($checkRegist)
+                $checkRegist = $checkdoi->checkDoiGrant($itemId, $itemNo, 2, null, 0);
+                if($checkRegist->isGrantDoi)
                 {
                     $handleManager = new RepositoryHandleManager($this->Session, $this->Db, $this->TransStartDate);
                     try{
@@ -1706,12 +1830,14 @@ class HarvestingOaipmh extends RepositoryAction
     
     /**
      * Check item exists
+     * アイテム存在確認
      * 
-     * @param array $metadata
-     * @param int $itemId
-     * @param int $itemNo
-     * @param string &$datestamp
-     * @param string &$isDelete
+     * @param array $metadata Metadata メタデータ
+     *                        array[KEYNAME]
+     * @param int $itemId Item id アイテムID
+     * @param int $itemNo Item serial number アイテム通番
+     * @param string $datestamp Date stamp Date stamp
+     * @param string $isDelete Is delete 削除済みか
      * @return bool true: Exists / false: No exists
      */
     private function isItemExists($metadata, &$itemId, &$itemNo, &$datestamp, &$isDelete)
@@ -1833,12 +1959,14 @@ class HarvestingOaipmh extends RepositoryAction
      * Processing which acquires index_id of setSpec 
      * and updates "item_id" of "repository_position_index"TBL,
      * and "item_no" 
+     * 所属インデックス作成
      * 
-     * @param int $itemId
-     * @param int $itemNo
-     * @param array $setSpec
-     * @param int $updateStatus
-     * @return bool $ret true・・・makeOK false・・・makeNG
+     * @param int $itemId Item id アイテムID
+     * @param int $itemNo Item serial number アイテム通番
+     * @param array $setSpec SetSpec SetSpec
+     *                       array[$ii]["value"]
+     * @param int $updateStatus Update status 更新状態
+     * @return boolean Result 結果
      */
     private function makePositionIndex($itemId, $itemNo, $setSpec, $updateStatus)
     {
@@ -1994,17 +2122,18 @@ class HarvestingOaipmh extends RepositoryAction
     
     /**
      * harvesting log
+     * ハーベストログ作成
      * 
-     * @param int $oparationId
-     * @param int $status
-     * @param int $update
-     * @param string $listSets
-     * @param string $setSpec
-     * @param string $indexId
-     * @param string $identifier
-     * @param int $itemId
-     * @param string $uri
-     * @param string $lastModDate
+     * @param int $oparationId Operation id 操作ID
+     * @param int $update Update flag 更新フラグ
+     * @param string $listSets ListSets ListSets
+     * @param string $setSpec SetSpec SetSpec
+     * @param string $indexId Index id インデックスID
+     * @param string $identifier Identifier 識別子
+     * @param int $itemId Item id アイテムID
+     * @param string $uri URI URI
+     * @param string $lastModDate Last update date 最終更新日
+     * @return boolean Result 結果
      */
     public function entryHarvestingLog(   $oparationId, $update=0, $listSets='', $setSpec='', 
                                             $indexId='', $identifier='', $itemId=0, $uri='', $lastModDate='')
@@ -2074,13 +2203,17 @@ class HarvestingOaipmh extends RepositoryAction
     
     /**
      * Convert metadata for DublinCore
+     * メタデータ変換
      *
-     * @param int $itemId
-     * @param int $itemNo
-     * @param array $metadata already checked
-     * @param array &$irBasic
-     * @param array &$irMetadata
-     * @return bool
+     * @param int $itemId Item id アイテムID
+     * @param int $itemNo Item serial number アイテム通番
+     * @param array $metadata Metadata メタデータ
+     *                        array[KEYNAME]
+     * @param array $irBasic Basic item information list アイテム基本情報
+     *                       array["item_id"|"item_no"|"item_type_id"|"title"|"title_english"|"language"|"pub_year"|"pub_month"|"pub_day"|"serch_key"|"serch_key_english"]
+     * @param array $irMetadata Metadata list メタデータ一覧
+     *                          array["item_id"|"item_no"|"item_type_id"|"attribute_id"|"attribute_no"|"input_type"|"attribute_value"]
+     * @return boolean Result 結果
      */
     private function convertMetadataForDublinCore($itemId, $itemNo, $metadata, &$irBasic, &$irMetadataArray)
     {
@@ -2310,14 +2443,17 @@ class HarvestingOaipmh extends RepositoryAction
     }
     
     /**
-     * Convert metadata for JuNii2
+     * Convert metadata for DublinCore
+     * メタデータ変換
      *
-     * @param int $itemId
-     * @param int $itemNo
-     * @param array $metadata already checked
-     * @param array &$irBasic
-     * @param array &$irMetadataArray
-     * @return bool
+     * @param int $itemId Item id アイテムID
+     * @param int $itemNo Item serial number アイテム通番
+     * @param array $metadata Metadata メタデータ
+     * @param array $irBasic Basic item information list アイテム基本情報
+     *                       array["item_id"|"item_no"|"item_type_id"|"title"|"title_english"|"language"|"pub_year"|"pub_month"|"pub_day"|"serch_key"|"serch_key_english"]
+     * @param array $irMetadata Metadata list メタデータ一覧
+     *                          array["item_id"|"item_no"|"item_type_id"|"attribute_id"|"attribute_no"|"input_type"|"attribute_value"]
+     * @return boolean Result 結果
      */
     private function convertMetadataForJunii2($itemId, $itemNo, $metadata, &$irBasic, &$irMetadataArray)
     {
@@ -2983,15 +3119,18 @@ class HarvestingOaipmh extends RepositoryAction
     
     /**
      * makeMetadataArray
+     * メタデータ一覧作成
      * 
-     * @param array $attributeArray
-     * @param int $itemId
-     * @param int $itemNo
-     * @param int $itemTypeId
-     * @param int $attributeId
-     * @param string $inputType
-     * @param array &$metadataArray
-     * @return bool
+     * @param array $attributeArray Attribute list 属性一覧
+     *                              array[$ii]
+     * @param int $itemId Item id アイテムID
+     * @param int $itemNo Item serial number アイテム通番
+     * @param int $itemTypeId Item type id アイテムタイプID
+     * @param int $attributeId Attribute id 属性ID
+     * @param string $inputType Input type 入力タイプ
+     * @param array $irMetadata Metadata list メタデータ一覧
+     *                          array["item_id"|"item_no"|"item_type_id"|"attribute_id"|"attribute_no"|"input_type"|"attribute_value"]
+     * @return boolean Result 結果
      */
     private function makeMetadataArray($attributeArray, $itemId, $itemNo, $itemTypeId, $attributeId, $inputType, &$metadataArray)
     {
@@ -3012,16 +3151,19 @@ class HarvestingOaipmh extends RepositoryAction
     }
     
     /**
-     * makeNameMetadataArrayOaiDc
+     * makeMetadataArray
+     * メタデータ一覧作成
      * 
-     * @param array $attributeArray
-     * @param int $itemId
-     * @param int $itemNo
-     * @param int $itemTypeId
-     * @param int $attributeId
-     * @param string $language
-     * @param array &$metadataArray
-     * @return bool
+     * @param array $attributeArray Attribute list 属性一覧
+     *                              array[$ii]
+     * @param int $itemId Item id アイテムID
+     * @param int $itemNo Item serial number アイテム通番
+     * @param int $itemTypeId Item type id アイテムタイプID
+     * @param int $attributeId Attribute id 属性ID
+     * @param string $language Language 言語
+     * @param array $irMetadata Metadata list メタデータ一覧
+     *                          array["item_id"|"item_no"|"item_type_id"|"attribute_id"|"attribute_no"|"input_type"|"attribute_value"]
+     * @return boolean Result 結果
      */
     private function makeNameMetadataArrayForOaiDc($attributeArray, $itemId, $itemNo, $itemTypeId, $attributeId, $language, &$metadataArray)
     {
@@ -3095,20 +3237,22 @@ class HarvestingOaipmh extends RepositoryAction
     }
     
     /**
-     * makeBiblioInfoMetadataArray
+     * makeMetadataArray
+     * メタデータ一覧作成
      * 
-     * @param string $jtitle
-     * @param string $volume
-     * @param string $issue
-     * @param string $spage
-     * @param string $epage
-     * @param string $dateofissued
-     * @param int $itemId
-     * @param int $itemNo
-     * @param int $itemTypeId
-     * @param int $attributeId
-     * @param array &$metadataArray
-     * @return bool
+     * @param string $jtitle Journal title 雑誌名
+     * @param string $volume Volume 巻
+     * @param string $issue Issue 号
+     * @param string $spage Start page 開始ページ
+     * @param string $epage End page 終了ページ
+     * @param string $dateofissued Date of issued 発行年月日
+     * @param int $itemId Item id アイテムID
+     * @param int $itemNo Item serial number アイテム通番
+     * @param int $itemTypeId Item type id アイテムタイプID
+     * @param int $attributeId Attribute id 属性ID
+     * @param array $irMetadata Metadata list メタデータ一覧
+     *                          array["item_id"|"item_no"|"item_type_id"|"attribute_id"|"attribute_no"|"input_type"|"attribute_value"]
+     * @return boolean Result 結果
      */
     private function makeBiblioInfoMetadataArray(   $jtitle, $volume, $issue, $spage, $epage, $dateofissued, 
                                                     $itemId, $itemNo, $itemTypeId, $attributeId, &$metadataArray)
@@ -3133,9 +3277,10 @@ class HarvestingOaipmh extends RepositoryAction
     
     /**
      * Check and convert language
+     * 言語変換
      *
-     * @param string $lang
-     * @return string
+     * @param string $lang Language 言語
+     * @return string Output string 出力文字列
      */
     function checkLanguage($lang)
     {
@@ -3215,9 +3360,11 @@ class HarvestingOaipmh extends RepositoryAction
     
     /**
      * Get setSpec string for harvesting log
-     *
-     * @param array $setSpecArray
-     * @return string
+     * SetSpec取得
+     * 
+     * @param array $setSpecArray SetSpec list SetSpec一覧
+     *                            array[$ii]["value"]
+     * @return string Output string 出力文字列
      */
     private function getSetSpecStr($setSpecArray)
     {
@@ -3239,9 +3386,11 @@ class HarvestingOaipmh extends RepositoryAction
     
     /**
      * Get index_id sting for harvesting log
+     * インデックスID取得
      *
-     * @param array $setSpecArray
-     * @return string
+     * @param array $setSpecArray SetSpec list SetSpec一覧
+     *                            array[$ii]["value"]
+     * @return string Output string 出力文字列
      */
     private function getSetSpecIndexIdStr($setSpecArray)
     {
@@ -3288,11 +3437,12 @@ class HarvestingOaipmh extends RepositoryAction
     
     /**
      * setItemStatusToPublic
+     * 公開に設定
      *
-     * @param int $itemId
-     * @param int $itemNo
-     * @param bool $whatsNewFlag
-     * @return bool
+     * @param int $itemId Item id アイテムID
+     * @param int $itemNo Item serial number アイテム通番
+     * @param boolean $whatsNewFlag New item flag 新着フラグ
+     * @return boolean Result 結果
      */
     private function setItemStatusToPublic($itemId, $itemNo, $whatsNewFlag=false)
     {
@@ -3361,11 +3511,12 @@ class HarvestingOaipmh extends RepositoryAction
     
     /**
      * Update item delete flag
+     * 削除フラグ更新
      * 
-     * @param int $itemId
-     * @param int $itemNo
-     * @param int &$isDelFlag
-     * @return bool
+     * @param int $itemId Item id アイテムID
+     * @param int $itemNo Item serial number アイテム通番
+     * @param int $isDelFlag Delete flag 削除フラグ
+     * @return boolean Result 結果
      */
     private function updateIsDeleteForItemTable($itemId, $itemNo, $isDelFlag = 0)
     {
@@ -3392,9 +3543,10 @@ class HarvestingOaipmh extends RepositoryAction
     
     /**
      * Get top parent index id
+     * ルート直下インデックスID取得
      * 
-     * @param int $indexId
-     * @return int
+     * @param int $indexId Index id インデックスID
+     * @return int Index id インデックスID
      */
     private function getTopParentIndexId($indexId)
     {
@@ -3426,12 +3578,14 @@ class HarvestingOaipmh extends RepositoryAction
     
     /**
      * Set additional metadata
+     * 追加メタデータ設定
      * 
-     * @param int $itemId
-     * @param int $itemNo
-     * @param int $itemTypeId
-     * @param array &$metadataArray
-     * @return int
+     * @param int $itemId Item id アイテムID
+     * @param int $itemNo Item serial number アイテム通番
+     * @param int $itemTypeId Item type id アイテムタイプID
+     * @param array $metadata Metadata list メタデータ一覧
+     *                        array["item_id"|"item_no"|"item_type_id"|"attribute_id"|"attribute_no"|"input_type"|"attribute_value"]
+     * @return boolean Result 結果
      */
     private function setAdditionalMetadata($itemId, $itemNo, $itemTypeId, &$metadataArray)
     {
@@ -3507,13 +3661,15 @@ class HarvestingOaipmh extends RepositoryAction
     
     /**
      * Set additional biblioInfo
+     * 追加メタデータ設定
      * 
-     * @param int $itemId
-     * @param int $itemNo
-     * @param int $attrId
-     * @param int $itemTypeId
-     * @param array &$metadataArray
-     * @return int
+     * @param int $itemId Item id アイテムID
+     * @param int $itemNo Item serial number アイテム通番
+     * @param int $attributeId Attribute id 属性ID
+     * @param int $itemTypeId Item type id アイテムタイプID
+     * @param array $metadataArray Metadata list メタデータ一覧
+     *                             array["item_id"|"item_no"|"item_type_id"|"attribute_id"|"attribute_no"|"input_type"|"attribute_value"]
+     * @return boolean Result 結果
      */
     private function setAdditionalBiblioInfo($itemId, $itemNo, $attrId, $itemTypeId, &$metadataArray)
     {
@@ -3546,14 +3702,16 @@ class HarvestingOaipmh extends RepositoryAction
     
     /**
      * Set additional name
+     * 追加メタデータ設定
      * 
-     * @param int $itemId
-     * @param int $itemNo
-     * @param int $attrId
-     * @param int $itemTypeId
-     * @param string $language
-     * @param array &$metadataArray
-     * @return int
+     * @param int $itemId Item id アイテムID
+     * @param int $itemNo Item serial number アイテム通番
+     * @param int $attributeId Attribute id 属性ID
+     * @param int $itemTypeId Item type id アイテムタイプID
+     * @param string $language Language 言語
+     * @param array $metadataArray Metadata list メタデータ一覧
+     *                             array["item_id"|"item_no"|"item_type_id"|"attribute_id"|"attribute_no"|"input_type"|"attribute_value"]
+     * @return boolean Result 結果
      */
     private function setAdditionalName($itemId, $itemNo, $attrId, $itemTypeId, $language, &$metadataArray)
     {
@@ -3602,13 +3760,16 @@ class HarvestingOaipmh extends RepositoryAction
     
     /**
      * Set additional attribute
+     * 追加メタデータ設定
      * 
-     * @param int $itemId
-     * @param int $itemNo
-     * @param int $attrId
-     * @param int $itemTypeId
-     * @param array &$metadataArray
-     * @return int
+     * @param int $itemId Item id アイテムID
+     * @param int $itemNo Item serial number アイテム通番
+     * @param int $attrId Attribute id 属性ID
+     * @param int $itemTypeId Item type id アイテムタイプID
+     * @param string $inputType Input type 入力タイプ
+     * @param array $metadataArray Metadata list メタデータ一覧
+     *                             array["item_id"|"item_no"|"item_type_id"|"attribute_id"|"attribute_no"|"input_type"|"attribute_value"]
+     * @return boolean Result 結果
      */
     private function setAdditionalAttribute($itemId, $itemNo, $attrId, $itemTypeId, $inputType, &$metadataArray)
     {
@@ -3697,9 +3858,15 @@ class HarvestingOaipmh extends RepositoryAction
     // Add for JuNii2 Redaction 2013/09/16 R.Matsuura --start--
     /**
      * Check Oaidc Metadata
+     * Dublin Coreメタデータチェック
      * 
-     * @param string $tagName
-     * @param array  $tagValues
+     * @param string $tagName Tag name タグ名
+     * @param array $tagValues Tag value list 値一覧
+     *                         array[$ii]["value"]
+     * @param string $identifier identifier 識別子
+     * @param string $datestamp Date stamp Date stamp
+     * @param string $setSpecStr SetSpec SetSpec
+     * @return boolean Result 結果
      */
     private function checkOaidcMetadata($tagName, $tagValues, $identifier, $datestamp, $setSpecStr)
     {
@@ -3752,9 +3919,15 @@ class HarvestingOaipmh extends RepositoryAction
     
     /**
      * Check JuNii2 Metadata
+     * junii2メタデータチェック
      * 
-     * @param string $tagName
-     * @param array  $tagValues
+     * @param string $tagName Tag name タグ名
+     * @param array $tagValues Tag value list 値一覧
+     *                         array[$ii]["value"]
+     * @param string $identifier identifier 識別子
+     * @param string $datestamp Date stamp Date stamp
+     * @param string $setSpecStr SetSpec SetSpec
+     * @return boolean Result 結果
      */
     private function checkJuNii2Metadata($tagName, $tagValues, $identifier, $datestamp, $setSpecStr)
     {
@@ -3774,9 +3947,12 @@ class HarvestingOaipmh extends RepositoryAction
     
     /**
      * Check JuNii2 Metadata Inner
+     * junii2メタデータチェック
      * 
-     * @param string $tagName
-     * @param array  $tagValues
+     * @param string $tagName Tag name タグ名
+     * @param array $tagValues Tag value list 値一覧
+     *                         array[$ii]["value"]
+     * @return boolean Result 結果
      */
     private function checkJuNii2MetadataInner($tagName, $tagValues)
     {
@@ -4172,10 +4348,12 @@ class HarvestingOaipmh extends RepositoryAction
     
     /**
      * get attribute ID from database by mapping
+     * 属性ID取得
      * 
-     * @param string $strMapping
-     * @param int $itemTypeId
-     * @param string $lang
+     * @param string $strMapping Mapping マッピング
+     * @param int $itemTypeId Item type id アイテムタイプID
+     * @param string $lang Language 言語
+     * @return int Attribute id 属性ID
      */
     private function getAttrIdFromDbByMapping($strMapping, $itemTypeId, $lang="")
     {
@@ -4202,12 +4380,22 @@ class HarvestingOaipmh extends RepositoryAction
     
     /**
      * put name metadata to arrays
+     * メタデータ設定
      * 
-     * @param array $inputTypeNameMetadata
-     * @param array $nameArray
-     * @param array $idArray
-     * @param array $japaneseNameArray
-     * @param array $japaneseIdArray
+     * @param array $inputTypeNameMetadata Metadata メタデータ
+     *                                     array["item_id"|"item_no"|"item_type_id"|"attribute_id"|"attribute_no"|"input_type"|"attribute_value"]
+     * @param array $nameArray Name list 名前一覧
+     *                         array[$ii]
+     * @param array $idArray Id list ID一覧
+     *                       array[$ii]
+     * @param array $langArray Language list 言語一覧
+     *                       array[$ii]
+     * @param array $japaneseNameArray Name list 名前一覧
+     *                                 array[$ii]
+     * @param array $japaneseIdArray Id list ID一覧
+     *                               array[$ii]
+     * @param array $japaneseLangArray Language list 言語一覧
+     *                               array[$ii]
      */
     private function putNameMetadataToArrays($inputTypeNameMetadata, &$nameArray, &$idArray, &$langArray, &$japaneseNameArray, &$japaneseIdArray, &$japaneseLangArray)
     {
@@ -4256,16 +4444,21 @@ class HarvestingOaipmh extends RepositoryAction
     
     /**
      * makeNameMetadataArrayForJuNii2
+     * メタデータ設定
      * 
-     * @param array $attributeArray
-     * @param int $itemId
-     * @param int $itemNo
-     * @param int $itemTypeId
-     * @param int $attributeId
-     * @param array $langArray
-     * @param array $idArray
-     * @param array &$metadataArray
-     * @return bool
+     * @param array $attributeArray Attribute list 属性一覧
+     *                              array[$ii]
+     * @param int $itemId Item id アイテムID
+     * @param int $itemNo Item serial number アイテム通番
+     * @param int $itemTypeId Item type id アイテムタイプID
+     * @param int $attributeId Attribute id 属性ID
+     * @param array $langArray Language list 言語一覧
+     *                         arrray[$ii]
+     * @param array $idArray Id list ID一覧
+     *                       array[$ii]
+     * @param array $metadataArray Metadata list メタデータ一覧
+     *                             array["item_id"|"item_no"|"item_type_id"|"attribute_id"|"attribute_no"|"input_type"|"attribute_value"]
+     * @return boolean Result 結果
      */
     private function makeNameMetadataArrayForJuNii2($attributeArray, $itemId, $itemNo, $itemTypeId, $attributeId, $langArray, $idArray, &$metadataArray)
     {

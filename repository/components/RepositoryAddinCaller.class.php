@@ -1,9 +1,17 @@
 <?php
+
+/**
+ * Add in caller class
+ * アドイン呼び出しクラス
+ *
+ * @package     WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: RepositoryAddinCaller.class.php 20287 2012-11-20 04:59:31Z yuko_nakao $
+// $Id: RepositoryAddinCaller.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
-// Copyright (c) 2007 - 2008, National Institute of Informatics, 
+// Copyright (c) 2007 - 2008, National Institute of Informatics,
 // Research and Development Center for Scientific Information Resources
 //
 // This program is licensed under a Creative Commons BSD Licence
@@ -12,37 +20,44 @@
 // --------------------------------------------------------------------
 
 /**
- * Addin relay class.
- * 
+ * Add in caller class
+ * アドイン呼び出しクラス
+ *
  * @package     WEKO
+ * @copyright   (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license     http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
  * @access      public
  */
 class RepositoryAddinCaller extends Action
 {
     /**
-     * Enter description here...
+     * Add in file name last prefix
+     * アドインファイルの後方プレフィックス文字列
      *
      */
     const ADDIN_FILENAME_LAST = '_Addin';
     
     /**
      * invoker class (WEKO action class) instance.
+     * 呼び出し元クラス
      * 
-     * @var Object or RepositoryAction
+     * @var RepositoryAction
      */
     private $invoker_ = null;
     
     /**
      * addin class instance.
+     * アドインオブジェクト
      *
-     * @var RepositoryAddinBaseAbsract
+     * @var RepositoryAddinBaseAbstract
      */
     private $addin_ = null;
     
     /**
-     * default constructor
+     * constructor
+     * コンストラクタ
      * 
-     * set invoker_, addin_
+     * @param RepositoryAction $wekoAction caller class 呼び出し元クラス
      */
     public function RepositoryAddinCaller($wekoAction)
     {
@@ -62,8 +77,8 @@ class RepositoryAddinCaller extends Action
     }
     
     /**
-     * Enter description here...
-     *
+     * pre execute
+     * 実行前処理
      */
     public function preExecute()
     {
@@ -74,8 +89,8 @@ class RepositoryAddinCaller extends Action
     }
     
     /**
-     * Enter description here...
-     *
+     * post execute
+     * 実行後処理
      */
     public function postExecute()
     {

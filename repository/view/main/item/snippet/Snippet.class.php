@@ -1,7 +1,14 @@
 <?php
+/**
+ * Top page view class
+ * トップページ表示クラス
+ *
+ * @package     WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Snippet.class.php 53594 2015-05-28 05:25:53Z kaede_matsushita $
+// $Id: Snippet.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics,
 // Research and Development Center for Scientific Information Resources
@@ -10,176 +17,516 @@
 // http://creativecommons.org/licenses/BSD/
 //
 // --------------------------------------------------------------------
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
+/**
+ * Search process class
+ * 検索処理クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositorySearch.class.php';
+/**
+ * Index manager class
+ * インデックス管理クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryIndexManager.class.php';
+/**
+ * Index authority manager class
+ * インデックス権限管理クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryIndexAuthorityManager.class.php';
 
 /**
- * top page view class
+ * Top page view class
+ * トップページ表示クラス
  *
- *   refactoring at search API refactoring. 2013/04/26 Nakao
- *
- * @package     Repository_View_Main_Item_Snippet
+ * @package     WEKO
+ * @copyright   (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license     http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
  * @access      public
  */
 class Repository_View_Main_Item_Snippet extends RepositoryAction
 {
     ///// components /////
+    /**
+     * Session management objects
+     * Session管理オブジェクト
+     *
+     * @var Session
+     */
     public $Session = null;
+    /**
+     * Database management objects
+     * データベース管理オブジェクト
+     *
+     * @var DbObject
+     */
     public $Db = null;
+    /**
+     * Request info object
+     * Request情報を持つオブジェクト
+     *
+     * @var Request
+     */
     public $getData = null;
+    /**
+     * Languages view object
+     * 言語情報オブジェクト
+     *
+     * @var object
+     */
     public $languagesView = null;
 
     // htmlでの一覧表示に使用するデータの配列
+    /**
+     * Item display number
+     * 表示アイテム数(全件)
+     *
+     * @var int
+     */
     var $item_num = 0;      // 表示アイテム数(全件)
+    /**
+     * Viewing page number
+     * 表示しているページ番号
+     *
+     * @var int
+     */
     var $page_no = null;        // 表示しているページ番号
+    /**
+     * All page number
+     * 全体のページ数
+     *
+     * @var int
+     */
     var $page_num = 0;      // 全体のページ数
+    /**
+     * title array
+     * タイトル配列
+     *
+     * @var array
+     */
     var $array_title = array(); // タイトル
+    /**
+     * english title array
+     * タイトル(英)配列
+     *
+     * @var array
+     */
     var $array_title_english = array(); // タイトル(英)
+    /**
+     * 1 item type worth of attribute string
+     * 1アイテムタイプ分の属性文字列
+     *
+     * @var array
+     */
     var $array_list = array();  // 1アイテムタイプ分の属性文字列
+    /**
+     * attribute aray
+     * 属性配列
+     *
+     * @var array
+     */
     var $array_attr = array();
+    /**
+     * attribute aray
+     * 属性配列
+     *
+     * @var array
+     */
     var $array_attr_list = array();
+    /**
+     * Display attribute string array
+     * 表示する属性文字列
+     *
+     * @var array
+     */
     var $array_item_attr_list = array();    // 表示する属性文字列
+    /**
+     * Display start number
+     * 表示開始件数
+     *
+     * @var int
+     */
     var $view_start_no = -1;    // 表示開始件数
+    /**
+     * Display end number
+     * 表示終了件数
+     *
+     * @var int
+     */
     var $view_end_no = 0;   // 表示終了件数
+    /**
+     * Item array for export
+     * アイテム配列（エクスポート用）
+     *
+     * @var array
+     */
     var $array_item = array();      // Export用
 
     // Add session -> action K.Matsuo 2013/12/09 --start--
-    // detail search tab
+    /**
+     * Display search view tab(0: simple, 1: detail)
+     * 検索タイプフラグ(0: 簡易検索, 1: 詳細検索)
+     *
+     * @var int
+     */
     public $active_search_flag = null;
-    // search keyword
+    /**
+     * Search keyword
+     * 検索キーワード
+     *
+     * @var string
+     */
     public $searchkeyword = null;
-    // detail search usable item
+    /**
+     * detail search usable item
+     * 詳細検索に称出来る項目
+     *
+     * @var array
+     */
     public $detail_search_usable_item = null;
-    // all search type
+    /**
+     * (Deprecated) Display search view tab
+     * (廃止予定) 検索タイプフラグ
+     *
+     * @var int
+     */
     public $all_search_type = null;
-    // search item type
+    /**
+     * Detail search item type
+     * 詳細検索アイテムタイプ
+     *
+     * @var array
+     */
     public $detail_search_item_type = null;
-    // search item type
+    /**
+     * Detail search selected item type
+     * 詳細検索で選択されたアイテムタイプ
+     *
+     * @var array
+     */
     public $detail_search_select_item = null;
-    // default detail search items
+    /**
+     * Detail search default list
+     * 詳細検索のデフォルト項目
+     *
+     * @var array
+     */
     public $default_detail_search = null;
-    // default detail search items
+    /**
+     * Search request parameter list
+     * 検索パラメータリスト
+     *
+     * @var array
+     */
     public $search_requestparameter_list = null;
     // Add session -> action K.Matsuo 2013/12/09 --end--
 
     // ファイル用追加 2008/07/23 Y.Nakao
+    /**
+     * 1 item type worth of attribute string
+     * 1アイテムタイプ分の属性文字列
+     *
+     * @var array
+     */
     var $array_list_file = null;    // 1アイテムタイプ分の属性文字列
+    /**
+     * Display file array
+     * 表示するファイル情報
+     *
+     * @var array
+     */
     var $array_attr_list_file = null;
+    /**
+     * Display attribute string array
+     * 表示する属性文字列
+     *
+     * @var array
+     */
     var $array_item_attr_list_file = null;  // 表示する属性文字列
 
     // Add show thumbnail in search result 2012/02/10 T.Koyasu -start-
     /**
      * has all thumbnail data
+     * 全サムネイル情報
      *
-     * @var array : arrayListThumbnail[loop_title][thumbnail_no][item_id]
-     *                                                          [item_no]
-     *                                                          [attribute_id]
-     *                                                          [file_no]
-     *                                                          [width]
-     *                                                          [height]
+     * @var array arrayListThumbnail[loop_title][thumbnail_no]["item_id"|"item_no"|"attribute_id"|"file_no"|"width"|"height"]
      */
     public $arrayListThumbnail = array();
 
     /**
      * has thumbnail data of each items
+     * アイテム毎のサムネイル情報
      *
-     * @var array : arrayThumbnail_[thumbnail_no][item_id]
-     *                                          [item_no]
-     *                                          [attribute_id]
-     *                                          [file_no]
-     *                                          [width]
-     *                                          [height]
+     *
+     * @var array arrayListThumbnail[loop_title][thumbnail_no]["item_id"|"item_no"|"attribute_id"|"file_no"|"width"|"height"]
      */
     private $arrayThumbnail_ = array();
     // Add show thumbnail in search result 2012/02/10 T.Koyasu -end-
 
     // アイテムタイプアイコン表示用 2008/07/24 Y.Nakao
+    /**
+     * Item type ID array for icon
+     * アイコン用アイテムタイプID配列
+     *
+     * @var array
+     */
     var $array_item_type_id = null;
-
+    /**
+     * (Deprecated) Trade ID
+     * (廃止予定) Trade ID
+     *
+     * @var string
+     */
     var $trade_id = "";
 
     // Fix sort order 2013/05/17 Y.Nakao --start--
+    /**
+     * Sort order list
+     * 表示順序配列
+     *
+     * @var array
+     */
     public $sortOrderList = array();
     // Fix sort order 2013/05/17 Y.Nakao --end--
 
     // Add shiboleth login 2009/03/17 Y.Nakao --start--
+    /**
+     * Shibboleth login flag
+     * シボレスログインフラグ
+     *
+     * @var int
+     */
     var $shib_login_flg = "";
+    /**
+     * Shibboleth login URL
+     * シボレスログインサーバURL
+     *
+     * @var string
+     */
     var $shib_login_url = "";
     // Add shiboleth login 2009/03/17 Y.Nakao --end--
 
+    /**
+     * Index ID
+     * インデックスID
+     *
+     * @var int
+     */
     var $index_id = null;
+    /**
+     * search keyword
+     * 検索キーワード
+     *
+     * @var string
+     */
     var $keyword = null;
+    /**
+     * Item sort order
+     * アイテム表示順序
+     *
+     * @var int
+     */
     var $sort_order = null;
+    /**
+     * Item display number
+     * アイテム表示数
+     *
+     * @var int
+     */
     var $list_view_num = null;
+    /**
+     * Search type
+     * 検索タイプ
+     *
+     * @var int
+     */
     var $search_type = null;
     // Add detail search 2013/11/20 T.Ichikawa --end--
 
     // Add select language 2009/07/03 A.Suzuki --start--
+    /**
+     * Display language
+     * 表示言語
+     *
+     * @var string
+     */
     var $select_lang = null;
     // Add select language 2009/07/03 A.Suzuki --end--
 
     // Add alternative language setting 2009/08/12 A.Suzuki --start--
     // Bug fix WEKO-2014-031 T.Koyasu 2014/06/25 --start--
+    /**
+     * Alternative language display flag
+     * 他言語表示フラグ
+     *
+     * @var string
+     */
     var $alter_flg = RepositoryConst::PARAM_HIDE_ALTERNATIVE_LANG;   // 他言語表示フラグ
     // Bug fix WEKO-2014-031 T.Koyasu 2014/06/25 --end--
     // Add alternative language setting 2009/08/12 A.Suzuki --end--
 
     // Add hidden link to sitemap file address 2009/12/21 A.Suzuki --start--
+    /**
+     * Site map file path
+     * サイトマップファイルパス
+     *
+     * @var string
+     */
     var $sitemap_file_path = "./weko/sitemaps/sitemapindex.xml";
+    /**
+     * Site map flag
+     * サイトマップフラグ
+     *
+     * @var bool
+     */
     var $sitemap_flg = false;
     // Add hidden link to sitemap file address 2009/12/21 A.Suzuki --end--
 
     // fix download any files from repositoy_uri 2010/01/08 Y.Nakao --start--
+    /**
+     * URI export
+     * URIエクスポート
+     *
+     * @var string
+     */
     var $uri_export = "";
     // fix download any files from repositoy_uri 2010/01/08 Y.Nakao --start--
 
     // Add variable declaration 2013/09/13 K.Matsushita --start--
+    /**
+     * Module block ID
+     * モジュールブロックID
+     *
+     * @var int
+     */
     var $block_id = null;
     // Add variable declaration 2013/09/13 K.Matsushita --end--
 
     // Add contents page Y.Nakao 2010/08/06 --start--
+    /**
+     * Heading
+     * 見出し
+     *
+     * @var array
+     */
     var $heading = array();
+    /**
+     * Contents list
+     * コンテンツリスト
+     *
+     * @var array
+     */
     var $contents = array();
     // Add contents page Y.Nakao 2010/08/06 --end--
 
     // Add index list 2010/04/6 S.Abe --start--
-    // index flag
+    /**
+     * Index display flag
+     * インデックス表示フラグ
+     *
+     * @var int
+     */
     var $select_index_list_display = "";
-    // index list which show index
+    /**
+     * Opening index list
+     * 開状態のインデックスリスト
+     *
+     * @var array
+     */
     var $select_index_list = array();
     // Add index list 2010/04/6 S.Abe --end--
 
     // Add download_divergence_flg H.Gotoo 2010/12/21 --start--
+    /**
+     * Version flag
+     * バージョンフラグ
+     *
+     * @var string
+     */
     var $version_flg = "";
+    /**
+     * Flash file public flag
+     * FLASH公開フラグ
+     *
+     * @var bool
+     */
     var $flash_pub_flg = false;
     // Add download_divergence_flg H.Gotoo 2010/12/21 --end--
 
     // Modify invalid javascript of icon onLoad T.Koyasu 2011/12/27 -start-
+    /**
+     * Icon size width
+     * アイコン横幅サイズ
+     *
+     * @var array
+     */
     public $array_icon_width = array();
+    /**
+     * Icon size height
+     * アイコン縦幅サイズ
+     *
+     * @var array
+     */
     public $array_icon_height = array();
     // Modify invalid javascript of icon onLoad T.Koyasu 2011/12/27 -end-
 
 
     // search components
+    /**
+     * WEKO validator class
+     * WEKOバリデータクラス
+     *
+     * @var Repository_Validator_DownloadCheck
+     */
     public $RepositoryValidator = null;
+    /**
+     * Search process class
+     * 検索処理クラス
+     *
+     * @var RepositorySearch
+     */
     public $RepositorySearch = null;
-
+    /**
+     * Index display type
+     * インデックス表示タイプ
+     *
+     * @var int
+     */
     private $indexDispType = 0;
-
+    /**
+     * View item detail allow status
+     * アイテム詳細画面閲覧可否
+     *
+     * @var string
+     */
     public $detail_info = "";
-
+    /**
+     * Set search parameter flag
+     * 検索パラメータセット済みフラグ
+     *
+     * @var bool
+     */
     public $setSearchParameter = "";
 
     // add file download after login T.Ichikawa 2015/02/03 --start--
+    /**
+     * file download information after login
+     * ログイン後のファイルダウンロード情報
+     *
+     * @var string
+     */
     var $fileIdx = "";                  // ログイン後のファイルダウンロード情報
     // add file download after login T.Ichikawa 2015/02/03 --end--
 
     /**
+     * Execute
+     * 実行
      *
-     *
-     * @access  public
+     * @return string "success"/"error" success/failed 成功/失敗
+     * @throws RepositoryException
      */
     function executeApp()
     {
@@ -187,9 +534,6 @@ class Repository_View_Main_Item_Snippet extends RepositoryAction
         {
             // proc start time
             $sTime = microtime(true);
-
-            // init action
-            $this->initAction();
 
             // remove session
             $this->initParameter();
@@ -290,9 +634,6 @@ class Repository_View_Main_Item_Snippet extends RepositoryAction
 
             $this->RepositorySearch->outputProcTime("snippet検索結果表示",$sTime, microtime(true));
 
-            // exit action
-            $this->exitAction();
-
             if($this->smartphoneFlg === true)
             {
                 return "success_sp";
@@ -301,13 +642,9 @@ class Repository_View_Main_Item_Snippet extends RepositoryAction
             {
                 return "success";
             }
-
         }
         catch ( RepositoryException $Exception)
         {
-            // exit action
-            $result = $this->exitAction();
-
             // Add branch for smartphone 2012/04/04 A.Suzuki --start--
             if($this->smartphoneFlg === true)
             {
@@ -323,7 +660,7 @@ class Repository_View_Main_Item_Snippet extends RepositoryAction
 
     /**
      * initialize session parameter
-     *
+     * セッションパラメータを初期化する
      */
     private function initParameter()
     {
@@ -470,11 +807,9 @@ class Repository_View_Main_Item_Snippet extends RepositoryAction
         $this->sortOrderList = explode("|", $sortDisp);
     }
 
-
-
     /**
+     * Delete "custom" from sort order list if simple search
      * キーワード検索の場合は、ソート順指定リストから「カスタム」を削除する。
-     *
      */
     private function removeCustomSort(){
             $pos = array_search(RepositorySearch::ORDER_CUSTOM_SORT_ASC, $this->sortOrderList);
@@ -492,9 +827,9 @@ class Repository_View_Main_Item_Snippet extends RepositoryAction
 
     /**
      * setting version_flg for netcommons version
+     * NC2バージョンフラグをセットする
      *
-     * @return string '0'=>under ver.2.3.0.1
-     *                '1'=>over ver.2.3.0.1
+     * @return string "0"/"1" ver 2.3.0.1 under/over バージョン2.3.0.1以下/以上
      */
     private function getVersionFlg()
     {
@@ -509,9 +844,10 @@ class Repository_View_Main_Item_Snippet extends RepositoryAction
     }
 
     /**
-     * check request parameter
+     * Set redirect view
+     * リダイレクト先をセットする
      *
-     * @return string redirect url
+     * @return string redirect url リダイレクト先URL
      */
     private function redirectView()
     {
@@ -525,9 +861,8 @@ class Repository_View_Main_Item_Snippet extends RepositoryAction
     }
 
     /**
-     * [移先の画面を決定する
-     *
-     * @access  private
+     * Decide redirect view
+     * 遷移先の画面を決定する
      */
     private function decideScreenChanges()
     {
@@ -777,8 +1112,9 @@ class Repository_View_Main_Item_Snippet extends RepositoryAction
 
     /**
      * check item type num
+     * アイテムタイプ数を取得する
      *
-     * @return int
+     * @return int item type count アイテムタイプ数
      */
     private function getItemTypeNum()
     {
@@ -794,9 +1130,10 @@ class Repository_View_Main_Item_Snippet extends RepositoryAction
 
     /**
      * make list data
+     * 一覧表示情報を作成する
      *
-     * @param array $searchResult 検索結果
-     * @return
+     * @param array $searchResult search result 検索結果
+     *                             array[$ii][$searchResult]
      */
     public function setListViewData($searchResult)
     {
@@ -1033,17 +1370,21 @@ class Repository_View_Main_Item_Snippet extends RepositoryAction
                                 }
                             }
                             // Add author link url 2015/01/28 T.Ichikawa --start--
-                            $url = BASE_URL. "/?action=repository_opensearch&creator=". urlencode($str);
+                            $this->getAdminParam("author_search_type", $author_search_type, $error_msg);
+                            if($author_search_type == 1)
+                            {
+                                $url = BASE_URL. "/?action=repository_opensearch&wekoAuthorId=". $resultItemAttr[$nCnt_attr_type][$nCnt]['author_id'];
+                            }
+                            else
+                            {
+                                $url = BASE_URL. "/?action=repository_opensearch&creator=". urlencode($str);
+                            }
                             array_push($this->array_attr, array("last_flg"=>0, "attr_value" => $str, "url" => $url));
                             if($this->indexDispType == 1)
                             {
                                 $this->contents[count($this->contents)-1]['item_attr'][$nCnt_attr_type][$nCnt]['url'] = $url;
                             }
                             // Add author link url 2015/01/28 T.Ichikawa --end--
-                        }
-                        // 改行指定があった場合、文末に " , "は表示しない
-                        if($resultItemAttrType[$nCnt_attr_type]['line_feed_enable'] == 1){
-                            $this->array_attr[count($resultItemAttr[$nCnt_attr_type])]["last_flg"] = 1;
                         }
 
                     } else if($resultItemAttrType[$nCnt_attr_type]['input_type'] == "thumbnail"){
@@ -1055,22 +1396,8 @@ class Repository_View_Main_Item_Snippet extends RepositoryAction
                         // Add show thumbnail in search result 2012/02/10 T.Koyasu -end-
                     } else if($resultItemAttrType[$nCnt_attr_type]['input_type'] == "file"){
                         $this->SetFileInfo($Result_List, $nCnt_attr_type, 'file');
-                        // 改行指定があった場合、文末に " , "は表示しない
-                        // Fix search result new line 2011/12/13 Y.Nakao --start--
-                        if($resultItemAttrType[$nCnt_attr_type]['line_feed_enable'] == 1 && count($this->array_attr) > 1)
-                        {
-                            $this->array_attr[count($resultItemAttr[$nCnt_attr_type])]["last_flg"] = 1;
-                        }
-                        // Fix search result new line 2011/12/13 Y.Nakao --end--
                     } else if($resultItemAttrType[$nCnt_attr_type]['input_type'] == "file_price"){
                         $this->SetFileInfo($Result_List, $nCnt_attr_type, 'file_price');
-                        // 改行指定があった場合、文末に " , "は表示しない
-                        // Fix search result new line 2011/12/13 Y.Nakao --start--
-                        if($resultItemAttrType[$nCnt_attr_type]['line_feed_enable'] == 1 && count($this->array_attr) > 1)
-                        {
-                            $this->array_attr[count($resultItemAttr[$nCnt_attr_type])]["last_flg"] = 1;
-                        }
-                        // Fix search result new line 2011/12/13 Y.Nakao --start--
                     } else if($resultItemAttrType[$nCnt_attr_type]['input_type'] == "link"){
 
                         // 属性名格納
@@ -1082,16 +1409,8 @@ class Repository_View_Main_Item_Snippet extends RepositoryAction
                             $str = explode("|", $resultItemAttr[$nCnt_attr_type][$nCnt]['attribute_value'], 2);
                             array_push($this->array_attr, array("last_flg"=>0, "attr_value" => $str));
                         }
-                        // 改行指定があった場合、文末に " , "は表示しない
-                        if($resultItemAttrType[$nCnt_attr_type]['line_feed_enable'] == 1){
-                            $this->array_attr[count($resultItemAttr[$nCnt_attr_type])]["last_flg"] = 1;
-                        }
                     } else if($resultItemAttrType[$nCnt_attr_type]['input_type'] == "biblio_info"){
                         $this->SetBiblioInfo($Result_List, $nCnt_attr_type);
-                        // 改行指定があった場合、文末に " , "は表示しない
-                        if($resultItemAttrType[$nCnt_attr_type]['line_feed_enable'] == 1){
-                            $this->array_attr[count($resultItemAttr[$nCnt_attr_type])]["last_flg"] = 1;
-                        }
 
                     } else if($resultItemAttrType[$nCnt_attr_type]['input_type'] == "textarea"){
 
@@ -1102,10 +1421,6 @@ class Repository_View_Main_Item_Snippet extends RepositoryAction
                             $str = $resultItemAttr[$nCnt_attr_type][$nCnt]['attribute_value'];
                             $str_array = explode("\n", $str);
                             array_push($this->array_attr, array("last_flg"=>0, "attr_value" => $str_array));
-                        }
-                        // 改行指定があった場合、文末に " , "は表示しない
-                        if($resultItemAttrType[$nCnt_attr_type]['line_feed_enable'] == 1){
-                            $this->array_attr[count($resultItemAttr[$nCnt_attr_type])]["last_flg"] = 1;
                         }
                     // Add contents page Y.Nakao 2010/08/06 --start--
                     } else if($resultItemAttrType[$nCnt_attr_type]['input_type'] == "heading"){
@@ -1121,9 +1436,6 @@ class Repository_View_Main_Item_Snippet extends RepositoryAction
                         // attr name
                         array_push($this->array_attr, "else");
                         array_push($this->array_attr, array("last_flg"=>0, "attr_value" => $str));
-                        if($resultItemAttrType[$nCnt_attr_type]['line_feed_enable'] == 1){
-                            $this->array_attr[count($resultItemAttr[$nCnt_attr_type])]["last_flg"] = 1;
-                        }
                         // Add contents page Y.Nakao 2010/08/06 --end--
                     } else {
 
@@ -1136,11 +1448,12 @@ class Repository_View_Main_Item_Snippet extends RepositoryAction
                             $str = $resultItemAttr[$nCnt_attr_type][$nCnt]['attribute_value'];
                             array_push($this->array_attr, array("last_flg"=>0, "attr_value" => $str));
                         }
-                        // 改行指定があった場合、文末に " , "は表示しない
-                        if($resultItemAttrType[$nCnt_attr_type]['line_feed_enable'] == 1){
-                            $this->array_attr[count($resultItemAttr[$nCnt_attr_type])]["last_flg"] = 1;
-                        }
 
+                    }
+                    // 改行指定があった場合、文末に " , "は表示しない
+                    if($resultItemAttrType[$nCnt_attr_type]['line_feed_enable'] == 1 && count($this->array_attr) > 1)
+                    {
+                        $this->array_attr[count($resultItemAttr[$nCnt_attr_type])]["last_flg"] = 1;
                     }
                     // 1属性分の配列データ
                     if(count($this->array_attr) > 0){
@@ -1250,9 +1563,11 @@ class Repository_View_Main_Item_Snippet extends RepositoryAction
     // Add show thumbnail in search result 2012/02/10 T.Koyasu -start-
     /**
      * get thumbnail data and set thumbnail data to $arrayThumbnail_
+     * サムネイルデータを取得して配列にセットする
      *
-     * @param array $ResultList : has all item data
-     * @param int $nCntAttrType : 2nd key of ResultList
+     * @param array $ResultList has all item data アイテムデータ
+     *                           array["item"][$ii]["item_id"|"item_no"|"revision_no"|"item_type_id"|"prev_revision_no"|"title"|"title_english"|"language"|"review_status"|"review_date"|"shown_status"|"shown_date"|"reject_status"|"reject_date"|"reject_reason"|"serch_key"|"serch_key_english"|"remark"|"uri"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     * @param int $nCntAttrType 2nd key of ResultList アイテムデータの第2インデックス
      */
     private function setThumbnailInfo($ResultList, $nCntAttrType)
     {
@@ -1300,10 +1615,12 @@ class Repository_View_Main_Item_Snippet extends RepositoryAction
 
     /**
      * Set item array for input_type=file
+     * ファイル情報をセットする
      *
-     * @param unknown_type $Result_List
-     * @param unknown_type $nCnt_attr_type
-     * @param unknown_type $input_type
+     * @param array $Result_List item data アイテムデータ
+     *                            array["item"][$ii]["item_id"|"item_no"|"revision_no"|"item_type_id"|"prev_revision_no"|"title"|"title_english"|"language"|"review_status"|"review_date"|"shown_status"|"shown_date"|"reject_status"|"reject_date"|"reject_reason"|"serch_key"|"serch_key_english"|"remark"|"uri"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     * @param int $nCnt_attr_type 2nd key of ResultList アイテムデータの第2インデックス
+     * @param string $input_type input type 入力属性タイプ
      */
     private function SetFileInfo($Result_List, $nCnt_attr_type, $input_type)
     {
@@ -1385,7 +1702,7 @@ class Repository_View_Main_Item_Snippet extends RepositoryAction
 
     /**
      * setting parameter
-     *
+     * パラメータをセットする
      */
     private function setParameterValue()
     {
@@ -1430,6 +1747,14 @@ class Repository_View_Main_Item_Snippet extends RepositoryAction
         $this->Session->setParameter("sort_order", $this->sort_order);
     }
 
+    /**
+     * Set biblio info
+     * 書誌情報をセットする
+     *
+     * @param array $Result_List has all item data アイテムデータ
+     *                           array["item"][$ii]["item_id"|"item_no"|"revision_no"|"item_type_id"|"prev_revision_no"|"title"|"title_english"|"language"|"review_status"|"review_date"|"shown_status"|"shown_date"|"reject_status"|"reject_date"|"reject_reason"|"serch_key"|"serch_key_english"|"remark"|"uri"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     * @param int $nCnt_attr_type 2nd key of ResultList アイテムデータの第2インデックス
+     */
     private function SetBiblioInfo($Result_List, $nCnt_attr_type)
     {
         // 属性名格納
@@ -1522,9 +1847,11 @@ class Repository_View_Main_Item_Snippet extends RepositoryAction
     // Add for Program arrangement  K.Matsuo 2011/10/25 --end--
 
     /**
-     * [[ラベルの表記を最大文字数/最小文字数に合わせて調整する]]
+     * To adjust the display of the label to the maximum number of characters / minimum number of characters
+     * ラベルの表記を最大文字数/最小文字数に合わせて調整する
      *
-     * @access  private
+     * @param string $original original オリジナル
+     * @param int $adjusted adjusted length 調整された長さ
      */
     private function AdjustLabelWidth($original, &$adjusted)
     {
@@ -1576,7 +1903,7 @@ class Repository_View_Main_Item_Snippet extends RepositoryAction
 
     /**
      * set request parameter for view display
-     *
+     * 表示に必要なリクエストパラメータ情報をセットする
      */
     private function setSearchRequest()
     {
@@ -1618,7 +1945,7 @@ class Repository_View_Main_Item_Snippet extends RepositoryAction
 
     /**
      * set request parameter for public view
-     *
+     * 表示に必要なリクエストパラメータ情報をセットする
      */
     private function setRequestParameter()
     {
@@ -1641,7 +1968,7 @@ class Repository_View_Main_Item_Snippet extends RepositoryAction
 
     /**
      * set index list
-     *
+     * インデックス情報をセットする
      */
     private function setIndexList()
     {
@@ -1671,7 +1998,7 @@ class Repository_View_Main_Item_Snippet extends RepositoryAction
             }
             else
             {
-                $query .= "SELECT idx.`index_id`, idx.`index_name`, idx.`index_name_english`, idx.`contents`, idx.`comment`, idx.`rss_display`, idx.`mod_date` ";
+                $query .= "SELECT idx.`index_id`, idx.`index_name`, idx.`index_name_english`, idx.`contents`, idx.`comment`, idx.`rss_display`, idx.`owner_user_id`, idx.`mod_date` ";
             }
 
             // Mod OpenDepo 2014/01/31 S.Arata --start--

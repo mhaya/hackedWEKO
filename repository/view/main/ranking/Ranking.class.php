@@ -1,7 +1,14 @@
 <?php
+/**
+ * Class for ranking screen display
+ * ランキング画面表示用クラス
+ *
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Ranking.class.php 57108 2015-08-26 01:03:29Z keiya_sugimoto $
+// $Id: Ranking.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -12,82 +19,308 @@
 // --------------------------------------------------------------------
 
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
+/**
+ * Action base class for WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/common/WekoAction.class.php';
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
+
+/**
+ * Common classes for the index operation
+ * インデックス操作用共通クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryIndexManager.class.php';
 
 /**
- * Show Ranking
+ * Class for ranking screen display
+ * ランキング画面表示用クラス
  *
- * @package     [[package名]]
- * @access      public
+ * @package WEKO
+ * @copyright (c) 2007 - 2008, National Institute of Informatics, Research and Development Center for Scientific Information Resources.
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class Repository_View_Main_Ranking extends WekoAction 
 {
+    /**
+     * (Deprecated)
+     * (廃止予定)
+     *
+     * @var string
+     */
     var $request = null;
-    
+    /**
+     * Detail ranking
+     * 詳細画面ランキング
+     *
+     * @var array
+     */
     var $refer_ranking = Array();
+    /**
+     * Download ranking
+     * ダウンロードランキング
+     *
+     * @var array
+     */
     var $download_ranking = Array();
+    /**
+     * User ranking
+     * ユーザランキング
+     *
+     * @var array
+     */
     var $user_ranking = Array();
+    /**
+     * Search keyword ranking
+     * 検索キーワードランキング
+     *
+     * @var array
+     */
     var $keyword_ranking = Array();
+    /**
+     * New item ranking
+     * 新着アイテムランキング
+     *
+     * @var array
+     */
     var $newitem_ranking = Array();
 
+    /**
+     * Ranking display flag(Detail)
+     * ランキング表示フラグ(詳細画面)
+     *
+     * @var int
+     */
     var $ranking_is_disp_browse_item = "1";
+    /**
+     * Ranking display flag(Download)
+     * ランキング表示フラグ(ダウンロード)
+     *
+     * @var int
+     */
     var $ranking_is_disp_download_item = "1";
+    /**
+     * Ranking display flag(User)
+     * ランキング表示フラグ(ユーザ)
+     *
+     * @var int
+     */
     var $ranking_is_disp_item_creator = "1";
+    /**
+     * Ranking display flag(Search keyword)
+     * ランキング表示フラグ(検索キーワード)
+     *
+     * @var int
+     */
     var $ranking_is_disp_keyword = "1";
+    /**
+     * Ranking display flag(New item)
+     * ランキング表示フラグ(新着アイテム)
+     *
+     * @var int
+     */
     var $ranking_is_disp_recent_item = "1";
     
+    /**
+     * Ranking the number of display (Detail)
+     * ランキング表示数(詳細画面)
+     *
+     * @var int
+     */
     var $count_refer = 0;                   // 閲覧回数ランキング表示数
+    /**
+     * Ranking the number of display (Download)
+     * ランキング表示数(ダウンロード)
+     *
+     * @var int
+     */
     var $count_download = 0;                // ダウンロード数ランキング表示数
+    /**
+     * Ranking the number of display (User)
+     * ランキング表示数(ユーザ)
+     *
+     * @var int
+     */
     var $count_user = 0;                    // ユーザーランキング表示数
+    /**
+     * Ranking the number of display (Search keyword)
+     * ランキング表示数(検索)
+     *
+     * @var int
+     */
     var $count_keyword = 0;                 // キーワードランキング表示数
+    /**
+     * Ranking the number of display (New item)
+     * ランキング表示数(新着アイテム)
+     *
+     * @var int
+     */
     var $count_recent = 0;                  // 新着アイテム表示数
-    
+    /**
+     * Thumbnail display flag list
+     * サムネイル表示フラグ一覧
+     *
+     * @var array
+     */
     var $thumbnail = array();               // サムネイルの有無を格納 
 
     // Add child index display more 2009/01/20 Y.Nakao --start--
-    // ランキング表示かどうか判定(アコーディオン表示用JavaScriptをhtmlに組み込むかの判定に使用)
     // display ranking or snippet
+    /**
+     * Determine whether the ranking display (using the accordion display for JavaScript in the determination of whether incorporated into html)
+     * ランキング表示かどうか判定(アコーディオン表示用JavaScriptをhtmlに組み込むかの判定に使用)
+     *
+     * @var string
+     */
     var $display_ranking = "false";
     // Add child index display more 2009/01/20 Y.Nakao --end--
     
     // Add title_english 2009/07/22 A.Suzuki --start--
+    /**
+     * Language
+     * 表示言語
+     *
+     * @var unknown_type
+     */
     var $select_lang = "";                  // 選択中の言語
     // Add title_english 2009/07/22 A.Suzuki --end--
     
     // fix download any files from repositoy_uri 2010/01/08 Y.Nakao --start--
+    /**
+     * URI export
+     * エクスポートURI
+     *
+     * @var string
+     */
     var $uri_export = "";
     // fix download any files from repositoy_uri 2010/01/08 Y.Nakao --start--
     
     // Set help icon setting 2010/02/10 K.Ando --start--
+    /**
+     * Help icon display flag
+     * ヘルプアイコン表示フラグ
+     *
+     * @var int
+     */
     var $help_icon_display =  "";
+    /**
+     * OAI-ORE icon display flag
+     * OAI-OREアイコン表示フラグ
+     *
+     * @var int
+     */
     var $oaiore_icon_display = "";
     // Set help icon setting 2010/02/10 K.Ando --end--
     
     // Add index list 2010/04/13 S.Abe --start--
+    /**
+     * Index display flag
+     * インデックス表示フラグ
+     *
+     * @var int
+     */
     var $select_index_list_display = "";
+    /**
+     * Opening index list
+     * 開状態のインデックスリスト
+     *
+     * @var array
+     */
     var $select_index_list = array();
     // Add index list 2010/04/13 S.Abe --end--
 
     // Fix advanced search for ranking view at top page. Y.Nakao 2014/01/14 --start--
+    /**
+     * Display search view tab(0: simple, 1: detail)
+     * 検索タイプフラグ(0: 簡易検索, 1: 詳細検索)
+     *
+     * @var int
+     */
     public $active_search_flag = null;              // flag for detail search or simple search
+    /**
+     * detail search usable item
+     * 詳細検索に称出来る項目
+     *
+     * @var array
+     */
     public $detail_search_usable_item = array();    // detail search usable item
+    /**
+     * Detail search item type
+     * 詳細検索アイテムタイプ
+     *
+     * @var array
+     */
     public $detail_search_item_type = array();      // search itemtype
+    /**
+     * Detail search selected item type
+     * 詳細検索で選択されたアイテムタイプ
+     *
+     * @var array
+     */
     public $detail_search_select_item = array();    // search itemtype
+    /**
+     * Detail search default list
+     * 詳細検索のデフォルト項目
+     *
+     * @var array
+     */
     public $default_detail_search = array();        // default detail search items
     // Fix advanced search for ranking view at top page. Y.Nakao 2014/01/14 --end--
 
     // Fix download request url 2015/02/03 T.Ichikawa --start--
+    /**
+     * file download information after login
+     * ログイン後のファイルダウンロード情報
+     *
+     * @var string
+     */
     var $fileIdx = "";                              // ログイン後のファイルダウンロード情報
+    /**
+     * Module block ID
+     * モジュールブロックID
+     *
+     * @var int
+     */
     var $block_id = null;
     // Fix download request url 2015/02/03 T.Ichikawa --end--
-    
+    /**
+     * Ranking number
+     * ランキング数
+     *
+     * @var int
+     */
     private $rank_num = 5;
+    /**
+     * Search type
+     * 検索タイプ
+     *
+     * @var int
+     */
     var $search_type = null;
 
     /**
+     * Ranking aggregate start date and time
+     * ランキング集計開始日時
+     *
+     * @var string
+     */
+    public $ranking_count_period_from = null;
+    /**
+     * Ranking aggregate end date and time
+     * ランキング集計終了日時
+     *
+     * @var string
+     */
+    public $ranking_count_period_to = null;
+
+    /**
      * create ranking data
+     * ランキング作成
      *
      * @access  public
      */
@@ -127,15 +360,15 @@ class Repository_View_Main_Ranking extends WekoAction
         $this->ranking_is_disp_keyword = $this->getAdminParamByName('ranking_is_disp_keyword');
         $this->ranking_is_disp_recent_item = $this->getAdminParamByName('ranking_is_disp_recent_item');
         
+        $ranking = BusinessFactory::getFactory()->getBusiness("businessRanking");
         if($result[0]["param_value"] == 1) {
             // no realtime, show ranking from database
             $this->setRankingDataFromDatabase();
-            
+            $ranking->getRankingCountPeriodFromDb($this->ranking_count_period_from, $this->ranking_count_period_to);
         } else {
             // Add ranking update setting 2008/12/1 A.Suzuki --end--
             // real time ranking
             $this->infoLog("businessRanking", __FILE__, __CLASS__, __LINE__);
-            $ranking = BusinessFactory::getFactory()->getBusiness("businessRanking");
             
             // set OFF create ranking that is not show
             if ( $this->ranking_is_disp_browse_item != "1" ){
@@ -173,7 +406,12 @@ class Repository_View_Main_Ranking extends WekoAction
             if ( $this->ranking_is_disp_recent_item == "1" ){
                 $this->recentRanking($ranking);
             }
+            
+            $ranking->getRankingCountPeriodExecutingData($this->ranking_count_period_from, $this->ranking_count_period_to);
         }
+        
+        $this->ranking_count_period_from = substr($this->ranking_count_period_from, 0, 10);
+        $this->ranking_count_period_to = substr($this->ranking_count_period_to, 0, 10);
         
         $this->setEmptyRanking();
         
@@ -184,7 +422,9 @@ class Repository_View_Main_Ranking extends WekoAction
 
     /**
      * create view detail ranking data
-     *
+     * ランキング作成(詳細)
+     * 
+     * @param Repository_Components_Business_Ranking $ranking Rankings create common classes ランキング作成共通クラス
      */
     private function referRanking($ranking)
     {
@@ -226,6 +466,7 @@ class Repository_View_Main_Ranking extends WekoAction
     
     /**
      * create download ranking data
+     * ランキング作成(ダウンロード)
      *
      */
     private function downloadRanking()
@@ -268,6 +509,7 @@ class Repository_View_Main_Ranking extends WekoAction
 
     /**
      * create regist users ranking data
+     * ランキング作成(ユーザ)
      *
      */
     private function userRanking()
@@ -290,6 +532,7 @@ class Repository_View_Main_Ranking extends WekoAction
     
     /**
      * create keyword ranking data
+     * ランキング作成(検索)
      *
      */
     private function keywordRanking()
@@ -312,6 +555,7 @@ class Repository_View_Main_Ranking extends WekoAction
     
     /**
      * create new item's data
+     * ランキング作成(新着アイテム)
      *
      */
     private function recentRanking()
@@ -352,12 +596,14 @@ class Repository_View_Main_Ranking extends WekoAction
     
     // modify show thubnail all rank 2011/10/20 K.Matsuo --start--
     /**
+     * Availability check file downloads
      * ファイルダウンロード可否チェック
      * 
-     * @param item_id
-     * @param item_no
-     * @param file_no
-     * @param type
+     * @param int $item_id Item id アイテムID
+     * @param int $item_no Item serial number アイテム通番
+     * @param int $file_no File number ファイル通番
+     * @param int $type Type タイプ
+     * @param int $ranking_no Ranking number 
      */
     function checkDownload($item_id, $item_no, $file_no, $type, $ranking_no){
 
@@ -417,9 +663,10 @@ class Repository_View_Main_Ranking extends WekoAction
     
     /**
      * getter admin param
+     * 設定値取得
      *
-     * @param string $paramName
-     * @return param_value
+     * @param string $paramName Parameter name パラメータ名
+     * @return string Parameter value パラメータ値
      */
     private function getAdminParamByName($paramName)
     {
@@ -437,8 +684,7 @@ class Repository_View_Main_Ranking extends WekoAction
     
     /**
      * create ranking data from database
-     *
-     * @return unknown
+     * ランキングデータをデータベースから読込む
      */
     private function setRankingDataFromDatabase()
     {
@@ -588,6 +834,7 @@ class Repository_View_Main_Ranking extends WekoAction
     
     /**
      * if ranking data less 3, push empty data
+     * ランキング数が3未満である場合、空のデータを詰める
      *
      */
     private function setEmptyRanking()
@@ -623,7 +870,10 @@ class Repository_View_Main_Ranking extends WekoAction
             }
         }
     }
-    
+    /**
+     * Reading of the parameters for the screen display
+     * 画面表示用パラメータの読み込み
+     */
     private function getViewResult()
     {
         $smartphoneFlg = false;
@@ -677,6 +927,7 @@ class Repository_View_Main_Ranking extends WekoAction
     /** 
      * get download status from session
      * when download export-file from repository_uri access
+     * ダウンロード状態の取得
      *
      */
     private function downloadExportFileFromRepositoryUri()
@@ -711,6 +962,7 @@ class Repository_View_Main_Ranking extends WekoAction
     
     /**
      * get item_id, item_no, attribute_id and file_no of download file when download file after login
+     * ログイン後、ダウンロードするファイルがないかを確認
      *
      */
     private function isDownloadFileAfterLogin()
@@ -728,6 +980,7 @@ class Repository_View_Main_Ranking extends WekoAction
     
     /**
      * get index list when show index list
+     * インデックス一覧を取得する
      *
      */
     private function showIndexListForTopPage()
@@ -749,6 +1002,7 @@ class Repository_View_Main_Ranking extends WekoAction
     
     /**
      * setting and get parameter by session when top page is ranking
+     * トップページにランキングを表示する際のパラメータの設定および取得
      *
      */
     private function showTopPageProcess()

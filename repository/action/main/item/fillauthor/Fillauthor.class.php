@@ -1,118 +1,535 @@
 <?php
+
+/**
+ * Action class for author information automatic input
+ * 著者情報自動入力用アクションクラス
+ *
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Fillauthor.class.php 57213 2015-08-27 07:34:36Z keiya_sugimoto $
+// $Id: Fillauthor.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
-// Copyright (c) 2007 - 2008, National Institute of Informatics, 
+// Copyright (c) 2007 - 2008, National Institute of Informatics,
 // Research and Development Center for Scientific Information Resources
 //
 // This program is licensed under a Creative Commons BSD Licence
 // http://creativecommons.org/licenses/BSD/
 //
 // --------------------------------------------------------------------
-
-/* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
+/**
+ * JSON library class
+ * JSONライブラリクラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/JSON.php';
+/**
+ * Name authority class
+ * 氏名メタデータ管理クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/NameAuthority.class.php';
 
 /**
- * Fill biblio info from other site.
- * Site List
- *  - PubMed
- *  - Amazon
- *  - CiNii
- *
+ * Action class for author information automatic input
+ * 著者情報自動入力用アクションクラス
+ * 
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class Repository_Action_Main_Item_Fillauthor extends RepositoryAction
 {
     // conponents
+    /**
+     * Session management objects
+     * Session管理オブジェクト
+     *
+     * @var Session
+     */
     public $Session = null;
+    /**
+     * Database management objects
+     * データベース管理オブジェクト
+     *
+     * @var DbObject
+     */
     public $Db = null;
     
     // member
+    /**
+     * Sur name
+     * 苗字
+     *
+     * @var string
+     */
     public $surName = null;
+    /**
+     * Given name
+     * 名前
+     *
+     * @var string
+     */
     public $givenName = null;
+    /**
+     * Sur name ruby
+     * 苗字（ルビ）
+     *
+     * @var string
+     */
     public $surNameRuby = null;
+    /**
+     * Given name ruby
+     * 名前（ルビ）
+     *
+     * @var string
+     */
     public $givenNameRuby = null;
+    /**
+     *　E-mail address
+     * メールアドレス
+     *
+     * @var string
+     */
     public $emailAddress = null;
+    /**
+     * Attribute ID
+     * メタデータ属性ID
+     *
+     * @var int
+     */
     public $attrId = null;
+    /**
+     * Attribute number
+     * メタデータ属性通番
+     *
+     * @var int
+     */
     public $attrNo = null;
+    /**
+     * Fill string
+     * Fillした文字列
+     *
+     * @var string
+     */
     public $fillStr = null;
+    /**
+     * Execute mode
+     * 実行モード
+     *
+     * @var string
+     */
     public $mode = null;
+    /**
+     * Author prefix ID
+     * 著者プレフィックスID
+     *
+     * @var int
+     */
     public $prefixId = null;
+    /**
+     * Author suffix ID
+     * 著者サフィックスID
+     *
+     * @var int
+     */
     public $suffixId = null;
     // Add e-person 2013/11/19 R.Matsuura --start--
+    /**
+     * External Author ID
+     * 外部著者ID
+     *
+     * @var string
+     */
     public $externalAuthorID = null;
     // Add e-person 2013/11/19 R.Matsuura --end--
     
     // Form
+    /**
+     * base attr parameter
+     * 基本情報パラメータ配列
+     *
+     * @var array
+     */
     public $base_attr = null;                           // base info
+    /**
+     * item publish year parameter array
+     * アイテム公開日の年情報パラメータ配列
+     *
+     * @var array
+     */
     public $item_pub_date_year = null;                  // pub_date : year
+    /**
+     * item publish month parameter array
+     * アイテム公開日の月情報パラメータ配列
+     *
+     * @var array
+     */
     public $item_pub_date_month = null;                 // pub_date : month
+    /**
+     * item publish day parameter array
+     * アイテム公開日の日情報パラメータ配列
+     *
+     * @var array
+     */
     public $item_pub_date_day = null;                   // pub_date : day
+    /**
+     * item keyword parameter array
+     * アイテムキーワードパラメータ配列
+     *
+     * @var array
+     */
     public $item_keyword = null;                        // keyword
+    /**
+     * item keyword(english) parameter array
+     * アイテムキーワード(英)パラメータ配列
+     *
+     * @var array
+     */
     public $item_keyword_english = null;                // keyword_english
+    /**
+     * text parameter array
+     * text属性パラメータ配列
+     *
+     * @var array
+     */
     public $item_attr_text = null;                      // text
+    /**
+     * textarea parameter array
+     * textarea属性パラメータ配列
+     *
+     * @var array
+     */
     public $item_attr_textarea = null;                  // textarea
+    /**
+     * checkbox parameter array
+     * checkbox属性パラメータ配列
+     *
+     * @var array
+     */
     public $item_attr_checkbox = null;                  // checkbox
+    /**
+     * name: family parameter array
+     * name属性の姓情報パラメータ配列
+     *
+     * @var array
+     */
     public $item_attr_name_family = null;               // name : surname
+    /**
+     * name: name parameter array
+     * name属性の名前情報パラメータ配列
+     *
+     * @var array
+     */
     public $item_attr_name_given = null;                // name : given name
+    /**
+     * name: family ruby parameter array
+     * name属性の姓(ルビ)情報パラメータ配列
+     *
+     * @var array
+     */
     public $item_attr_name_family_ruby = null;          // name : surname ruby
+    /**
+     * name: name ruby parameter array
+     * name属性の名(ルビ)情報パラメータ配列
+     *
+     * @var array
+     */
     public $item_attr_name_given_ruby = null;           // name : given name ruby
+    /**
+     * name: e-mail parameter array
+     * name属性のメールアドレス情報パラメータ配列
+     *
+     * @var array
+     */
     public $item_attr_name_email = null;                // name : e-mail
+    /**
+     * name: author ID prefix parameter array
+     * name属性の著者PrefixID情報パラメータ配列
+     *
+     * @var array
+     */
     public $item_attr_name_author_id_prefix = null;     // name : authorID prefix
+    /**
+     * name: author ID suffix parameter array
+     * name属性の著者SuffixID情報パラメータ配列
+     *
+     * @var array
+     */
     public $item_attr_name_author_id_suffix = null;     // name : authorID suffix
+    /**
+     * select parameter array
+     * select属性パラメータ配列
+     *
+     * @var array
+     */
     public $item_attr_select = null;                    // select
+    /**
+     * link: URL parameter array
+     * link属性のURL情報パラメータ配列
+     *
+     * @var array
+     */
     public $item_attr_link = null;                      // link : value
+    /**
+     * link: display name parameter array
+     * text属性の表示名情報パラメータ配列
+     *
+     * @var array
+     */
     public $item_attr_link_name = null;                 // link : name
+    /**
+     * radio parameter array
+     * radio属性パラメータ配列
+     *
+     * @var array
+     */
     public $item_attr_radio = null;                     // radio
+    /**
+     * biblio: name year parameter array
+     * biblio属性の雑誌名情報パラメータ配列
+     *
+     * @var array
+     */
     public $item_attr_biblio_name = null;               // biblio_info : title
+    /**
+     * biblio: name(english) parameter array
+     * biblio属性の雑誌名(英)情報パラメータ配列
+     *
+     * @var array
+     */
     public $item_attr_biblio_name_english = null;       // biblio_info : title_english
+    /**
+     * biblio: volume parameter array
+     * biblio属性の巻情報パラメータ配列
+     *
+     * @var array
+     */
     public $item_attr_biblio_volume = null;             // biblio_info : volume
+    /**
+     * biblio: issue parameter array
+     * biblio属性の号情報パラメータ配列
+     *
+     * @var array
+     */
     public $item_attr_biblio_issue = null;              // biblio_info : issue
+    /**
+     * biblio: spage parameter array
+     * biblio属性の開始ページ情報パラメータ配列
+     *
+     * @var array
+     */
     public $item_attr_biblio_spage = null;              // biblio_info : start_page
+    /**
+     * biblio: epage parameter array
+     * biblio属性の終了ページ情報パラメータ配列
+     *
+     * @var array
+     */
     public $item_attr_biblio_epage = null;              // biblio_info : end_page
+    /**
+     * biblio: date of issued year parameter array
+     * biblio属性の発行年情報パラメータ配列
+     *
+     * @var array
+     */
     public $item_attr_biblio_dateofissued_year = null;  // biblio_info : year
+    /**
+     * biblio: date of issued month parameter array
+     * biblio属性の発行月情報パラメータ配列
+     *
+     * @var array
+     */
     public $item_attr_biblio_dateofissued_month = null; // biblio_info : month
+    /**
+     * biblio: date of issued day parameter array
+     * biblio属性の発効日情報パラメータ配列
+     *
+     * @var array
+     */
     public $item_attr_biblio_dateofissued_day = null;   // biblio_info : day
+    /**
+     * date: year parameter array
+     * date属性の年情報パラメータ配列
+     *
+     * @var array
+     */
     public $item_attr_date_year = null;                 // date : year
+    /**
+     * date: month parameter array
+     * date属性の月情報パラメータ配列
+     *
+     * @var array
+     */
     public $item_attr_date_month = null;                // date : month
+    /**
+     * date: day parameter array
+     * date属性の日情報パラメータ配列
+     *
+     * @var array
+     */
     public $item_attr_date_day = null;                  // date : day
+    /**
+     * heading: headline parameter array
+     * heading属性の大見出し情報パラメータ配列
+     *
+     * @var array
+     */
     public $item_attr_heading = null;                   // heading
+    /**
+     * heading: headline(english) parameter array
+     * heading属性の大見出し(英)情報パラメータ配列
+     *
+     * @var array
+     */
     public $item_attr_heading_en = null;                // heading(english)
+    /**
+     * heading: subhead parameter array
+     * heading属性の小見出し情報パラメータ配列
+     *
+     * @var array
+     */
     public $item_attr_heading_sub = null;               // subheading
+    /**
+     * heading: subhead(english) parameter array
+     * heading属性の小見出し(英)情報パラメータ配列
+     *
+     * @var array
+     */
     public $item_attr_heading_sub_en = null;            // subheading(english)
-    
+
     // Add Contributor(Posted agency) A.Suzuki 2011/12/13 --start--
+    /**
+     * Form data : contributor radio button select
+     * 画面で選択したアイテム所有者ラジオボタンの選択値
+     *
+     * @var int
+     */
     public $item_contributor = null;
+    /**
+     * Form data : contributor(handle)
+     * アイテム所有者ハンドル名
+     *
+     * @var string
+     */
     public $item_contributor_handle = null;
+    /**
+     * Form data : contributor(name)
+     * アイテム所有者ユーザー名
+     *
+     * @var string
+     */
     public $item_contributor_name= null;
+    /**
+     * Form data : contributor(email)
+     * アイテム所有者メールアドレス
+     *
+     * @var string
+     */
     public $item_contributor_email = null;
     // Add Contributor(Posted agency) A.Suzuki 2011/12/13 --start--
-    
+
+    /**
+     * Researcher Name Resolver ID Contact URL
+     * 研究者リゾルバーID問い合わせ先URL
+     *
+     * @var string
+     */
     private $resolverUrl = "http://rns.nii.ac.jp/";     // http://rns.nii.ac.jp/opensearch?q5=xxxx : 科研費研究者番号で検索
-                                                        // http://rns.nii.ac.jp/opensearch?q6=xxxx : 研究者リゾルバーIDで検索
+                                                               // http://rns.nii.ac.jp/opensearch?q6=xxxx : 研究者リゾルバーIDで検索
+    /**
+     * CiNiiID Contact URL Researcher Name Resolver ID Contact URL
+     * CiNiiID問い合わせ先URL
+     *
+     * @var string
+     */
     private $ciniiUrl = "http://ci.nii.ac.jp/";         // http://ci.nii.ac.jp/nrid/xxxxxxxx.rdf   : CiNiiIDで検索
-    
+
+    /**
+     * (Deprecated) Fill sur name
+     * (廃止予定) Fillしてきた苗字
+     *
+     * @var string
+     */
     private $fillSurName = "";
+    /**
+     * (Deprecated) Fill sur name ruby
+     * (廃止予定) Fillしてきた苗字(ルビ)
+     *
+     * @var string
+     */
     private $fillSurNameRuby = "";
+    /**
+     * (Deprecated) Fill sur name english
+     * (廃止予定) Fillしてきた苗字英名
+     *
+     * @var string
+     */
     private $fillSurNameEn = "";
+    /**
+     * (Deprecated) Fill given name
+     * (廃止予定) Fillしてきた名前
+     *
+     * @var string
+     */
     private $fillGivenName = "";
+    /**
+     * (Deprecated) Fill given name ruby
+     * (廃止予定) Fillしてきた名前(ルビ)
+     *
+     * @var string
+     */
     private $fillGivenNameRuby = "";
+    /**
+     * (Deprecated) Fill given name english
+     * (廃止予定) Fillしてきた名前英名
+     *
+     * @var string
+     */
     private $fillGivenNameEn = "";
+    /**
+     * (Deprecated) Fill organization
+     * (廃止予定) Fillしてきた所属機関名
+     *
+     * @var string
+     */
     private $fillOrganization = "";
+    /**
+     * (Deprecated) Fill organization english
+     * (廃止予定) Fillしてきた所属機関英名
+     *
+     * @var string
+     */
     private $fillOrganizationEn = "";
     
     // add error message 2011/02/21 H.Goto --start--
+    /**
+     * Error message
+     * エラーメッセージ
+     *
+     * @var string
+     */
     var $error_msg = null;          // error message
+    /**
+     * Language Resource Management object
+     * 言語リソース管理オブジェクト
+     *
+     * @var Smarty
+     */
     var $smartyAssign = null;       // for get language resource
     // add error message 2011/02/21 H.Goto --end--
     
     /**
-     * 
+     * Execute
+     * 実行
      *
-     * @access  public
+     * @return string "success"/"error" success/failed 成功/失敗
+     * @throws RepositoryException
      */
     function execute()
     {
@@ -304,6 +721,7 @@ class Repository_Action_Main_Item_Fillauthor extends RepositoryAction
                 }
             }
             echo $str;
+            $this->finalize();
             exit();
         } catch ( RepositoryException $Exception) {
             //エラーログ出力
@@ -323,9 +741,11 @@ class Repository_Action_Main_Item_Fillauthor extends RepositoryAction
     
     // Add 2011/04/25 H.Ito --start--
     /**
-     * Fill suggest Prefix Suffix get to string
+     * Fill suggest Prefix Suffix get to string provide colon
+     * FillしてきたIDを文字列に変換する(コロン繋ぎ)
      *
-     * @param string $resultID
+     * @param string $resultID get result ID 取得してきたID
+     * @return string result ID to string 文字列に変換したID文字列
      */
     function fillSuggestPrefixIDtoString($resultID){
         $outStr = "";
@@ -348,8 +768,9 @@ class Repository_Action_Main_Item_Fillauthor extends RepositoryAction
     
     /**
      * Fill suggest data to session
+     * Fillしてきたデータをセッションにセットする
      *
-     * @param string $fillData
+     * @param string $fillData filled data フィルされてきたデータ
      */
     function fillSuggestData($fillData){
         // Decode fill data
@@ -377,7 +798,7 @@ class Repository_Action_Main_Item_Fillauthor extends RepositoryAction
     
     /**
      * Save form data to session
-     *
+     * フォーム入力情報をセッションにセットする
      */
     function saveFormData(){
         // Get session data
@@ -774,7 +1195,12 @@ class Repository_Action_Main_Item_Fillauthor extends RepositoryAction
     
     /**
      * Get author fill data by external author ID
+     * 外部著者IDから著者情報を取得する
      *
+     * @param int $prefix prefix ID 著者プレフィックスID
+     * @param string $suffix suffix ID 著者サフィックスID
+     * @param string $display_lang_type display mapping's language setting 表示言語
+     * @return string author name 著者名
      */
     function getAuthorFillData($prefix, $suffix ,$display_lang_type){
         if($prefix == "1"){
@@ -812,8 +1238,13 @@ class Repository_Action_Main_Item_Fillauthor extends RepositoryAction
             return $name;
         }
     }
-     /**
+
+    /**
      * Get Xml
+     * XMLを取得する
+     *
+     * @param string $reqUrl request URL リクエスト先URL
+     * @return string response XML レスポンスXML
      */
     function getXml($reqUrl){
         $option = array( 
@@ -872,8 +1303,11 @@ class Repository_Action_Main_Item_Fillauthor extends RepositoryAction
     
     /**
      * Get CiNII ID other site
-     * @param vals  XML
-     * @param display_lang_type  mapping's language setting
+     * 外部サイトから取得したXMLからCiNiiIDを取得する
+     *
+     * @param string $vals XML data XML情報
+     * @param string $display_lang_type  mapping's language setting 表示言語
+     * @return string author name 著者名
      */
     function getCiNiiId($vals,$display_lang_type){
         // get item's language type
@@ -928,11 +1362,14 @@ class Repository_Action_Main_Item_Fillauthor extends RepositoryAction
         $name["firstname"] = $firstname;
         return $name;
     }
+
     /**
-     * Get Researcher's ResolverID
-     * and Get Department laboratory expense researcher No
-     * @param vals XML
-     * @param lang mapping's language setting
+     * Get Researcher's ResolverID and Get Department laboratory expense researcher No
+     * リゾルバーIDを取得する
+     *
+     * @param string $vals XML data XML情報
+     * @param string $lang  mapping's language setting 表示言語
+     * @return string author name 著者名
      */
     function getResolver($vals,$lang){
         // get item's language type
@@ -979,8 +1416,13 @@ class Repository_Action_Main_Item_Fillauthor extends RepositoryAction
         }
         return $fillname;
     }
+
     /**
-     * get name for weko DB
+     * (Deprecated) Get name metadata
+     * (廃止予定) 氏名メタデータを取得する
+     *
+     * @param int $author_id_suffix  author id suffix  著者ID
+     * @param string $lang display language 表示言語
      */
     function get_name_auth($author_id_suffix,$lang){
         $query = "SELECT * ".
@@ -1001,9 +1443,12 @@ class Repository_Action_Main_Item_Fillauthor extends RepositoryAction
     }
     
     /**
-     * push wekoDB's data is session
+     * Set authority data by DB set to session
+     * DBから取得した著者情報をセッションにセットする
      *
-     * @param string $fillData
+     * @param array $fillNameDataArray author data array 著者情報配列
+     *               array[$ii]["language"|"external_author_id"|"e_mail_address"|"suffix"]
+     * @param string $lang display language 表示言語
      */
     function fillAuthorData($fillNameDataArray,$lang){
         
@@ -1071,10 +1516,15 @@ class Repository_Action_Main_Item_Fillauthor extends RepositoryAction
         // Set fill data to session
         $this->Session->setParameter("item_attr", $item_attr);
     }
+
     /**
-     * get resolver japanese name
+     * Return to convert the author's name of Japanese acquired from researchers resolver ID in the form of a first and last name and reading
+     * 研究者リゾルバIDから取得した日本語の著者名を姓名とヨミの形式に変換し返す
      *
-     * @param 
+     * @param $name The author first and last names of Japanese and reading 日本語の著者姓名とヨミ
+     *              array[$ii][$jj]
+     * @return array Author name information in Japanese 日本語の著者名情報
+     *               array["familyname"|"firstname"|"familyname_ruby"|"firstname_ruby"]
      */
     function resolverJpn($name){
         $name_knj = explode(" ",$name[1]);
@@ -1108,10 +1558,13 @@ class Repository_Action_Main_Item_Fillauthor extends RepositoryAction
             $fillname["firstname_ruby"] = $firstname_ruby;
         return $fillname;
     }
+
     /**
      * get resolver english name
+     * リゾルバーから著者英名を取得する
      *
-     * @param string
+     * @param string $name author name 著者名
+     * @return string author name english 著者英名
      */
     function resolverEng($name){
         $cnt = count($name);
@@ -1143,8 +1596,11 @@ class Repository_Action_Main_Item_Fillauthor extends RepositoryAction
     // Fix fill data sanitizing 2011/07/05 Y.Nakao --start--
     /**
      * escape JSON
+     * JSON文字列をエスケープする
      *
-     * @param array $index_data
+     * @param string $str JSON string JSON文字列
+     * @param bool $lineFlg new line/or not 改行する/しない
+     * @return string escaped JSON string エスケープ済JSON文字列
      */
     private function escapeJSON($str, $lineFlg=false){
         

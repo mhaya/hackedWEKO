@@ -1,26 +1,46 @@
 <?php
+
+/**
+ * Send sitelicense mail feedback mail class
+ * サイトライセンス利用統計フィードバックメール送信クラス
+ *
+ * @package     WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Sitelicensemail.class.php 57108 2015-08-26 01:03:29Z keiya_sugimoto $
+// $Id: Sitelicensemail.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
-// Copyright (c) 2007 - 2008, National Institute of Informatics, 
+// Copyright (c) 2007 - 2008, National Institute of Informatics,
 // Research and Development Center for Scientific Information Resources
 //
 // This program is licensed under a Creative Commons BSD Licence
 // http://creativecommons.org/licenses/BSD/
 //
 // --------------------------------------------------------------------
-
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/common/WekoAction.class.php';
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
+/**
+ * Operation log abstract class
+ * ログ操作基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/business/Logbase.class.php';
 
 /**
- * Sitelicensemail
+ * Send sitelicense mail feedback mail class
+ * サイトライセンス利用統計フィードバックメール送信クラス
  *
- * @package     NetCommons
- * @author      T.Ichikawa(IVIS)
- * @project     NetCommons Project, supported by National Institute of Informatics
+ * @package     WEKO
+ * @copyright   (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license     http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
  * @access      public
  */
 class Repository_Action_Common_Sitelicensemail extends WekoAction
@@ -29,149 +49,111 @@ class Repository_Action_Common_Sitelicensemail extends WekoAction
     // Request parameters
     //----------------------------
     /**
-     * login_id
+     * login id
+     * NC2ログインID
      *
      * @var string
      */
     public $login_id = null;
     /**
      * password to login
+     * NC2ログインパスワード
      *
      * @var string
      */
     public $password = null;
     /**
-     * authority_id
+     * authority id
+     * ユーザーベース権限
      *
      * @var string
      */    
     public $user_authority_id = "";
     /**
-     * authority_id
+     * authority id
+     * ユーザールーム権限
      *
      * @var int
      */
     public $authority_id = "";
     /**
-     * user_id
+     * user id
+     * ユーザーID
      *
      * @var string
      */
     public $user_id = "";
-    /**
-     * year
-     *
-     * @var int
-     */
-    public $year = null;
     
     /**
-     * month
+     * Execute
+     * 実行
      *
-     * @var int
-     */
-    public $month = null;
-    
-    /**
-     * サイトライセンスメール送信処理開始
-     * 
+     * @return string "success"/"error" success/failed 成功/失敗
      */
     public function executeApp() {
-        // ログインチェック
-        if(!$this->checkExecuteAuthority()) {
-            return "error";
+        $this->exitFlag = true;
+        
+        // 実行可否チェック
+        if(!$this->checkExecute()) { return "error"; }
+        
+        // 送信処理
+        $php_path = $this->searchPhpPath();
+        if(strlen($php_path) == 0) { return "error"; }
+        
+        // 集計対象年月(YYYYMM)
+        $from = date('Ym', strtotime('-1 month'));
+        // 何ヶ月分集計するか
+        $to = 1;
+        
+        // 直前月1か月分の集計を全機関に対して行う
+        $command = $php_path."php ".
+                   WEBAPP_DIR."/modules/repository/batch/SitelicenseUsagestatistics/SitelicenseUsagestatisticsBatch.php".
+                   " --from=".$from.
+                   " --to=".$to;
+        // 非同期実行
+        if(PHP_OS == "WIN32" || PHP_OS == "WINNT"){ 
+            $fp = popen("start ".$command, "r");
+            fclose($fp);
+        } else {
+            exec($command." > /dev/null 2>&1 &");
         }
         
-        $removingLogFlag = $this->isExecuteRemovingLog();
-        if($removingLogFlag)
-        {
-            $exception = new AppException("repository_log_excluding", Repository_Components_Business_Logbase::APP_EXCEPTION_KEY_REMOVING_LOG);
-            $exception->addError("repository_log_excluding");
-            throw $exception;
-        }
+        print("Start send sitelicensemail.");
         
-        // サイトライセンスメール用のビジネスクラス取得
-        $this->infoLog("businessSendsitelicensemail", __FILE__, __CLASS__, __LINE__);
-        $sendSitelicense = BusinessFactory::getFactory()->getBusiness("businessSendsitelicensemail");
-        
-        // サイトライセンスメールの送信フラグのチェック
-        $send_flag = $sendSitelicense->checkSendSitelicense();
-        
-        if($send_flag == true) {
-            // サイトライセンスメール送信対象者リストの作成
-            $sendSitelicense->insertSendSitelicenseMailList();
-            
-            // サイトライセンス送信のバックグラウンド処理のリクエストを送信する
-            // Call oneself by async
-            if(!$this->callAnotherProcessByAsync())
-            {
-                // Print error message.
-                print("Failed to send site license mail.\n");
-                $this->exitFlag = true;
-                return "error";
-            } 
-            
-            // Print message.
-            print("Start send site license mail.\n");
-            
-            return "success";
-        }
-        
-        return "error";
+        return "success";
     }
     
     /**
-     * Call another process by async
+     * 実行可能であるかチェックする
+     * Check whether or not execute
      *
-     * @return bool
+     * @return true/false can execute/or not 実行可能/実行不可
+     * @throws AppException
      */
-    public function callAnotherProcessByAsync()
-    {
-        // Request parameter for next URL
-        $lang = $this->Session->getParameter("_lang");
-        $nextRequest = BASE_URL."/?action=repository_action_common_background_sitelicensemail".
-                       "&login_id=".$this->login_id."&password=".$this->password. "&lang=". $lang;
-        if( isset($this->year) && 
-            isset($this->month) && 
-            intval($this->year) > 0 && 
-            intval($this->month) > 0 && 
-            12 >= intval($this->month)){
-            
-            $nextRequest .= "&year=". $this->year. "&month=". $this->month;
-        }
-        $url = parse_url($nextRequest);
-        $nextRequest = str_replace($url["scheme"]."://".$url["host"], "",  $nextRequest);
-        
-        // Call oneself by async
-        $host = array();
-        preg_match("/^https?:\/\/(([^\/]+)).*$/", BASE_URL, $host);
-        $hostName = $host[1];
-        if($hostName == "localhost"){
-            $hostName = gethostbyname($_SERVER['SERVER_NAME']);
-        }
-        $hostSock = $hostName;
-        if($_SERVER["SERVER_PORT"] == 443)
-        {
-            $hostSock = "ssl://".$hostName;
-        }
-        
-        $handle = fsockopen($hostSock, $_SERVER["SERVER_PORT"]);
-        if (!$handle)
-        {
+    private function checkExecute() {
+        // 実行権限確認
+        if(!$this->checkExecuteAuthority()) {
             return false;
         }
-        
-        stream_set_blocking($handle, false);
-        fwrite($handle, "GET ".$nextRequest." HTTP/1.1\r\nHost: ". $hostName."\r\n\r\n");
-        fclose ($handle);
-        
+        // ロボットリストによるログ削除の実行中チェック
+        if($this->isExecuteRemovingLog()) {
+            return false;
+        }
+        // URLによるメール送信実行可否フラグチェック
+        $sitelicenseManager = BusinessFactory::getFactory()->getBusiness("businessSitelicensemanager");
+        if($sitelicenseManager->checkSendMailAllow() == 0) {
+            print("Please check send mail status.");
+            return false;
+        }
+
         return true;
     }
     
     /**
      * check execute authority
+     * 実行権限があるかチェックする
      *
-     * @return bool
+     * @return bool true/false admin/general 権限がある/ない
      */
     private function checkExecuteAuthority()
     {
@@ -202,9 +184,11 @@ class Repository_Action_Common_Sitelicensemail extends WekoAction
     }
     
     /**
+     * Check process deleting robot list log
      * ロボットリストログ削除中かどうか判定する
      *
-     * @return bool
+     * @return bool true/false deleting/or not 削除処理中/削除処理中では無い
+     * @throws AppException
      */
     private function isExecuteRemovingLog() {
         // check removing log process
@@ -220,14 +204,40 @@ class Repository_Action_Common_Sitelicensemail extends WekoAction
         }
         
         // when execute removing log, throw exception
-        for($cnt = 0; $cnt < count($result); $cnt++)
-        {
-            if(intval($result[$cnt]['status']) > 0){
+        for($cnt = 0; $cnt < count($result); $cnt++) {
+            if(intval($result[$cnt]['status']) > 0) {
+                print("Log data is updating. Please try again after waiting for a while.");
                 return true;
             }
         }
         
         return false;
+    }
+    
+    /**
+     * PHP実行パスを取得する
+     * Get execute PHP path
+     *
+     * @return string PHP command path PHP実行パス
+     * @throws AppException
+     */
+    private function searchPhpPath() {
+        $query = "SELECT param_value FROM {repository_parameter} ".
+                 "WHERE param_name = ? ;";
+        $params = array();
+        $params[] = "path_php";
+        $result = $this->Db->execute($query, $params);
+        if($result === false) {
+            $this->errorLog($this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+            throw new AppException($this->Db->ErrorMsg());
+        }
+        
+        // PHP実行パスが未設定の場合はエラー
+        if(strlen($result[0]["param_value"]) == 0) {
+            print("PHP path is not set.");
+        }
+        
+        return $result[0]["param_value"];
     }
 }
 

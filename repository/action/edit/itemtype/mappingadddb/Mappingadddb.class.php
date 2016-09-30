@@ -1,39 +1,52 @@
 <?php
+
+/**
+ * Action class for the mapping DB registration string attached metadata item to item type
+ * アイテムタイプに紐付くメタデータ項目のマッピングDB登録用アクションクラス
+ *
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Mappingadddb.class.php 38124 2014-07-01 06:56:02Z rei_matsuura $
+// $Id: Mappingadddb.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
-// Copyright (c) 2007 - 2008, National Institute of Informatics, 
+// Copyright (c) 2007 - 2008, National Institute of Informatics,
 // Research and Development Center for Scientific Information Resources
 //
 // This program is licensed under a Creative Commons BSD Licence
 // http://creativecommons.org/licenses/BSD/
 //
 // --------------------------------------------------------------------
-
-/* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
+/**
+ * Search table manager class
+ * 検索テーブル管理クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositorySearchTableProcessing.class.php';
 
 /**
- * repositoryモジュール アイテムタイプ作成マッピングDB登録アクション
- *
- * @package     NetCommons
- * @author      S.Kawasaki(IVIS)
- * @copyright   2006-2008 NetCommons Project
- * @license     http://www.netcommons.org/license.txt  NetCommons License
- * @project     NetCommons Project, supported by National Institute of Informatics
- * @access      public
+ * Action class for the mapping DB registration string attached metadata item to item type
+ * アイテムタイプに紐付くメタデータ項目のマッピングDB登録用アクションクラス
+ * 
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class Repository_Action_Edit_Itemtype_Mappingadddb extends RepositoryAction
 {
-	// リクエストパラメタ
-		
-    /**
-     * [[機能説明]]
-     *
-     * @access  public
-     */
+	/**
+	 * Execute
+	 * 実行
+	 *
+	 * @return string "success"/"redirect"/"error" success/screen transition/failed 成功/画面遷移/失敗
+	 * @throws RepositoryException
+	 */
     function execute()
     {
         try {
@@ -159,6 +172,7 @@ class Repository_Action_Edit_Itemtype_Mappingadddb extends RepositoryAction
 		    	// add LIDO 2014/04/15 R.Matsuura --start--
 		    	$lido_mapping_info = "";
 		    	// add LIDO 2014/04/15 R.Matsuura --end--
+                $spase_mapping_info = "";
 	     		// 書誌情報の場合、マッピング情報をつなげる
 		    	if($metadata_table[$ii]['input_type']=="biblio_info"){
 		    		$bib_dcm = sprintf($metadata_table[$ii]['dublin_core_mapping']);
@@ -181,6 +195,8 @@ class Repository_Action_Edit_Itemtype_Mappingadddb extends RepositoryAction
                     $lido_mapping_info = sprintf($metadata_table[$ii]['lido_mapping']);
                     // add LIDO 2014/04/15 R.Matsuura --end--
                     
+                    $spase_mapping_info = sprintf($metadata_table[$ii]['spase_mapping']);
+                    
 		    		// 選択言語は指定なしで固定
 		    		$bib_lang .= "";
 	    			// 更新の有無を検査
@@ -188,6 +204,7 @@ class Repository_Action_Edit_Itemtype_Mappingadddb extends RepositoryAction
 			            $metadata_table[$ii]['lom_mapping'] != $itemtypeAttrRef[$ii]['lom_mapping'] ||
 		    	    	$bib_jn2 != $itemtypeAttrRef[$ii]['junii2_mapping'] ||
 	    	            $lido_mapping_info != $itemtypeAttrRef[$ii]['lido_mapping'] || 
+                        $spase_mapping_info != $itemtypeAttrRef[$ii]['spase_mapping'] ||
 		    	    	$bib_lang != $itemtypeAttrRef[$ii]['display_lang_type'])&&
 	    				($tr_start_date > $itemtypeAttrRef[$ii]['mod_date']))
 	    			{   
@@ -201,12 +218,14 @@ class Repository_Action_Edit_Itemtype_Mappingadddb extends RepositoryAction
 			        $bib_jn2 = $metadata_table[$ii]['junii2_mapping'];
 			        $bib_lom = $metadata_table[$ii]['lom_mapping'];
 			        $lido_mapping_info = $metadata_table[$ii]['lido_mapping'];
+                    $spase_mapping_info = $metadata_table[$ii]['spase_mapping'];
 			        $bib_lang = $metadata_table[$ii]['display_lang_type'];
 			        // 更新の有無を検査
 			        if(($bib_dcm != $itemtypeAttrRef[$ii]['dublin_core_mapping'] ||
 		    	    	$bib_jn2 != $itemtypeAttrRef[$ii]['junii2_mapping'] || 
 		    	    	$bib_lom != $itemtypeAttrRef[$ii]['lom_mapping'] || 
 			            $lido_mapping_info != $itemtypeAttrRef[$ii]['lido_mapping'] || 
+                        $spase_mapping_info != $itemtypeAttrRef[$ii]['spase_mapping'] ||
 		    	    	$bib_lang != $itemtypeAttrRef[$ii]['display_lang_type'])&&
 	    				($tr_start_date > $itemtypeAttrRef[$ii]['mod_date']))
 	    			{   
@@ -222,6 +241,7 @@ class Repository_Action_Edit_Itemtype_Mappingadddb extends RepositoryAction
 			    				 "junii2_mapping = ?, ".
                                  "lom_mapping = ?, ".
                                  "lido_mapping = ?, ".
+                                 "spase_mapping = ?,".
 								 "display_lang_type = ?, ".
 			    				 "mod_user_id = ?, ".
 								 "mod_date = ? ".
@@ -234,6 +254,7 @@ class Repository_Action_Edit_Itemtype_Mappingadddb extends RepositoryAction
 		    		$params[] = $bib_jn2;
 		    		$params[] = $bib_lom;
 		    		$params[] = $lido_mapping_info;
+                    $params[] = $spase_mapping_info;
 		    		$params[] = $bib_lang;
 			        $params[] = $user_id;
 			        $params[] = $tr_start_date;
@@ -279,7 +300,7 @@ class Repository_Action_Edit_Itemtype_Mappingadddb extends RepositoryAction
 	        	return 'redirect';
 	        }
 	        // Add update OK message 2009/01/23 A.Suzuki --end--
-			
+			$this->finalize();
 	        return 'success';
 	    }
 	    catch ( RepositoryException $Exception) {

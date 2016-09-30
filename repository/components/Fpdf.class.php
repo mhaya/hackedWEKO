@@ -1,73 +1,307 @@
 <?php
 /**
- * $Id: Fpdf.class.php 57059 2015-08-25 06:43:36Z tomohiro_ichikawa $
+ * FPDF library wrapper class
+ * FPDFライブラリラッパークラス
  *
- * ファイルシステムの操作を行う
- *
- * @author IVIS
+ * @package     WEKO
+ * @copyright   (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license     http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access      public
+ */
+
+// --------------------------------------------------------------------
+//
+// $Id: Fpdf.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
+//
+// Copyright (c) 2007 - 2008, National Institute of Informatics,
+// Research and Development Center for Scientific Information Resources
+//
+// This program is licensed under a Creative Commons BSD Licence
+// http://creativecommons.org/licenses/BSD/
+//
+// --------------------------------------------------------------------
+/**
+ * FPDF library
+ * FPDFライブラリ
  */
 require_once WEBAPP_DIR. '/modules/repository/files/fpdf/mc_table.php';
+/**
+ * Const for WEKO class
+ * WEKO定数クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryConst.class.php';
 
+/**
+ * FPDF library wrapper class
+ * FPDFライブラリラッパークラス
+ *
+ * @package     WEKO
+ * @copyright   (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license     http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access      public
+ */
 class Repository_Components_Fpdf extends PDF_MC_Table
 {
     // Header
+    /**
+     * Header align
+     * Header align
+     *
+     * @var string
+     */
     private $headerAlign = "R";
+    /**
+     * Header type
+     * ヘッダータイプ
+     *
+     * @var array
+     */
     private $headerType = array();
+    /**
+     * Header text
+     * ヘッダーテキスト
+     *
+     * @var string
+     */
     private $headerText = "";
+    /**
+     * Header image blob
+     * ヘッダーイメージ画像
+     *
+     * @var string
+     */
     private $imageBlob = "";
+    /**
+     * Header image name
+     * ヘッダーイメージ画像名
+     *
+     * @var string
+     */
     private $imageName = "";
     // Footer
+    /**
+     * Footer license info
+     * フッターライセンス情報
+     *
+     * @var string
+     */
     private $licenseId = "";
+    /**
+     * Footer license notation
+     * フッターライセンス表記法
+     *
+     * @var string
+     */
     private $notation = "";
+    /**
+     * Footer license image path
+     * フッターライセンスイメージ画像パス
+     *
+     * @var string
+     */
     private $licenseImagePath = "";
+    /**
+     * Footer license text URL
+     * フッターライセンスURL
+     *
+     * @var string
+     */
     private $licenseTextUrl = "";
     
-    // work directory
+    /**
+     * Temporary directory
+     * 一時ディレクトリ
+     *
+     * @var string
+     */
     private $tmpDir = "";
     
     // const
     // "SJIS" or "Unicode"
+    /**
+     * Encode to
+     * エンコード先
+     */
     const ENCODE_TO = "SJIS";
+    /**
+     * Encode from
+     * エンコード元
+     */
     const ENCODE_FROM = "UTF-8";
     // Font
+    /**
+     * Font MSMincho
+     * MS明朝フォント
+     */
     const FONT_NAME_MSMINCHO = "MSMincho";
+    /**
+     * Font MSPMincho
+     * MSP明朝フォント
+     */
     const FONT_NAME_MSPMINCHO = "MSPMincho";
+    /**
+     * Font MSGothic
+     * MSゴシックフォント
+     */
     const FONT_NAME_MSGOTHIC = "MSGothic";
+    /**
+     * Font MSPGothic
+     * MSPゴシックフォント
+     */
     const FONT_NAME_MSPGOTHIC = "MSPGothic";
+    /**
+     * Font arial
+     * Arialフォント
+     */
     const FONT_ARIAL = "arial";
+    /**
+     * Font MSMincho
+     * MS明朝フォント
+     */
     const FONT_FAMILY_MSMINCHO = "MSMincho";
+    /**
+     * Font MSPMincho
+     * MSP明朝フォント
+     */
     const FONT_FAMILY_MSPMINCHO = "MSPMincho";
+    /**
+     * Font MSGothic
+     * MSゴシックフォント
+     */
     const FONT_FAMILY_MSGOTHIC = "MSGothic";
+    /**
+     * Font MSPGothic
+     * MSPゴシックフォント
+     */
     const FONT_FAMILY_MSPGOTHIC = "MSPGothic";
     // Font size
+    /**
+     * Header font size
+     * ヘッダーフォントサイズ
+     */
     const FONTSIZE_HEADER = 9;
+    /**
+     * Footer font size
+     * フッターフォントサイズ
+     */
     const FONTSIZE_FOOTER = 10;
+    /**
+     * Title font size
+     * タイトルフォントサイズ
+     */
     const FONTSIZE_TITLE = 20;
+    /**
+     * Sub title font size
+     * サブタイトルフォントサイズ
+     */
     const FONTSIZE_TITLE_SUB = 15;
+    /**
+     * Metadata font size
+     * メタデータフォントサイズ
+     */
     const FONTSIZE_METADATA = 14;
+    /**
+     * DOI font size
+     * DOIフォントサイズ
+     */
     const FONTSIZE_DOI = 10;
     // Margin
+    /**
+     * Margin TOP
+     * Margin TOP
+     */
     const MARGIN_TOP = 35.0;
+    /**
+     * Margin LEFT
+     * Margin LEFT
+     */
     const MARGIN_LEFT = 22.0;
+    /**
+     * Margin RIGHT
+     * Margin RIGHT
+     */
     const MARGIN_RIGHT = 22.0;
+    /**
+     * Margin title TOP
+     * Margin title TOP
+     */
     const MARGIN_TITLE_TOP = 5.0;
+    /**
+     * Margin title under
+     * Margin title under
+     */
     const MARGIN_TITLE_UNDER = 10.0;
     // Header margin
+    /**
+     * Header margin TOP
+     * Header margin TOP
+     */
     const HEADER_TOP = 17.0;
+    /**
+     * Header Height
+     * Header Height
+     */
     const HEADER_HEIGHT = 15.0;
+    /**
+     * Footer margin TOP
+     * Footer margin TOP
+     */
     const FOOTER_TOP = -22.0;
+    /**
+     * Footer height
+     * Footer height
+     */
     const FOOTER_HEIGHT = 15.0;
     // Biblio
+    /**
+     * Biblio: journal title
+     * 書誌情報：雑誌名
+     */
     const BIBLIO_JTITLE_JP = "雑誌名";
+    /**
+     * Biblio: journal volume in japanese
+     * 書誌情報：巻
+     */
     const BIBLIO_VOLUME_JP = "巻";
+    /**
+     * Biblio: journal issue in japanese
+     * 書誌情報：号
+     */
     const BIBLIO_ISSUE_JP = "号";
+    /**
+     * Biblio: journal page in japanese
+     * 書誌情報：ページ
+     */
     const BIBLIO_PAGE_JP = "ページ";
+    /**
+     * Biblio: date of issued in japanese
+     * 書誌情報：発行年
+     */
     const BIBLIO_DATEOFISSUED_JP = "発行年";
+    /**
+     * Biblio: journal title english
+     * 書誌情報：雑誌英名
+     */
     const BIBLIO_JTITLE_EN = "journal or publication title";
+    /**
+     * Biblio: journal volume in english
+     * 書誌情報：巻
+     */
     const BIBLIO_VOLUME_EN = "volume";
+    /**
+     * Biblio: journal issue in english
+     * 書誌情報：号
+     */
     const BIBLIO_ISSUE_EN = "number";
+    /**
+     * Biblio: journal page in english
+     * 書誌情報：ページ
+     */
     const BIBLIO_PAGE_EN = "page range";
+    /**
+     * Biblio: date of issued in english
+     * 書誌情報：発行年
+     */
     const BIBLIO_DATEOFISSUED_EN = "year";
     
     // -------------------------------------------------------
@@ -75,7 +309,9 @@ class Repository_Components_Fpdf extends PDF_MC_Table
     // -------------------------------------------------------
     /**
      * construct
+     * コンストラクタ
      *
+     * @param string $dir temporary directory path 一時ディレクトリのパス
      */
     public function __construct($dir) {
         $this->tmpDir = $dir;
@@ -87,7 +323,11 @@ class Repository_Components_Fpdf extends PDF_MC_Table
     // -------------------------------------------------------
     /**
      * Set for text header
+     * テキストヘッダーをセットする
      *
+     * @param int $align align align
+     * @param int $type int type タイプ
+     * @param string $text text テキスト
      */
     public function setHeaderTextParam($align, $type, $text) {
         $this->headerAlign = $align;
@@ -97,7 +337,12 @@ class Repository_Components_Fpdf extends PDF_MC_Table
     
     /**
      * Set for image header
+     * イメージ画像ヘッダーをセットする
      *
+     * @param int $align align align
+     * @param int $type int type タイプ
+     * @param string $blob BLOB BLOB
+     * @param string $name image name イメージ画像名
      */
     public function setHeaderImageParam($align, $type, $blob, $name) {
         $this->headerAlign = $align;
@@ -108,7 +353,12 @@ class Repository_Components_Fpdf extends PDF_MC_Table
     
     /**
      * Set for license footer
+     * フッターライセンス情報をセットする
      *
+     * @param int $license_id license ID ライセンスID
+     * @param string $notation notation 表記法
+     * @param string $license_image_path license image file path ライセンスイメージ画像パス
+     * @param string$license_url ライセンスURL
      */
     public function setFooterLicenseParam($license_id, $notation, $license_image_path, $license_url) {
         $this->licenseId = $license_id;
@@ -122,7 +372,7 @@ class Repository_Components_Fpdf extends PDF_MC_Table
     // -------------------------------------------------------
     /**
      * Header setting
-     *
+     * ヘッダー設定
      */
     function Header()
     {
@@ -175,7 +425,7 @@ class Repository_Components_Fpdf extends PDF_MC_Table
     
     /**
      * Footer setting
-     *
+     * フッター設定
      */
     function Footer()
     {
@@ -217,10 +467,13 @@ class Repository_Components_Fpdf extends PDF_MC_Table
     
     /**
      * Make cover page
+     * カバーページ作成
      * 
-     * @param array  $itemData
-     * @param string $uri
-     * @return bool
+     * @param array $itemData item data アイテムデータ
+     *                         array["item_id"|"item_no"|"title"|...]
+     * @param string $uri item URL アイテム詳細画面URL
+     * @param string $outputFile Output file path 出力ファイルパス
+     * @return bool true/false success/failed 成功/失敗
      */
     public function makeCoverPage($itemData, $uri, $outputFile)
     {
@@ -249,12 +502,13 @@ class Repository_Components_Fpdf extends PDF_MC_Table
     
     /**
      * Resize image file
+     * イメージファイルサイズ修正
      *
-     * @param int &$width
-     * @param int &$height
-     * @param int $maxWidth
-     * @param int $maxHeight
-     * @return bool
+     * @param int &$width width 横幅
+     * @param int &$height height 縦幅
+     * @param int $maxWidth max width 最大横幅
+     * @param int $maxHeight max height 最大縦幅
+     * @return bool true/false success/failed 成功/失敗
      */
     public function resizeImage(&$width, &$height, $maxWidth=100, $maxHeight=100)
     {
@@ -287,10 +541,10 @@ class Repository_Components_Fpdf extends PDF_MC_Table
     
     /**
      * Strip accent string
+     * 濁点・半濁点文字の統合
      *
-     * @param string $str
-     * @return string
-     * @access private
+     * @param string $str string 文字列
+     * @return string　striped string 統合済文字列
      */
     private static function stripAccent($str)
     {
@@ -482,7 +736,7 @@ class Repository_Components_Fpdf extends PDF_MC_Table
     
     /**
      * set font
-     * 
+     * フォント設定
      */
     private function setFontByEncode()
     {
@@ -501,7 +755,11 @@ class Repository_Components_Fpdf extends PDF_MC_Table
     
     /**
      * set pdf cover title
-     * 
+     * カバーページタイトル設定
+     *
+     * @param array $itemData item data アイテムデータ
+     *                         array["item_id"|"item_no"|"title"|...]
+     * @param string $itemLang language アイテム言語情報
      */
     private function setPdfCoverTitle($itemData, $itemLang)
     {
@@ -536,11 +794,12 @@ class Repository_Components_Fpdf extends PDF_MC_Table
     
     /**
      * set pdf cover metadata
+     * メタデータを設定する
      * 
-     * @param array  $itemData
-     * @param string $itemLang
-     * @param string &$doiStr
-     * 
+     * @param array  $itemData item data アイテムデータ
+     *                         array["item_id"|"item_no"|"title"|...]
+     * @param string $itemLang language アイテム言語情報
+     * @param string $itemLang language アイテム言語情報
      */
     private function setPdfCoverMetadata($itemData, $uri, $itemLang)
     {
@@ -619,10 +878,13 @@ class Repository_Components_Fpdf extends PDF_MC_Table
     }
     
     /**
-     * set pdf cover metadata
-     * 
-     * @param array $itemData
-     * @param int   $index
+     * Make DOI string
+     * DOI文字列の作成
+     *
+     * @param array  $itemData item data アイテムデータ
+     *                         array["item_id"|"item_no"|"title"|...]
+     * @param int   $index index ID インデックスID
+     * @return string DOI string DOI文字列
      */
     private function makeDoiStr($itemData, $index)
     {
@@ -673,13 +935,15 @@ class Repository_Components_Fpdf extends PDF_MC_Table
     }
     
     /**
-     * set pdf cover metadata
-     * 
-     * @param array  $itemData
-     * @param int    $index
-     * @param string $itemLang
-     * @return array $metadataList
-     * 
+     * set pdf cover metadata list
+     * メタデータリストのカバーページを作成する
+     *
+     * @param array  $itemData item data アイテムデータ
+     *                         array["item_id"|"item_no"|"title"|...]
+     * @param int   $index index ID インデックスID
+     * @param string $itemLang language アイテム言語情報
+     * @return array metadata list メタデータリスト
+     *                array[$ii]["name"|"value"]
      */
     private function makePdfCoverMetadataList($itemData, $index, $itemLang)
     {

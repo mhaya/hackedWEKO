@@ -1,6 +1,6 @@
 <!--// ---------------------------------------------------------------------->
 <!--//                                                                     -->
-<!--// $Id: repository_import_select.html 53594 2015-05-28 05:25:53Z kaede_matsushita $          -->
+<!--// $Id: repository_import_select.html 71165 2016-08-22 09:20:28Z keiya_sugimoto $          -->
 <!--//                                                                     -->
 <!--// Copyright (c) 2007 - 2008, National Institute of Informatics,        -->
 <!--// Research and Development Center for Scientific Information Resources -->
@@ -65,8 +65,10 @@
                                 <td class="w300px" style="white-space:normal; ">
                                     <{$error_list.title}>
                                 </td>
-                                <td class="w300px" style="white-space:normal; ">
-                                    <{if $error_list.error_no == 1}>
+                                <td class="w300px" style="white-space:normal; word-break: break-all;">
+                                    <{if $error_list.error_no == 0 && strlen($error_list.error) > 0}>
+                                        <{$error_list.error}>
+                                    <{elseif $error_list.error_no == 1}>
                                         <{$lang.repository_import_error_msg_no_xml}>
                                     <{elseif $error_list.error_no == 2}>
                                         <{$lang.repository_import_error_msg_parse_xml}>
@@ -290,7 +292,7 @@
 		var userAgent = window.navigator.userAgent.toLowerCase();
 		var appVersion = window.navigator.appVersion.toLowerCase();
 		//IE
-		if (userAgent.indexOf("msie") > -1 || userAgent.indexOf("trident") > -1) {
+		if (userAgent.indexOf("msie") > -1 || userAgent.indexOf("trident") > -1 || userAgent.indexOf("edge") > -1) {
 			loadingIcon(true);
 			$('repositoryListDownload<{$id}>').innerHTML = '<iframe boder="0" name="exportFrame<{$id}>" id="exportFrame<{$id}>" src="'+url+'"></iframe>';
 		}

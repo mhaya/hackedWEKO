@@ -1,7 +1,15 @@
 <?php
+
+/**
+ * String format conversion common classes
+ * 文字列形式変換共通クラス
+ * 
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: RepositoryOutputFilter.class.php 46336 2015-01-15 01:04:14Z yuko_nakao $
+// $Id: RepositoryOutputFilter.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -12,29 +20,49 @@
 // --------------------------------------------------------------------
 
 /**
- * output format filter class
+ * String format conversion common classes
+ * 文字列形式変換共通クラス
  * 
- * return format string. when not allow format, return '';
- * 
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class RepositoryOutputFilter
 {
     // Add JuNii2Ver3 R.Matsuura 2013/09/19
+    /**
+     * URL researchers Resolver
+     * 研究者リゾルバのURL
+     *
+     * @var string
+     */
     const RESEACHER_RESOLVER_ID_PREFIX = "http://rns.nii.ac.jp/nr/";
     
     // Mod name delimiter changes to comma T.Koyasu 2014/09/12 --start--
+    /**
+     * First and last name delimiter specified (space)
+     * 姓名区切り文字指定(スペース)
+     *
+     * @var int
+     */
     const NAME_DELIMITER_IS_SPACE = 1;
+    /**
+     * First and last name delimiter specified (comma)
+     * 姓名区切り文字指定(カンマ)
+     *
+     * @var int
+     */
     const NAME_DELIMITER_IS_COMMA = 2;
     // Add name delimiter changes to comma T.Koyasu 2014/09/12 --end--
     
     
     /**
-     * format string
-     *  to lower
-     *  " +" -> " "
+     * Consecutive half-width, full-width space exclusion
+     * 連続した半角・全角スペース排除
      *
-     * @param string $str
-     * @return string
+     * @param string $str String to be converted 変換対象の文字列
+     * @return string String after conversion 変換後の文字列
      */
     static public function string($str)
     {
@@ -50,13 +78,11 @@ class RepositoryOutputFilter
     }
     
     /**
-     * language filter
-     *   allow language is item language select data.
-     * ISO639
+     * According to ISO639, to convert a string of language
+     * ISO639に合わせ、言語の文字列を変換する
      * 
-     * 
-     * @param string $str
-     * @return string
+     * @param string $str String to be converted 変換対象の文字列
+     * @return string String after conversion 変換後の文字列
      */
     static public function language($str)
     {
@@ -134,11 +160,11 @@ class RepositoryOutputFilter
     }
     
     /**
-     * date format
-     * allow format YYYY-MM-DD or YYYY-MM or YYYY
+     * According to the date format, to convert the string (YYYY-MM-DD, YYYY-MM, YYYY)
+     * 年月日の形式に合わせ、文字列を変換する(YYYY-MM-DD、YYYY-MM、YYYY)
      *
-     * @param string $str
-     * @return string
+     * @param string $str String to be converted 変換対象の文字列
+     * @return string String after conversion 変換後の文字列
      */
     static public function date($str)
     {
@@ -207,11 +233,11 @@ class RepositoryOutputFilter
     }
     
     /**
-     * month format 
-     * allow format MM
+     * To convert a string to a form of the month
+     * 月の形式に文字列を変換する
      *
-     * @param string $str
-     * @return string month
+     * @param string $str String to be converted 変換対象の文字列
+     * @return string String after conversion 変換後の文字列
      */
     static public function month($str)
     {
@@ -228,11 +254,11 @@ class RepositoryOutputFilter
     }
     
     /**
-     * month format 
-     * allow format DD
+     * To convert a string to a form of the day
+     * 日の形式に文字列を変換する
      *
-     * @param string $str
-     * @return string day
+     * @param string $str String to be converted 変換対象の文字列
+     * @return string String after conversion 変換後の文字列
      */
     static public function day($str)
     {
@@ -249,19 +275,21 @@ class RepositoryOutputFilter
     }
     
     /**
-     * インプットタイプに応じた出力文字列を作成
+     * Create an output character string corresponding to the input type
+     * 入力タイプに応じた出力文字列を作成
      *
-     * @param string $inputType
-     * @param string $itemAttr
-     * @param int $biblioFormat 書誌情報の出力フォーマット デフォルト「false」
+     * @param string $inputType Input type 入力タイプ
+     * @param array $itemAttr Metadata メタデータ
+     *                        array["attribute_value"|"family"|"name"|"item_id"|"item_no"|"attribute_id"|"file_no"|"biblio_name"|"biblio_name_english"|"volume"|"issue"|"start_page"|"end_page"|"date_of_issued"|"uri"]
+     * @param int $biblioFormat Output format of bibliographic information 書誌情報の出力フォーマット
      *                           1: $jtitle = $jtitle_en, $volume($issue), $spage-$epage($dateofissued)
      *                           2: $jtitle = $jtitle_en||$volume||$issue||$spage||$epage||$dateofissued
      *                           3: $jtitle, $volume($issue), $spage-$epage($dateofissued)
      *                              or
      *                              $jtitle_en, $volume($issue), $spage-$epage($dateofissued)
-     * @param int $nameFormat 名前出力のフォーマット 
-     *                           1: Taro Yamada     スペース
-     *                           2: 山田, 太郎      カンマとスペース
+     * @param int $nameFormat The format of the name output 名前出力のフォーマット
+     *                           1: Space スペース
+     *                           2: Comma and space カンマとスペース
      * @return string $this->RepositoryAction->forXmlChange実施済のattribute_value文字列
      */
     static public function attributeValue($itemAttrType, $itemAttr, $biblioFormat=1, $nameFormat=1)
@@ -510,9 +538,11 @@ class RepositoryOutputFilter
     
     // Add JuNii2Ver3 R.Matsuura 2013/09/19 --start--
     /**
-     * check format id attribution
+     * To create the value of the id attribute of the Creator tag
+     * Creatorタグのid属性の値を作成する
      * 
-     * @param array $authorIdArray
+     * @param array $authorIdArray External author ID of the author 著者の外部著者ID
+     *                             array["suffix"|"prefix_id"]
      */
     static public function creatorId($authorIdArray)
     {
@@ -542,9 +572,12 @@ class RepositoryOutputFilter
     }
     
     /**
-     * return license notation from file infomation
+     * To obtain a license ID from a file License Master table
+     * ファイルライセンスマスタテーブルからライセンスIDを取得する
      * 
-     * @param array $fileInfo
+     * @param array $fileInfo File information ファイル情報
+     *                        array["license_id"]
+     * @return int File the license ID ファイルライセンスID
      */
     static public function fileLicence($fileInfo)
     {
@@ -586,10 +619,11 @@ class RepositoryOutputFilter
     
     // Add OpenDepo S.Arata 2013/12/20 --start--
     /**
-     * @param string $date 0埋めしていない日付（YYYY-M-D形式）
-     * @$return 0埋めした日付（YYYY-MM-DD形式）
-     *          -1:日付フォーマットエラー
-     *          -2:日付範囲エラー
+     * The to fill 0 Date
+     * 日付を0埋めする
+     * 
+     * @param string $date 0 filled to not date (YYYYmMDD format) 0埋めしていない日付（YYYY-M-D形式）
+     * @return int Zero-fill the date (YYYY-MM-DD format) 0埋めした日付（YYYY-MM-DD形式）
      */
     static public function zeroPaddingDate($date) {
         // 日付を年月日に分割する
@@ -611,11 +645,11 @@ class RepositoryOutputFilter
     
     // Add LIDO S.Suzuki 2014/05/09 --start--
     /**
-    /**
-     * exclusive reserved words
+     * When empty specified, empty the contents of the metadata
+     * 空文字指定時、メタデータの内容を空にする
      * 
-     * @param string $str
-     * @return string
+     * @param string $str Metadata メタデータ
+     * @return string String after conversion 変換後の文字列
      */
     static public function exclusiveReservedWords($str)
     {
@@ -630,9 +664,12 @@ class RepositoryOutputFilter
     
     // Add json format escape method T.Koyasu 2014/09/12 --start--
     /**
-     * escape JSON
+     * Escape of string that are not available in JSON format
+     * JSON形式で利用できない文字列のエスケープ
      *
-     * @param array $index_data
+     * @param string $str Converted string 変換対象文字列
+     * @param boolean $lineFlg Newline flag 改行フラグ
+     * @return string String after conversion 変換後の文字列
      */
     static public function escapeJSON($str, $lineFlg = false){
         
@@ -650,17 +687,28 @@ class RepositoryOutputFilter
 }
 
 /**
- * output filter for format:DublinCore class
- *
+ * Conversion common class at the time of Dublin Core output
+ * Dublin Core出力時の変換共通クラス
+ * 
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class RepositoryOutputFilterDublinCore extends RepositoryOutputFilter 
 {
 
 }
 
+
 /**
- * output filter for format:JuNii2 class
- *
+ * Conversion common class at the time of junii2 output
+ * junii2出力時の変換共通クラス
+ * 
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class RepositoryOutputFilterJuNii2 extends RepositoryOutputFilter 
 {
@@ -668,15 +716,42 @@ class RepositoryOutputFilterJuNii2 extends RepositoryOutputFilter
     // Const
     // ---------------------------------------------
     // Prefix
+    /**
+     * DOI announcement for the address
+     * DOIアナウンス用アドレス
+     *
+     * @var string
+     */
     const DOI_PREFIX = "info:doi/";
+    /**
+     * PMID announcement for the address
+     * PMIDアナウンス用アドレス
+     *
+     * @var string
+     */
     const PMID_PREFIX = "info:pmid/";
+    
+    /**
+     * URL for NAID
+     * NAID用URL
+     *
+     * @var string
+     */
     const NAID_PREFIX = "http://ci.nii.ac.jp/naid/";
+    /**
+     * URL for ichushi
+     * 医中誌用URL
+     *
+     * @var string
+     */
     const ICHUSHI_PREFIX = "http://search.jamas.or.jp/link/ui/";
     
     /**
-     * ISSN : \d{4}\-?\d{3}[\dXx]
+     * Scrutiny or ISSN format
+     * ISSN形式かを精査
      *
-     * @param string $str
+     * @param string $str Scrutinized the subject string 精査対象文字列
+     * @return string Examination results 精査結果
      */
     static public function issn($str)
     {
@@ -689,10 +764,11 @@ class RepositoryOutputFilterJuNii2 extends RepositoryOutputFilter
     }
     
     /**
-     * textversion
+     * Scrutiny or textversion format
+     * textversion形式かを精査
      *
-     * @param string $str
-     * @return string
+     * @param string $str Scrutinized the subject string 精査対象文字列
+     * @return string Examination results 精査結果
      */
     static public function textversion($str)
     {
@@ -709,10 +785,11 @@ class RepositoryOutputFilterJuNii2 extends RepositoryOutputFilter
     }
     
     /**
-     * convert language notation to RFC3066 format
+     * Scrutiny or RFC format
+     * RFC形式かを精査
      *
-     * @param string $strLang
-     * @return string
+     * @param string $str Scrutinized the subject string 精査対象文字列
+     * @return string Examination results 精査結果
      */
     static public function languageToRFC($strLang)
     {
@@ -758,10 +835,11 @@ class RepositoryOutputFilterJuNii2 extends RepositoryOutputFilter
     }
     
     /**
-     * convert language notation to ISO-639 format
+     * Scrutiny or ISO639 format
+     * ISO639形式かを精査
      *
-     * @param string $strLang
-     * @return string
+     * @param string $str Scrutinized the subject string 精査対象文字列
+     * @return string Examination results 精査結果
      */
     static public function languageToISO($strLang)
     {
@@ -844,10 +922,11 @@ class RepositoryOutputFilterJuNii2 extends RepositoryOutputFilter
     }
     
     /**
-     * check string format whether grantid or not
+     * Scrutiny or grantid format
+     * grantid形式かを精査
      *
-     * @param string $strTarget
-     * @return string
+     * @param string $str Scrutinized the subject string 精査対象文字列
+     * @return string Examination results 精査結果
      */
     static public function grantid($strTarget)
     {
@@ -865,10 +944,11 @@ class RepositoryOutputFilterJuNii2 extends RepositoryOutputFilter
     }
     
     /**
-     * check string format whether pmid or not
+     * Scrutiny or pmid format
+     * pmid形式かを精査
      *
-     * @param string $strTarget
-     * @return string
+     * @param string $str Scrutinized the subject string 精査対象文字列
+     * @return string Examination results 精査結果
      */
     static public function pmid($strTarget)
     {
@@ -890,10 +970,11 @@ class RepositoryOutputFilterJuNii2 extends RepositoryOutputFilter
     }
     
     /**
-     * check string format whether DOI or not
+     * Scrutiny or DOI format
+     * DOI形式かを精査
      *
-     * @param string $strTarget
-     * @return string
+     * @param string $str Scrutinized the subject string 精査対象文字列
+     * @return string Examination results 精査結果
      */
     static public function doi($strTarget)
     {
@@ -915,10 +996,11 @@ class RepositoryOutputFilterJuNii2 extends RepositoryOutputFilter
     }
     
     /**
-     * check string format whether NAID or not
+     * Scrutiny or NAID format
+     * NAID形式かを精査
      *
-     * @param string $strTarget
-     * @return string
+     * @param string $str Scrutinized the subject string 精査対象文字列
+     * @return string Examination results 精査結果
      */
     static public function naid($strTarget)
     {
@@ -940,10 +1022,11 @@ class RepositoryOutputFilterJuNii2 extends RepositoryOutputFilter
     }
     
     /**
-     * check string format whether ICHUSHI or not
+     * Scrutiny or ichushi format
+     * 医中誌形式かを精査
      *
-     * @param string $strTarget
-     * @return string
+     * @param string $str Scrutinized the subject string 精査対象文字列
+     * @return string Examination results 精査結果
      */
     static public function ichushi($strTarget)
     {
@@ -965,10 +1048,11 @@ class RepositoryOutputFilterJuNii2 extends RepositoryOutputFilter
     }
     
     /**
-     * convert uri to reseacher resolver id prefix
+     * Conversion researchers Resolver ID in the URL format
+     * 研究者リゾルバIDをURL形式に変換
      *
-     * @param string $strTarget
-     * @return string
+     * @param string $strUri Converted string 変換対象文字列
+     * @return string Conversion results 変換結果
      */
     static public function convertId($strUri)
     {
@@ -992,10 +1076,11 @@ class RepositoryOutputFilterJuNii2 extends RepositoryOutputFilter
     }
     
     /**
-     * convert language notation to ISO-639-2 format
+     * Conversion language in the ISO-639-2 format
+     * ISO-639-2形式に変換
      *
-     * @param string $strLang
-     * @return string
+     * @param string $strLang Converted string 変換対象文字列
+     * @return string Conversion results 変換結果
      */
     static public function langISOForWEKO($strLang)
     {
@@ -1081,10 +1166,11 @@ class RepositoryOutputFilterJuNii2 extends RepositoryOutputFilter
     }
     
     /**
-     * convert language notation to RFC3066 format
+     * Conversion language in the RFC3066 format
+     * RFC3066形式に変換
      *
-     * @param string $strLang
-     * @return string
+     * @param string $strLang Converted string 変換対象文字列
+     * @return string Conversion results 変換結果
      */
     static public function langRFCForWEKO($strLang)
     {
@@ -1108,15 +1194,17 @@ class RepositoryOutputFilterJuNii2 extends RepositoryOutputFilter
 
 /**
  * output filter for format:LOM class
- *
+ * LOM用フォーマットチェッククラス
  */
 class RepositoryOutputFilterLOM extends RepositoryOutputFilter 
 {
     /**
      * general structure
      *  allow : 'atomic', 'collection', 'networked', hierarchical', 'linear'
+     * general structure確認
      *
-     * @param string $str
+     * @param string $str string 文字列
+     * @param string Output string 出力文字列
      */
     static public function generalStructureValue($str)
     {
@@ -1132,8 +1220,10 @@ class RepositoryOutputFilterLOM extends RepositoryOutputFilter
     /**
      * general aggregation level
      *  allow : '1', '2', '3', 4'
+     * general aggregation level確認
      *
-     * @param string $str
+     * @param string $str string 文字列
+     * @param string Output string 出力文字列
      */
     static public function generalAggregationLevelValue($str)
     {
@@ -1148,8 +1238,10 @@ class RepositoryOutputFilterLOM extends RepositoryOutputFilter
     /**
      * lifeCycle statue
      *  allow : 'draft', 'final', 'revised', 'unavailable'
+     * lifeCycle statue確認
      *
-     * @param string $str
+     * @param string $str string 文字列
+     * @param string Output string 出力文字列
      */
     static public function lifeCycleStatusValue($str)
     {
@@ -1166,8 +1258,10 @@ class RepositoryOutputFilterLOM extends RepositoryOutputFilter
      *  allow : 'author', 'publisher', 'unknown', 'initiator', 'terminator', 'validator', 'editor', 
      *          'graphical designer', 'technical implementer', 'content provider', 'technical validator', 
      *          'educational validator', 'script writer', 'instructional designer', 'subject matter expert'
-     * 
-     * @param string $str
+     * lifeCycle contribute role確認
+     *
+     * @param string $str string 文字列
+     * @param string Output string 出力文字列
      */
     static public function lyfeCycleContributeRole($str)
     {
@@ -1204,8 +1298,10 @@ class RepositoryOutputFilterLOM extends RepositoryOutputFilter
     /**
      * metaMetadata contribute role
      *  allow : 'creator', 'validator'
-     * 
-     * @param string $str
+     * metaMetadata contribute role確認
+     *
+     * @param string $str string 文字列
+     * @param string Output string 出力文字列
      */
     static public function metaMetadataContributeRole($str)
     {
@@ -1217,10 +1313,12 @@ class RepositoryOutputFilterLOM extends RepositoryOutputFilter
         return $str;
     }
     
-    /*
+    /**
      * technical size
-     * @param string $str
-     * @return string
+     * technical size確認
+     *
+     * @param string $str string 文字列
+     * @return string Output string 出力文字列
      */
     static public function technicalSize($str){
         
@@ -1232,9 +1330,10 @@ class RepositoryOutputFilterLOM extends RepositoryOutputFilter
     /**
      * technical requirement orComposite type value
      *  allow : 'operating system', 'browser'
+     * technical requirement orComposite type value確認
      *
-     * @param string $str
-     * @return string
+     * @param string $str string 文字列
+     * @param string Output string 出力文字列
      */
     static public function technicalRequirementOrCompositeTypeValue($str)
     {
@@ -1251,9 +1350,10 @@ class RepositoryOutputFilterLOM extends RepositoryOutputFilter
      * when technical requirement orComposite type value is 'operating system'
      * 
      * allow : 'pc-dos', 'ms-windows', 'macos', 'unix', 'multi-os', 'none'
+     * technical Requirement OrComposite Name Value確認
      *
-     * @param string $str
-     * @return string
+     * @param string $str string 文字列
+     * @param string Output string 出力文字列
      */
     static public function technicalRequirementOrCompositeNameValueForOperatingSystem($str)
     {
@@ -1271,9 +1371,10 @@ class RepositoryOutputFilterLOM extends RepositoryOutputFilter
      * when technical requirement orComposite type value is 'browser'
      * 
      * allow : 'any', 'netscape', 'communicator', 'ms-internet explorer', 'opera', 'amaya'
+     * technical Requirement OrComposite Name Value確認
      *
-     * @param string $str
-     * @return string
+     * @param string $str string 文字列
+     * @param string Output string 出力文字列
      */
     static public function technicalRequirementOrCompositeNameValueForBrowser($str)
     {
@@ -1293,10 +1394,11 @@ class RepositoryOutputFilterLOM extends RepositoryOutputFilter
      * 
      * when technical requirement orComposite type value is 'browser'
      * allow : 'any', 'netscape', 'communicator', 'ms-internet explorer', 'opera', 'amaya'
-     *
-     * @param string $type
-     * @param string $name
-     * @return bool
+     * technical Requirement OrComposite Combination Type Name Value確認
+     * 
+     * @param string $type Type タイプ
+     * @param string $name Name 名称
+     * @return boolean Result 結果
      */
     static public function technicalRequirementOrCompositeCombination($type, $name)
     {
@@ -1343,8 +1445,10 @@ class RepositoryOutputFilterLOM extends RepositoryOutputFilter
      * 
      * The character literal designators "P", "Y", "M", "D", "T", "H", "M", "S" must
      * appear if the corresponding nonzero value is present.
-     * @param string $str
-     * @return string
+     * duration確認
+     *
+     * @param string $str string 文字列
+     * @param string Output string 出力文字列
      */
     static public function duration($str)
     {
@@ -1404,8 +1508,10 @@ class RepositoryOutputFilterLOM extends RepositoryOutputFilter
     /**
      * educational interactivity type
      * allow : 'active', 'expositive', 'mixed'
-     * @param string $str
-     * @return string
+     * educational interactivity type確認
+     *
+     * @param string $str string 文字列
+     * @param string Output string 出力文字列
      */
     static public function educationalInteractivityType($str)
     {
@@ -1422,8 +1528,10 @@ class RepositoryOutputFilterLOM extends RepositoryOutputFilter
      * allow : 'exercise', 'simulation', 'questionnaire', 'diagram', 'figure', 
      *         'graph', 'index', 'slide', 'table', 'narrative text', 'exam', 
      *         'experiment', 'problem statement', 'self assessment', 'lecture'
-     * @param string $str
-     * @return string
+     * educational learning resource type確認
+     *
+     * @param string $str string 文字列
+     * @param string Output string 出力文字列
      */
     static public function educationalLearningResourceType($str)
     {
@@ -1442,8 +1550,10 @@ class RepositoryOutputFilterLOM extends RepositoryOutputFilter
     /**
      * educational interactivity level
      * allow : 'very low', 'low', 'medium', 'high','very high'
-     * @param string $str
-     * @return string
+     * educational interactivity level確認
+     *
+     * @param string $str string 文字列
+     * @param string Output string 出力文字列
      */
     static public function educationalInteractivityLevel($str)
     {
@@ -1458,8 +1568,10 @@ class RepositoryOutputFilterLOM extends RepositoryOutputFilter
     /**
      * educational semantic oensity
      * allow : 'very low', 'low', 'medium', 'high','very high'
-     * @param string $str
-     * @return string
+     * educational semantic oensity確認
+     *
+     * @param string $str string 文字列
+     * @param string Output string 出力文字列
      */
     static public function educationalSemanticDensity($str)
     {
@@ -1469,8 +1581,10 @@ class RepositoryOutputFilterLOM extends RepositoryOutputFilter
     /**
      * educational intended end user role
      * allow : 'teacher', 'author', 'learner', 'manager'
-     * @param string $str
-     * @return string
+     * educational intended end user role確認
+     *
+     * @param string $str string 文字列
+     * @param string Output string 出力文字列
      */
     static public function educationalIntendedEndUserRole($str)
     {
@@ -1485,8 +1599,10 @@ class RepositoryOutputFilterLOM extends RepositoryOutputFilter
     /**
      * educational context
      * allow : 'school', 'higher education', 'training', 'other'
-     * @param string $str
-     * @return string
+     * educational context確認
+     *
+     * @param string $str string 文字列
+     * @param string Output string 出力文字列
      */
     static public function educationalContext($str)
     {
@@ -1501,8 +1617,10 @@ class RepositoryOutputFilterLOM extends RepositoryOutputFilter
     /**
      * educational difficulty
      * allow : 'very easy', 'easy', 'medium', 'difficult', 'very difficult'
-     * @param string $str
-     * @return string
+     * educational difficulty確認
+     *
+     * @param string $str string 文字列
+     * @param string Output string 出力文字列
      */
     static public function educationalDifficulty($str)
     {
@@ -1517,8 +1635,10 @@ class RepositoryOutputFilterLOM extends RepositoryOutputFilter
     /**
      * YesNo
      * allow : 'yes', 'no'
-     * @param string $str
-     * @return string
+     * YesNo確認
+     *
+     * @param string $str string 文字列
+     * @param string Output string 出力文字列
      */
     static public function yesno($str)
     {
@@ -1535,9 +1655,10 @@ class RepositoryOutputFilterLOM extends RepositoryOutputFilter
      * allow : 'ispartof', 'haspart', 'isversionof', 'hasversion', 'isformatof', 
      *         'hasformat', 'references', 'isreferencedby', 'isbasedon', 'isbasisfor', 
      *         'requires', 'isrequiredby'
-     * 
-     * @param string $str
-     * @return string
+     * relation確認
+     *
+     * @param string $str string 文字列
+     * @param string Output string 出力文字列
      */
     static public function relation($str)
     {
@@ -1556,8 +1677,10 @@ class RepositoryOutputFilterLOM extends RepositoryOutputFilter
      * allow : 'discipline', 'idea', 'prerequisite', 'educational objective', 
      *         'accessibility', 'restrictions', 'educational level', 'skill level', 
      *         'security level', 'competency
-     * @param string $str
-     * @return string
+     * classification purpose確認
+     *
+     * @param string $str string 文字列
+     * @param string Output string 出力文字列
      */
     static public function classificationPurpose($str)
     {

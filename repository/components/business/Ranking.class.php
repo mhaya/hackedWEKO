@@ -1,51 +1,180 @@
 <?php
+
 /**
- * $Id: Ranking.class.php 51654 2015-04-07 01:30:21Z tatsuya_koyasu $
+ * Rankings create common classes
+ * ランキング作成共通クラス
  * 
- * entry log and update log
- * 
- * @author IVIS
- *
+ * @package WEKO
+ */
+
+// --------------------------------------------------------------------
+//
+// $Id: deposit.php 58878 2015-10-15 03:23:15Z tatsuya_koyasu $
+//
+// Copyright (c) 2007 - 2008, National Institute of Informatics,
+// Research and Development Center for Scientific Information Resources
+//
+// This program is licensed under a Creative Commons BSD Licence
+// http://creativecommons.org/licenses/BSD/
+//
+// --------------------------------------------------------------------
+
+/**
+ * Business logic abstract class
+ * ビジネスロジック基底クラス
  */
 require_once WEBAPP_DIR.'/modules/repository/components/business/Logbase.class.php';
+/**
+ * Index rights management common classes
+ * インデックス権限管理共通クラス
+ */
 require_once WEBAPP_DIR.'/modules/repository/components/RepositoryIndexAuthorityManager.class.php';
 
 /**
- * create ranking data
- *
+ * Rankings create common classes
+ * ランキング作成共通クラス
+ * 
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class Repository_Components_Business_Ranking extends Repository_Components_Business_Logbase 
 {
+    /**
+     * To create a ranking
+     * ランキングを作成する
+     *
+     * @var int
+     */
     const CREATE_RANKING_IS_ON = 1;
+    
+    /**
+     * Does not want to create a ranking
+     * ランキングを作成しない
+     *
+     * @var int
+     */
     const CREATE_RANKING_IS_OFF = 0;
     
+    /**
+     * Detail ranking
+     * 詳細画面ランキング
+     *
+     * @var array["item_id"|"item_no"|"title"|"title_english"|"count"]
+     */
     private $refer_ranking = array();
+    /**
+     * Download ranking
+     * ダウンロード画面ランキング
+     *
+     * @var array["item_id"|"item_no"|"title"|"title_english"|"count"]
+     */
     private $download_ranking = array();
+    /**
+     * New item ranking
+     * 新着アイテムランキング
+     *
+     * @var array["item_id"|"item_no"|"title"|"title_english"|"count"]
+     */
     private $newitem_ranking = array();
+    /**
+     * Search keyword ranking
+     * 検索キーワードランキング
+     *
+     * @var array["item_id"|"item_no"|"title"|"title_english"|"count"]
+     */
     private $keyword_ranking = array();
+    /**
+     * User ranking
+     * ユーザランキング
+     *
+     * @var array["item_id"|"item_no"|"title"|"title_english"|"count"]
+     */
     private $user_ranking = array();
     
     // date of ranking target
+    /**
+     * Ranking Period
+     * ランキング集計期間
+     *
+     * @var string
+     */
     private $ranking_term_date = '';
+    /**
+     * Ranking aggregate end date
+     * ランキング集計終了日
+     *
+     * @var string
+     */
     private $ranking_end_date = '';
     
     // instance of Index Authoryty Manager
+    /**
+     * Index authority management object
+     * インデックス権限管理オブジェクト
+     *
+     * @var RepositoryIndexAuthorityManager
+     */
     private $repositoryIndexAuthorityManager = null;
     
     // base and room authoryty of this weko
+    
+    /**
+     * Administrator-based authority level
+     * 管理者ベース権限レベル
+     *
+     * @var int
+     */
     private $repository_admin_base = 0;
+    /**
+     * Administrator Room authority level
+     * 管理者ルーム権限レベル
+     *
+     * @var int
+     */
     private $repository_admin_room = 0;
     
     // create ranking data flg(default: create all ranking data)
+    /**
+     * Is create refer ranking
+     * 詳細画面ランキングを作成するか
+     *
+     * @var int
+     */
     private $isCreateReferRanking = self::CREATE_RANKING_IS_ON;
+    /**
+     * Is create download ranking
+     * ダウンロード画面ランキングを作成するか
+     *
+     * @var int
+     */
     private $isCreateDownloadRanking = self::CREATE_RANKING_IS_ON;
+    /**
+     * Is create new item ranking
+     * 新着アイテムランキングを作成するか
+     *
+     * @var int
+     */
     private $isCreateNewItemRanking = self::CREATE_RANKING_IS_ON;
+    /**
+     * Is create search keyword ranking
+     * 検索キーワードランキングを作成するか
+     *
+     * @var int
+     */
     private $isCreateKeywordRanking = self::CREATE_RANKING_IS_ON;
+    /**
+     * Is create user ranking
+     * ユーザランキングを作成するか
+     *
+     * @var int
+     */
     private $isCreateUserRanking = self::CREATE_RANKING_IS_ON;
     
     /**
      * abstract each count log process
-     *
+     * ランキング作成
      */
     protected function executeApp()
     {
@@ -95,13 +224,14 @@ class Repository_Components_Business_Ranking extends Repository_Components_Busin
     
     /**
      * create view detail ranking data
-     *
+     * アイテム閲覧数のランキング情報を作成する
      */
     private function createReferRankingData()
     {
         $this->debugLog("createReferRankingData", __FILE__, __CLASS__, __LINE__);
         $subQuery = Repository_Components_Business_Logmanager::getSubQueryForAnalyzeLog(Repository_Components_Business_Logmanager::SUB_QUERY_TYPE_DEFAULT);
         
+        $public_item_query = $this->createPublicItemQuery();        
         $public_index_query = $this->repositoryIndexAuthorityManager->getPublicIndexQuery(false, $this->repository_admin_base, $this->repository_admin_room);
         
         // Make TmpTable 2014/11/07 T.Ichikawa --start--
@@ -122,18 +252,14 @@ class Repository_Components_Business_Ranking extends Repository_Components_Busin
                  " ) PUB ON ITEM.item_id = PUB.item_id AND ITEM.item_no = PUB.item_no ".
                  " WHERE ".$subQuery[Repository_Components_Business_Logmanager::SUB_QUERY_KEY_WHERE].
                  " AND LOG.operation_id = ? ". 
-                 " AND ITEM.shown_date <= NOW() ". 
                  " AND LOG.record_date >= ? ". 
-                 " AND ITEM.shown_status = ? ".
-                 " AND ITEM.is_delete = ? ". 
+                 " AND ". $public_item_query.
                  " GROUP BY LOG.item_id ". 
                  " ORDER BY count(ITEM.item_id) DESC ;";
         $params = array();
         $params[] = 0;
         $params[] = Repository_Components_Business_Logmanager::LOG_OPERATION_DETAIL_VIEW;
         $params[] = $this->ranking_term_date;
-        $params[] = 1;
-        $params[] = 0;
         $result = $this->Db->execute($query, $params);
         if($result === false)
         {
@@ -149,13 +275,14 @@ class Repository_Components_Business_Ranking extends Repository_Components_Busin
     
     /**
      * create download ranking data
-     *
+     * アイテムダウンロード数のランキング情報を作成する
      */
     private function createDownloadRankingData()
     {
         $this->debugLog("createDownloadRankingData", __FILE__, __CLASS__, __LINE__);
         $subQuery = Repository_Components_Business_Logmanager::getSubQueryForAnalyzeLog(Repository_Components_Business_Logmanager::SUB_QUERY_TYPE_DEFAULT);
         
+        $public_item_query = $this->createPublicItemQuery();        
         $public_index_query = $this->repositoryIndexAuthorityManager->getPublicIndexQuery(false, $this->repository_admin_base, $this->repository_admin_room);
         
         // Make TmpTable 2014/11/07 T.Ichikawa --start--
@@ -177,18 +304,14 @@ class Repository_Components_Business_Ranking extends Repository_Components_Busin
                  " INNER JOIN ".DATABASE_PREFIX. "repository_file FILE ON LOG.item_id = FILE.item_id AND LOG.file_no = FILE.file_no AND LOG.attribute_id = FILE.attribute_id ". 
                  " WHERE ".$subQuery[Repository_Components_Business_Logmanager::SUB_QUERY_KEY_WHERE].
                  " AND LOG.operation_id = ? ". 
-                 " AND ITEM.shown_date <= NOW() ". 
                  " AND LOG.record_date >= ? ". 
-                 " AND ITEM.shown_status = ? ".
-                 " AND ITEM.is_delete = ? ". 
+                 " AND ". $public_item_query.
                  " GROUP BY LOG.item_id, LOG.attribute_id, LOG.file_no ". 
                  " ORDER BY count(*) DESC ;";
         $params = array();
         $params[] = 0;
         $params[] = Repository_Components_Business_Logmanager::LOG_OPERATION_DOWNLOAD_FILE;
         $params[] = $this->ranking_term_date;
-        $params[] = 1;
-        $params[] = 0;
         $result = $this->Db->execute($query, $params);
         if($result === false)
         {
@@ -204,7 +327,7 @@ class Repository_Components_Business_Ranking extends Repository_Components_Busin
     
     /**
      * create user ranking data
-     *
+     * ユーザランキングを作成
      */
     private function createUserRankingData()
     {
@@ -238,7 +361,7 @@ class Repository_Components_Business_Ranking extends Repository_Components_Busin
     
     /**
      * create keyword ranking data
-     *
+     * 検索キーワードランキングを作成
      */
     private function createKeywordRankingData()
     {
@@ -281,13 +404,13 @@ class Repository_Components_Business_Ranking extends Repository_Components_Busin
     
     /**
      * create recent ranking data
+     * 新着アイテムのランキング情報を作成する
      *
      */
     private function createRecentRankingData()
     {
         $this->debugLog("createRecentRankingData", __FILE__, __CLASS__, __LINE__);
-        $subQuery = Repository_Components_Business_Logmanager::getSubQueryForAnalyzeLog(Repository_Components_Business_Logmanager::SUB_QUERY_TYPE_DEFAULT);
-        
+        $public_item_query = $this->createPublicItemQuery();        
         $public_index_query = $this->repositoryIndexAuthorityManager->getPublicIndexQuery(false, $this->repository_admin_base, $this->repository_admin_room);
         
         // Make TmpTable 2014/11/07 T.Ichikawa --start--
@@ -295,21 +418,16 @@ class Repository_Components_Business_Ranking extends Repository_Components_Busin
         $public_index_query = $this->replaceQueryForTemporaryTable($public_index_query, $now, $cntGroupNum);
         
         $query = "SELECT ITEM.item_id, ITEM.item_no, ITEM.title, ITEM.title_english, ITEM.shown_date ". 
-                 $subQuery[Repository_Components_Business_Logmanager::SUB_QUERY_KEY_FROM].
-                 " INNER JOIN ". DATABASE_PREFIX. "repository_item ITEM ON ITEM.item_id = LOG.item_id AND ITEM.item_no = LOG.item_no AND ITEM.is_delete = ? ". 
+                 " FROM ". DATABASE_PREFIX. "repository_item ITEM ". 
                  " INNER JOIN ". DATABASE_PREFIX. "repository_position_index POS ON ITEM.item_id = POS.item_id AND ITEM.item_no = POS.item_no AND POS.is_delete = ? ". 
                  " INNER JOIN (". $public_index_query. ") PUB ON POS.index_id = PUB.index_id ". 
-                 " WHERE ".$subQuery[Repository_Components_Business_Logmanager::SUB_QUERY_KEY_WHERE].
-                 " AND ITEM.ins_date >= ? ". 
-                 " AND ITEM.ins_date <= NOW() ". 
-                 " AND ITEM.shown_status = ? ". 
+                 " WHERE ". $public_item_query.
+                 " AND ITEM.shown_date >= ? ". 
                  " GROUP BY ITEM.item_id ". 
                  " ORDER BY ITEM.shown_date DESC, ITEM.item_id DESC; ";
         $params = array();
         $params[] = 0;
-        $params[] = 0;
         $params[] = $this->calcStartRecentDate();
-        $params[] = 1;
         $result = $this->Db->execute($query, $params);
         if($result === false)
         {
@@ -325,11 +443,13 @@ class Repository_Components_Business_Ranking extends Repository_Components_Busin
      * If execute calculate ranking in long time, log, users, pages_users_link table is locked
      * If Shibboleth login, updates pages_users_link table
      * Lock in execute claculate ranking, Dead lock is occured
+     * MｙISAMのテーブルを長い間SELECTし続けていると、ロックし続けてしまうため、
+     * 一時テーブルを作成し、それにアクセスするよう、クエリを修正する
      *
-     * @param string $mod_query
-     * @param string $date
-     * @param int $cntGroupNum
-     * @return string: replaced to temporary tables name
+     * @param string $mod_query Query クエリ
+     * @param string $date Date 日付
+     * @param int $cntGroupNum Create count 作成数
+     * @return string Query クエリ 
      */
     private function replaceQueryForTemporaryTable($mod_query, $date, &$cntGroupNum=0)
     {
@@ -402,9 +522,10 @@ class Repository_Components_Business_Ranking extends Repository_Components_Busin
     
     /**
      * drop created temporary tables
+     * 一時テーブルを削除する
      *
-     * @param string $date
-     * @param int $cntGroupNum
+     * @param string $date Date 日付
+     * @param int $cntGroupNum Create count 作成数
      */
     private function dropTemporaryTable($date, $cntGroupNum)
     {
@@ -433,23 +554,137 @@ class Repository_Components_Business_Ranking extends Repository_Components_Busin
         }
     }
     
+    /**
+     * update repository_ranking_count_period table
+     * ランキング集計期間を更新
+     */
+    public function updateRankingCountPeriod()
+    {
+        $query = "UPDATE {repository_ranking_count_period} SET " .
+                "`from_date` = ?, " .
+                "`to_date` = ?, " .
+                "`mod_user_id`= ?, " .
+                "`mod_date` = ?;";
+        $params = array();
+        $params[] = $this->ranking_term_date . ".000";
+        $params[] = $this->accessDate;
+        $params[] = $this->user_id;
+        $params[] = $this->accessDate;
+        $result = $this->Db->execute($query, $params);
+        if($result === false)
+        {
+            $this->errorLog($this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+            throw new AppException($this->Db->ErrorMsg());
+        }
+    }
+    
+    /**
+     * get ranking count period data from database
+     * ランキング集計期間を取得
+     *
+     * @param string $from_date Start date 開始日時
+     * @param string $to_date End date 終了日時
+     */
+    public function getRankingCountPeriodFromDb(&$from_date, &$to_date)
+    {
+        $from_date = "";
+        $to_date = "";
+        $query = "SELECT `from_date`, `to_date`, `mod_user_id`, `mod_date` " .
+                "FROM {repository_ranking_count_period} ";
+        $result = $this->Db->execute($query);
+        if($result === 0)
+        {
+            $this->errorLog($this->Db->ErrorMsg(), __FILE__, __CLASS__, __LINE__);
+            throw new AppException($this->Db->ErrorMsg());
+        }
+        
+        if($result[0]["from_date"] !== "0")
+        {
+            $from_date = $result[0]["from_date"];
+        }
+        
+        if($result[0]["to_date"] !== "0")
+        {
+            $to_date = $result[0]["to_date"];
+        }
+    }
+    
+    /**
+     * get ranking count period data from executing data
+     * 現在時刻から集計期間を算出する
+     *
+     * @param string $from_date Start date 開始日時
+     * @param string $to_date End date 終了日時
+     */
+    public function getRankingCountPeriodExecutingData(&$from_date, &$to_date)
+    {
+        $from_date = $this->ranking_term_date . ".000";
+        $to_date = $this->accessDate;
+    }
+    
     // getter //
+    /**
+     * Get detail ranking
+     * 詳細画面ランキング取得
+     *
+     * @return array["item_id"|"item_no"|"title"|"title_english"|"count"]
+     */
     public function getReferRanking(){  return $this->refer_ranking;}
     
+    /**
+     * Get download ranking
+     * ダウンロードランキング取得
+     *
+     * @return array["item_id"|"item_no"|"title"|"title_english"|"count"]
+     */
     public function getDownloadRanking(){   return $this->download_ranking;}
     
+    /**
+     * Get user ranking
+     * ユーザランキング取得
+     *
+     * @return array["item_id"|"item_no"|"title"|"title_english"|"count"]
+     */
     public function getUserRanking(){   return $this->user_ranking;}
     
+    /**
+     * Get search keyword ranking
+     * 検索キーワードランキング取得
+     *
+     * @return array["item_id"|"item_no"|"title"|"title_english"|"count"]
+     */
     public function getKeywordRanking(){    return $this->keyword_ranking;}
     
+    /**
+     * Get new item ranking
+     * 新着アイテムランキング取得
+     *
+     * @return array["item_id"|"item_no"|"title"|"title_english"|"count"]
+     */
     public function getNewItemRanking(){    return $this->newitem_ranking;}
     
     // setter //
+    /**
+     * Set start date
+     * 開始日時設定
+     *
+     * @param string $startDate Start date 開始日時
+     */
     public function setStartDate($startDate){ $this->ranking_term_date = $startDate;}
     
+    /**
+     * Set end date
+     * 終了日時設定
+     *
+     * @param string $endDate End date 終了日時
+     */
     public function setEndDate($endDate){ $this->ranking_end_date = $endDate;}
     
     // private method for calclation
+    /**
+     * Calculation of the ranking Period
+     * ランキング集計期間の計算
+     */
     private function calcRankingTermDate()
     {
         // ランキング数（新着アイテム以外）
@@ -532,8 +767,10 @@ class Repository_Components_Business_Ranking extends Repository_Components_Busin
     /**
      * calc start date of new items 
      * return date of 'NOW - ranking_term_recent_regist' or 'ranking_last_reset_date'
+     * 新着アイテムとしてみなす開始日時を算出する
      *
-     * @return string 'YYYY-MM-dd hh:mm:ss.000'
+     * @return string Start date for new item 新着アイテム開始日時
+     *                'YYYY-MM-dd hh:mm:ss.000'
      */
     private function calcStartRecentDate()
     {
@@ -575,11 +812,48 @@ class Repository_Components_Business_Ranking extends Repository_Components_Busin
         return $newItemStartDate;
     }
     
+    /**
+     * Create the query that item is public
+     * 公開アイテムの条件を満たすクエリの条件句を作成する
+     *
+     * @return string Query that item is public
+     *                公開アイテムの条件を満たすクエリの条件句
+     */
+    private function createPublicItemQuery()
+    {
+        $public_item_query = "ITEM.shown_date <= NOW() ". 
+                             " AND ITEM.shown_status = 1 ".
+                             " AND ITEM.is_delete = 0 ";
+        
+        return $public_item_query;
+    }
+    
     // set create ranking flg to OFF
+    /**
+     * Does not create a detailed screen ranking
+     * 詳細画面ランキングを作成しない
+     */
     public function toOffReferRanking(){    $this->isCreateReferRanking = self::CREATE_RANKING_IS_OFF;      }
+    
+    /**
+     * Does not create a download ranking
+     * ダウンロードランキングを作成しない
+     */
     public function toOffDownloadRanking(){ $this->isCreateDownloadRanking = self::CREATE_RANKING_IS_OFF;   }
+    /**
+     * Does not create a new item ranking
+     * 新着アイテムランキングを作成しない
+     */
     public function toOffNewItemRanking(){  $this->isCreateNewItemRanking = self::CREATE_RANKING_IS_OFF;    }
+    /**
+     * Does not create a search keyword ranking
+     * 検索キーワードランキングを作成しない
+     */
     public function toOffKeywordRanking(){  $this->isCreateKeywordRanking = self::CREATE_RANKING_IS_OFF;    }
+    /**
+     * Does not create a user ranking
+     * ユーザランキングを作成しない
+     */
     public function toOffUserRanking(){     $this->isCreateUserRanking = self::CREATE_RANKING_IS_OFF;       }
 }
 ?>

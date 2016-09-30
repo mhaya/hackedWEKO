@@ -1,7 +1,14 @@
 <?php
+/**
+ * Action class for background process robotlist log delete
+ * ロボットリストログ削除非同期処理用アクションクラス
+ * 
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Deleterobotlist.class.php 51588 2015-04-06 06:08:02Z shota_suzuki $
+// $Id: Deleterobotlist.class.php 69174 2016-06-22 06:43:30Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -12,21 +19,41 @@
 // --------------------------------------------------------------------
 
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ * 
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
+/**
+ * Base class for carrying out asynchronously and recursively possibility is the ability to process a long period of time
+ * 長時間処理する可能性がある機能を非同期かつ再帰的に実施するための基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/BackgroundProcess.class.php';
 
 /**
- * [[機能説明]]
- *
- * @package     [[package名]]
+ * Action class for background process robotlist log delete
+ * ロボットリストログ削除非同期処理用アクションクラス
+ * 
+ * @package     WEKO
+ * @copyright   (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license     http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
  * @access      public
  */
 class Repository_Action_Common_Background_Deleterobotlist extends BackgroundProcess
 {
+    /**
+     * Background process name for lock table
+     * ロックテーブル用非同期処理名
+     *
+     * @var string
+     */
     const PARAM_NAME = "Repository_Action_Common_Background_Deleterobotlist";
     
     /**
-     * constructer
+     * Constructer
+     * コンストラクタ
+     *
      */
     public function __construct()
     {
@@ -34,7 +61,14 @@ class Repository_Action_Common_Background_Deleterobotlist extends BackgroundProc
     }
     
     /**
-     * search undeleted log
+     * Check undeleted log
+     * 削除されていないログがあるか確認する
+     *
+     * @param string $target Not use argument (prepared because it is necessary for extend)
+     *                        使用していない引数(継承に必要であるため用意している)
+     *
+     * @return boolean Whether or not to delete log
+     *                 ログを削除するか否か
      */
     protected function prepareBackgroundProcess(&$target)
     {
@@ -60,7 +94,11 @@ class Repository_Action_Common_Background_Deleterobotlist extends BackgroundProc
     }
     
     /** 
-     * execute background process
+     * Delete log by background process
+     * 非同期処理でログを削除する
+     *
+     * @param string $target Not use argument (prepared because it is necessary for extend)
+     *                        使用していない引数(継承に必要であるため用意している)
      */
     protected function executeBackgroundProcess(&$target) 
     {
@@ -78,10 +116,14 @@ class Repository_Action_Common_Background_Deleterobotlist extends BackgroundProc
     }
     
     /**
-    * ロボットリストデータのステータスを更新する
-    * 
-    * @return array
-    */
+     * Update status of robotlist data
+     * ロボットリストデータのステータスを更新する
+     *
+     * @param int $robotlistId Robotlist ID
+     *                         ロボットリスト通番
+     * @param int $listId Robotlist master file ID
+     *                    ロボットリストのマスターファイル通番
+     */
     private function updateStatus($robotlistId, $listId)
     {
         $query = "UPDATE ". DATABASE_PREFIX. "repository_robotlist_data ". 
@@ -102,10 +144,13 @@ class Repository_Action_Common_Background_Deleterobotlist extends BackgroundProc
     }
     
     /**
-    * 更新されていないロボットリストデータを取得する
-    * 
-    * @return array
-    */
+     * Get robotlist data not delete log
+     * ログ削除を実施していないロボットリストデータを取得する
+     * 
+     * @return array Robotlist data not delete log
+     *               ログ削除を実施していないロボットリストデータ
+     *               array[$ii]["robotlist_id"|"robotlist_url"|"is_robotlist_use"|...]
+     */
     private function getUndeletedList()
     {
         $query = "SELECT * " . 
@@ -132,11 +177,12 @@ class Repository_Action_Common_Background_Deleterobotlist extends BackgroundProc
     }
     
     /**
-    * ロボットリストデータバックグラウンドのステータスを確認する
-    * 
-    * @return bool true  = lock
-    *              false = unlock
-    */
+     * Check status of robotlist process
+     * ロボットリスト処理のステータスを確認する
+     * 
+     * @return boolean Whether or not execute robotlist process
+     *                 ロボットリスト処理が実行中でないかどうか
+     */
     private function checkRobotlistLock()
     {
         $query = "SELECT * ". 

@@ -1,54 +1,106 @@
 <?php
-require_once WEBAPP_DIR.'/modules/repository/components/FW/BusinessBase.class.php';
-require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
-require_once WEBAPP_DIR. '/components/mail/Main.class.php';
-require_once WEBAPP_DIR. '/modules/repository/components/RepositoryHandleManager.class.php';
+
 /**
- * $Id: Supple.class.php 2015-03-18 06:07:18Z yuya_yamazawa $
+ * Supplemental content operation common classes
+ * サプリメンタルコンテンツ操作共通クラス
  *
- * サプリコンテンツの登録・更新・削除を行う
+ * @package WEKO
+ */
+
+// --------------------------------------------------------------------
+//
+// $Id: deposit.php 58878 2015-10-15 03:23:15Z tatsuya_koyasu $
+//
+// Copyright (c) 2007 - 2008, National Institute of Informatics,
+// Research and Development Center for Scientific Information Resources
+//
+// This program is licensed under a Creative Commons BSD Licence
+// http://creativecommons.org/licenses/BSD/
+//
+// --------------------------------------------------------------------
+/**
+ * Business logic abstract class
+ * ビジネスロジック基底クラス
  *
- * @author IVIS
+ * @package WEKO
+ */
+require_once WEBAPP_DIR.'/modules/repository/components/FW/BusinessBase.class.php';
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ *
+ * @package WEKO
+ */
+require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
+/**
+ * Mail management class
+ * メール管理クラス
+ */
+require_once WEBAPP_DIR. '/components/mail/Main.class.php';
+/**
+ * Handle management common classes
+ * ハンドル管理共通クラス
+ */
+require_once WEBAPP_DIR. '/modules/repository/components/RepositoryHandleManager.class.php';
+
+/**
+ * Supplemental content operation common classes
+ * サプリメンタルコンテンツ操作共通クラス
+ *
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class Repository_Components_Business_Supple extends BusinessBase
 {
     /**
+     * The maximum number of supplemental content information to be displayed in the mail
      * メールに表示するサプリコンテンツ情報の最大数
+     * 
      * @var string
      */
     const SEND_MAIL_DISP_SUPPLE_ITEM_MAX_NUM = 50;
 
     /**
-     * セッション
-     * @var セッション
+     * Session management objects
+     * Session管理オブジェクト
+     *
+     * @var Session
      */
     private $session = null;
 
     /**
+     * Supple WEKO URL
      * サプリWEKOURL
-     * @var サプリWEKOURL string
+     * 
+     * @var string
      */
     private $suppleWEKOURL = null;
 
     /**
+     * Regist supple mental contents
      * サプリコンテンツを登録する
-     * 1.サプリコンテンツ登録のための情報取得
-     * 1-1.サプリWEKO側からサプリコンテンツ情報を取得する
-     * 1-2.アイテムタイプ情報を取得する
-     * 1-3.サプリコンテンツのサプリNoを取得
-     * 1-4.査読メール送信フラグ取得
-     * 2.サプリコンテンツの登録
-     * 2-1.登録するサプリコンテンツが既に登録されているか確認(登録されている場合は、例外を投げる)
-     * 2-2.サプリコンテンツを登録する
-     * 3.査読メールを送信する(査読メールフラグでメールを送るか判断)
      *
-     * @param アイテムID $itemID string
-     * @param アイテムNo $itemNo string
-     * @param サプリコンテンツURL $suppleContentsURL string
-     * @throws AppException 例外のコード
+     * @param int $itemID Item id アイテムID
+     * @param int $itemNo Item serial number アイテム通番
+     * @param string $suppleContentsURL Supplemental contents URL サプリメンタルコンテンツURL
      */
     public function entrySuppleContents($itemID, $itemNo, $suppleContentsURL)
     {
+        /**
+         * サプリコンテンツを登録する
+         * 1.サプリコンテンツ登録のための情報取得
+         * 1-1.サプリWEKO側からサプリコンテンツ情報を取得する
+         * 1-2.アイテムタイプ情報を取得する
+         * 1-3.サプリコンテンツのサプリNoを取得
+         * 1-4.査読メール送信フラグ取得
+         * 2.サプリコンテンツの登録
+         * 2-1.登録するサプリコンテンツが既に登録されているか確認(登録されている場合は、例外を投げる)
+         * 2-2.サプリコンテンツを登録する
+         * 3.査読メールを送信する(査読メールフラグでメールを送るか判断)
+         */
+        
         // 登録情報を取得
         // サプリ情報を取得
         $supple_data = $this->suppleInfoFromSuppleWEKO($suppleContentsURL);
@@ -78,11 +130,12 @@ class Repository_Components_Business_Supple extends BusinessBase
     }
 
     /**
+     * Supplemental content registered at the time of import
      * インポート時のサプリメンタルコンテンツ登録
-     * @param string $itemID アイテムID
-     * @param string $itemNo アイテムNo
-     * @param array $suppleContentsURL サプリメンタルコンテンツURL
-     * @throws AppException
+     * 
+     * @param int $itemID Item id アイテムID
+     * @param int $itemNo Item serial number アイテム通番
+     * @param string $suppleContentsURL Supplemental contents URL サプリメンタルコンテンツURL
      */
     public function entrySuppleContentsForImport($itemID, $itemNo, $suppleContentsURL)
     {
@@ -135,20 +188,20 @@ class Repository_Components_Business_Supple extends BusinessBase
     }
 
     /**
+     * To remove a supplicant content
      * サプリコンテンツを削除する
-     * 1.クエリの作成
-     * 2.パラメータの設定
-     * 3.削除の実行
      *
-     * @param アイテムID $itemId string
-     * @param アイテムNo $itemNo string
-     * @param サプリNo $suppleNo string
-     * @param ワークフローかどうかのフラグ $workflow_flag boolean
-     * @param ワークフロータブ情報 $workflow_active_tab string
-     * @return string
+     * @param int $itemID Item id アイテムID
+     * @param int $itemNo Item serial number アイテム通番
+     * @param int $suppleNo Supple serial number サプリ通番
      */
     public function deleteSuppleContents($itemId,$itemNo,$suppleNo)
     {
+        /**
+         * 1.クエリの作成
+         * 2.パラメータの設定
+         * 3.削除の実行
+         */
         $query = "UPDATE ".DATABASE_PREFIX."repository_supple ".
                 "SET mod_user_id = ?, del_user_id = ?, mod_date = ?, del_date = ?, is_delete = ? ".
                 "WHERE item_id = ? ".
@@ -172,26 +225,27 @@ class Repository_Components_Business_Supple extends BusinessBase
     }
 
     /**
+     * Update supple mental contents
      * サプリコンテンツの更新を行う
-     * 1.サプリコンテンの情報取得
-     * 1-1.サプリWEKO側からサプリコンテンツ情報を取得する
-     * 1-2.アイテムタイプ情報を取得
-     * 1-3.査読メール送信フラグ取得
-     * 2.サプリコンテンツ更新
-     * 2-1.サプリコンテンツの更新
-     * 3.査読メールを送信する
      *
-     * @param アイテムID $item_id string
-     * @param アイテムNo $item_no string
-     * @param attribute_id $attribute_id string
-     * @param サプリNo $supple_no string
-     * @param Suffix $weko_id string
-     * @param サプリ情報 $supple_data string
-     * @param リダイレクトURL $redirect_url string
-     * @throws AppException
+     * @param int $itemID Item id アイテムID
+     * @param int $itemNo Item serial number アイテム通番
+     * @param int $attribute_id Attribute id 属性ID
+     * @param int $suppleNo Supple serial number サプリ通番
+     * @param string $weko_id suffix suffix
      */
     public function updateSuppleContents($item_id,$item_no,$attribute_id,$supple_no,$weko_id)
     {
+        /**
+         * 1.サプリコンテンの情報取得
+         * 1-1.サプリWEKO側からサプリコンテンツ情報を取得する
+         * 1-2.アイテムタイプ情報を取得
+         * 1-3.査読メール送信フラグ取得
+         * 2.サプリコンテンツ更新
+         * 2-1.サプリコンテンツの更新
+         * 3.査読メールを送信する
+         */
+        
         // サプリコンテンツの情報取得
         $supple_data = array();
         $supple_data = $this->suppleInfoByOpenSearch("weko_id", $weko_id);
@@ -212,11 +266,13 @@ class Repository_Components_Business_Supple extends BusinessBase
     }
 
     /**
+     * Perform an update of all the supplemental content that are registered in one of the items
      * 1つのアイテム内に登録されているすべてのサプリコンテンツの更新を行う
-     * @param string $itemID アイテムID
-     * @param string $itemNo アイテムNo
-     * @param array $arraySuppleContentsURL サプリコンテンツURLリスト
-     * @throws AppException
+     * 
+     * @param int $itemID Item id アイテムID
+     * @param int $itemNo Item serial number アイテム通番
+     * @param array $arraySuppleContentsURL Supple mental contents list サプリコンテンツリスト
+     *                                      array[$ii]["item_id"|"item_no"|"attribute_id"|"supple_no"|"item_type_id"|"supple_weko_item_id"|"supple_title"|"supple_title_en"|"uri"|"supple_item_type_name"|"mime_type"|"file_id"|"supple_review_status"|"supple_review_date"|"supple_reject_status"|"supple_reject_date"|"supple_reject_reason"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
      */
     public function updateAllSuppleContentsOfOneItemForImport($itemID, $itemNo, $arraySuppleContentsURL)
     {
@@ -234,15 +290,20 @@ class Repository_Components_Business_Supple extends BusinessBase
 
 
     /**
+     * Initialize
      * 初期化を行う
-     * 1.サプリWEKOのURLを取得する
-     * 2.YハンドルのPrefixを取得する
-     * 3.サプリWEKOのURLとYハンドルのPrefixIDが設定されているか確認
      *
      * @see BusinessBase::onInitialize()
+     * @return boolean Result 結果
      */
     public function onInitialize()
     {
+        /**
+         * 1.サプリWEKOのURLを取得する
+         * 2.YハンドルのPrefixを取得する
+         * 3.サプリWEKOのURLとYハンドルのPrefixIDが設定されているか確認
+         */
+        
         $container = & DIContainerFactory::getContainer();
         $this->session = $container->getComponent("Session");
 
@@ -275,15 +336,19 @@ class Repository_Components_Business_Supple extends BusinessBase
     }
 
     /**
+     * Get prefix by Supple WEKO
      * サプリWEKOからprefixIDを取得する
-     * 1.サプリWEKOのOpenSearchのURLを取得する
-     * 2.OpenSearchでサプリコンテンツのレスポンスを取得
-     * 3.取得したレスポンス（XML）を解析
-     * 4.XML内のデータ取得
      *
-     * @return PrefixID $supple_prefix_id string
+     * @return string prefix prefix
      */
     public function supplePrefixIDByOpenSearch(){
+        /**
+         * 1.サプリWEKOのOpenSearchのURLを取得する
+         * 2.OpenSearchでサプリコンテンツのレスポンスを取得
+         * 3.取得したレスポンス（XML）を解析
+         * 4.XML内のデータ取得
+         */
+        
         // サプリWEKOのOpenSearchのURLを取得する
         $send_param = $this->openSearchUrlOfSuppleWeko("prefix",0);
 
@@ -311,18 +376,24 @@ class Repository_Components_Business_Supple extends BusinessBase
     }
 
     /**
+     * WEKOID to the key, to get the supplicant item information from the supple WEKO
      * WEKOIDをキーに、サプリWEKOからサプリアイテム情報を取得する
-     * 1.サプリWEKOのOpenSearchのURLを取得する
-     * 2.OpenSearchでサプリコンテンツのレスポンスを取得
-     * 3.取得したレスポンス（XML）を解析
-     * 4.XMLデータ検証
      *
-     * @param URLのパラメータの種類 $mode "weko_id" or "item_ids" or "prefix"
-     * @param URLのパラメータ値 $id
-     * @return array $supple_data array
+     * @param string $mode URL parameter type URLのパラメータの種類
+     *                     "weko_id" or "item_ids" or "prefix"
+     * @param string $id URL parameter URLのパラメータ値
+     * @return array $supple_data Supple data サプリデータ
+     *                            array["supple_title"|"supple_title_en"|"uri"|"supple_item_type_name"|"mime_type"|"file_id"]
      */
     public function suppleInfoByOpenSearch($mode, $id)
     {
+        /**
+         * 1.サプリWEKOのOpenSearchのURLを取得する
+         * 2.OpenSearchでサプリコンテンツのレスポンスを取得
+         * 3.取得したレスポンス（XML）を解析
+         * 4.XMLデータ検証
+         */
+        
         // サプリWEKOのOpenSearchのURLを取得する
         $send_param = $this->openSearchUrlOfSuppleWeko($mode,$id);
 
@@ -339,9 +410,10 @@ class Repository_Components_Business_Supple extends BusinessBase
     }
 
     /**
-     * suppleWorkFlowActiveタブへのリダイレクトURLの取得
-     * @throws AppException
-     * @return number URLのパラメータ値
+     * Acquisition of the redirect parameter to suppleWorkFlowActive tab
+     * suppleWorkFlowActiveタブへのリダイレクトパラメータの取得
+     * 
+     * @return int Active tab id アクティブタブID
      */
     public function redirectURLParameterOfSuppleWorkflowActiveTab()
     {
@@ -370,11 +442,13 @@ class Repository_Components_Business_Supple extends BusinessBase
     }
 
     /**
+     * Peer review approval
      * 査読承認
-     * @param string $itemID アイテムID
-     * @param string $itemNo アイテムNo
-     * @param string $attributeID attribute_id
-     * @param string $suppleNo サプリNo
+     * 
+     * @param int $itemID Item id アイテムID
+     * @param int $itemNo Item serial number アイテム通番
+     * @param int $attribute_id Attribute id 属性ID
+     * @param int $suppleNo Supple serial number サプリ通番
      * @throws AppException
      */
     public function acceptReview($itemID,$itemNo,$attributeID,$suppleNo)
@@ -408,12 +482,14 @@ class Repository_Components_Business_Supple extends BusinessBase
     }
 
     /**
+     * Peer review dismissed
      * 査読却下
-     * @param string $itemID アイテムID
-     * @param string $itemNo アイテムNo
-     * @param string $attributeID $attribute_id
-     * @param string $suppleNo サプリNo
-     * @param string $rejectReson 却下理由
+     * 
+     * @param int $itemID Item id アイテムID
+     * @param int $itemNo Item serial number アイテム通番
+     * @param int $attribute_id Attribute id 属性ID
+     * @param int $suppleNo Supple serial number サプリ通番
+     * @param string $rejectReson Reject reason 却下理由
      * @throws AppException
      */
     public function rejectReview($itemID,$itemNo,$attributeID,$suppleNo,$rejectReson)
@@ -456,24 +532,29 @@ class Repository_Components_Business_Supple extends BusinessBase
     }
 
     /**
+     * Perform an update of all the supplemental content that are registered in one of the items
      * 1つのアイテム内に登録されているすべてのサプリコンテンツの更新を行う
      *
-     * 1.登録されているサプリコンテンツURLの情報取得
-     * 2.登録するサプリコンテンツのYハンドル用URLを取得
-     * 3.登録・更新・削除に必要な情報の取得
-     * 4.登録されているYハンドル用URLと登録するYハンドル用URLを比較
-     * 4-1.登録されているYハンドル用URLに登録するYハンドル用URLが無い場合は新規登録処理
-     * 4-2.登録されているYハンドル用URLに登録するYハンドル用URLがある場合は更新処理
-     * 4-2.登録するYハンドル用URL以外のURLが登録されているYハンドル用URLにあった場合は削除処理
-     * 7.査読メールを送る
-     * @param string $itemID アイテムID
-     * @param string $itemNo アイテムNo
-     * @param array $suppleContentsURL サプリコンテンツURL
-     * @param array $errorInfoList 登録・更新・削除で発生したエラーリスト
+     * @param int $itemID Item id アイテムID
+     * @param int $itemNo Item serial number アイテム通番
+     * @param string $suppleContentsURL Supplemental contents URL サプリメンタルコンテンツURL
+     * @param array $errorInfoList Error list 登録・更新・削除で発生したエラーリスト
+     *                             array[$ii]
      * @throws AppException
      */
     private function updateAllSuppleContentsOfOneItem($itemID, $itemNo, $arraySuppleContentsURL,&$errorInfoList)
     {
+        /**
+         * 1.登録されているサプリコンテンツURLの情報取得
+         * 2.登録するサプリコンテンツのYハンドル用URLを取得
+         * 3.登録・更新・削除に必要な情報の取得
+         * 4.登録されているYハンドル用URLと登録するYハンドル用URLを比較
+         * 4-1.登録されているYハンドル用URLに登録するYハンドル用URLが無い場合は新規登録処理
+         * 4-2.登録されているYハンドル用URLに登録するYハンドル用URLがある場合は更新処理
+         * 4-2.登録するYハンドル用URL以外のURLが登録されているYハンドル用URLにあった場合は削除処理
+         * 7.査読メールを送る
+         */
+        
         // DBからサプリコンテンツURLを取得
         $arrayExitEntrySuppleContentsURL = array();
         $suppleInfoList = $this->suppleContentInfo($itemID);
@@ -526,16 +607,21 @@ class Repository_Components_Business_Supple extends BusinessBase
     }
 
     /**
+     * Acquisition of OpenSearchURL of supplicant WEKO
      * サプリWEKOのOpenSearchURLの取得
-     * 1.サプリWEKOのURLを取得
-     * 2.OpenSearchのURLの生成
      *
-     * @param URLのパラメータの種類 $mode "weko_id" or "item_ids" or "prefix" string
-     * @param URLのパラメータ値 $id string
-     * @return OpenSearchURL string
+     * @param string $mode URL parameter type URLのパラメータの種類 
+     *                     "weko_id" or "item_ids" or "prefix" string
+     * @param string $id Item id list アイテムID一覧
+     * @return string URL parameter URLパラメータ
      */
     private function openSearchUrlOfSuppleWeko($mode,$id)
     {
+        /**
+         * 1.サプリWEKOのURLを取得
+         * 2.OpenSearchのURLの生成
+         */
+        
         // サプリWEKOのURLを取得
         $send_param = $this->suppleWEKOURL;
 
@@ -552,14 +638,19 @@ class Repository_Components_Business_Supple extends BusinessBase
     }
 
     /**
+     * Get proxy information
      * Proxy情報の取得
-     * 1.Proxy情報の取得
-     * 2.データをまとめる
      *
-     * @return Proxy情報 array
+     * @return array proxy information Proxy情報
+     *               array["proxy_mode"|"proxy_host"|"proxy_port"|"proxy_user"|"proxy_pass"]
      */
     private function proxyInfo()
     {
+        /**
+         * 1.Proxy情報の取得
+         * 2.データをまとめる
+         */
+        
         $proxy = array('proxy_mode'=>0, 'proxy_host'=>'', 'proxy_port'=>'', 'proxy_user'=>'', 'proxy_pass'=>'');
         $query = "SELECT conf_name, conf_value ".
                 " FROM ".DATABASE_PREFIX."config ".
@@ -610,16 +701,20 @@ class Repository_Components_Business_Supple extends BusinessBase
     }
 
     /**
+     * HTTP request (supplicant content information acquisition)
      * HTTPリクエスト(サプリコンテンツ情報取得)
-     * 1.HTTPリクエストを投げる
-     * 2.リクエストの返り値からレスポンステキストを受けとる
      *
-     * @param URL値 $send_param string
+     * @param string $send_param URL parameter URLパラメータ
      * @throws AppException
-     * @return レスポンステキスト string
+     * @return string Responce text レスポンステキスト
      */
     private function suppleContentsInfoHttpReqest($send_param)
     {
+        /**
+         * 1.HTTPリクエストを投げる
+         * 2.リクエストの返り値からレスポンステキストを受けとる
+         */
+        
         $option = array(
                 "timeout" => "10",
                 "allowRedirects" => true,
@@ -660,11 +755,12 @@ class Repository_Components_Business_Supple extends BusinessBase
     }
 
     /**
+     * Parsing the XML of supplemental content
      * サプリコンテンツのXMLを解析
      *
-     * @param XML $response_xml string
+     * @param string $response_xml XML XML
      * @throws AppException
-     * @return パースしたXMLの情報 array
+     * @return array Parsed xml information パースしたXMLの情報
      */
     private function parseXmlOfSuppleContent($response_xml)
     {
@@ -687,14 +783,19 @@ class Repository_Components_Business_Supple extends BusinessBase
     }
 
     /**
+     * Analysis of XML data
      * XMLデータの解析
-     * 1.XMLのデータから値を取得
      *
-     * @param XMLデータ $vals array
-     * @return サプリコンテンツ情報 array
+     * @param array $vals XML data XMLデータ
+     * @return array Supple data サプリコンテンツ情報
+     *               array["supple_title"|"supple_title_en"|"uri"|"supple_item_type_name"|"mime_type"|"file_id"]
      */
     private function analysisXmlDataOfSuppleContentsInfo($vals)
     {
+        /**
+         * 1.XMLのデータから値を取得
+         */
+        
         $item_flag = false;
         $supple_data = array();
         foreach($vals as $val){
@@ -753,15 +854,20 @@ class Repository_Components_Business_Supple extends BusinessBase
     }
 
     /**
+     * Get supple information
      * サプリコンテンツ情報取得
-     * 1.OpenSearchのためのパラメータ取得
-     * 2.サプリWEKOから対象アイテムの情報を取得
      *
-     * @param サプリコンテンツURL $suppleContentsURL string
-     * @return サプリコンテンツ情報 array
+     * @param string $suppleContentsURL Supplemental contents URL サプリコンテンツURL
+     * @return array supple mental contents information サプリコンテンツ情報
+     *               array["supple_title"|"supple_title_en"|"uri"|"supple_item_type_name"|"mime_type"|"file_id"]
      */
     private function suppleInfoFromSuppleWEKO($suppleContentsURL)
     {
+        /**
+         * 1.OpenSearchのためのパラメータ取得
+         * 2.サプリWEKOから対象アイテムの情報を取得
+         */
+        
         $supple_data = array();
 
         $urlParamId = 0;
@@ -787,16 +893,20 @@ class Repository_Components_Business_Supple extends BusinessBase
     }
 
     /**
+     * Get the parameters of the OpenSearch
      * OpenSearchのパラメータを取得
-     * 1.WEKOURLか確認
-     * 2.Yハンドル用URLか確認
      *
-     * @param サプリコンテンツURL $suppleContentsURL string
-     * @throws AppException
-     * @return パラメータ string
+     * @param string $suppleContentsURL Supplemental contents URL サプリメンタルコンテンツURL
+     * @param string $urlParamId URL parameter URLパラメータ
+     * @return string Parameter パラメータ
      */
     private function openSearchUrlParameter($suppleContentsURL,&$urlParamId)
     {
+        /**
+         * 1.WEKOURLか確認
+         * 2.Yハンドル用URLか確認
+         */
+        
         $result = $this->isWekoUrl($suppleContentsURL);
         if($result === true){
             // WEKO URL からアイテムIDを取得
@@ -821,16 +931,21 @@ class Repository_Components_Business_Supple extends BusinessBase
     }
 
     /**
+     * Acquired from the supplicant content URL of Y handle URL
      * サプリコンテンツURLからYハンドルURLの取得
      *
-     * 1.サプリコンテンツURLがWEKOURLの場合、サプリWEKO側からYハンドルURLを取得する
-     * 2.サプリコンテンツURLがYハンドルの場合は、サプリWEKO側からYハンドルURLを取得する必要なし。
-     * @param string $suppleContentsURL サプリコンテンツURL
-     * @param string $invalidUrl不正なURL
-     * @return array Yハンドル用URL
+     * @param string $suppleContentsURL Supple mental contents URL サプリコンテンツURL
+     * @param string $invalidUrl Invalid URL 不正なURL
+     * @return array Y handle parmalink Yハンドルパーマリンク
+     *               array[$ii]
      */
     private function yHandleUrl($suppleContentsURL,&$invalidUrl)
     {
+        /**
+         * 1.サプリコンテンツURLがWEKOURLの場合、サプリWEKO側からYハンドルURLを取得する
+         * 2.サプリコンテンツURLがYハンドルの場合は、サプリWEKO側からYハンドルURLを取得する必要なし。
+         */
+        
         $arrayYHandleUrl = array();
         $invalidUrl = array();
         foreach ($suppleContentsURL as $url)
@@ -874,16 +989,19 @@ class Repository_Components_Business_Supple extends BusinessBase
     }
 
     /**
-     * サプリコンテンツURLはWEKO URL
-     * 1.WEKO URL形式のパターンを作成
-     * 2.比較
+     * Is WEKO URL
+     * WEKO URLか否か
      *
-     * @param サプリコンテンツURL $suppleContentsURL string
-     * @throws AppException
-     * @return true:WEKO URL false:WEKO URLでない boolean
+     * @param string $suppleContentsURL Supplemental contents URL サプリメンタルコンテンツURL
+     * @return boolean Is WEKO URL WEKO URLか否か
      */
     private function isWekoUrl($suppleContentsURL)
     {
+        /**
+         * 1.WEKO URL形式のパターンを作成
+         * 2.比較
+         */
+        
         $url_pattern = $this->suppleWEKOURL;
         // サプリコンテンツURLの最後の文字列が"/"であるか確認。"/"の場合は最後の1文字"/"を削除
         $result = preg_match("/\/$/", $url_pattern, $resultStr);
@@ -914,15 +1032,18 @@ class Repository_Components_Business_Supple extends BusinessBase
     }
 
     /**
-     * サプリコンテンツURLはYハンドル用URL
-     * 1.Yハンドル用のURL形式とサプリコンテンツURLを比較
+     * Is Y handle parmalink
+     * Yハンドルパーマリンクか
      *
-     * @param サプリコンテンツURL $suppleContentsURL string
-     * @param サプリコンテンツ側のPrefixID $prefixId string
-     * @return true:Yハンドル用URL false:Yハンドル用URLでない boolean
+     * @param string $suppleContentsURL Supplemental contents URL サプリメンタルコンテンツURL
+     * @param string $prefixId prefix prefix
+     * @return boolean Is Y handle parmalink Yハンドルパーマリンクか
      */
     private function isYHandleUrl($suppleContentsURL,&$prefixId)
     {
+        /**
+         * 1.Yハンドル用のURL形式とサプリコンテンツURLを比較
+         */
         $id_server = RepositoryHandleManager::PREFIX_Y_HANDLE;
 
         // サプリWEKOのPrefixIDを取得
@@ -974,10 +1095,11 @@ class Repository_Components_Business_Supple extends BusinessBase
     }
 
     /**
+     * To get the item ID from WEKO URL
      * WEKO URLからアイテムIDを取得する
      *
-     * @param WEKO URL $suppleContentsURL string
-     * @return アイテムID 取得失敗の場合は-1 number
+     * @param string $suppleContentsURL WEKO URL WEKO URL
+     * @return int Item id アイテムID
      */
     private function wekoUrlItemId($suppleContentsURL)
     {
@@ -998,9 +1120,10 @@ class Repository_Components_Business_Supple extends BusinessBase
     }
 
     /**
-     * サプリWEKOからPrefixIDを取得
+     * Get the Prefix from the supplicant WEKO
+     * サプリWEKOからPrefixを取得
      *
-     * @return PrefixID string
+     * @return string prefix prefix
      */
     private function prefixIDFromSuppleWeko()
     {
@@ -1019,11 +1142,27 @@ class Repository_Components_Business_Supple extends BusinessBase
     }
 
     /**
+     * Summarize the error that occurred at the time of registration, update, and delete
      * 登録・更新・削除時に発生したエラーをまとめる
-     * @param array $failedEntryUrlInfo 登録エラー情報
-     * @param array $failedUpdateUrlInfo 更新エラー情報
-     * @param array $faileddeleteUrlInfo 削除エラー情報
-     * @return array エラー情報
+     * 
+     * @param array $failedEntryUrlInfo Regist error 登録エラー情報
+     *                                  array[$ii]
+     * @param array $failedUpdateUrlInfo Update error 更新エラー情報
+     *                                  array[$ii]
+     * @param array $faileddeleteUrlInfo Delete error 削除エラー情報
+     *                                  array[$ii]
+     * @param array $invalidUrl Invalid url list 不正なＵＲＬ一覧
+     *                          array[$ii]
+     * @return array Error list エラー情報
+     */
+    /**
+     * Enter description here...
+     *
+     * @param array $failedEntryUrlInfo
+     * @param array $failedUpdateUrlInfo
+     * @param array $faileddeleteUrlInfo
+     * @param unknown_type $invalidUrl
+     * @return array
      */
     private function errorInfo($failedEntryUrlInfo,$failedUpdateUrlInfo,$faileddeleteUrlInfo,$invalidUrl)
     {
@@ -1057,12 +1196,14 @@ class Repository_Components_Business_Supple extends BusinessBase
     }
 
     /**
+     * Get the item type information
      * アイテムタイプ情報を取得
      *
-     * @param アイテムID $itemID string
-     * @param アイテムNo $itemNo string
+     * @param int $itemID Item id アイテムID
+     * @param int $itemNo Item serial number アイテム通番
      * @throws AppException
-     * @return アイテムタイプ情報 array
+     * @return array Item type information アイテムタイプ情報
+     *               array["attr_type.item_type_id"|"attr_type.attribute_id"|"item.uri"|"item.title"|"item.title_english"]
      */
     private function itemTypeInfo($itemID, $itemNo)
     {
@@ -1088,12 +1229,14 @@ class Repository_Components_Business_Supple extends BusinessBase
     }
 
     /**
+     * Acquisition of supplicant supplemental content to be registered
      * 登録するサプリコンテンツのサプリNo取得
      *
-     * @param アイテムID $itemID string
-     * @param アイテムNo $itemNo string
-     * @param アイテムタイプ情報 array
-     * @return サプリNo string
+     * @param int $itemID Item id アイテムID
+     * @param int $itemNo Item serial number アイテム通番
+     * @param array Item type information アイテムタイプ情報
+     *              array["attr_type.item_type_id"|"attr_type.attribute_id"|"item.uri"|"item.title"|"item.title_english"]
+     * @return int Supple serial number サプリ通番
      */
     private function entrySuppleNo($itemID, $itemNo,$item_type_result)
     {
@@ -1133,18 +1276,22 @@ class Repository_Components_Business_Supple extends BusinessBase
     }
 
     /**
+     * Get the flag indicating whether or not send mail
      * メールを送るか否かのフラグを取得
-     * 1.サプリコンテンツの査読通知メールを送信フラグを取得する
-     * 2.サプリコンテンツの査読フラグを取得する
-     * 3.メールを送るか否かの判断
      *
-     * @param 査読メールフラグ $review_mail_flg string
-     * @param サプリ査読フラグ $review_flg_supple string
+     * @param string $review_mail_flg 査読メールフラグ
+     * @param string $review_flg_supple サプリ査読フラグ
      * @throws AppException
-     * @return number 1:送る 0: 送らない number
+     * @return int Mail submit flag メール送信フラグ
      */
     private function sendMailFlag(&$review_mail_flg,&$review_flg_supple)
     {
+        /**
+         * 1.サプリコンテンツの査読通知メールを送信フラグを取得する
+         * 2.サプリコンテンツの査読フラグを取得する
+         * 3.メールを送るか否かの判断
+         */
+        
         // サプリコンテンツの査読通知メールを送信フラグを取得する
         $query = "SELECT param_value ".
                 "FROM ".DATABASE_PREFIX."repository_parameter ".
@@ -1175,12 +1322,15 @@ class Repository_Components_Business_Supple extends BusinessBase
     }
 
     /**
+     * Already supplicant content that you are trying to registration has been registered
      * 既に登録しようとしているサプリコンテンツが登録されているか
      *
-     * @param アイテムID $itemID string
-     * @param アイテムNo $itemNo string
-     * @param サプリWEKOアイテムID $supple_weko_item_id string
-     * @return 1:登録されていない true:登録されている number
+     * @param int $itemID Item id アイテムID
+     * @param int $itemNo Item serial number アイテム通番
+     * @param string $supple_weko_item_id Supple WEKO Item id サプリWEKOアイテムID
+     * @param array $result Supple number list サプリ通番一覧
+     *                      array[$ii]["supple_no"]
+     * @return int Is registed 登録フラグ
      */
     private function existEntrySuppleContents($itemID,$itemNo,$supple_weko_item_id,&$result)
     {
@@ -1208,10 +1358,13 @@ class Repository_Components_Business_Supple extends BusinessBase
     }
 
     /**
+     * To get the supplemental content information item ID as a key
      * アイテムIDをキーとしてサプリコンテンツ情報を取得する
-     * @param string $itemID アイテムID
+     * 
+     * @param int $itemID Item id アイテムID
      * @throws AppException
-     * @return boolean|mixed
+     * @return array Supple mental contents information サプリコンテンツ情報
+     *               array[$ii]["uri"]
      */
     private function suppleContentInfo($itemID)
     {
@@ -1231,14 +1384,17 @@ class Repository_Components_Business_Supple extends BusinessBase
     }
 
     /**
+     * Carry out the registration of supplemental content
      * サプリコンテンツの登録を行う
      *
-     * @param string $itemID アイテムID
-     * @param string $itemNo アイテムNo
-     * @param number $supple_number サプリNo
-     * @param array $item_type_result アイテムタイプ情報
-     * @param array $supple_data サプリコンテンツ情報
-     * @param string $review_flg_supple 査読フラグ
+     * @param int $itemID Item id アイテムID
+     * @param int $itemNo Item serial number アイテム通番
+     * @param int $supple_num Supple serial number サプリ通番
+     * @param array $item_type_result Itemtype information アイテムタイプ情報
+     *                                array["attr_type.item_type_id"|"attr_type.attribute_id"|"item.uri"|"item.title"|"item.title_english"]
+     * @param array $supple_data Supple information サプリコンテンツ情報
+     *                           array["supple_title"|"supple_title_en"|"uri"|"supple_item_type_name"|"mime_type"|"file_id"]
+     * @param string $review_flg_supple Review flag 査読フラグ
      * @throws AppException
      */
     private function entrySupple($itemID,$itemNo,$supple_num,$item_type_result,$supple_data,$review_flg_supple)
@@ -1306,12 +1462,18 @@ class Repository_Components_Business_Supple extends BusinessBase
 
     /**
      * 複数のサプリコンテンツを登録
-     * @param array $arraySuppleURL サプリコンテンツURL
-     * @param string $itemID アイテムID
-     * @param string $itemNo アイテムNo
-     * @param array $item_type_result アイテムタイプ情報
-     * @param array $review_flg_supple 査読フラグ
-     * @param array $failedSuppeUrl 登録に失敗したサプリコンテンツURL
+     * 
+     * @param array $arraySuppleURL Supple URL list サプリURL一覧
+     *                              array[$ii]
+     * @param int $itemID Item id アイテムID
+     * @param int $itemNo Item serial number アイテム通番
+     * @param array $item_type_result Itemtype information アイテムタイプ情報
+     *                                array["attr_type.item_type_id"|"attr_type.attribute_id"|"item.uri"|"item.title"|"item.title_english"]
+     * @param string $review_flg_supple Review flag 査読フラグ
+     * @param array $arraySuppleInfo Supple list サプリ一覧
+     *                               array[$ii]["item_id"|"item_no"|"attribute_id"|"supple_no"|"item_type_id"|"supple_weko_item_id"|"supple_title"|"supple_title_en"|"uri"|"supple_item_type_name"|"mime_type"|"file_id"|"supple_review_status"|"supple_review_date"|"supple_reject_status"|"supple_reject_date"|"supple_reject_reason"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     * @param array $failedSuppeUrl Failed supple url list 失敗したサプリURL一覧
+     *                              array[$ii]["item_id"|"item_no"|"attribute_id"|"supple_no"|"item_type_id"|"supple_weko_item_id"|"supple_title"|"supple_title_en"|"uri"|"supple_item_type_name"|"mime_type"|"file_id"|"supple_review_status"|"supple_review_date"|"supple_reject_status"|"supple_reject_date"|"supple_reject_reason"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
      */
     private function entrySupples($arraySuppleURL,$itemID, $itemNo,$item_type_result,$review_flg_supple,&$arraySuppleInfo,&$failedSuppeUrl)
     {
@@ -1342,15 +1504,17 @@ class Repository_Components_Business_Supple extends BusinessBase
     }
 
     /**
+     * Update supplemental contents
      * サプリコンテンツの更新を行う
      *
-     * @param アイテムID $item_id string
-     * @param アイテムNo $item_no string
-     * @param AttributeID $attribute_id string
-     * @param サプリNo $supple_no string
-     * @param サプリコンテンツ情報 $supple_data array
-     * @param サプリ査読フラグ $review_flg_supple string
-     * @param ワークフローアクティブタグ値 $supple_workflow_active_tab number
+     * @param int $itemID Item id アイテムID
+     * @param int $itemNo Item serial number アイテム通番
+     * @param int $attribute_id Attribute id 属性ID
+     * @param int $suppleNo Supple serial number サプリ通番
+     * @param array $supple_data Supple information サプリコンテンツ情報
+     *                           array["supple_title"|"supple_title_en"|"uri"|"supple_item_type_name"|"mime_type"|"file_id"]
+     * @param string $review_flg_supple Review flag 査読フラグ
+     * @param int $supple_workflow_active_tab workflow activate id ワークフローアクティブタグ値
      * @throws AppException
      */
     private function updateSupple($item_id,$item_no,$attribute_id,$supple_no,$supple_data,$review_flg_supple)
@@ -1418,13 +1582,19 @@ class Repository_Components_Business_Supple extends BusinessBase
     }
 
     /**
+     * To update multiple supplicant content
      * 複数のサプリコンテンツを更新する
-     * @param array $arraySuppleURL 更新するサプリコンテンツURL
-     * @param string $item_id アイテムID
-     * @param string $item_no アイテムNo
-     * @param string $attribute_id 属性ID
-     * @param string $review_flg_supple 査読フラグ
-     * @param array $failedUpdateUrl 更新に失敗したサプリコンテンツURL
+     * 
+     * @param array $arraySuppleURL Supple mental contents list サプリコンテンツリスト
+     *                              array[$ii]["item_id"|"item_no"|"attribute_id"|"supple_no"|"item_type_id"|"supple_weko_item_id"|"supple_title"|"supple_title_en"|"uri"|"supple_item_type_name"|"mime_type"|"file_id"|"supple_review_status"|"supple_review_date"|"supple_reject_status"|"supple_reject_date"|"supple_reject_reason"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     * @param int $itemID Item id アイテムID
+     * @param int $itemNo Item serial number アイテム通番
+     * @param int $attribute_id Attribute id 属性ID
+     * @param string $review_flg_supple Review flag 査読フラグ
+     * @param array $arraySuppleInfo Supple information サプリ情報
+     *                               array[$ii]["supple_title"|"supple_title_en"|"uri"|"supple_item_type_name"|"mime_type"|"file_id"]
+     * @param array $failedUpdateUrl Failed list 更新に失敗したサプリコンテンツURL
+     *                               array[$ii]
      */
     private function updateSupples($arraySuppleURL,$itemID,$itemNo,$attribute_id,$review_flg_supple,&$arraySuppleInfo,&$failedUpdateUrl)
     {
@@ -1465,11 +1635,15 @@ class Repository_Components_Business_Supple extends BusinessBase
     }
 
     /**
+     * To delete multiple supplicant content
      * 複数のサプリコンテンツを削除する
-     * @param array $arrayDeleteSupple サプリコンテンツURL
-     * @param string $itemID アイテムID
-     * @param string $itemNo アイテムNo
-     * @param array $failedUpdateUrl 削除に失敗したサプリコンテンツURL
+     * 
+     * @param array $arrayDeleteSupple Supple mental contents list サプリコンテンツリスト
+     *                                 array[$ii]["item_id"|"item_no"|"attribute_id"|"supple_no"|"item_type_id"|"supple_weko_item_id"|"supple_title"|"supple_title_en"|"uri"|"supple_item_type_name"|"mime_type"|"file_id"|"supple_review_status"|"supple_review_date"|"supple_reject_status"|"supple_reject_date"|"supple_reject_reason"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     * @param int $itemID Item id アイテムID
+     * @param int $itemNo Item serial number アイテム通番
+     * @param array $failedUpdateUrl Failed url list 削除に失敗したサプリコンテンツURL
+     *                               array[$ii]
      */
     private function deleteSupples($arrayDeleteSupple,$itemID,$itemNo,&$failedDeleteUrl)
     {
@@ -1508,9 +1682,11 @@ class Repository_Components_Business_Supple extends BusinessBase
     }
 
     /**
+     * Acquisition of supple WEKOURL
      * サプリWEKOURLの取得
      *
      * @throws AppException
+     * @return string supple WEKOURL サプリWEKOURL
      */
     private function suppleWEKOURL()
     {
@@ -1539,11 +1715,16 @@ class Repository_Components_Business_Supple extends BusinessBase
     }
 
     /**
+     * Carry out the e-mail transmission at the time of the multiple supplicant content registration and update
      * 複数のサプリコンテンツ登録・更新の際のメール送信を行う
-     * @param string $sendflag メール送信フラグ
-     * @param array $item_type_result アイテムタイプ情報
-     * @param array $arrayEntrySuppleInfo 登録時のサプリコンテンツ情報
-     * @param array $arrayUpdateSuppleInfo 更新時のサプリコンテンツ情報
+     * 
+     * @param string $sendflag Mail submit flag メール送信フラグ
+     * @param array $item_type_result Itemtype information アイテムタイプ情報
+     *                                array["attr_type.item_type_id"|"attr_type.attribute_id"|"item.uri"|"item.title"|"item.title_english"]
+     * @param array $arrayEntrySuppleInfo Regist supple information 登録時のサプリコンテンツ情報
+     *                                    array[$ii]["item_id"|"item_no"|"attribute_id"|"supple_no"|"item_type_id"|"supple_weko_item_id"|"supple_title"|"supple_title_en"|"uri"|"supple_item_type_name"|"mime_type"|"file_id"|"supple_review_status"|"supple_review_date"|"supple_reject_status"|"supple_reject_date"|"supple_reject_reason"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     * @param array $arrayUpdateSuppleInfo Update supple information 更新時のサプリコンテンツ情報
+     *                                     array[$ii]["item_id"|"item_no"|"attribute_id"|"supple_no"|"item_type_id"|"supple_weko_item_id"|"supple_title"|"supple_title_en"|"uri"|"supple_item_type_name"|"mime_type"|"file_id"|"supple_review_status"|"supple_review_date"|"supple_reject_status"|"supple_reject_date"|"supple_reject_reason"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
      */
     private function sendSuppleMailForSupples($sendflag,$item_type_result,$arrayEntrySuppleInfo,$arrayUpdateSuppleInfo)
     {
@@ -1565,16 +1746,22 @@ class Repository_Components_Business_Supple extends BusinessBase
     }
 
     /**
+     * To send the peer review notification e-mail.
      * 査読通知メールを送信する
-     * 1.本文の作成
-     * 2.送信
      *
-     * @param 送信するか否かのフラグ値 $flag number
-     * @param サプリコンテンツ情報 $supple_data array
-     * @param アイテムタイプ情報 $item_type_result array
+     * @param int $flag Submit flag 送信するか否かのフラグ値
+     * @param array $supple_data array Supple mental contents list サプリコンテンツリスト
+     *                                 array[$ii]["item_id"|"item_no"|"attribute_id"|"supple_no"|"item_type_id"|"supple_weko_item_id"|"supple_title"|"supple_title_en"|"uri"|"supple_item_type_name"|"mime_type"|"file_id"|"supple_review_status"|"supple_review_date"|"supple_reject_status"|"supple_reject_date"|"supple_reject_reason"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     * @param array $item_type_result Itemtype information アイテムタイプ情報
+     *                                array["attr_type.item_type_id"|"attr_type.attribute_id"|"item.uri"|"item.title"|"item.title_english"]
      */
     private function sendSuppleMail($flag,$arraySupple_data,$item_type_result)
     {
+        /**
+         * 1.本文の作成
+         * 2.送信
+         */
+        
         // 新規査読サプリコンテンツ登録メール送信処理
         if($flag == 1){
             $container = & DIContainerFactory::getContainer();
@@ -1674,10 +1861,11 @@ class Repository_Components_Business_Supple extends BusinessBase
     }
 
     /**
+     * Retrieve mail information necessary to peer review notification e-mail transmission
      * 査読通知メール送信に必要なメール情報を取得
      *
-     * @param ユーザー情報 $users string
-     * @return 登録結果 boolean
+     * @param string $users User mail address メールアドレス
+     * @return boolean Result 結果
      */
     private function reviewMailInfo(&$users){
         $users = array();       // メール送信先
@@ -1710,10 +1898,12 @@ class Repository_Components_Business_Supple extends BusinessBase
     }
 
     /**
+     * Acquisition of the block page ID
      * ブロックページIDの取得
      *
      * @throws AppException
-     * @return ブロックページID string
+     * @return array Block and page id ブロックページID
+     *               array["block_id"|"page_id"]
      */
     private function blockPageId(){
         // get NC version
@@ -1731,10 +1921,12 @@ class Repository_Components_Business_Supple extends BusinessBase
     }
 
     /**
+     * Get the BlockId and PageId (NetCommons2.3 earlier)
      * BlockIdとPageIdを取得（NetCommons2.3以前）
      *
      * @throws AppException
-     * @return BlockIdとPageId array
+     * @return array Block and page id ブロックページID
+     *               array["block_id"|"page_id"]
      */
     private function blockIdAndPageIdBeforeVersionNetCommons23()
     {
@@ -1772,10 +1964,12 @@ class Repository_Components_Business_Supple extends BusinessBase
     }
 
     /**
+     * Get the BlockId and PageId (later NetCommons2.3)
      * BlockIdとPageIdを取得（NetCommons2.3以降）
      *
      * @throws AppException
-     * @return BlockIdとPageId array
+     * @return array Block and page id ブロックページID
+     *               array["block_id"|"page_id"]
      */
     private function blockIdAndPageIdAfterVersionNetCommons23()
     {
@@ -1815,9 +2009,10 @@ class Repository_Components_Business_Supple extends BusinessBase
     }
 
     /**
+     * To get the version of NetCommons that is currently running
      * 現在稼働しているNetCommonsのバージョンを取得する
      *
-     * @return バージョン値 $version
+     * @return string Version バージョン
      */
     private function ncVersion(){
         $container =& DIContainerFactory::getContainer();

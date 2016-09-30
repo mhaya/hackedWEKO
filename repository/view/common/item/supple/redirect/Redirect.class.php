@@ -1,7 +1,15 @@
 <?php
+
+/**
+ * View class for the redirect process at the time of supplemental content registration
+ * サプリメンタルコンテンツ登録時のリダイレクト処理用ビュークラス
+ *
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Redirect.class.php 53594 2015-05-28 05:25:53Z kaede_matsushita $
+// $Id: Redirect.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -12,34 +20,105 @@
 // --------------------------------------------------------------------
 
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
-
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
+
+/**
+ * Common classes for creating and updating the search table that holds the metadata and file contents of each item to search speed improvement
+ * 検索速度向上のためアイテム毎のメタデータおよびファイル内容を保持する検索テーブルの作成・更新を行う共通クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositorySearchTableProcessing.class.php';
 
 /**
- * アイテム詳細画面のサプリコンテンツ新規登録処理・サプリコンテンツタブからのサプリコンテンツ更新処理
+ * View class for the redirect process at the time of supplemental content registration
+ * サプリメンタルコンテンツ登録時のリダイレクト処理用ビュークラス
  *
- * @author IVIS
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class Repository_View_Common_Item_Supple_Redirect extends RepositoryAction
 {
 	// リクエストパラメタ
+    /**
+     * Item id
+     * アイテムID
+     *
+     * @var int
+     */
 	var $item_id = null;					// アイテムID
+    /**
+     * Item serial number
+     * アイテム通番
+     *
+     * @var int
+     */
 	var $item_no = null;					// アイテム通番
+	/**
+	 * 
+	 * 処理モード
+	 *
+	 * @var string
+	 */
 	var $mode = null;						// 処理モード
+	/**
+	 * WEKO id
+	 * WEKO ID
+	 *
+	 * @var int
+	 */
 	var $weko_id = null;					// weko_id
+    /**
+     * Attribute id
+     * 属性ID
+     *
+     * @var int
+     */
 	var $attribute_id = null;				// attribute_id
+	/**
+	 * Supple serial number
+	 * サプリ通番
+	 *
+	 * @var int
+	 */
 	var $supple_no = null;					// suuple_no
 	
+    /**
+     * Session management objects
+     * Session管理オブジェクト
+     *
+     * @var Session
+     */
 	var $Session = null;
+    /**
+     * Database management objects
+     * データベース管理オブジェクト
+     *
+     * @var DbObject
+     */
 	var $Db = null;
+    /**
+     * Mail management objects
+     * メール管理オブジェクト
+     *
+     * @var Mail_Main
+     */
 	var $mailMain = null;
 	
     /**
+     * Supplemental content registered at the time of new registration of the Item Details screen
+     * Or, the supplicant content update process in the supplemental content tab
+     * 1. When you have a new registration from the Item Details screen, make the registration of supplemental content
+     * 2. If you have made an item update of supplicant WEKO from the supplicant content tab, to update the supplemental content
      * アイテム詳細画面の新規登録時のサプリコンテンツ登録
      * または、サプリコンテンツタブでのサプリコンテンツ更新処理
      * 1.アイテム詳細画面から新規登録を行った場合、サプリコンテンツの登録を行う
      * 2.サプリコンテンツタブからサプリWEKOのアイテム更新を行った場合、サプリコンテンツの更新を行う
+     * 
      * @access  public
      */
     function execute()
@@ -69,6 +148,7 @@ class Repository_View_Common_Item_Supple_Redirect extends RepositoryAction
     		$result = $this->exitAction();     // トランザクションが成功していればCOMMITされる
     		header("HTTP/1.1 301 Moved Permanently");
       		header("Location: ".$redirect_url);
+      		$this->finalize();
       		return;
         }
         catch(AppException $e){
@@ -85,7 +165,9 @@ class Repository_View_Common_Item_Supple_Redirect extends RepositoryAction
     }
 
     /**
+     * Initialize
      * パラメータの初期化
+     * 
      * @throws RepositoryException
      */
     private function initActionParam()
@@ -108,8 +190,8 @@ class Repository_View_Common_Item_Supple_Redirect extends RepositoryAction
 
     // Add suppleContentsEntry Y.Yamazawa --start-- 2015/03/30 --start--
     /**
+     * Regist supplemental contents
      * サプリコンテンツの登録
-     * @param unknown $redirect_url
      */
     private function entrySupple()
     {
@@ -123,8 +205,10 @@ class Repository_View_Common_Item_Supple_Redirect extends RepositoryAction
 
     // Add suppleContentsEntry Y.Yamazawa --start-- 2015/03/30 --start--
     /**
+     * Update supplemental contents
      * サプリコンテンツの更新
-     * @param リダイレクトURL $redirect_url
+     * 
+     * @param string $redirect_url Redirect URL リダイレクトURL
      */
     private function updateSupple(&$redirect_url)
     {
@@ -147,8 +231,10 @@ class Repository_View_Common_Item_Supple_Redirect extends RepositoryAction
 
     // Add suppleContentsEntry Y.Yamazawa --start-- 2015/03/30 --start--
     /**
+     * Get redirect URL
      * リダイレクトURLの取得
-     * @return リダイレクトURL
+     * 
+     * @return string Redirect URL リダイレクトURL
      */
     private function redirectUrl()
     {

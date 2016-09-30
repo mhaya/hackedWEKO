@@ -1,7 +1,15 @@
 <?php
+
+/**
+ * View class for workflow screen display
+ * ワークフロー画面表示用ビュークラス
+ *
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Workflow.class.php 53594 2015-05-28 05:25:53Z kaede_matsushita $
+// $Id: Workflow.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -12,44 +20,132 @@
 // --------------------------------------------------------------------
 
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
 
 /**
- * [[機能説明]]
+ * View class for workflow screen display
+ * ワークフロー画面表示用ビュークラス
  *
- * @package	 [[package名]]
- * @access	  public
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class Repository_View_Main_Workflow extends RepositoryAction
 {
 	// 使用コンポーネントを受け取るため
+    /**
+     * Session management objects
+     * Session管理オブジェクト
+     *
+     * @var Session
+     */
 	var $Session = null;
+    /**
+     * Database management objects
+     * データベース管理オブジェクト
+     *
+     * @var DbObject
+     */
 	var $Db = null;
 	//var $request = null;
 	
 	// html表示用
 	// Add for workflow separate 2009/01/27 Y.Nakao --start--
 	// 表示アイテム情報 item info for display
+	/**
+	 * Registered in the item
+	 * 登録中アイテム
+	 *
+	 * @var array[$ii][$jj]["ITEM.item_id"|"ITEM.item_no"|"ITEM.title"|"ITEM.title_english"|"ITEM.shown_status"|"ITEM.reject_reason"|"ITEM.mod_date"|"ITEMTYPE.item_type_name"|"reject_reason"]
+	 */
 	var $item_unregistered = array();	// unregistered
+    /**
+     * Review item
+     * レビューアイテム
+     *
+     * @var array[$ii][$jj]["ITEM.item_id"|"ITEM.item_no"|"ITEM.title"|"ITEM.title_english"|"ITEM.shown_status"|"ITEM.reject_reason"|"ITEM.mod_date"|"ITEMTYPE.item_type_name"|"reject_reason"]
+     */
 	var $item_review	   = array();	// review
+    /**
+     * Approval items
+     * 承認アイテム
+     *
+     * @var array[$ii][$jj]["ITEM.item_id"|"ITEM.item_no"|"ITEM.title"|"ITEM.title_english"|"ITEM.shown_status"|"ITEM.reject_reason"|"ITEM.mod_date"|"ITEMTYPE.item_type_name"|"reject_reason"]
+     */
 	var $item_accepted	 = array();	// accepted
+    /**
+     * Rejected items
+     * 却下アイテム
+     *
+     * @var array[$ii][$jj]["ITEM.item_id"|"ITEM.item_no"|"ITEM.title"|"ITEM.title_english"|"ITEM.shown_status"|"ITEM.reject_reason"|"ITEM.mod_date"|"ITEMTYPE.item_type_name"|"reject_reason"]
+     */
 	var $item_reject	   = array();	// reject
 	
-	// 選択されているタブ情報 active tab info
+	/**
+	 * active tab info
+	 * 選択されているタブ情報
+	 *
+	 * @var int
+	 */
 	var $workflow_active_tab	= null;
 	
-	// 1ページに表示するアイテムの数 item number for display 1 page
+	/**
+	 * item number for display 1 page
+	 * 1ページに表示するアイテムの数 
+	 *
+	 * @var int
+	 */
 	var $page_item		 = 20;
 	
 	// 各タブのページ数 all page number
+	/**
+     * Page number(Registration in)
+     * ページ番号(登録中)
+	 *
+	 * @var int
+	 */
 	var $page_num_unregistered = 0;
+	/**
+     * Page number(Reviewers waiting)
+     * ページ番号(査読待ち)
+	 *
+	 * @var int
+	 */
 	var $page_num_review	   = 0;
+	/**
+	 * Page number(Approval)
+	 * ページ番号(承認)
+	 *
+	 * @var int
+	 */
 	var $page_num_accepted	   = 0;
 //	var $page_num_reject	   = null;
 	
-	// 表示しているページ番号 display page number
+	/**
+	 * display page number(Registration in)
+	 * 表示しているページ番号(登録中)
+	 *
+	 * @var int
+	 */
 	var $page_disp_unregistered = null;
+    /**
+     * display page number(Reviewers waiting)
+     * 表示しているページ番号(査読待ち)
+     *
+     * @var int
+     */
 	var $page_disp_review	    = null;
+    /**
+     * display page number(Approval)
+     * 表示しているページ番号(承認)
+     *
+     * @var int
+     */
 	var $page_disp_accepted	    = null;
 //	var $page_disp_reject	    = null;
 	
@@ -62,21 +158,48 @@ class Repository_View_Main_Workflow extends RepositoryAction
 	// ページ番号表示処理修正のため削除 2009/08/07 A.Suzuki --end--
 	
 	// error_msg
+	/**
+	 * Error message
+	 * エラーメッセージ
+	 *
+	 * @var string
+	 */
 	var $error_msg		 = "";
 	// Add for workflow separate 2009/01/27 Y.Nakao --end--
 	
 	// Add review mail setting 2009/09/30 Y.Nakao --start--
+	/**
+	 * Review mail transmission flag
+	 * レビューメール送信フラグ
+	 *
+	 * @var int
+	 */
 	var $review_mail_flg = 0;
+	/**
+	 * Notification mail reception flag
+	 * 通知メール受信フラグ
+	 *
+	 * @var int
+	 */
 	var $review_result_mail = 0;
 	// Add review mail setting 2009/09/30 Y.Nakao --end--
 	
     // Set help icon setting 2010/02/10 K.Ando --start--
+    /**
+     * Help icon display flag
+     * ヘルプアイコン表示フラグ
+     *
+     * @var int
+     */
     var $help_icon_display =  "";
     // Set help icon setting 2010/02/10 K.Ando --end--
 	
 	/**
-	 * [[ワークフロー表示用処理]]
+	 * Display the workflow screen
+	 * ワークフロー画面を表示
+	 * 
 	 * @access  public
+	 * @return strgin Result 結果
 	 */
 	function execute()
 	{
@@ -317,6 +440,7 @@ class Repository_View_Main_Workflow extends RepositoryAction
 		}
 
         //Connect From SPhone
+        $this->finalize();
         if($this->smartphoneFlg == true){
             return 'success_sp';
         }
@@ -328,18 +452,20 @@ class Repository_View_Main_Workflow extends RepositoryAction
 	}
 	
 	/**
-	 * $user_idのユーザが作成したアイテムの情報を取得する
+	 * To get the information of the items created by the user
+	 * ユーザが作成したアイテムの情報を取得する
 	 *
-	 * @param $user_id ユーザID userID
-	 * @param $s_num 開始番号 start number
-	 * @param $review_status 査読状況 review status
-	 * 						 -1 : 登録中 unregistered
-	 * 						  0 : 承認待 wating review
-	 * 						  1 : 承認済 accepted
-	 * @param reject_status 却下状況 reject status
-	 * 						0 : 却下されていない
-	 * 						1 : 却下
-	 * @return item data
+	 * @param string $user_id userID ユーザID
+	 * @param int $s_num start number 開始番号
+	 * @param int $review_status review status 査読状況
+	 * 						 -1 : unregistered 登録中
+	 * 						  0 : wating review 承認待
+	 * 						  1 : accepted 承認済
+	 * @param int reject_status reject status 却下状況
+	 * 						0 : not been dismissed 却下されていない
+	 * 						1 : dismissal 却下
+	 * @return array Item information アイテム情報
+	 *               array[$ii]["ITEM.item_id"|"ITEM.item_no"|"ITEM.title"|"ITEM.title_english"|"ITEM.shown_status"|"ITEM.reject_reason"|"ITEM.mod_date"|"ITEMTYPE.item_type_name"|"reject_reason"]
 	 */
 	function getUserItemData($user_id, $review_status, $reject_status){
 		$query = "SELECT  ITEM.item_id, ".			// item id
@@ -399,6 +525,7 @@ class Repository_View_Main_Workflow extends RepositoryAction
 	 * set user mail setting
 	 * ユーザのメール設定状況を取得する
 	 *
+	 * @return string Result 結果
 	 */
 	function setUserMailSetting(){
 		// get user id

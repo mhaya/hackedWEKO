@@ -1,35 +1,61 @@
 <?php
+
+/**
+ * Action for edit the item type icon
+ * アイテムタイプアイコン編集アクションクラス
+ *
+ * @package     WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Icon.class.php 53594 2015-05-28 05:25:53Z kaede_matsushita $
+// $Id: Icon.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
-// Copyright (c) 2007 - 2008, National Institute of Informatics, 
+// Copyright (c) 2007 - 2008, National Institute of Informatics,
 // Research and Development Center for Scientific Information Resources
 //
 // This program is licensed under a Creative Commons BSD Licence
 // http://creativecommons.org/licenses/BSD/
 //
 // --------------------------------------------------------------------
-
-/* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
 
 /**
- * [[機能説明]]
+ * Action for edit the item type icon
+ * アイテムタイプアイコン編集アクションクラス
  *
- * @package     [[package名]]
+ * @package     WEKO
+ * @copyright   (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license     http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
  * @access      public
  */
 class Repository_Action_Edit_Itemtype_Icon extends RepositoryAction
 {
-	var $Session = null;
-	
-	var $del_icon_flg = null;
 	/**
-     * [[機能説明]]
-     *
-     * @access  public
-     */
+	 * Session management objects
+	 * Session管理オブジェクト
+	 *
+	 * @var Session
+	 */
+	var $Session = null;
+	/**
+	 * Delete icon flag
+	 * アイコン削除フラグ
+	 *
+	 * @var int
+	 */
+	var $del_icon_flg = null;
+
+	/**
+	 * Execute
+	 * 実行
+	 *
+	 * @return string "success"/"error" success/failed 成功/失敗
+	 */
     function executeApp()
     {
     	

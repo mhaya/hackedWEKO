@@ -1,80 +1,185 @@
 <?php
+
+/**
+ * Get SCPJ policy
+ * SCPJポリシー取得クラス
+ *
+ * @package     WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Scpj.class.php 38124 2014-07-01 06:56:02Z rei_matsuura $
+// $Id: Scpj.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
-// Copyright (c) 2007 - 2008, National Institute of Informatics, 
+// Copyright (c) 2007 - 2008, National Institute of Informatics,
 // Research and Development Center for Scientific Information Resources
 //
 // This program is licensed under a Creative Commons BSD Licence
 // http://creativecommons.org/licenses/BSD/
 //
 // --------------------------------------------------------------------
-
 /**
- * require once
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
  */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
 
 /**
- * get scpj
+ * Get SCPJ policy
+ * SCPJポリシー取得クラス
+ *
+ * @package     WEKO
+ * @copyright   (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license     http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access      public
  */
 class Repository_Action_Main_Item_Policy_Scpj extends RepositoryAction
 {
-    /* Session resource */
+    /**
+     * Session management objects
+     * Session管理オブジェクト
+     *
+     * @var Session
+     */
     public $Session = null;
-    /* database resource */
+    /**
+     * Database management objects
+     * データベース管理オブジェクト
+     *
+     * @var DbObject
+     */
     public $Db = null;
 
     /**
      * replace keys
      */
-    /* replace keys for "jtitle" */
+    /**
+     * String for replace "jtitle"
+     * "jtitle"文字列置換用
+     */
     const SCPJ_API_REPLACE_KEY_JTITLE    = '$$jtitle$$';
-    /* replace keys for "jounal id" */
+    /**
+     * String for replace "journal_id"
+     * "journal_id"文字列置換用
+     */
     const SCPJ_API_REPLACE_KEY_JOUNAL_ID = '$$journalId$$';
-    /* SCPJ URL */
+    /**
+     * SCPJ URL
+     * SCPJ URL
+     */
     const SCPJ_API_URL = 'http://scpj.tulips.tsukuba.ac.jp/';
-    /* for search "jtitle" */
+    /**
+     * String for search "jtitle"
+     * "jtitle"文字列検索用
+     */
     const SCPJ_API_SEARCH_JTITLE = 'search/journal?keyword=$$jtitle$$&format=xml';
-    /* for search jounal id */
+    /**
+     * String for search "journal_id"
+     * "joutnal_id"文字列検索用
+     */
     const SCPJ_API_JOURNAL_ID = 'detail/journal/id/$$journalId$$?format=xml';
-    /* for search jounal id format */
+    /**
+     * String for journal ID format
+     * JournalID検索フォーマット
+     */
     const SCPJ_API_FORMAT = '&format=xml';
     
     /**
      * XML parser const
      */
-    const XML_PARSER_TAG       = "tag"; 
+    /**
+     * XML parser const tag
+     * XML解釈用定数(tag)
+     */
+    const XML_PARSER_TAG       = "tag";
+    /**
+     * XML parser const tag
+     * XML解釈用定数(type)
+     */
     const XML_PARSER_TYPE      = "type";
+    /**
+     * XML parser const tag
+     * XML解釈用定数(value)
+     */
     const XML_PARSER_VALUE     = "value";
+    /**
+     * XML parser const tag
+     * XML解釈用定数(open)
+     */
     const XML_PARSER_OPEN      = "open";
+    /**
+     * XML parser const tag
+     * XML解釈用定数(complete)
+     */
     const XML_PARSER_COMPLETE  = "complete";
+    /**
+     * XML parser const tag
+     * XML解釈用定数(close)
+     */
     const XML_PARSER_CLOSE     = "close";
+    /**
+     * XML parser const tag
+     * XML解釈用定数(attributes)
+     */
     const XML_PARSER_ATTRIBUTE = "attributes";
     
     /**
-     * SCPJ API XML Tags
+     * "journal" XML Tag
+     * "journal"のXMLタグ
      */
     const SCPJ_XML_TAG_JOURNAL           = "journal";
+    /**
+     * "jtitle" XML Tag
+     * "jtitle"のXMLタグ
+     */
     const SCPJ_XML_TAG_JTITLE            = "jtitle";
+    /**
+     * "issn" XML Tag
+     * "issn"のXMLタグ
+     */
     const SCPJ_XML_TAG_ISSN              = "issn";
+    /**
+     * "language" XML Tag
+     * "language"のXMLタグ
+     */
     const SCPJ_XML_TAG_LANGUAGE          = "language";
+    /**
+     * "acquiring" XML Tag
+     * "acquiring"のXMLタグ
+     */
     const POLICY_XML_TAG_ACQUIRING         = "acquiring";
     
     /**
-     * SCPJ API XML attribute
+     * "id" XML Tag
+     * "attribute id"のXMLタグ
      */
     const SCPJ_XML_ATTRIBUTE_ID       = "id";
+    /**
+     * "type" XML Tag
+     * "attribute type"のXMLタグ
+     */
     const SCPJ_XML_ATTRIBUTE_TYPE     = "type";
+    /**
+     * "value" XML Tag
+     * "attribute value"のXMLタグ
+     */
     const SCPJ_XML_ATTRIBUTE_VALUE    = "value";
     
-    /* journal id */
+    /**
+     * "journalId" XML Tag
+     * "journalId"のXMLタグ
+     */
     const SCPJ_XML_JOURNAL_ID = "journalId";
 
 
     /**
+     * Repository_Action_Main_Item_Policy_Scpj constructor.
      * コンストラクタ
+     *
+     * @param Session $session Session management objects
+     *                          Session管理オブジェクト
+     * @param DbObjectAdodb $db Db management objects
+     *                           DB管理オブジェクト
      */
     public function __construct($session, $db)
     {
@@ -83,8 +188,12 @@ class Repository_Action_Main_Item_Policy_Scpj extends RepositoryAction
     }
     
     /**
+     * Magazine name to the API of the SPCJ, query the magazine ID.
      * SPCJのAPIに雑誌名、雑誌IDを問合せる。
-     * @return array SCPJからの検索結果
+     *
+     * @param string $jtitleStr journal title string 雑誌名文字列
+     * @return array search result by SCPJ SCPJからの検索結果
+     *                array[$xml]
      */
     public function getSCPJJtitleList( $jtitleStr )
     {
@@ -154,17 +263,21 @@ class Repository_Action_Main_Item_Policy_Scpj extends RepositoryAction
     }
     
     /**
+     * Inquiring about the copyright policy in the API of SPCJ.
      * SPCJのAPIに著作権ポリシーを問合せる。
-     * 1.雑誌IDから雑誌著作権ポリシーを取得する。
-     *   下記APIから雑誌の著作権ポリシーを取得する。
-     *   http://scpj.tulips.tsukuba.ac.jp/detail/journal/id/[雑誌ID]?format=xml
-     * 2.1の取得結果を返す。
      * 
-     * @param $jtitle_id string 検索対象の雑誌ID
-     * @return array SCPJ string format XML
+     * @param string $jtitle_id target journal ID 検索対象の雑誌ID
+     * @return string SCPJ string format XML SCPJから返ってきたXML文字列
      */
     public function getSCPJXml( $jtitle_id )
     {
+        /**
+         * 1.雑誌IDから雑誌著作権ポリシーを取得する。
+         *   下記APIから雑誌の著作権ポリシーを取得する。
+         *   http://scpj.tulips.tsukuba.ac.jp/detail/journal/id/[雑誌ID]?format=xml
+         * 2.1の取得結果を返す。
+         */
+
         if( $jtitle_id == '')
         {
             return "";

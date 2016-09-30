@@ -1,7 +1,15 @@
 <?php
+
+/**
+ * File upload common classes
+ * ファイルアップロード共通クラス
+ * 
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: RepositoryFileUpload.class.php 56711 2015-08-19 13:21:44Z tomohiro_ichikawa $
+// $Id: RepositoryFileUpload.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics,
 // Research and Development Center for Scientific Information Resources
@@ -10,55 +18,157 @@
 // http://creativecommons.org/licenses/BSD/
 //
 // --------------------------------------------------------------------
+
+/**
+ * Read a common class of the uploaded file in a multi-part
+ * マルチパートでアップロードされたファイルの読み込み共通クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/util/MultipartStreamDecoder.class.php';
-require_once WEBAPP_DIR. '/modules/repository/components/util/CreateWorkDirectory.class.php';
+/**
+ * Exception class
+ * 例外基底クラス
+ */
 require_once WEBAPP_DIR.'/modules/repository/components/FW/AppException.class.php';
+/**
+ * Input and output expansion exception class
+ * 入出力拡張例外クラス
+ */
 require_once WEBAPP_DIR.'/modules/repository/components/FW/IO/IOException.class.php';
+/**
+ * Stream operation common classes
+ * Stream操作共通クラス
+ */
 require_once WEBAPP_DIR.'/modules/repository/components/FW/IO/FileStream.class.php';
 
 /**
- * output format filter class
+ * File upload common classes
+ * ファイルアップロード共通クラス
  * 
- * return format string. when not allow format, return '';
- * 
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class RepositoryFileUpload
 {
     // member
+    /**
+     * File name
+     * ファイル名
+     *
+     * @var string
+     */
     private $fileName = null;
+    /**
+     * Physical file name
+     * 物理ファイル名
+     *
+     * @var string
+     */
     private $physicalFileName = null;
+    /**
+     * Extension
+     * 拡張子
+     *
+     * @var string
+     */
     private $extension = null;
+    /**
+     * File size
+     * ファイルサイズ
+     *
+     * @var int
+     */
     private $fileSize = null;
+    /**
+     * MIME type
+     * MYMEタイプ
+     *
+     * @var string
+     */
     private $mimetype = null;
+    /**
+     * Insert date and time
+     * 挿入日時
+     *
+     * @var string
+     */
     private $insertTime = null;
-    private $uploadDir = null;
     
+    /**
+     * Log file path
+     * ログファイルパス
+     *
+     * @var string
+     */
     private $logFile = "";
+    /**
+     * Logging flag
+     * ログ作成フラグ
+     *
+     * @var boolean
+     */
     private $isCreateLog = true;
     
     // Const
+    /**
+     * Key name (file name)
+     * キー名(ファイル名)
+     *
+     * @var string
+     */
     const KEY_FILE_NAME = "file_name";
+    /**
+     * Key name (physical file name)
+     * キー名(物理ファイル名)
+     *
+     * @var string
+     */
     const KEY_PHYSICAL_FILE_NAME = "physical_file_name";
+    /**
+     * Key name (file size)
+     * キー名(ファイルサイズ)
+     *
+     * @var string
+     */
     const KEY_FILE_SIZE = "file_size";
+    /**
+     * Key name (mime type)
+     * キー名(MIMEタイプ)
+     *
+     * @var string
+     */
     const KEY_MIMETYPE = "mimetype";
+    /**
+     * Key name (extension)
+     * キー名(拡張子)
+     *
+     * @var string
+     */
     const KEY_EXTENSION = "extension";
+    /**
+     * Key name (insert date and time)
+     * キー名(挿入日時)
+     *
+     * @var string
+     */
     const KEY_INSERT_TIME = "insert_time";
+    /**
+     * Key name (updaload directory)
+     * キー名(アップロードディレクトリ)
+     *
+     * @var string
+     */
     const KEY_UPLOAD_DIR = "upload_dir";
     
     
     /**
      * Constructor
-     *
-     * @return RepositoryFileUpload
+     * コンストラクタ
      */
     public function __construct()
     {
         $this->init();
-        
-        $this->uploadDir = Repository_Components_Util_CreateWorkDirectory::create(WEBAPP_DIR.DIRECTORY_SEPARATOR."uploads".DIRECTORY_SEPARATOR."repository".DIRECTORY_SEPARATOR);
-        if($this->uploadDir === false) {
-            $this->uploadDir = WEBAPP_DIR.DIRECTORY_SEPARATOR."uploads".DIRECTORY_SEPARATOR."repository".DIRECTORY_SEPARATOR;
-        }
         
         // Create log file
         if($this->isCreateLog)
@@ -74,18 +184,22 @@ class RepositoryFileUpload
     
     /**
      * Get upload data
+     * アップロードデータの取得
      *
+     * @param int $statusCode Status code ステータスコード
      * @return array
      */
     public function getUploadData(&$statusCode)
     {
         $this->writeLog("-- Start getUploadData (".date("Y/m/d H:i:s").") --\n");
 
-        $this->getFileByInput($statusCode);
+        $businessWorkdirectory = BusinessFactory::getFactory()->getBusiness("businessWorkdirectory");
+        $uploadDir = $businessWorkdirectory->create();
+        $this->getFileByInput($statusCode, $uploadDir);
 
         $fileData = array();
         if( isset($this->fileName) && isset($this->physicalFileName) && isset($this->fileSize) &&
-            isset($this->mimetype) && isset($this->extension) && isset($this->insertTime) && isset($this->uploadDir))
+            isset($this->mimetype) && isset($this->extension) && isset($this->insertTime) && isset($uploadDir))
         {
             $fileData[self::KEY_FILE_NAME] = $this->fileName;
             $fileData[self::KEY_PHYSICAL_FILE_NAME] = $this->physicalFileName;
@@ -93,19 +207,13 @@ class RepositoryFileUpload
             $fileData[self::KEY_MIMETYPE] = $this->mimetype;
             $fileData[self::KEY_EXTENSION] = $this->extension;
             $fileData[self::KEY_INSERT_TIME] = $this->insertTime;
-            $fileData[self::KEY_UPLOAD_DIR] = $this->uploadDir;
+            $fileData[self::KEY_UPLOAD_DIR] = $uploadDir;
         }
         else
         {
             if(!isset($statusCode) || strlen($statusCode) == 0)
             {
                 $statusCode = 400;
-            }
-
-            if( strlen($this->uploadDir)>0 && strlen($this->physicalFileName)>0 &&
-                file_exists($this->uploadDir.$this->physicalFileName))
-            {
-                unlink($this->uploadDir.$this->physicalFileName);
             }
         }
         
@@ -115,6 +223,7 @@ class RepositoryFileUpload
     }
 
     /**
+     * Initialize
      * 初期化処理
      */
     private function init()
@@ -130,10 +239,13 @@ class RepositoryFileUpload
     }
 
     /**
+     * Get file information
      * ファイル情報の取得
-     * @param エラーメッセージ $errorMsg
+     * @param string $statusCode Status code 状態コード
+     * @param string $uploadDir Upload directory of zip
+     *                          zipファイルアップロードディレクトリ
      */
-    private function getFileByInput(&$statusCode)
+    private function getFileByInput(&$statusCode, $uploadDir)
     {
         $this->writeLog("-- Start getFileByInput (".date("Y/m/d H:i:s").") --\n");
 
@@ -147,7 +259,7 @@ class RepositoryFileUpload
         $this->decidePhysicalName();
 
         // ファイルのアップロード
-        $this->decodeFile($statusCode);
+        $this->decodeFile($statusCode, $uploadDir);
 
         // ログの出力
         $this->outPutLogOfFileInfo();
@@ -157,7 +269,8 @@ class RepositoryFileUpload
 
     // Add SuppleContentsEntry Y.Yamazawa --start-- 2015/04/08 --start--
     /**
-     * InsertTimeを決める
+     * Determination of the inserted date and time
+     * 挿入日時の決定
      */
     private function decideInsertTime()
     {
@@ -169,7 +282,8 @@ class RepositoryFileUpload
 
     // Add SuppleContentsEntry Y.Yamazawa --start-- 2015/04/08 --start--
     /**
-     * MimeTypeを決める
+     * Determination of the MIME type
+     * MIMEタイプの決定
      */
     private function decideMimeType()
     {
@@ -184,7 +298,8 @@ class RepositoryFileUpload
 
     // Add SuppleContentsEntry Y.Yamazawa --start-- 2015/04/08 --start--
     /**
-     * ファイル名を決める
+     * Determination of the file name
+     * ファイル名の決定
      */
     private function decideFileName()
     {
@@ -221,7 +336,8 @@ class RepositoryFileUpload
 
     // Add SuppleContentsEntry Y.Yamazawa --start-- 2015/04/08 --start--
     /**
-     * Extensionを決める
+     * Determination of extension
+     * Extensionの決定
      */
     private function  decideExtension()
     {
@@ -250,7 +366,8 @@ class RepositoryFileUpload
 
     // Add SuppleContentsEntry Y.Yamazawa --start-- 2015/04/08 --start--
     /**
-     * PhysicalNameを決める
+     * Determination of the physical file name
+     * 物理ファイル名の決定
      */
     private function decidePhysicalName()
     {
@@ -265,16 +382,20 @@ class RepositoryFileUpload
 
     // Add SuppleContentsEntry Y.Yamazawa --start-- 2015/04/08 --start--
     /**
+     * File upload
      * ファイルアップロード処理
-     * @param string $statusCode ステータスコード
-     * @return boolean デコード処理の成功失敗
+     * @param string $statusCode Status code ステータスコード
+     * @param string $uploadDir Upload directory of zip
+     *                          zipファイルアップロードディレクトリ
+     *
+     * @return boolean Success or failure of the decoding process デコード処理の成功失敗
      */
-    private function decodeFile(&$statusCode)
+    private function decodeFile(&$statusCode, $uploadDir)
     {
         try {
             $readFileStream = FileStream::open("php://input", "rb");
             $this->writeLog("[decode]:");
-            $fileList = Repository_Components_Util_MultipartStreamDecoder::decodeMultiPartFile($readFileStream, $this->uploadDir.$this->physicalFileName);
+            $fileList = Repository_Components_Util_MultipartStreamDecoder::decodeMultiPartFile($readFileStream, $uploadDir.$this->physicalFileName);
             $this->writeLog("Success\n");
             $this->writeLog("[UPLODE FILE]"."\n");
             foreach ($fileList as $fileName){
@@ -288,7 +409,7 @@ class RepositoryFileUpload
 
             // マルチパートでない場合のzipファイル出力処理
             $readFileStream = FileStream::open("php://input", "rb");
-            $outputFileStream = FileStream::open($this->uploadDir.$this->physicalFileName, "w");
+            $outputFileStream = FileStream::open($uploadDir.$this->physicalFileName, "w");
             while ($data = $readFileStream->read(1024))
             {
                 $outputFileStream->write($data);
@@ -305,7 +426,7 @@ class RepositoryFileUpload
             return false;
         }
 
-        $this->fileSize = filesize($this->uploadDir.$this->physicalFileName);
+        $this->fileSize = filesize($uploadDir.$this->physicalFileName);
 
         return true;
     }
@@ -313,6 +434,7 @@ class RepositoryFileUpload
 
     // Add SuppleContentsEntry Y.Yamazawa --start-- 2015/04/08 --start--
     /**
+     * The output of the file information log
      * ファイル情報ログの出力
      */
     private function outPutLogOfFileInfo()
@@ -346,6 +468,7 @@ class RepositoryFileUpload
 
     /**
      * Write log to file
+     * ログ書込み
      *
      * @param string $string
      * @param int $length [optional]

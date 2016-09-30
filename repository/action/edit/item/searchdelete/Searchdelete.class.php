@@ -1,4 +1,12 @@
 <?php
+
+/**
+ * Item bulk delete action class by keyword search
+ * キーワード検索によるアイテム一括削除アクションクラス
+ * 
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
 // $Id: Doi.class.php 49641 2015-03-09 07:02:34Z tomohiro_ichikawa $
@@ -11,39 +19,78 @@
 //
 // --------------------------------------------------------------------
 
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
+/**
+ * Handle management common classes
+ * ハンドル管理共通クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryHandleManager.class.php';
+/**
+ * Common classes for creating and updating the search table that holds the metadata and file contents of each item to search speed improvement
+ * 検索速度向上のためアイテム毎のメタデータおよびファイル内容を保持する検索テーブルの作成・更新を行う共通クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositorySearchTableProcessing.class.php';
+/**
+ * Action base class for WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR.'/modules/repository/components/common/WekoAction.class.php';
 
 /**
- * [[アイテム管理actionアクション]]
- * 検索削除action
+ * Item bulk delete action class by keyword search
+ * キーワード検索によるアイテム一括削除アクションクラス
  * 
- * @package	 [[package名]]
- * @access	  public
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class Repository_Action_Edit_Item_Searchdelete extends WekoAction
 {
     // *********************
     // リクエストパラメータ
     // *********************
-    // チェックボックスのチェック状態
+    /**
+     * Check the state of the check box
+     * チェックボックスのチェック状態
+     *
+     * @var unknown_type
+     */
     public $delete_search_items = null;
     
-    // 検索削除のタブNo
+    /**
+     * Search Delete tabs
+     * 検索削除のタブNo
+     *
+     * @var int
+     */
     const SEARCH_DELETE_TAB_NUMBER = 2;
     
-    // 入力した検索キーワード
+    /**
+     * Enter search keywords
+     * 入力した検索キーワード
+     *
+     * @var string
+     */
     public $searchkeyword = null;
     
-    // 検索タイプ
+    /**
+     * Search type
+     * 検索タイプ
+     *
+     * @var string
+     */
     public $search_type = null;
     
     /**
-     * 検索削除 execute
+     * Search Delete
+     * 検索削除
      *
-     * @access  public
+     * @return string Result 結果
      */
     public function executeApp()
     {

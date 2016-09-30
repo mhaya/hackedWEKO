@@ -1,7 +1,13 @@
 <?php
+/**
+ * Item information output class in LOM
+ * LOMでのアイテム情報出力クラス
+ *
+ * @package WEKO
+ */
 // --------------------------------------------------------------------
 //
-// $Id: LearningObjectMetadata.class.php 53594 2015-05-28 05:25:53Z kaede_matsushita $
+// $Id: LearningObjectMetadata.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -10,40 +16,129 @@
 // http://creativecommons.org/licenses/BSD/
 //
 // --------------------------------------------------------------------
+/**
+ * OAI-PMH item information output base class
+ * OAI-PMHアイテム情報出力基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/oaipmh/format/FormatAbstract.class.php';
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
-
+/**
+ * Item information output class in LOM
+ * LOMでのアイテム情報出力クラス
+ *
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
+ */
 class Repository_Oaipmh_LearningObjectMetadata extends Repository_Oaipmh_FormatAbstract
 {
-    /*
-     * 各タグ変数
+    /**
+     * Tag variable
+     * タグ変数
+     *
+     * @var Repository_Oaipmh_LOM_General
      */
     private $general = null;
+    /**
+     * Tag variable
+     * タグ変数
+     *
+     * @var Repository_Oaipmh_LOM_Life
+     */
     private $lifeCycle = null;
+    /**
+     * Tag variable
+     * タグ変数
+     *
+     * @var Repository_Oaipmh_LOM_MetaMetadate
+     */
     private $metaMetadate = null;
+    /**
+     * Tag variable
+     * タグ変数
+     *
+     * @var Repository_Oaipmh_LOM_Technical
+     */
     private $technical = null;
+    
+    /**
+     * Tag variable
+     * タグ変数
+     *
+     * @var array[$ii]
+     */
     private $educational = array();
+    /**
+     * Tag variable
+     * タグ変数
+     *
+     * @var Repository_Oaipmh_LOM_Rights
+     */
     private $rights = null;
+    /**
+     * Tag variable
+     * タグ変数
+     *
+     * @var array[$ii]
+     */
     private $relation = array();
+    /**
+     * Tag variable
+     * タグ変数
+     *
+     * @var array[$ii]
+     */
     private $annotation = array();
+    /**
+     * Tag variable
+     * タグ変数
+     *
+     * @var array[$ii]
+     */
     private $classification = array();
 
     // const xml value
+    /**
+     * LOM version
+     * LOMバージョン
+     *
+     * @var string
+     */
     const LOM_VALUE_SOURCE = 'LOMv1.0';
     
-    
-    /*
+    /**
+     * Constructor
      * コンストラクタ
+     * 
+     * @param Session $Session Session management objects Session管理オブジェクト
+     * @param Dbobject $Db Database management objects データベース管理オブジェクト
      */
     public function __construct($Session, $Db){
         parent::Repository_Oaipmh_FormatAbstract($Session, $Db);
     }
 
     /**
-     * output OAI-PMH metadata Tag format LOM
+     * output OAI-PMH metadata Tag format LIDO
+     * LIDO形式のOAI-PMHを出力
      *
-     * @param array $itemData $this->getItemData return
-     * @return string xml
+     * @param array $itemData Item information アイテム情報
+     *                        array["item"][$ii]["item_id"|"item_no"|"revision_no"|"item_type_id"|"prev_revision_no"|"title"|"title_english"|"language"|"review_status"|"review_date"|"shown_status"|"shown_date"|"reject_status"|"reject_date"|"reject_reason"|"serch_key"|"serch_key_english"|"remark"|"uri"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_type"][$ii]["item_type_id"|"item_type_name"|"item_type_short_name"|"explanation"|"mapping_info"|"icon_name"|"icon_mime_type"|"icon_extension"|"icon"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_attr_type"][$ii]["item_type_id"|"attribute_id"|"show_order"|"attribute_name"|"attribute_short_name"|"input_type"|"is_required"|"plural_enable"|"line_feed_enable"|"list_view_enable"|"hidden"|"junii2_mapping"|"dublin_core_mapping"|"lom_mapping"|"lido_mapping"|"spase_mapping"|"display_lang_type"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"personal_name_no"|"family"|"name"|"family_ruby"|"name_ruby"|"e_mail_address"|"item_type_id"|"author_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"show_order"|"mime_type"|"extension"|"file"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"display_name"|"display_type"|"show_order"|"mime_type"|"extension"|"prev_id"|"file_prev"|"file_prev_name"|"license_id"|"license_notation"|"pub_date"|"flash_pub_date"|"item_type_id"|"browsing_flag"|"cover_created_flag"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"biblio_no"|"biblio_name"|"biblio_name_english"|"volume"|"issue"|"start_page"|"end_page"|"date_of_issued"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"display_name"|"display_type"|"show_order"|"mime_type"|"extension"|"prev_id"|"file_prev"|"file_prev_name"|"license_id"|"license_notation"|"pub_date"|"flash_pub_date"|"item_type_id"|"browsing_flag"|"cover_created_flag"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"|"price"]
+     *                        array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"supple_no"|"item_type_id"|"supple_weko_item_id"|"supple_title"|"supple_title_en"|"uri"|"supple_item_type_name"|"mime_type"|"file_id"|"supple_review_status"|"supple_review_date"|"supple_reject_status"|"supple_reject_date"|"supple_reject_reason"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"attribute_no"|"attribute_value"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     * 
+     * @return string Output string 出力文字列
      */
     public function outputRecord($itemData)
     {
@@ -120,9 +215,13 @@ class Repository_Oaipmh_LearningObjectMetadata extends Repository_Oaipmh_FormatA
         
     }
     
-    /*
+    /**
+     * Set item base information
      * 基本情報設定処理
-     * @param array $item
+     * 
+     * @param array $item Item information アイテム情報
+     *                    array[$ii]["item_id"|"item_no"|"revision_no"|"item_type_id"|"prev_revision_no"|"title"|"title_english"|"language"|"review_status"|"review_date"|"shown_status"|"shown_date"|"reject_status"|"reject_date"|"reject_reason"|"serch_key"|"serch_key_english"|"remark"|"uri"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     * @return boolean Result 結果
      */
     private function setBaseData($item){
         //1レコードのみ
@@ -182,10 +281,14 @@ class Repository_Oaipmh_LearningObjectMetadata extends Repository_Oaipmh_FormatA
         return true;
     }
     
-    /*
+    /**
+     * Set mapping information
      * マッピング情報設定処理
-     * @param array $mapping
-     * @param array $metadata
+     * 
+     * @param array $mapping Mapping information マッピング情報
+     *                       array[$ii]["item_type_id"|"item_type_name"|"item_type_short_name"|"explanation"|"mapping_info"|"icon_name"|"icon_mime_type"|"icon_extension"|"icon"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     * @param array $metadata Metadata information メタデータ情報
+     *                        array[$ii]["item_type_id"|"attribute_id"|"show_order"|"attribute_name"|"attribute_short_name"|"input_type"|"is_required"|"plural_enable"|"line_feed_enable"|"list_view_enable"|"hidden"|"junii2_mapping"|"dublin_core_mapping"|"lom_mapping"|"lido_mapping"|"spase_mapping"|"display_lang_type"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
      */
     private function setMappingInfo($mapping, $metadata){
       for($ii=0;$ii<count($mapping);$ii++){
@@ -228,9 +331,20 @@ class Repository_Oaipmh_LearningObjectMetadata extends Repository_Oaipmh_FormatA
       }
     }
     
-    /*
+    /**
      * setGeneral
-     * 
+     * General設定
+     *
+     * @param array $mapping_item Mapping information マッピング情報
+     *                            array["item_type_id"|"attribute_id"|"show_order"|"attribute_name"|"attribute_short_name"|"input_type"|"is_required"|"plural_enable"|"line_feed_enable"|"list_view_enable"|"hidden"|"junii2_mapping"|"dublin_core_mapping"|"lom_mapping"|"lido_mapping"|"spase_mapping"|"display_lang_type"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     * @param array $metadata_item Metadata information メタデータ情報
+     *                             array["item_id"|"item_no"|"attribute_id"|"personal_name_no"|"family"|"name"|"family_ruby"|"name_ruby"|"e_mail_address"|"item_type_id"|"author_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                             array["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"show_order"|"mime_type"|"extension"|"file"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                             array["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"display_name"|"display_type"|"show_order"|"mime_type"|"extension"|"prev_id"|"file_prev"|"file_prev_name"|"license_id"|"license_notation"|"pub_date"|"flash_pub_date"|"item_type_id"|"browsing_flag"|"cover_created_flag"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                             array["item_id"|"item_no"|"attribute_id"|"biblio_no"|"biblio_name"|"biblio_name_english"|"volume"|"issue"|"start_page"|"end_page"|"date_of_issued"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                             array["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"display_name"|"display_type"|"show_order"|"mime_type"|"extension"|"prev_id"|"file_prev"|"file_prev_name"|"license_id"|"license_notation"|"pub_date"|"flash_pub_date"|"item_type_id"|"browsing_flag"|"cover_created_flag"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"|"price"]
+     *                             array["item_id"|"item_no"|"attribute_id"|"supple_no"|"item_type_id"|"supple_weko_item_id"|"supple_title"|"supple_title_en"|"uri"|"supple_item_type_name"|"mime_type"|"file_id"|"supple_review_status"|"supple_review_date"|"supple_reject_status"|"supple_reject_date"|"supple_reject_reason"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                             array["item_id"|"item_no"|"attribute_id"|"attribute_no"|"attribute_value"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
      */
     private function setGeneral($mapping_item, $metadata_item){
         $language = $mapping_item[RepositoryConst::DBCOL_REPOSITORY_ITEM_ATTR_TYPE_DISPLAY_LANG_TYPE];
@@ -275,10 +389,12 @@ class Repository_Oaipmh_LearningObjectMetadata extends Repository_Oaipmh_FormatA
         }
     }
     
-    /*
+    /**
+     * Set GeneralIdentifier
      * GeneralIdentifierの個別設定処理
-     * @param array $mapping_item
-     * @param string $value
+     * @param array $mapping_item Mapping information マッピング情報
+     *                            array["item_type_id"|"attribute_id"|"show_order"|"attribute_name"|"attribute_short_name"|"input_type"|"is_required"|"plural_enable"|"line_feed_enable"|"list_view_enable"|"hidden"|"junii2_mapping"|"dublin_core_mapping"|"lom_mapping"|"lido_mapping"|"spase_mapping"|"display_lang_type"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     * @param string $value Value 値
      * 
      */
     private function setGeneralIdentifier($mapping_item, $value){
@@ -319,11 +435,20 @@ class Repository_Oaipmh_LearningObjectMetadata extends Repository_Oaipmh_FormatA
         }
     }
     
-    /* 
+    /**
      * setLifeCycle
+     * LifeCycle設定
      * 
-     * @param array $mapping_item
-     * @param array $metadata_item
+     * @param array $mapping_item Mapping information マッピング情報
+     *                            array["item_type_id"|"attribute_id"|"show_order"|"attribute_name"|"attribute_short_name"|"input_type"|"is_required"|"plural_enable"|"line_feed_enable"|"list_view_enable"|"hidden"|"junii2_mapping"|"dublin_core_mapping"|"lom_mapping"|"lido_mapping"|"spase_mapping"|"display_lang_type"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     * @param array $metadata_item Metadata information メタデータ情報
+     *                             array["item_id"|"item_no"|"attribute_id"|"personal_name_no"|"family"|"name"|"family_ruby"|"name_ruby"|"e_mail_address"|"item_type_id"|"author_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                             array["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"show_order"|"mime_type"|"extension"|"file"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                             array["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"display_name"|"display_type"|"show_order"|"mime_type"|"extension"|"prev_id"|"file_prev"|"file_prev_name"|"license_id"|"license_notation"|"pub_date"|"flash_pub_date"|"item_type_id"|"browsing_flag"|"cover_created_flag"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                             array["item_id"|"item_no"|"attribute_id"|"biblio_no"|"biblio_name"|"biblio_name_english"|"volume"|"issue"|"start_page"|"end_page"|"date_of_issued"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                             array["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"display_name"|"display_type"|"show_order"|"mime_type"|"extension"|"prev_id"|"file_prev"|"file_prev_name"|"license_id"|"license_notation"|"pub_date"|"flash_pub_date"|"item_type_id"|"browsing_flag"|"cover_created_flag"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"|"price"]
+     *                             array["item_id"|"item_no"|"attribute_id"|"supple_no"|"item_type_id"|"supple_weko_item_id"|"supple_title"|"supple_title_en"|"uri"|"supple_item_type_name"|"mime_type"|"file_id"|"supple_review_status"|"supple_review_date"|"supple_reject_status"|"supple_reject_date"|"supple_reject_reason"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                             array["item_id"|"item_no"|"attribute_id"|"attribute_no"|"attribute_value"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
      */
     private function setLifeCycle($mapping_item, $metadata_item){
         $lomMap = $mapping_item[RepositoryConst::DBCOL_REPOSITORY_ITEM_ATTR_TYPE_LOM_MAPPING];
@@ -375,12 +500,22 @@ class Repository_Oaipmh_LearningObjectMetadata extends Repository_Oaipmh_FormatA
         }
     }
     
-    /*
+    /**
      * setLifeCycleContribute
+     * LifeCycleContribute設定
      * 
-     * @param array $mapping
-     * @param array $metadata
-     * @param string $roleValue
+     * @param array $mapping Mapping information マッピング情報
+     *                       array["item_type_id"|"attribute_id"|"show_order"|"attribute_name"|"attribute_short_name"|"input_type"|"is_required"|"plural_enable"|"line_feed_enable"|"list_view_enable"|"hidden"|"junii2_mapping"|"dublin_core_mapping"|"lom_mapping"|"lido_mapping"|"spase_mapping"|"display_lang_type"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     * @param array $metadata Metadata information メタデータ情報
+     *                        array["item_id"|"item_no"|"attribute_id"|"personal_name_no"|"family"|"name"|"family_ruby"|"name_ruby"|"e_mail_address"|"item_type_id"|"author_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"show_order"|"mime_type"|"extension"|"file"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"display_name"|"display_type"|"show_order"|"mime_type"|"extension"|"prev_id"|"file_prev"|"file_prev_name"|"license_id"|"license_notation"|"pub_date"|"flash_pub_date"|"item_type_id"|"browsing_flag"|"cover_created_flag"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_id"|"item_no"|"attribute_id"|"biblio_no"|"biblio_name"|"biblio_name_english"|"volume"|"issue"|"start_page"|"end_page"|"date_of_issued"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"display_name"|"display_type"|"show_order"|"mime_type"|"extension"|"prev_id"|"file_prev"|"file_prev_name"|"license_id"|"license_notation"|"pub_date"|"flash_pub_date"|"item_type_id"|"browsing_flag"|"cover_created_flag"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"|"price"]
+     *                        array["item_id"|"item_no"|"attribute_id"|"supple_no"|"item_type_id"|"supple_weko_item_id"|"supple_title"|"supple_title_en"|"uri"|"supple_item_type_name"|"mime_type"|"file_id"|"supple_review_status"|"supple_review_date"|"supple_reject_status"|"supple_reject_date"|"supple_reject_reason"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_id"|"item_no"|"attribute_id"|"attribute_no"|"attribute_value"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     * @param boolean $flag Filter flag フィルターフラグ
+     * @param string $roleValue Role value Role value
      */
     private function setLifeCycleContribute($mapping, $metadata, $flag, $roleValue=''){
         
@@ -397,10 +532,20 @@ class Repository_Oaipmh_LearningObjectMetadata extends Repository_Oaipmh_FormatA
     }
     
     
-    /*
+    /**
      * setMetaMetadata
-     * @param array $mapping
-     * @param string $roleValue
+     * MetaMetadata設定
+     * 
+     * @param array $mapping Mapping information マッピング情報
+     *                       array["item_type_id"|"attribute_id"|"show_order"|"attribute_name"|"attribute_short_name"|"input_type"|"is_required"|"plural_enable"|"line_feed_enable"|"list_view_enable"|"hidden"|"junii2_mapping"|"dublin_core_mapping"|"lom_mapping"|"lido_mapping"|"spase_mapping"|"display_lang_type"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     * @param array $metadata Metadata information メタデータ情報
+     *                        array["item_id"|"item_no"|"attribute_id"|"personal_name_no"|"family"|"name"|"family_ruby"|"name_ruby"|"e_mail_address"|"item_type_id"|"author_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"show_order"|"mime_type"|"extension"|"file"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"display_name"|"display_type"|"show_order"|"mime_type"|"extension"|"prev_id"|"file_prev"|"file_prev_name"|"license_id"|"license_notation"|"pub_date"|"flash_pub_date"|"item_type_id"|"browsing_flag"|"cover_created_flag"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_id"|"item_no"|"attribute_id"|"biblio_no"|"biblio_name"|"biblio_name_english"|"volume"|"issue"|"start_page"|"end_page"|"date_of_issued"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"display_name"|"display_type"|"show_order"|"mime_type"|"extension"|"prev_id"|"file_prev"|"file_prev_name"|"license_id"|"license_notation"|"pub_date"|"flash_pub_date"|"item_type_id"|"browsing_flag"|"cover_created_flag"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"|"price"]
+     *                        array["item_id"|"item_no"|"attribute_id"|"supple_no"|"item_type_id"|"supple_weko_item_id"|"supple_title"|"supple_title_en"|"uri"|"supple_item_type_name"|"mime_type"|"file_id"|"supple_review_status"|"supple_review_date"|"supple_reject_status"|"supple_reject_date"|"supple_reject_reason"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_id"|"item_no"|"attribute_id"|"attribute_no"|"attribute_value"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
      */
     private function setMetaMetadata($mapping, $metadata)
     {
@@ -454,10 +599,20 @@ class Repository_Oaipmh_LearningObjectMetadata extends Repository_Oaipmh_FormatA
         }
     }
     
-    /*
+    /**
      * setTechnical
-     * @param array $mapping
-     * @param array $metadata
+     * Technical設定
+     * 
+     * @param array $mapping Mapping information マッピング情報
+     *                       array["item_type_id"|"attribute_id"|"show_order"|"attribute_name"|"attribute_short_name"|"input_type"|"is_required"|"plural_enable"|"line_feed_enable"|"list_view_enable"|"hidden"|"junii2_mapping"|"dublin_core_mapping"|"lom_mapping"|"lido_mapping"|"spase_mapping"|"display_lang_type"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     * @param array $metadata Metadata information メタデータ情報
+     *                        array["item_id"|"item_no"|"attribute_id"|"personal_name_no"|"family"|"name"|"family_ruby"|"name_ruby"|"e_mail_address"|"item_type_id"|"author_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"show_order"|"mime_type"|"extension"|"file"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"display_name"|"display_type"|"show_order"|"mime_type"|"extension"|"prev_id"|"file_prev"|"file_prev_name"|"license_id"|"license_notation"|"pub_date"|"flash_pub_date"|"item_type_id"|"browsing_flag"|"cover_created_flag"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_id"|"item_no"|"attribute_id"|"biblio_no"|"biblio_name"|"biblio_name_english"|"volume"|"issue"|"start_page"|"end_page"|"date_of_issued"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"display_name"|"display_type"|"show_order"|"mime_type"|"extension"|"prev_id"|"file_prev"|"file_prev_name"|"license_id"|"license_notation"|"pub_date"|"flash_pub_date"|"item_type_id"|"browsing_flag"|"cover_created_flag"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"|"price"]
+     *                        array["item_id"|"item_no"|"attribute_id"|"supple_no"|"item_type_id"|"supple_weko_item_id"|"supple_title"|"supple_title_en"|"uri"|"supple_item_type_name"|"mime_type"|"file_id"|"supple_review_status"|"supple_review_date"|"supple_reject_status"|"supple_reject_date"|"supple_reject_reason"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_id"|"item_no"|"attribute_id"|"attribute_no"|"attribute_value"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
      */
     private function setTechnical($mapping, $metadata)
     {
@@ -518,10 +673,20 @@ class Repository_Oaipmh_LearningObjectMetadata extends Repository_Oaipmh_FormatA
         }
     }
     
-    /*
+    /**
      * setEducational
-     * @param array $mapping
-     * @param string $roleValue
+     * Educational設定
+     * 
+     * @param array $mapping Mapping information マッピング情報
+     *                       array["item_type_id"|"attribute_id"|"show_order"|"attribute_name"|"attribute_short_name"|"input_type"|"is_required"|"plural_enable"|"line_feed_enable"|"list_view_enable"|"hidden"|"junii2_mapping"|"dublin_core_mapping"|"lom_mapping"|"lido_mapping"|"spase_mapping"|"display_lang_type"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     * @param array $metadata Metadata information メタデータ情報
+     *                        array["item_id"|"item_no"|"attribute_id"|"personal_name_no"|"family"|"name"|"family_ruby"|"name_ruby"|"e_mail_address"|"item_type_id"|"author_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"show_order"|"mime_type"|"extension"|"file"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"display_name"|"display_type"|"show_order"|"mime_type"|"extension"|"prev_id"|"file_prev"|"file_prev_name"|"license_id"|"license_notation"|"pub_date"|"flash_pub_date"|"item_type_id"|"browsing_flag"|"cover_created_flag"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_id"|"item_no"|"attribute_id"|"biblio_no"|"biblio_name"|"biblio_name_english"|"volume"|"issue"|"start_page"|"end_page"|"date_of_issued"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"display_name"|"display_type"|"show_order"|"mime_type"|"extension"|"prev_id"|"file_prev"|"file_prev_name"|"license_id"|"license_notation"|"pub_date"|"flash_pub_date"|"item_type_id"|"browsing_flag"|"cover_created_flag"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"|"price"]
+     *                        array["item_id"|"item_no"|"attribute_id"|"supple_no"|"item_type_id"|"supple_weko_item_id"|"supple_title"|"supple_title_en"|"uri"|"supple_item_type_name"|"mime_type"|"file_id"|"supple_review_status"|"supple_review_date"|"supple_reject_status"|"supple_reject_date"|"supple_reject_reason"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_id"|"item_no"|"attribute_id"|"attribute_no"|"attribute_value"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
      */
     private function setEducational($mapping, $metadata)
     {
@@ -722,9 +887,12 @@ class Repository_Oaipmh_LearningObjectMetadata extends Repository_Oaipmh_FormatA
         }
         
     }
-    /*
+    /**
      * getInsertIndexEducational
      * 配列Educationalに格納すべきインデックスを取得する
+     *
+     * @param string $element Element 要素
+     * @return int index インデックス
      */
     public function getInsertIndexEducational($element){
         $index = 0;
@@ -838,10 +1006,20 @@ class Repository_Oaipmh_LearningObjectMetadata extends Repository_Oaipmh_FormatA
         return $index;
     }
     
-    /*
+    /**
      * setRights
-     * @param array $mapping
-     * @param array $metadata
+     * Rights設定
+     * 
+     * @param array $mapping Mapping information マッピング情報
+     *                       array["item_type_id"|"attribute_id"|"show_order"|"attribute_name"|"attribute_short_name"|"input_type"|"is_required"|"plural_enable"|"line_feed_enable"|"list_view_enable"|"hidden"|"junii2_mapping"|"dublin_core_mapping"|"lom_mapping"|"lido_mapping"|"spase_mapping"|"display_lang_type"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     * @param array $metadata Metadata information メタデータ情報
+     *                        array["item_id"|"item_no"|"attribute_id"|"personal_name_no"|"family"|"name"|"family_ruby"|"name_ruby"|"e_mail_address"|"item_type_id"|"author_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"show_order"|"mime_type"|"extension"|"file"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"display_name"|"display_type"|"show_order"|"mime_type"|"extension"|"prev_id"|"file_prev"|"file_prev_name"|"license_id"|"license_notation"|"pub_date"|"flash_pub_date"|"item_type_id"|"browsing_flag"|"cover_created_flag"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_id"|"item_no"|"attribute_id"|"biblio_no"|"biblio_name"|"biblio_name_english"|"volume"|"issue"|"start_page"|"end_page"|"date_of_issued"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"display_name"|"display_type"|"show_order"|"mime_type"|"extension"|"prev_id"|"file_prev"|"file_prev_name"|"license_id"|"license_notation"|"pub_date"|"flash_pub_date"|"item_type_id"|"browsing_flag"|"cover_created_flag"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"|"price"]
+     *                        array["item_id"|"item_no"|"attribute_id"|"supple_no"|"item_type_id"|"supple_weko_item_id"|"supple_title"|"supple_title_en"|"uri"|"supple_item_type_name"|"mime_type"|"file_id"|"supple_review_status"|"supple_review_date"|"supple_reject_status"|"supple_reject_date"|"supple_reject_reason"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_id"|"item_no"|"attribute_id"|"attribute_no"|"attribute_value"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
      */
     private function setRights($mapping, $metadata)
     {
@@ -874,10 +1052,20 @@ class Repository_Oaipmh_LearningObjectMetadata extends Repository_Oaipmh_FormatA
         }
         
     }
-    /*
+    /**
      * setRelation
-     * @param array $mapping
-     * @param array $metadata
+     * Relation設定
+     * 
+     * @param array $mapping Mapping information マッピング情報
+     *                       array["item_type_id"|"attribute_id"|"show_order"|"attribute_name"|"attribute_short_name"|"input_type"|"is_required"|"plural_enable"|"line_feed_enable"|"list_view_enable"|"hidden"|"junii2_mapping"|"dublin_core_mapping"|"lom_mapping"|"lido_mapping"|"spase_mapping"|"display_lang_type"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     * @param array $metadata Metadata information メタデータ情報
+     *                        array["item_id"|"item_no"|"attribute_id"|"personal_name_no"|"family"|"name"|"family_ruby"|"name_ruby"|"e_mail_address"|"item_type_id"|"author_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"show_order"|"mime_type"|"extension"|"file"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"display_name"|"display_type"|"show_order"|"mime_type"|"extension"|"prev_id"|"file_prev"|"file_prev_name"|"license_id"|"license_notation"|"pub_date"|"flash_pub_date"|"item_type_id"|"browsing_flag"|"cover_created_flag"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_id"|"item_no"|"attribute_id"|"biblio_no"|"biblio_name"|"biblio_name_english"|"volume"|"issue"|"start_page"|"end_page"|"date_of_issued"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"display_name"|"display_type"|"show_order"|"mime_type"|"extension"|"prev_id"|"file_prev"|"file_prev_name"|"license_id"|"license_notation"|"pub_date"|"flash_pub_date"|"item_type_id"|"browsing_flag"|"cover_created_flag"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"|"price"]
+     *                        array["item_id"|"item_no"|"attribute_id"|"supple_no"|"item_type_id"|"supple_weko_item_id"|"supple_title"|"supple_title_en"|"uri"|"supple_item_type_name"|"mime_type"|"file_id"|"supple_review_status"|"supple_review_date"|"supple_reject_status"|"supple_reject_date"|"supple_reject_reason"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_id"|"item_no"|"attribute_id"|"attribute_no"|"attribute_value"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
      */
     private function setRelation($mapping, $metadata)
     {
@@ -1085,8 +1273,20 @@ class Repository_Oaipmh_LearningObjectMetadata extends Repository_Oaipmh_FormatA
         array_push($this->relation, $relation);
         
     }
-    /*
+    /**
      * setAnnotation
+     * Annotation設定
+     * 
+     * @param array $mapping Mapping information マッピング情報
+     *                       array["item_type_id"|"attribute_id"|"show_order"|"attribute_name"|"attribute_short_name"|"input_type"|"is_required"|"plural_enable"|"line_feed_enable"|"list_view_enable"|"hidden"|"junii2_mapping"|"dublin_core_mapping"|"lom_mapping"|"lido_mapping"|"spase_mapping"|"display_lang_type"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     * @param array $metadata Metadata information メタデータ情報
+     *                        array["item_id"|"item_no"|"attribute_id"|"personal_name_no"|"family"|"name"|"family_ruby"|"name_ruby"|"e_mail_address"|"item_type_id"|"author_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"show_order"|"mime_type"|"extension"|"file"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"display_name"|"display_type"|"show_order"|"mime_type"|"extension"|"prev_id"|"file_prev"|"file_prev_name"|"license_id"|"license_notation"|"pub_date"|"flash_pub_date"|"item_type_id"|"browsing_flag"|"cover_created_flag"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_id"|"item_no"|"attribute_id"|"biblio_no"|"biblio_name"|"biblio_name_english"|"volume"|"issue"|"start_page"|"end_page"|"date_of_issued"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"display_name"|"display_type"|"show_order"|"mime_type"|"extension"|"prev_id"|"file_prev"|"file_prev_name"|"license_id"|"license_notation"|"pub_date"|"flash_pub_date"|"item_type_id"|"browsing_flag"|"cover_created_flag"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"|"price"]
+     *                        array["item_id"|"item_no"|"attribute_id"|"supple_no"|"item_type_id"|"supple_weko_item_id"|"supple_title"|"supple_title_en"|"uri"|"supple_item_type_name"|"mime_type"|"file_id"|"supple_review_status"|"supple_review_date"|"supple_reject_status"|"supple_reject_date"|"supple_reject_reason"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_id"|"item_no"|"attribute_id"|"attribute_no"|"attribute_value"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
      */
     private function setAnnotation($mapping, $metadata)
     {
@@ -1154,10 +1354,12 @@ class Repository_Oaipmh_LearningObjectMetadata extends Repository_Oaipmh_FormatA
         
     }
     
-    /*
+    /**
      * getInsertIndexAnnotation
      * 配列Annotationに格納すべきインデックスを取得する
-     * 
+     *
+     * @param string $element Element 要素
+     * @return int index インデックス
      */
     private function getInsertIndexAnnotation($element){
         $index = 0;
@@ -1223,8 +1425,20 @@ class Repository_Oaipmh_LearningObjectMetadata extends Repository_Oaipmh_FormatA
     
     
     
-    /*
+    /**
      * setClassification
+     * Classification設定
+     * 
+     * @param array $mapping Mapping information マッピング情報
+     *                       array["item_type_id"|"attribute_id"|"show_order"|"attribute_name"|"attribute_short_name"|"input_type"|"is_required"|"plural_enable"|"line_feed_enable"|"list_view_enable"|"hidden"|"junii2_mapping"|"dublin_core_mapping"|"lom_mapping"|"lido_mapping"|"spase_mapping"|"display_lang_type"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     * @param array $metadata Metadata information メタデータ情報
+     *                        array["item_id"|"item_no"|"attribute_id"|"personal_name_no"|"family"|"name"|"family_ruby"|"name_ruby"|"e_mail_address"|"item_type_id"|"author_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"show_order"|"mime_type"|"extension"|"file"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"display_name"|"display_type"|"show_order"|"mime_type"|"extension"|"prev_id"|"file_prev"|"file_prev_name"|"license_id"|"license_notation"|"pub_date"|"flash_pub_date"|"item_type_id"|"browsing_flag"|"cover_created_flag"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_id"|"item_no"|"attribute_id"|"biblio_no"|"biblio_name"|"biblio_name_english"|"volume"|"issue"|"start_page"|"end_page"|"date_of_issued"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"display_name"|"display_type"|"show_order"|"mime_type"|"extension"|"prev_id"|"file_prev"|"file_prev_name"|"license_id"|"license_notation"|"pub_date"|"flash_pub_date"|"item_type_id"|"browsing_flag"|"cover_created_flag"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"|"price"]
+     *                        array["item_id"|"item_no"|"attribute_id"|"supple_no"|"item_type_id"|"supple_weko_item_id"|"supple_title"|"supple_title_en"|"uri"|"supple_item_type_name"|"mime_type"|"file_id"|"supple_review_status"|"supple_review_date"|"supple_reject_status"|"supple_reject_date"|"supple_reject_reason"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_id"|"item_no"|"attribute_id"|"attribute_no"|"attribute_value"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
      */
     private function setClassification($mapping, $metadata)
     {
@@ -1332,9 +1546,12 @@ class Repository_Oaipmh_LearningObjectMetadata extends Repository_Oaipmh_FormatA
             }
         }
     }
-    /*
+    /**
      * getInsertIndexClassification
      * 配列Classificationに格納すべきインデックスを取得する
+     * 
+     * @param string $element Element 要素
+     * @return int index インデックス
      */
     private function getInsertIndexClassification($element){
         $index = 0;
@@ -1397,8 +1614,12 @@ class Repository_Oaipmh_LearningObjectMetadata extends Repository_Oaipmh_FormatA
     }
     
     
-    /* 
+    /**
      * setReference
+     * Reference設定
+     *
+     * @param array $reference reference data 参照データ
+     *                         array[$ii]["org_reference_item_id"|"org_reference_item_no"|"dest_reference_item_id"|"dest_reference_item_no"|"reference"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
      */
     private function setReference($reference)
     {
@@ -1430,7 +1651,8 @@ class Repository_Oaipmh_LearningObjectMetadata extends Repository_Oaipmh_FormatA
         }
     }
     
-    /* 
+    /**
+     * Output header
      * ヘッダ出力処理
      */
     private function outputHeader()
@@ -1443,7 +1665,8 @@ class Repository_Oaipmh_LearningObjectMetadata extends Repository_Oaipmh_FormatA
         return $xml;
     }
     
-    /* 
+    /**
+     * Output footer
      * フッダ出力処理
      */
     private function outputFooter()
@@ -1457,7 +1680,6 @@ class Repository_Oaipmh_LearningObjectMetadata extends Repository_Oaipmh_FormatA
 
 /************************************************ A wooden trunk **********************************************/
 /**
- * General型
  * <general> 
  *     <identifier>  ⇒Identifier型 (※複数存在する可能性あり)
  *        <catalog></catalog>
@@ -1483,51 +1705,123 @@ class Repository_Oaipmh_LearningObjectMetadata extends Repository_Oaipmh_FormatA
  *         [Vocabulary型参照]  =>Vocabulary型
  *     </aggregationLevel>
  * </general>
- * タグ生成クラス
+ */
+
+/**
+ * General tags generated classes
+ * General型タグ生成クラス
+ *
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class Repository_Oaipmh_LOM_General
 {
-    /*
+    /**
      * メンバ変数
      */
+    /**
+     * Metadata
+     * メタデータ
+     *
+     * @var array[$ii]
+     */
     private $identifier = array();
+    /**
+     * Metadata
+     * メタデータ
+     *
+     * @var string
+     */
     private $title = null;
+    /**
+     * Metadata
+     * メタデータ
+     *
+     * @var array[$ii]
+     */
     private $language = array();
+    /**
+     * Metadata
+     * メタデータ
+     *
+     * @var array[$ii]
+     */
     private $description = array();
+    /**
+     * Metadata
+     * メタデータ
+     *
+     * @var array[$ii]
+     */
     private $keyword = array();
+    /**
+     * Metadata
+     * メタデータ
+     *
+     * @var array[$ii]
+     */
     private $coverage = array();
+    /**
+     * Metadata
+     * メタデータ
+     *
+     * @var string
+     */
     private $structure = null;
+    /**
+     * Metadata
+     * メタデータ
+     *
+     * @var string
+     */
     private $aggregationLevel = null;
     
+    /**
+     * WEKO common processing object
+     * WEKO共通処理オブジェクト
+     *
+     * @var RepositoryAction
+     */
     var $repositoryAction = null;
     
-    /*
+    /**
+     * Constructor
      * コンストラクタ
+     *
+     * @param RepositoryAction $repositoryAction WEKO common processing object WEKO共通処理オブジェクト
      */
     public function __construct($repositoryAction)
     {
         $this->repositoryAction = $repositoryAction;
     }
     
-    /*
-     * Identifierセット関数 
-     * @param Repository_Oaipmh_LOM_Identifier $identifier 
+    /**
+     * Set Identifier
+     * Identifierセット関数
+     *  
+     * @param Repository_Oaipmh_LOM_Identifier $identifier Identifier Identifier
      */
     public function addIdentifier(Repository_Oaipmh_LOM_Identifier $identifier){
         array_push($this->identifier,$identifier);
     }
-    /*
-     * titleセット関数 
-     * @param Repository_Oaipmh_LOM_LangString $title 
+    /**
+     * Set title
+     * titleセット関数
+     * 
+     * @param Repository_Oaipmh_LOM_LangString $title Title タイトル
      */
     public function addTitle(Repository_Oaipmh_LOM_LangString $title){
         if($this->title == null){
             $this->title = $title;
         }
     }
-    /*
+    /**
+     * Set language
      * languageセット関数 
-     * @param string $language 
+     * 
+     * @param string $language Language 言語
      */
     public function addLanguage($language){
         //encording
@@ -1542,30 +1836,38 @@ class Repository_Oaipmh_LOM_General
             array_push($this->language, $language);
         }
     }
-    /*
-     * descriptionセット関数 
-     * @param Repository_Oaipmh_LOM_LangString $description 
+    /**
+     * Set description
+     * descriptionセット関数
+     * 
+     * @param Repository_Oaipmh_LOM_LangString $description Description Description
      */
     public function addDescription(Repository_Oaipmh_LOM_LangString $description){
         array_push($this->description, $description);
     }
-    /*
-     * keywordセット関数 
-     * @param Repository_Oaipmh_LOM_LangString $keyword 
+    /**
+     * Set keyword
+     * keywordセット関数
+     * 
+     * @param Repository_Oaipmh_LOM_LangString $keyword Keyword Keyword
      */
     public function addKeyword(Repository_Oaipmh_LOM_LangString $keyword){
         array_push($this->keyword, $keyword);
     }
-    /*
+    /**
+     * Set coverage
      * coverageセット関数 
-     * @param Repository_Oaipmh_LOM_LangString $coverage 
+     * 
+     * @param Repository_Oaipmh_LOM_LangString $coverage Coverage Coverage
      */
     public function addCoverage(Repository_Oaipmh_LOM_LangString $coverage){
         array_push($this->coverage, $coverage);
     }
-    /*
-     * structureセット関数 
-     * @param Repository_Oaipmh_LOM_Vocabulary $structure 
+    /**
+     * Set Structure
+     * structureセット関数
+     *  
+     * @param Repository_Oaipmh_LOM_Vocabulary $structure Structure Structure
      */
     public function addStructure(Repository_Oaipmh_LOM_Vocabulary $structure){
         
@@ -1575,9 +1877,10 @@ class Repository_Oaipmh_LOM_General
             $this->structure = $structure;
         }
     }
-    /*
+    /**
+     * Set aggregationLevel
      * aggregationLevelセット関数 
-     * @param Repository_Oaipmh_LOM_Vocabulary $aggregationLevel 
+     * @param Repository_Oaipmh_LOM_Vocabulary $aggregationLevel AggregationLevel AggrecationLevel
      */
     public function addAggregationLevel(Repository_Oaipmh_LOM_Vocabulary $aggregationLevel){
         
@@ -1588,10 +1891,13 @@ class Repository_Oaipmh_LOM_General
         }
     }
     
-    /*
+    /**
+     * Output
+     * ※ that calling this method in the member variable after setting the value
      * General型の出力処理
      * ※メンバ変数に値を設定後に本メソッドを呼び出すこと
-     * @return string xml str
+     * 
+     * @return string xml str XML文字列
      */
     public function output()
     {
@@ -1675,7 +1981,6 @@ class Repository_Oaipmh_LOM_General
 }
     
 /**
- * Contribute型
  * <contribute>
  *     <role> 
  *         [Vocabulary型参照]  =>Vocabulary型
@@ -1687,21 +1992,57 @@ class Repository_Oaipmh_LOM_General
  *         <description></description>
  *     </date>
  * <contribute>
- * タグ生成クラス
+ */
+
+/**
+ * Contribute tags generated classes
+ * Contribute型タグ生成クラス
+ *
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class Repository_Oaipmh_LOM_Contribute
 {
-    /*
+    /**
      * メンバ変数
      */
+    /**
+     * Metadata
+     * メタデータ
+     *
+     * @var string
+     */
     private $role = null;
+    /**
+     * Metadata
+     * メタデータ
+     *
+     * @var array[$ii]
+     */
     private $entry= array();
+    /**
+     * Metadata
+     * メタデータ
+     *
+     * @var string
+     */
     private $date= null;
 
+    /**
+     * WEKO common processing object
+     * WEKO共通処理オブジェクト
+     *
+     * @var RepositoryAction
+     */
     private $repositoryAction = null;
     
-    /*
+    /**
+     * Constructor
      * コンストラクタ
+     *
+     * @param RepositoryAction $repositoryAction WEKO common processing object WEKO共通処理オブジェクト
      */
     public function __construct($repositoryAction)
     {
@@ -1709,9 +2050,11 @@ class Repository_Oaipmh_LOM_Contribute
     }
 
     //setter
-    /*
-     * roleセット関数 
-     * @param Repository_Oaipmh_LOM_Vocabulary $role
+    /**
+     * Set role
+     * roleセット関数
+     * 
+     * @param Repository_Oaipmh_LOM_Vocabulary $role Role Role
      */
     public function addRole(Repository_Oaipmh_LOM_Vocabulary $role){
         if($this->role == null){
@@ -1719,9 +2062,11 @@ class Repository_Oaipmh_LOM_Contribute
         }
         
     }
-    /*
+    /**
+     * Set entry
      * entryセット関数
-     * @param string $entry
+     * 
+     * @param string $entry Entry Entry
      */
     public function addEntry($entry){
         $entry = $this->repositoryAction->forXmlChange($entry);
@@ -1729,9 +2074,11 @@ class Repository_Oaipmh_LOM_Contribute
             array_push($this->entry, $entry);
         }
     }
-    /*
+    /**
+     * Set date
      * dateセット関数
-     * @param string $date
+     * 
+     * @param string $date Date Date
      */
     public function addDate(Repository_Oaipmh_LOM_DateTime $date){
         if($this->date == null){
@@ -1740,8 +2087,11 @@ class Repository_Oaipmh_LOM_Contribute
     }
     
     //getter
-    /*
+    /**
+     * Get Role value
      * Roleタグ内Value値取得
+     * 
+     * @return string Value 値
      */
     public function getRoleValue(){
         if($this->role == null){
@@ -1750,10 +2100,13 @@ class Repository_Oaipmh_LOM_Contribute
         return $this->role->getValue();
     }
     
-    /*
+    /**
+     * Output
+     * ※ that calling this method in the member variable after setting the value
      * Contribute型の出力処理
      * ※メンバ変数に値を設定後に本メソッドを呼び出すこと
-     * @return string xml str
+     * 
+     * @return string xml str XML文字列
      */
     public function output()
     {
@@ -1796,8 +2149,7 @@ class Repository_Oaipmh_LOM_Contribute
 
 }
 
-/*
- * LifeCycle
+/**
  * <lifeCycle>
  *     <version>
  *        <string language=""></string> =>LangString型 
@@ -1809,38 +2161,78 @@ class Repository_Oaipmh_LOM_Contribute
  *         [Contribute型の内容参照]
  *     </contribute>
  * </lifeCycle>
- * タグ生成クラス
+ */
+
+/**
+ * LifeCycle tags generated classes
+ * LifeCycle型タグ生成クラス
+ *
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class Repository_Oaipmh_LOM_LifeCycle
 {
-    /*
+    /**
      * メンバ変数
      */
+    /**
+     * Metadata
+     * メタデータ
+     *
+     * @var string
+     */
     private $version = null;
+    /**
+     * Metadata
+     * メタデータ
+     *
+     * @var string
+     */
     private $status = null;
+    /**
+     * Metadata
+     * メタデータ
+     *
+     * @var array[$ii]
+     */
     private $contribute = array();
     
+    /**
+     * WEKO common processing object
+     * WEKO共通処理オブジェクト
+     *
+     * @var RepositoryAction
+     */
     private $repositoryAction = null;
     
-    /*
+    /**
+     * Constructor
      * コンストラクタ
+     *
+     * @param RepositoryAction $repositoryAction WEKO common processing object WEKO共通処理オブジェクト
      */
     public function __construct($repositoryAction){
         $this->repositoryAction = $repositoryAction;
     }
     
-    /*
+    /**
+     * Set version
      * versionセット関数
-     * @param Repository_Oaipmh_LOM_LangString $version
+     * 
+     * @param Repository_Oaipmh_LOM_LangString $version Version バージョン
      */
     public function addVersion(Repository_Oaipmh_LOM_LangString $version){
         if($this->version == null){
             $this->version = $version;
         }
     }
-    /*
+    /**
+     * Set status
      * statusセット関数
-     * @param Repository_Oaipmh_LOM_Vocabulary $status
+     * 
+     * @param Repository_Oaipmh_LOM_Vocabulary $status Status ステータス
      */
     public function addStatus(Repository_Oaipmh_LOM_Vocabulary $status){
         
@@ -1850,9 +2242,12 @@ class Repository_Oaipmh_LOM_LifeCycle
             $this->status = $status;
         }
     }
-    /*
+    /**
+     * Set contributor
      * contributeセット関数
-     * @param Repository_Oaipmh_LOM_Contribute $contribute
+     * 
+     * @param Repository_Oaipmh_LOM_Contribute $contribute Contributor Contributor
+     * @param boolean $flag flag flag
      */
     public function addContribute(Repository_Oaipmh_LOM_Contribute $contribute, $flag){
         
@@ -1870,9 +2265,11 @@ class Repository_Oaipmh_LOM_LifeCycle
         }
     }
     
-    /*
+    /**
+     * Output
      * LifeCycleタグの出力処理
-     * @return string xml str
+     * 
+     * @return string xml str XML文字列
      */
     public function output(){
         $xmlStr = '';
@@ -1908,8 +2305,7 @@ class Repository_Oaipmh_LOM_LifeCycle
     }
 }
 
-/*
- * MetaMetadata
+/**
  * <metaMetadata>
  *     <identifier>  ⇒Identifier型 (※複数存在する可能性アリ)
  *          [Identifier型参照]
@@ -1920,37 +2316,82 @@ class Repository_Oaipmh_LOM_LifeCycle
  *     <metadataSchema></metadataSchema>(※複数存在する可能性アリ)
  *     <language></language>
  * </metaMetadata>
- * タグ生成クラス
+ */
+
+/**
+ * metaMetadata tags generated classes
+ * metaMetadata型タグ生成クラス
+ *
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class Repository_Oaipmh_LOM_MetaMetadata
 {
-    /*
+    /**
      * メンバ変数
      */
+    /**
+     * Metadata
+     * メタデータ
+     *
+     * @var array[$ii]
+     */
     private $identifier = array();
+    /**
+     * Metadata
+     * メタデータ
+     *
+     * @var array[$ii]
+     */
     private $contribute = array();
+    /**
+     * Metadata
+     * メタデータ
+     *
+     * @var array[$ii]
+     */
     private $metadataSchema = array();
+    /**
+     * Metadata
+     * メタデータ
+     *
+     * @var string
+     */
     private $language = null;
     
+    /**
+     * WEKO common processing object
+     * WEKO共通処理オブジェクト
+     *
+     * @var RepositoryAction
+     */
     private $repositoryAction = null;
     
-    /*
+    /**
+     * Constructor
      * コンストラクタ
+     * 
+     * @param RepositoryAction $repositoryAction WEKO common processing object WEKO共通処理オブジェクト
      */
     public function __construct($repositoryAction){
         $this->repositoryAction = $repositoryAction;
     }
     
-    /*
+    /**
      * identifierセット関数
      * @param Repository_Oaipmh_LOM_Identifier $identifier
      */
     public function addIdentifier(Repository_Oaipmh_LOM_Identifier $identifier){
         array_push($this->identifier, $identifier);
     }
-    /*
-     * contributeセット関数
-     * @param Repository_Oaipmh_LOM_Contribute $contribute
+    /**
+     * Constructor
+     * コンストラクタ
+     *
+     * @param Repository_Oaipmh_LOM_Contribute $contribute Repository_Oaipmh_LOM_Contribute object Repository_Oaipmh_LOM_Contributeオブジェクト
+     * @param boolean $flag flag フラグ
      */
     public function addContribute(Repository_Oaipmh_LOM_Contribute $contribute, $flag){
         
@@ -1967,9 +2408,11 @@ class Repository_Oaipmh_LOM_MetaMetadata
             array_push($this->contribute, $contribute);
         }
     }
-    /*
+    /**
+     * Set metadataSchema
      * metadataSchemaセット関数
-     * @param string $metadataSchema
+     * 
+     * @param string $metadataSchema metadataSchema metadataSchema
      */
     public function addMetadataSchema($metadataSchema){
         //encording
@@ -1978,9 +2421,11 @@ class Repository_Oaipmh_LOM_MetaMetadata
             array_push($this->metadataSchema, $metadataSchema);
         }
     }
-    /*
+    /**
+     * Set language
      * languageセット関数
-     * @param string $language
+     * 
+     * @param string $language Language 言語
      */
     public function addLanguage($language){
         //encording
@@ -1993,9 +2438,11 @@ class Repository_Oaipmh_LOM_MetaMetadata
         
     }
     
-    /*
+    /**
+     * Output
      * MetaMetadataタグの出力処理
-     * @return string xml str
+     * 
+     * @return string xml str XML文字列
      */
     public function output(){
         $xmlStr = '';
@@ -2028,8 +2475,7 @@ class Repository_Oaipmh_LOM_MetaMetadata
     }
 }
 
-/*
- * Technical
+/**
  * <technical>
  *      <format></format>(※複数存在する可能性アリ)
  *      <size></size>
@@ -2056,38 +2502,111 @@ class Repository_Oaipmh_LOM_MetaMetadata
  *          [Duration型参照]
  *      </duration>
  * </technical>
- * タグ生成クラス
+ */
+/**
+ * Technical tags generated classes
+ * Technical型タグ生成クラス
+ *
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class Repository_Oaipmh_LOM_Technical
 {
-    /*
+    /**
      * 定数
      */
+    /**
+     * Operating system
+     * OS
+     *
+     * @var string
+     */
     const OPERATING_SYSTEM = 'operating system';
+    /**
+     * Browser
+     * ブラウザ
+     *
+     * @var string
+     */
     const BROWSER = 'browser';
     
-    /*
+    /**
      * メンバ変数
      */
+    /**
+     * Metadata
+     * メタデータ
+     *
+     * @var array[$ii]
+     */
     private $format = array();
+    /**
+     * Metadata
+     * メタデータ
+     *
+     * @var string
+     */
     private $size = null;
+    /**
+     * Metadata
+     * メタデータ
+     *
+     * @var array[$ii]
+     */
     private $location = array();
+    /**
+     * Metadata
+     * メタデータ
+     *
+     * @var array[$ii]
+     */
     private $requirement = array();
+    /**
+     * Metadata
+     * メタデータ
+     *
+     * @var string
+     */
     private $installationRemarks = null;
+    /**
+     * Metadata
+     * メタデータ
+     *
+     * @var string
+     */
     private $otherPlatformRequirements = null;
+    /**
+     * Metadata
+     * メタデータ
+     *
+     * @var string
+     */
     private $duration = null;
     
+    /**
+     * WEKO common processing object
+     * WEKO共通処理オブジェクト
+     *
+     * @var RepositoryAction
+     */
     private $repositoryAction = null;
     
-    /*
+    /**
+     * Constructor
      * コンストラクタ
+     *
+     * @param RepositoryAction $repositoryAction WEKO common processing object WEKO共通処理オブジェクト
      */
     public function __construct($repositoryAction){
         $this->repositoryAction = $repositoryAction;
     }
-    /*
+    /**
+     * Set format
      * Format設定
-     * @param string $format
+     * 
+     * @param string $format Format Format
      */
     public function addFormat($format){
         //encoding
@@ -2096,9 +2615,11 @@ class Repository_Oaipmh_LOM_Technical
             array_push($this->format, $format);
         }
     }
-    /*
+    /**
+     * Set size
      * Size設定
-     * @param string $size
+     * 
+     * @param string $size Size Size
      */
     public function addSize($size){
         $size = $this->repositoryAction->forXmlChange($size);
@@ -2107,9 +2628,11 @@ class Repository_Oaipmh_LOM_Technical
             $this->size = $size;
         }
     }
-    /*
+    /**
+     * Set location
      * Location設定
-     * @param string $location
+     * 
+     * @param string $location Location Loccation
      */
     public function addLocation($location){
         $location = $this->repositoryAction->forXmlChange($location);
@@ -2117,15 +2640,17 @@ class Repository_Oaipmh_LOM_Technical
             array_push($this->location, $location);
         }
     }
-    /*
+    /**
+     * Set requirement
      * Requirement設定
-     * @param Repository_Oaipmh_LOM_OrComposite $requirement
+     * 
+     * @param Repository_Oaipmh_LOM_OrComposite $requirement Requirement Requirement
      */
     public function addRequirement(Repository_Oaipmh_LOM_OrComposite $orComposite){
         //check
         array_push($this->requirement, $orComposite);
     }
-    /*
+    /**
      * InstallationRemarks設定
      * @param Repository_Oaipmh_LOM_LangString $installationRemarks
      */
@@ -2134,18 +2659,22 @@ class Repository_Oaipmh_LOM_Technical
             $this->installationRemarks = $installationRemarks;
         }
     }
-    /*
+    /**
+     * Set OtherPlatformRequirements
      * OtherPlatformRequirements設定
-     * @param Repository_Oaipmh_LOM_LangString $otherPlatformRequirements
+     * 
+     * @param Repository_Oaipmh_LOM_LangString $otherPlatformRequirements OtherPlatformRequirement OtherPlatformRequirement
      */
     public function addOtherPlatformRequirements(Repository_Oaipmh_LOM_LangString $otherPlatformRequirements){
         if($this->otherPlatformRequirements == null){
             $this->otherPlatformRequirements = $otherPlatformRequirements;
         }
     }
-    /*
+    /**
+     * Set duration
      * Duration設定
-     * @param Repository_Oaipmh_LOM_Duration $duration
+     * 
+     * @param Repository_Oaipmh_LOM_Duration $duration Duration Duration
      */
     public function addDuration(Repository_Oaipmh_LOM_Duration $duration){
         //check
@@ -2155,6 +2684,14 @@ class Repository_Oaipmh_LOM_Technical
         }
     }
     
+    /**
+     * To check that contains the value
+     * 値が入っているかを確認する
+     *
+     * @param string $element
+     * @param Repository_Oaipmh_LOM_Vocabulary $value Vocabulary Vocabulary
+     * @return boolean Result 結果
+     */
     private function checkOrComposite($element, &$value)
     {
         $checkVal = $value;
@@ -2198,8 +2735,12 @@ class Repository_Oaipmh_LOM_Technical
     }
     
     //setter
-    /*
+    /**
      * addOrComposite
+     * 値を追加する
+     *
+     * @param string $element
+     * @param Repository_Oaipmh_LOM_Vocabulary $value Vocabulary Vocabulary
      */
     public function addOrComposite($element, $value){
         
@@ -2207,7 +2748,7 @@ class Repository_Oaipmh_LOM_Technical
         {
             return;
         }
-        /*
+        /**
         if(count($this->requirement) == 0)
         {
             $this->addRequirement(new Repository_Oaipmh_LOM_OrComposite($this->repositoryAction, null, null, '', ''));
@@ -2313,9 +2854,11 @@ class Repository_Oaipmh_LOM_Technical
     }
     
     
-    /*
+    /**
+     * Output
      * Technicalタグの出力処理
-     * @return string xml str
+     * 
+     * @return string xml str XML文字列
      */
     public function output(){
         $xmlStr = '';
@@ -2390,8 +2933,7 @@ class Repository_Oaipmh_LOM_Technical
     }
 }
 
-/*
- * Educational
+/**
  * <educational>
  *      <interactivityType>
  *          [Vocabulary型参照] =>Vocabulary型
@@ -2425,37 +2967,122 @@ class Repository_Oaipmh_LOM_Technical
  *      </description>
  *      <language></language>(※複数存在する可能性アリ)
  * </educational>
- * タグ生成クラス
+ */
+
+/**
+ * Educational tags generated classes
+ * Educational型タグ生成クラス
+ *
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class Repository_Oaipmh_LOM_Educational
 {
-    /*
+    /**
      * メンバ
      */
+    /**
+     * Metadata
+     * メタデータ
+     *
+     * @var string
+     */
     private $interactivityType = null;
+    /**
+     * Metadata
+     * メタデータ
+     *
+     * @var array[$ii]
+     */
     private $learningResourceType = array();
+    /**
+     * Metadata
+     * メタデータ
+     *
+     * @var string
+     */
     private $interactivityLevel = null;
+    /**
+     * Metadata
+     * メタデータ
+     *
+     * @var string
+     */
     private $semanticDensity = null;
+    /**
+     * Metadata
+     * メタデータ
+     *
+     * @var array[$ii]
+     */
     private $intendedEndUserRole = array();
+    /**
+     * Metadata
+     * メタデータ
+     *
+     * @var array[$ii]
+     */
     private $context = array();
+    /**
+     * Metadata
+     * メタデータ
+     *
+     * @var array[$ii]
+     */
     private $typicalAgeRange = array();
+    /**
+     * Metadata
+     * メタデータ
+     *
+     * @var string
+     */
     private $difficulty = null;
+    /**
+     * Metadata
+     * メタデータ
+     *
+     * @var string
+     */
     private $typicalLearningTime = null;
+    /**
+     * Metadata
+     * メタデータ
+     *
+     * @var array[$ii]
+     */
     private $description = array();
+    /**
+     * Metadata
+     * メタデータ
+     *
+     * @var array[$ii]
+     */
     private $language = array();
     
+    /**
+     * WEKO common processing object
+     * WEKO共通処理オブジェクト
+     *
+     * @var RepositoryAction
+     */
     private $repositoryAction = null;
     
-    /*
+    /**
+     * Constructor
      * コンストラクタ
+     *
+     * @param RepositoryAction $repositoryAction WEKO common processing object WEKO共通処理オブジェクト
      */
     public function __construct($repositoryAction){
         $this->repositoryAction = $repositoryAction;
     }
     
-    /*
+    /**
+     * Set interactivityType
      * interactivityType設定
-     * @param Repository_Oaipmh_LOM_Vocabulary $interactivityType
+     * @param Repository_Oaipmh_LOM_Vocabulary $interactivityType InteractivityType InteractivityType
      */
     public function addInteractivityType(Repository_Oaipmh_LOM_Vocabulary $interactivityType){
         //check
@@ -2464,9 +3091,11 @@ class Repository_Oaipmh_LOM_Educational
             $this->interactivityType = $interactivityType;
         }
     }
-    /*
+    /**
+     * Set LeanrningResourceType
      * learningResourceType設定
-     * @param Repository_Oaipmh_LOM_Vocabulary $learningResourceType
+     * 
+     * @param Repository_Oaipmh_LOM_Vocabulary $learningResourceType LeanrningResourceType LeanrningResourceType
      */
     public function addLearningResourceType(Repository_Oaipmh_LOM_Vocabulary $learningResourceType){
         //check
@@ -2475,9 +3104,11 @@ class Repository_Oaipmh_LOM_Educational
             array_push($this->learningResourceType,$learningResourceType);
         }
     }
-    /*
+    /**
+     * Set InteractivityLevel
      * InteractivityLevel設定
-     * @param Repository_Oaipmh_LOM_Vocabulary $interactivityLevel
+     * 
+     * @param Repository_Oaipmh_LOM_Vocabulary $interactivityLevel InteractivityLevel InteractivityLevel
      */
     public function addInteractivityLevel(Repository_Oaipmh_LOM_Vocabulary $interactivityLevel){
         //check
@@ -2486,9 +3117,11 @@ class Repository_Oaipmh_LOM_Educational
             $this->interactivityLevel = $interactivityLevel;
         }
     }
-    /*
+    /**
+     * Set SemanticDensity
      * SemanticDensity設定
-     * @param Repository_Oaipmh_LOM_Vocabulary $semanticDensity
+     * 
+     * @param Repository_Oaipmh_LOM_Vocabulary $semanticDensity SemanticDensity SemanticDensity
      */
     public function addSemanticDensity(Repository_Oaipmh_LOM_Vocabulary $semanticDensity){
         //check
@@ -2497,9 +3130,11 @@ class Repository_Oaipmh_LOM_Educational
             $this->semanticDensity = $semanticDensity;
         }
     }
-    /*
+    /**
+     * Set IntendedEndUserRole
      * IntendedEndUserRole設定
-     * @param Repository_Oaipmh_LOM_Vocabulary $intendedEndUserRole
+     * 
+     * @param Repository_Oaipmh_LOM_Vocabulary $intendedEndUserRole IntendedEndUserRole IntendedEndUserRole
      */
     public function addIntendedEndUserRole(Repository_Oaipmh_LOM_Vocabulary $intendedEndUserRole){
         $intendedEndUserRole_value = RepositoryOutputFilterLOM::educationalIntendedEndUserRole($intendedEndUserRole->getValue());
@@ -2507,9 +3142,11 @@ class Repository_Oaipmh_LOM_Educational
             array_push($this->intendedEndUserRole, $intendedEndUserRole);
         }
     }
-    /*
+    /**
+     * Set Context
      * Context設定
-     * @param Repository_Oaipmh_LOM_Vocabulary $context
+     * 
+     * @param Repository_Oaipmh_LOM_Vocabulary $context Context Context
      */
     public function addContext(Repository_Oaipmh_LOM_Vocabulary $context){
         $context_value = RepositoryOutputFilterLOM::educationalContext($context->getValue());
@@ -2517,16 +3154,20 @@ class Repository_Oaipmh_LOM_Educational
             array_push($this->context, $context);
         }
     }
-    /*
+    /**
+     * Set TypicalAgeRange
      * TypicalAgeRange設定
-     * @param Repository_Oaipmh_LOM_LangString $typicalAgeRange
+     * 
+     * @param Repository_Oaipmh_LOM_LangString $typicalAgeRange TypicalAgeRange TypicalAgeRange
      */
     public function addTypicalAgeRange(Repository_Oaipmh_LOM_LangString $typicalAgeRange){
         array_push($this->typicalAgeRange,$typicalAgeRange);
     }
-    /*
+    /**
+     * Set Difficulty
      * Difficulty設定
-     * @param Repository_Oaipmh_LOM_Vocabulary $difficulty
+     * 
+     * @param Repository_Oaipmh_LOM_Vocabulary $difficulty Difficulty Difficulty
      */
     public function addDifficulty(Repository_Oaipmh_LOM_Vocabulary $difficulty){
         $difficulty_value = RepositoryOutputFilterLOM::educationalDifficulty($difficulty->getValue());
@@ -2534,9 +3175,11 @@ class Repository_Oaipmh_LOM_Educational
             $this->difficulty = $difficulty;
         }
     }
-    /*
+    /**
+     * Set TypicalLearningTime
      * TypicalLearningTime設定
-     * @param Repository_Oaipmh_LOM_LangString $typicalLearningTime
+     * 
+     * @param Repository_Oaipmh_LOM_LangString $typicalLearningTime TypicalLearningTime TypicalLearningTime
      */
     public function addTypicalLearningTime(Repository_Oaipmh_LOM_Duration $typicalLearningTime){
         //check
@@ -2545,16 +3188,20 @@ class Repository_Oaipmh_LOM_Educational
             $this->typicalLearningTime = $typicalLearningTime;
         }
     }
-    /*
+    /**
+     * Set Description
      * Description設定
-     * @param Repository_Oaipmh_LOM_LangString $description
+     * 
+     * @param Repository_Oaipmh_LOM_LangString $description Description Description
      */
     public function addDescription(Repository_Oaipmh_LOM_LangString $description){
         array_push($this->description,$description);
     }
-    /*
+    /**
+     * Set Language
      * Language設定
-     * @param string $language
+     * 
+     * @param string $language Language Language
      */
     public function addLanguage($language){
         //check
@@ -2568,52 +3215,119 @@ class Repository_Oaipmh_LOM_Educational
     }
     
     //getter
+    /**
+     * Get InteractivityType
+     * InteractivityType取得
+     *
+     * @return string
+     */
     public function getInteractivityType(){
         return $this->interactivityType;
     }
 
+    /**
+     * Get LearningResourceType
+     * LearningResourceType取得
+     *
+     * @return array[$ii]
+     */
     public function getLearningResourceType(){
         return $this->learningResourceType;
     }
 
+    /**
+     * Get InteractivityLevel
+     * InteractivityLevel取得
+     *
+     * @return string
+     */
     public function getInteractivityLevel(){
         return $this->interactivityLevel;
     }
 
+    /**
+     * Get SemanticDensity
+     * SemanticDensity取得
+     *
+     * @return string
+     */
     public function getSemanticDensity(){
         return $this->semanticDensity;
     }
 
+    /**
+     * Get IntendedEndUserRole
+     * IntendedEndUserRole取得
+     *
+     * @return array[$ii]
+     */
     public function getIntendedEndUserRole(){
         return $this->intendedEndUserRole;
     }
 
+    /**
+     * Get Context
+     * Context取得
+     *
+     * @return array[$ii]
+     */
     public function getContext(){
         return $this->context;
     }
 
+    /**
+     * Get TypicalAgeRange
+     * TypicalAgeRange取得
+     *
+     * @return array[$ii]
+     */
     public function getTypicalAgeRange(){
         return $this->typicalAgeRange;
     }
 
+    /**
+     * Get Difficulty
+     * Difficulty取得
+     *
+     * @return string
+     */
     public function getDifficulty(){
         return $this->difficulty;
     }
 
+    /**
+     * Get TypicalLearningTime
+     * TypicalLearningTime取得
+     *
+     * @return string
+     */
     public function getTypicalLearningTime(){
         return $this->typicalLearningTime;
     }
 
+    /**
+     * Get Description
+     * Description取得
+     *
+     * @return array[$ii]
+     */
     public function getDescription(){
         return $this->description;
     }
 
+    /**
+     * Get Language
+     * Language取得
+     *
+     * @param string $language language 言語
+     * @return array[$ii]
+     */
     public function getLanguage($language){
         return $this->language;
     }
     
     
-    /*
+    /**
      * educationalタグの出力処理
      * @return string xml str
      */
@@ -2724,8 +3438,7 @@ class Repository_Oaipmh_LOM_Educational
     
 }
 
-/*
- * Rights
+/**
  * <rights>
  *      <cost>
  *          [Vocabulary型参照] =>Vocabulary型
@@ -2737,29 +3450,67 @@ class Repository_Oaipmh_LOM_Educational
  *          <string language=""></string>  =>LangString型
  *      </description>
  * </rights>
- * タグ生成クラス
+ */
+
+/**
+ * Rights tags generated classes
+ * Rights型タグ生成クラス
+ *
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class Repository_Oaipmh_LOM_Rights
 {
-    /*
+    /**
      * メンバ変数
      */
+    /**
+     * Metadata
+     * メタデータ
+     *
+     * @var string
+     */
     private $cost = null;
+    /**
+     * Metadata
+     * メタデータ
+     *
+     * @var string
+     */
     private $copyrightAndOtherRestrictions = null;
+    /**
+     * Metadata
+     * メタデータ
+     *
+     * @var string
+     */
     private $description = null;
     
+    /**
+     * WEKO common processing object
+     * WEKO共通処理オブジェクト
+     *
+     * @var RepositoryAction
+     */
     private $repositoryAction = null;
     
-    /*
+    /**
+     * Constructor
      * コンストラクタ
+     *
+     * @param RepositoryAction $repositoryAction WEKO common processing object WEKO共通処理オブジェクト
      */
     public function __construct($repositoryAction){
         $this->repositoryAction = $repositoryAction;
     }
     
-    /*
+    /**
+     * Set Cost
      * Cost設定
-     * @param Repository_Oaipmh_LOM_Vocabulary $cost
+     * 
+     * @param Repository_Oaipmh_LOM_Vocabulary $cost Cost Cost
      */
     public function addCost(Repository_Oaipmh_LOM_Vocabulary $cost){
         $cost_value = RepositoryOutputFilterLOM::yesno($cost->getValue());
@@ -2767,9 +3518,11 @@ class Repository_Oaipmh_LOM_Rights
             $this->cost = $cost;
         }
     }
-    /*
+    /**
+     * Set CopyrightAndOtherRestrictions
      * CopyrightAndOtherRestrictions設定
-     * @param Repository_Oaipmh_LOM_Vocabulary $copyrightAndOtherRestrictions
+     * 
+     * @param Repository_Oaipmh_LOM_Vocabulary $copyrightAndOtherRestrictions CopyrightAndOtherRestrictions CopyrightAndOtherRestrictions
      */
     public function addCopyrightAndOtherRestrictions(Repository_Oaipmh_LOM_Vocabulary $copyrightAndOtherRestrictions){
         $copyright_value = RepositoryOutputFilterLOM::yesno($copyrightAndOtherRestrictions->getValue());
@@ -2777,18 +3530,22 @@ class Repository_Oaipmh_LOM_Rights
             $this->copyrightAndOtherRestrictions = $copyrightAndOtherRestrictions;
         }
     }
-    /*
+    /**
+     * Set Description
      * Description設定
-     * @param Repository_Oaipmh_LOM_LangString $description
+     * 
+     * @param Repository_Oaipmh_LOM_LangString $description Description Description
      */
     public function addDescription(Repository_Oaipmh_LOM_LangString $description){
         if($this->description == null){
             $this->description = $description;
         }
     }
-    /*
+    /**
+     * Output
      * rightsタグ出力処理
-     * @return string xml str
+     * 
+     * @return string xml str XML文字列
      */
     public function output(){
         $xmlStr = '';
@@ -2830,9 +3587,7 @@ class Repository_Oaipmh_LOM_Rights
     }
 }
 
-
-/*
- * Relation
+/**
  * <relation>
  *      <kind>
  *          [Vocabulary型参照] =>Vocabulary型
@@ -2846,27 +3601,59 @@ class Repository_Oaipmh_LOM_Rights
  *          </description>
  *      </resource>
  * </relation>
- * タグ生成クラス
+ */
+
+/**
+ * Relation tags generated classes
+ * Relation型タグ生成クラス
+ *
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class Repository_Oaipmh_LOM_Relation
 {
-    /*
+    /**
      * メンバ変数
      */
+    /**
+     * Metadata
+     * メタデータ
+     *
+     * @var string
+     */
     private $kind = null;
+    /**
+     * Metadata
+     * メタデータ
+     *
+     * @var string
+     */
     private $resource = null;
     
+    /**
+     * WEKO common processing object
+     * WEKO共通処理オブジェクト
+     *
+     * @var RepositoryAction
+     */
     private $repositoryAction = null;
 
-    /*
+    /**
+     * Constructor
      * コンストラクタ
+     *
+     * @param RepositoryAction $repositoryAction WEKO common processing object WEKO共通処理オブジェクト
      */
     public function __construct($repositoryAction){
         $this->repositoryAction = $repositoryAction;
     }
-    /*
+    /**
+     * Set Kind
      * Kind設定
-     * @param Repository_Oaipmh_LOM_Vocabulary $kind
+     * 
+     * @param Repository_Oaipmh_LOM_Vocabulary $kind Kind Kind
      */
     public function addKind(Repository_Oaipmh_LOM_Vocabulary $kind){
         //check
@@ -2875,18 +3662,22 @@ class Repository_Oaipmh_LOM_Relation
             $this->kind = $kind;
         }
     }
-    /*
+    /**
+     * Set Resource
      * Resource設定
-     * @param Repository_Oaipmh_LOM_Resource $resource
+     * 
+     * @param Repository_Oaipmh_LOM_Resource $resource Resource Resource
      */
     public function addResource(Repository_Oaipmh_LOM_Resource $resource){
         if($this->resource == null){
             $this->resource = $resource;
         }
     }
-    /*
+    /**
+     * Output
      * Relationタグ出力処理
-     * @return string xml str
+     * 
+     * @return string xml str XML文字列
      */
     public function output(){
         $xmlStr = '';
@@ -2921,8 +3712,7 @@ class Repository_Oaipmh_LOM_Relation
     
 }
 
-/*
- * Annotation
+/**
  * <annotation>
  *      <entity></entity>
  *      <date>
@@ -2932,29 +3722,67 @@ class Repository_Oaipmh_LOM_Relation
  *          <string language=""></string>  =>LangString型
  *      </description>
  * </annotation>
- * タグ生成クラス
+ */
+
+/**
+ * Annotation tags generated classes
+ * Annotation型タグ生成クラス
+ *
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class Repository_Oaipmh_LOM_Annotation
 {
-    /*
+    /**
      * メンバ変数
      */
+    /**
+     * Metadata
+     * メタデータ
+     *
+     * @var string
+     */
     private $entity = null;
+    /**
+     * Metadata
+     * メタデータ
+     *
+     * @var string
+     */
     private $date = null;
+    /**
+     * Metadata
+     * メタデータ
+     *
+     * @var string
+     */
     private $description = null;
     
+    /**
+     * WEKO common processing object
+     * WEKO共通処理オブジェクト
+     *
+     * @var RepositoryAction
+     */
     private $repositoryAction = null;
     
-    /*
+    /**
+     * Constructor
      * コンストラクタ
+     *
+     * @param RepositoryAction $repositoryAction WEKO common processing object WEKO共通処理オブジェクト
      */
     public function __construct($repositoryAction){
         $this->repositoryAction = $repositoryAction;
     }
     
-    /*
+    /**
+     * Set Entity
      * Entity設定
-     * @param string $entity
+     * 
+     * @param string $entity Entity Entity
      */
     public function addEntity($entity){
         //encording
@@ -2963,18 +3791,22 @@ class Repository_Oaipmh_LOM_Annotation
             $this->entity = $entity;
         }
     }
-    /*
+    /**
+     * Set Date
      * Date設定
-     * @param Repository_Oaipmh_LOM_DateTime $date
+     * 
+     * @param Repository_Oaipmh_LOM_DateTime $date Date Date
      */
     public function addDate(Repository_Oaipmh_LOM_DateTime $date){
         if($this->date == null){
             $this->date = $date;
         }
     }
-    /*
+    /**
+     * Set Description
      * Description設定
-     * @param Repository_Oaipmh_LOM_LangString $date
+     * 
+     * @param Repository_Oaipmh_LOM_LangString $description Description Description
      */
     public function addDescription(Repository_Oaipmh_LOM_LangString $description){
         if($this->description == null){
@@ -2983,18 +3815,39 @@ class Repository_Oaipmh_LOM_Annotation
     }
     
     //getter
+    /**
+     * Get Entity
+     * Entity取得
+     *
+     * @return string
+     */
     public function getEntity(){
         return $this->entity;
     }
+    /**
+     * Get Date
+     * Date取得
+     *
+     * @return string
+     */
     public function getDate(){
         return $this->date;
     }
+    /**
+     * Get Description
+     * Description取得
+     *
+     * @return string
+     */
     public function getDescription(){
         return $this->description;
     }
     
-    /*
+    /**
+     * Output
      * Annotationタグ出力処理
+     * 
+     * @return string xml str XML文字列
      */
     public function output(){
         $xmlStr = '';
@@ -3030,8 +3883,7 @@ class Repository_Oaipmh_LOM_Annotation
     }
 }
 
-/*
- * Classification
+/**
  * <classification>
  *      <purpose>
  *          [Vocabulary型参照] =>Vocabulary型
@@ -3054,30 +3906,74 @@ class Repository_Oaipmh_LOM_Annotation
  *          <string language=""></string>  =>LangString型
  *      </keyword>
  * </classification>
- * タグ生成クラス
+ */
+
+/**
+ * Classification tags generated classes
+ * Classification型タグ生成クラス
+ *
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class Repository_Oaipmh_LOM_Classification
 {
-    /*
+    /**
      * メンバ変数
      */
+    /**
+     * Metadata
+     * メタデータ
+     *
+     * @var string
+     */
     private $purpose = null;
+    /**
+     * Metadata
+     * メタデータ
+     *
+     * @var array[$ii]
+     */
     private $taxonPath = array();
+    /**
+     * Metadata
+     * メタデータ
+     *
+     * @var string
+     */
     private $description = null;
+    /**
+     * Metadata
+     * メタデータ
+     *
+     * @var array[$ii]
+     */
     private $keyword = array();
     
+    /**
+     * WEKO common processing object
+     * WEKO共通処理オブジェクト
+     *
+     * @var RepositoryAction
+     */
     private $repositoryAction = null;
     
-    /*
+    /**
+     * Constructor
      * コンストラクタ
+     *
+     * @param RepositoryAction $repositoryAction WEKO common processing object WEKO共通処理オブジェクト
      */
     public function __construct($repositoryAction){
         $this->repositoryAction = $repositoryAction;
     }
     
-    /*
+    /**
+     * Set Purpose
      * Purpose設定
-     * @param Repository_Oaipmh_LOM_Vocabulary $purpose
+     * 
+     * @param Repository_Oaipmh_LOM_Vocabulary $purpose Purpose Purpose
      */
     public function addPurpose(Repository_Oaipmh_LOM_Vocabulary $purpose){
         //check
@@ -3087,32 +3983,44 @@ class Repository_Oaipmh_LOM_Classification
         }
         
     }
-    /*
+    /**
+     * Set TaxonPath
      * TaxonPath設定
-     * @param Repository_Oaipmh_LOM_TaxonPath $taxonPath
+     * 
+     * @param Repository_Oaipmh_LOM_TaxonPath $taxonPath TaxonPath TaxonPath
      */
     public function addTaxonPath(Repository_Oaipmh_LOM_TaxonPath $taxonPath){
         array_push($this->taxonPath, $taxonPath);
     }
     
-    /*
+    /**
+     * Set Description
      * Description設定
-     * @param Repository_Oaipmh_LOM_LangString $description
+     * 
+     * @param Repository_Oaipmh_LOM_LangString $description Description Description
      */
     public function addDescription(Repository_Oaipmh_LOM_LangString $description){
         if($this->description == null){
             $this->description = $description;
         }
     }
-    /*
+    /**
+     * Set Keyword
      * Keyword設定
-     * @param Repository_Oaipmh_LOM_LangString $keyword
+     * 
+     * @param Repository_Oaipmh_LOM_LangString $keyword Keyword Keyword
      */
     public function addKeyword(Repository_Oaipmh_LOM_LangString $keyword){
         array_push($this->keyword, $keyword);
     }
     
     //getter
+    /**
+     * Get PurposeValue
+     * purposeValue取得
+     *
+     * @return string Output String 出力文字列
+     */
     public function getPurposeValue(){
         if($this->purpose == null){
            return '';
@@ -3120,6 +4028,12 @@ class Repository_Oaipmh_LOM_Classification
         return $this->purpose->getValue();
     }
     
+    /**
+     * Get TaxonPath
+     * TaxonPath取得
+     *
+     * @return string Output String 出力文字列
+     */
     public function getTaxonPathSource(){
         if($this->taxonPath == null){
             return null;
@@ -3136,6 +4050,13 @@ class Repository_Oaipmh_LOM_Classification
         }
         return $ret_source;
     }
+    
+    /**
+     * Get TaxonPathCount
+     * TaxonPathCount取得
+     *
+     * @return int Count TaxonPathの数
+     */
     public function getTaxonPathCount(){
         if($this->taxonPath == null){
             return null;
@@ -3152,16 +4073,34 @@ class Repository_Oaipmh_LOM_Classification
         return $count;
     }
     
+    /**
+     * Get DescriptionString
+     * DescriptionString取得
+     *
+     * @return string Output String 出力文字列
+     */
     public function getDescriptionString(){
         if($this->description == null){
             return '';
         }
         return $this->description->getString();
     }
+    /**
+     * Get Keyword
+     * Keyword取得
+     *
+     * @return string Output String 出力文字列
+     */
     public function getKeyword(){
         return $this->keyword;
     }
     
+    /**
+     * Set TaxonPathSource
+     * TaxonPathSource設定
+     *
+     * @param string $taxonPathString TaxonPathSource TaxonPathSource
+     */
     public function setTaxonPathSource($taxonPathString){
         if($this->taxonPath == null){
             $taxonPath = new Repository_Oaipmh_LOM_TaxonPath($this->repositoryAction);
@@ -3178,6 +4117,12 @@ class Repository_Oaipmh_LOM_Classification
         }
     }
     
+    /**
+     * Set setTaxonPathEntry
+     * setTaxonPathEntry設定
+     *
+     * @param string $taxonPathEntry TaxonPathEntry TaxonPathEntry
+     */
     public function setTaxonPathEntry($taxonPathEntry){
         if($this->taxonPath == null){
             $taxonPath = new Repository_Oaipmh_LOM_TaxonPath($this->repositoryAction);
@@ -3206,9 +4151,11 @@ class Repository_Oaipmh_LOM_Classification
     }
     
     
-    /*
+    /**
+     * Output
      * classificationタグ生成処理
-     * @return string xml str
+     * 
+     * @return string xml str XML文字列
      */
     public function output(){
         $xmlStr = '';
@@ -3259,25 +4206,54 @@ class Repository_Oaipmh_LOM_Classification
 
 /************************************************ The point of a branch  **********************************************/
 
-/*
- * LangString型 
+/**
  * <string languege=""> </string>
- * タグ生成クラス
+ */
+
+/**
+ * LangString tags generated classes
+ * LangString型タグ生成クラス
+ *
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class Repository_Oaipmh_LOM_LangString
 {
 
-    /*
+    /**
      * メンバ変数
      */
+    /**
+     * Metadata
+     * メタデータ
+     *
+     * @var string
+     */
     private $string = '';
+    /**
+     * Metadata
+     * メタデータ
+     *
+     * @var string
+     */
     private $language= '';
+    /**
+     * WEKO common processing object
+     * WEKO共通処理オブジェクト
+     *
+     * @var RepositoryAction
+     */
     private $repositoryAction = null;
     
-    /*
+    /**
+     * Constructor
      * コンストラクタ
-     * @param string $str 
-     * @param string $lang 
+     *
+     * @param RepositoryAction $repositoryAction WEKO common processing object WEKO共通処理オブジェクト
+     * @param string $str string 文字列
+     * @param string $lang Language 言語
      */
     public function __construct($repositoryAction, $str, $lang='')
     {
@@ -3287,17 +4263,31 @@ class Repository_Oaipmh_LOM_LangString
     }
     
     //getter
+    /**
+     * Get LangString
+     * LangString取得
+     *
+     * @return string Output string 出力文字列
+     */
     public function getString(){
         return $this->string;
     }
     //setter
+    /**
+     * Set LangString
+     * LangString取得
+     *
+     * @param string $string LangString LangString
+     */
     public function setString($string){
         $this->string = $string;
     }
     
-    /*
+    /**
+     * Output
      * LangString型の出力処理
-     * @return string xml str
+     * 
+     * @return string xml str XML文字列
      */
     public function output()
     {
@@ -3332,24 +4322,51 @@ class Repository_Oaipmh_LOM_LangString
 }
 
 /**
- * DateTime型
  * <dateTime> </dateTime>
  * <description> </description>
- * タグ生成クラス
+ */
+
+/**
+ * DateTime tags generated classes
+ * DateTime型タグ生成クラス
+ *
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class Repository_Oaipmh_LOM_DateTime
 {
-    /*
+    /**
      * メンバ変数
      */
+    /**
+     * Metadata
+     * メタデータ
+     *
+     * @var string
+     */
     private $dateTime = '';
+    /**
+     * Metadata
+     * メタデータ
+     *
+     * @var string
+     */
     private $description = '';
+    /**
+     * WEKO common processing object
+     * WEKO共通処理オブジェクト
+     *
+     * @var RepositoryAction
+     */
     private $repositoryAction = null;
     
-    /*
+    /**
+     * Constructor
      * コンストラクタ
-     * @param string $dateTime [single]
-     * @param LOM_TYPE_LANGSTRING $description [single]
+     *
+     * @param RepositoryAction $repositoryAction WEKO common processing object WEKO共通処理オブジェクト
      */
     public function __construct($repositoryAction)
     {
@@ -3358,23 +4375,43 @@ class Repository_Oaipmh_LOM_DateTime
     }
     
     //getter
+    /**
+     * Get DateTime
+     * DateTime取得
+     *
+     * @return string Output string 出力文字列
+     */
     public function getDateTime(){
         return $this->dateTime;
         
     }
     //setter
+    /**
+     * Set Description
+     * Description設定
+     *
+     * @param Repository_Oaipmh_LOM_LangString $description Description Description
+     */
     public function setDescription(Repository_Oaipmh_LOM_LangString $description){
         $this->description = $description;
     }
     
+    /**
+     * Set DateTime
+     * DateTime設定
+     *
+     * @param string $dateTime DateTime DateTime
+     */
     public function setDateTime($dateTime){
         $this->dateTime = $dateTime;
         
     }
     
-    /*
+    /**
+     * Output
      * DateTime型の出力処理
-     * @return string xml str
+     * 
+     * @return string xml str XML文字列
      */
     public function output()
     {
@@ -3401,22 +4438,51 @@ class Repository_Oaipmh_LOM_DateTime
 }
     
 /**
- * Duration型
  * <duration> </duration>
  * <description> </description>
- * タグ生成クラス
+ */
+
+/**
+ * Duration tags generated classes
+ * Duration型タグ生成クラス
+ *
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class Repository_Oaipmh_LOM_Duration
 {
-    /*
+    /**
      * メンバ変数
      */
+    /**
+     * Metadata
+     * メタデータ
+     *
+     * @var string
+     */
     private $duration = '';
+    /**
+     * Metadata
+     * メタデータ
+     *
+     * @var string
+     */
     private $description = '';
+    /**
+     * WEKO common processing object
+     * WEKO共通処理オブジェクト
+     *
+     * @var RepositoryAction
+     */
     private $repositoryAction = null;
     
-    /*
+    /**
+     * Constructor
      * コンストラクタ
+     *
+     * @param RepositoryAction $repositoryAction WEKO common processing object WEKO共通処理オブジェクト
      */
     public function __construct($repositoryAction)
     {
@@ -3424,24 +4490,41 @@ class Repository_Oaipmh_LOM_Duration
     }
     
     //getter
-    /*
+    /**
+     * Get Duration
      * Duration取得
+     * 
+     * @param string Output string 出力文字列
      */
     public function getDuration(){
         return $this->duration;
     }
     
     //setter
+    /**
+     * Set Duration
+     * Duration設定
+     *
+     * @param string $duration Duration Duration
+     */
     public function setDuration($duration){
         $this->duration = $duration;
     }
+    /**
+     * Set Description
+     * Description設定
+     *
+     * @param Repository_Oaipmh_LOM_LangString $description Description Description
+     */
     public function setDescription(Repository_Oaipmh_LOM_LangString $description){
         $this->description = $description;
     }
     
-    /*
+    /**
+     * Output
      * Duration型の出力処理
-     * @return string xml str
+     * 
+     * @return string xml str XML文字列
      */
     public function output()
     {
@@ -3465,25 +4548,54 @@ class Repository_Oaipmh_LOM_Duration
     }
 }
     
-/*
- * Vocabulary型 
+/**
  * <source> </source>
  * <value> </value>
- * タグ生成クラス
+ */
+
+/**
+ * Vocabulary tags generated classes
+ * Vocabulary型タグ生成クラス
+ *
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class Repository_Oaipmh_LOM_Vocabulary
 {
-    /*
+    /**
      * メンバ変数
      */
+    /**
+     * Metadata
+     * メタデータ
+     *
+     * @var string
+     */
     private $source = '';
+    /**
+     * Metadata
+     * メタデータ
+     *
+     * @var string
+     */
     private $value = '';
+    /**
+     * WEKO common processing object
+     * WEKO共通処理オブジェクト
+     *
+     * @var RepositoryAction
+     */
     private $repositoryAction = null;
 
-    /*
+    /**
+     * Constructor
      * コンストラクタ
-     * @param string $source
-     * @param string $value
+     *
+     * @param RepositoryAction $repositoryAction WEKO common processing object WEKO共通処理オブジェクト
+     * @param string $source Source Source
+     * @param string $value Value Value
      */
     public function __construct($repositoryAction, $source ,$value)
     {
@@ -3493,23 +4605,31 @@ class Repository_Oaipmh_LOM_Vocabulary
     }
 
     //getter
-    /*
+    /**
+     * Get value
      * valueを取得する
+     * 
+     * @return string Output string 出力文字列
      */
     public function getValue(){
         return $this->value;
     }
     //setter
-    /*
+    /**
+     * Set Value
      * valueを設定する
+     * 
+     * @param string $value Value Value
      */
     public function setValue($value){
         $this->value = $value;
     }
     
-    /*
+    /**
+     * Output
      * Vocabulary型の出力処理
-     * @return string xml str
+     * 
+     * @return string xml str XML文字列
      */
     public function output()
     {
@@ -3533,26 +4653,55 @@ class Repository_Oaipmh_LOM_Vocabulary
 /****************************************** tag *********************************************/
     
 /**
- * Identifier型 
  * <identifier>
  *     <catalog> </catalog>
  *     <entity> </entity>
  * </identifier>
- * タグ生成クラス
+ */
+
+/**
+ * Identifier tags generated classes
+ * Identifier型タグ生成クラス
+ *
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class Repository_Oaipmh_LOM_Identifier
 {
-    /*
+    /**
      * メンバ変数
      */
+    /**
+     * Metadata
+     * メタデータ
+     *
+     * @var string
+     */
     private $entry = '';
+    /**
+     * Metadata
+     * メタデータ
+     *
+     * @var string
+     */
     private $catalog = '';
+    /**
+     * WEKO common processing object
+     * WEKO共通処理オブジェクト
+     *
+     * @var RepositoryAction
+     */
     private $repositoryAction = null;
     
-    /*
+    /**
+     * Constructor
      * コンストラクタ
-     * @param string $entry [single]
-     * @param string $catalog [single] default -> 'identifier'
+     *
+     * @param RepositoryAction $repositoryAction WEKO common processing object WEKO共通処理オブジェクト
+     * @param string $entry Entry Entry
+     * @param string $catalog Catalog Catalog
      */
     public function __construct($repositoryAction, $entry, $catalog=RepositoryConst::LOM_TAG_IDENTIFIER)
     {
@@ -3561,9 +4710,11 @@ class Repository_Oaipmh_LOM_Identifier
         $this->catalog = $catalog;
     }
     
-    /*
+    /**
+     * Output
      * Identifier型の出力処理
-     * @return string xml str
+     * 
+     * @return string xml str XML文字列
      */
     public function output()
     {
@@ -3587,27 +4738,56 @@ class Repository_Oaipmh_LOM_Identifier
     }
 }
 
-/*
- * Taxon型(カスタム) 
+/**
  * <taxon>
  *      <id> </id>
  *      <entry>
  *          <string language=""></string>  =>LangString型 
  *      </entry>
  * </taxon>
- * タグ生成クラス
+ */
+
+/**
+ * Taxon tags generated classes
+ * Taxon型タグ生成クラス
+ *
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class Repository_Oaipmh_LOM_Taxon
 {
-    /*
+    /**
      * メンバ変数
      */
+    /**
+     * Metadata
+     * メタデータ
+     *
+     * @var string
+     */
     private $id = '';
+    /**
+     * Metadata
+     * メタデータ
+     *
+     * @var string
+     */
     private $entry = null;
+    /**
+     * WEKO common processing object
+     * WEKO共通処理オブジェクト
+     *
+     * @var RepositoryAction
+     */
     private $repositoryAction = null;
     
-    /*
+    /**
+     * Constructor
      * コンストラクタ
+     *
+     * @param RepositoryAction $repositoryAction WEKO common processing object WEKO共通処理オブジェクト
      */
     public function __construct($repositoryAction)
     {
@@ -3615,6 +4795,12 @@ class Repository_Oaipmh_LOM_Taxon
     }
     
     //getter
+    /**
+     * Get TaxonEntry
+     * TaxonEntry取得
+     *
+     * @return string Output string 出力文字列
+     */
     public function getTaxonEntry(){
         if($this->entry == null){
             return '';
@@ -3623,13 +4809,30 @@ class Repository_Oaipmh_LOM_Taxon
         return $this->entry->getString();
     }
     //setter
+    /**
+     * Set Id
+     * Id設定
+     *
+     * @param string $id Id Id
+     */
     public function setId($id){
         $this->id = $id;
     }
+    /**
+     * Set Entry
+     * Entry設定
+     *
+     * @param string $entry Entry Entry
+     */
     public function setEntry(Repository_Oaipmh_LOM_LangString $entry){
         $this->entry = $entry;
     }
-    
+    /**
+     * Set TaxonEntry
+     * TaxonEntry設定
+     *
+     * @param string $entry TaxonEntry TaxonEntry
+     */
     public function setTaxonEntry($entry){
         if($this->entry == null){
             return;
@@ -3637,7 +4840,7 @@ class Repository_Oaipmh_LOM_Taxon
         $this->entry->setString($entry);
     }
     
-    /*
+    /**
      * Taxon型の出力処理
      * @return string xml str
      */
@@ -3660,8 +4863,7 @@ class Repository_Oaipmh_LOM_Taxon
     
 }
 
-/*
- * TaxonPath型(カスタム) 
+/**
  * <taxonPath>
  *   <source>
  *      <string language="XX"></string>
@@ -3672,48 +4874,94 @@ class Repository_Oaipmh_LOM_Taxon
  *          <string language=""></string>  =>LangString型 
  *      </entry>
  *   </taxon>
- *   
  * </taxonPath>
  */
+
+/**
+ * TaxonPath tags generated classes
+ * TaxonPath型タグ生成クラス
+ *
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
+ */
 class Repository_Oaipmh_LOM_TaxonPath{
-    /*
+    /**
      * メンバ変数
      */
+    /**
+     * Metadata
+     * メタデータ
+     *
+     * @var Repository_Oaipmh_LOM_LangString
+     */
     private $source = null;
+    /**
+     * Metadata
+     * メタデータ
+     *
+     * @var array[$ii]
+     */
     private $taxon = array();
+    /**
+     * WEKO common processing object
+     * WEKO共通処理オブジェクト
+     *
+     * @var RepositoryAction
+     */
     private $repositoryAction = null;
     
-    /*
+    /**
+     * Constructor
      * コンストラクタ
-     * @param string $source [single]
-     * @param Repository_Oaipmh_LOM_Taxon $taxon [pararel]
+     *
+     * @param RepositoryAction $repositoryAction WEKO common processing object WEKO共通処理オブジェクト
      */
     public function __construct($repositoryAction)
     {
         $this->repositoryAction = $repositoryAction;
     }
-    /*
-     * addSource
+    /**
+     * Add Source
+     * Source追加
+     *
+     * @param Repository_Oaipmh_LOM_LangString $source Source Source
      */
     public function addSource(Repository_Oaipmh_LOM_LangString $source){
         if($this->source == null){
              $this->source = $source;
         }
     }
-    /*
-     * addTaxon
+    /**
+     * Add Taxon
+     * Taxon追加
+     *
+     * @param Repository_Oaipmh_LOM_Taxon $taxon Taxon Taxon
      */
     public function addTaxon(Repository_Oaipmh_LOM_Taxon $taxon){
         array_push($this->taxon, $taxon);
     }
     
     //getter
+    /**
+     * Get Source
+     * Source取得
+     *
+     * @return string Output string 出力文字列
+     */
     public function getSource(){
         if($this->source == null){
             return '';
         }
         return $this->source->getString();
     }
+    /**
+     * Get TaxonCount
+     * TaxonCount取得
+     *
+     * @return int Count TaxonCount数
+     */
     public function getTaxonCount(){
         if($this->taxon == null){
             return 0;
@@ -3721,8 +4969,11 @@ class Repository_Oaipmh_LOM_TaxonPath{
         return count($this->taxon);
     }
     
-    /*
+    /**
+     * Output
      * TaxonPathタグ出力処理
+     * 
+     * @return string xml string XML文字列
      */
     public function output(){
         $xmlStr = '';
@@ -3747,8 +4998,7 @@ class Repository_Oaipmh_LOM_TaxonPath{
     
 }
 
-/*
- * OrComposite型(カスタム) 
+/**
  * <orComposite>
  *      <type>
  *          [Vocabulary参照]  =>Vocabulary型
@@ -3759,22 +5009,63 @@ class Repository_Oaipmh_LOM_TaxonPath{
  *      <minimumVersion></minimumVersion>
  *      <maximumVersion></maximumVersion>
  * </orComposite>
- * タグ生成クラス
+ */
+
+/**
+ * OrComposite tags generated classes
+ * OrComposite型タグ生成クラス
+ *
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class Repository_Oaipmh_LOM_OrComposite
 {
-    /*
+    /**
      * メンバ変数
      */
+    /**
+     * Metadata
+     * メタデータ
+     *
+     * @var string
+     */
     private $type = null;
+    /**
+     * Metadata
+     * メタデータ
+     *
+     * @var string
+     */
     private $name = null;
+    /**
+     * Metadata
+     * メタデータ
+     *
+     * @var string
+     */
     private $minimumVersion = null;
+    /**
+     * Metadata
+     * メタデータ
+     *
+     * @var string
+     */
     private $maximumVersion = null;
+    /**
+     * WEKO common processing object
+     * WEKO共通処理オブジェクト
+     *
+     * @var RepositoryAction
+     */
     private $repositoryAction = null;
     
-    /*
+    /**
+     * Constructor
      * コンストラクタ
-     * 
+     *
+     * @param RepositoryAction $repositoryAction WEKO common processing object WEKO共通処理オブジェクト
      */
     public function __construct($repositoryAction)
     {
@@ -3782,8 +5073,11 @@ class Repository_Oaipmh_LOM_OrComposite
     }
     
     //getter
-    /*
+    /**
+     * Get TypeValue
      * typeタグのValueを取得
+     * 
+     * @return string output string 出力文字列
      */
     public function getTypeValue(){
         $type = '';
@@ -3792,8 +5086,11 @@ class Repository_Oaipmh_LOM_OrComposite
         }
         return $type;
     }
-    /*
+    /**
+     * Get NameValue
      * nameタグのValueを取得
+     * 
+     * @return string output string 出力文字列
      */
     public function getNameValue(){
         $name = '';
@@ -3802,52 +5099,87 @@ class Repository_Oaipmh_LOM_OrComposite
         }
         return $name;
     }
-    /*
+    /**
+     * Get MinimumVersion
      * MinimumVersionタグを取得
+     * 
+     * @return string MinimumVersion MinimumVersion
      */
     public function getMinimumVersion(){
         return $this->minimumVersion;
     }
-    /*
+    /**
+     * Get MaximumVersion
      * MaximumVersionタグを取得
+     * 
+     * @return string MaximumVersion MaximumVersion
      */
     public function getMaximumVersion(){
         return $this->maximumVersion;
     }
     
     //setter
-    /*
-     * typeを設定
+    /**
+     * Set TypeString
+     * TypeStringを設定
+     * 
+     * @param string $value TypeString TypeString
      */
     public function setTypeString($value){
         $this->type = $value;
     }
-    /*
-     * nameを設定
+    /**
+     * Set NameString
+     * NameStringを設定
+     * 
+     * @param string $value NameString NameString
      */
     public function setNameString($value){
         $this->name = $value;
     }
-    
+    /**
+     * Set Type
+     * Type設定
+     *
+     * @param Repository_Oaipmh_LOM_Vocabulary $value Type Type
+     */
     public function setType(Repository_Oaipmh_LOM_Vocabulary $value){
         $this->type = $value;
     }
-    
+    /**
+     * Set Name
+     * Name設定
+     *
+     * @param Repository_Oaipmh_LOM_Vocabulary $value Name Name
+     */
     public function setName(Repository_Oaipmh_LOM_Vocabulary $value){
         $this->name = $value;
     }
     
+    /**
+     * Set MinimumVersion
+     * MinimumVersion設定
+     *
+     * @param string $value MinimumVersion MinimumVersion
+     */
     public function setMinimumVersion($value){
         $this->minimumVersion = $value;
     }
-    
+    /**
+     * Set MaximumVersion
+     * MaximumVersion設定
+     *
+     * @param string $value MaximumVersion MaximumVersion
+     */
     public function setMaximumVersion($value){
         $this->maximumVersion = $value;
     }
     
-    /*
+    /**
+     * Output
      * OnComposite型の出力処理
-     * @return string xml str
+     * 
+     * @return string xml str XML文字列
      */
     public function output(){
         $xmlStr = '';
@@ -3879,8 +5211,7 @@ class Repository_Oaipmh_LOM_OrComposite
     }
 }
 
-/*
- * Resource型(カスタム) 
+/**
  * <resource>
  *      <identifier> (※複数存在する可能性アリ)  =>Identifier型
  *          [Identifier参照]
@@ -3889,43 +5220,79 @@ class Repository_Oaipmh_LOM_OrComposite
  *          <string language=""></string>  =>LangString型
  *      </description>
  * </resource>
- * タグ生成クラス
+ */
+
+/**
+ * Resource tags generated classes
+ * Resource型タグ生成クラス
+ *
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class Repository_Oaipmh_LOM_Resource
 {
-    /*
+    /**
      * メンバ変数
      */
+    /**
+     * Metadata
+     * メタデータ
+     *
+     * @var array[$ii]
+     */
     private $identifier = array();
+    /**
+     * Metadata
+     * メタデータ
+     *
+     * @var array[$ii]
+     */
     private $description = array();
     
+    /**
+     * WEKO common processing object
+     * WEKO共通処理オブジェクト
+     *
+     * @var RepositoryAction
+     */
     private $repositoryAction = null;
     
-    /*
+    /**
+     * Constructor
      * コンストラクタ
+     *
+     * @param RepositoryAction $repositoryAction WEKO common processing object WEKO共通処理オブジェクト
      */
     public function __construct($repositoryAction){
         $this->repositoryAction = $repositoryAction;
     }
     
-    /*
+    /**
+     * Set Identifier
      * Identifier設定
-     * @param Repository_Oaipmh_LOM_Identifier $identifier
+     * 
+     * @param Repository_Oaipmh_LOM_Identifier $identifier Identifier Identifier
      */
     public function addIdentifier(Repository_Oaipmh_LOM_Identifier $identifier){
         array_push($this->identifier, $identifier);
     }
-    /*
+    /**
+     * Set Description
      * Description設定
-     * @param Repository_Oaipmh_LOM_LangString $description
+     * 
+     * @param Repository_Oaipmh_LOM_LangString $description Description Description
      */
     public function addDescription(Repository_Oaipmh_LOM_LangString $description){
         array_push($this->description, $description);
     }
     
-    /*
+    /**
+     * Output
      * Resource型の出力処理
-     * @return string xml str
+     * 
+     * @return string xml str XML文字列
      */
     public function output(){
         $xmlStr = '';

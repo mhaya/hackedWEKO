@@ -1,7 +1,15 @@
 <?php
+
+/**
+ * Item shelf registration action class by SWORD protocol
+ * SWORDプロトコルによるアイテム一括登録アクションクラス
+ *
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Import.class.php 58647 2015-10-10 08:13:31Z tatsuya_koyasu $
+// $Id: Import.class.php 70936 2016-08-09 09:53:57Z keiya_sugimoto $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics,
 // Research and Development Center for Scientific Information Resources
@@ -10,63 +18,187 @@
 // http://creativecommons.org/licenses/BSD/
 //
 // --------------------------------------------------------------------
-
-/* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
-
+/**
+ * File archive class
+ * ファイルアーカイブクラス
+ */
 include_once MAPLE_DIR.'/includes/pear/File/Archive.php';
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
+/**
+ * Import common class
+ * ファイルインポート汎用クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/action/edit/import/ImportCommon.class.php';
+/**
+ * Mailer class
+ * メーラークラス
+ */
 require_once WEBAPP_DIR. '/components/mail/Main.class.php';
+/**
+ * Index manager class
+ * インデックス管理クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryIndexManager.class.php';
+/**
+ * Index authority manager class
+ * インデックス権限管理クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryIndexAuthorityManager.class.php';
+/**
+ * Output filter class
+ * 出力用フィルタークラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryOutputFilter.class.php';
+/**
+ * ZIP process utility class
+ * ZIPファイル処理ユーティリティークラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/util/ZipUtility.class.php';
+/**
+ * String operator class
+ * 文字列操作クラス
+ */
+require_once WEBAPP_DIR. '/modules/repository/components/util/StringOperator.class.php';
 
 
 /**
- * **********************************************
- * this action is called by outside
- * this action make for SWORD action
- * so on WEKO action must not call this action
- * **********************************************
+ * Item shelf registration action class by SWORD protocol
+ * SWORDプロトコルによるアイテム一括登録アクションクラス
+ * 
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class Repository_Action_Main_Sword_Import extends RepositoryAction
 {
     // component
+    /**
+     * Session management objects
+     * Session管理オブジェクト
+     *
+     * @var Session
+     */
     var $Session = null;
+    /**
+     * Database management objects
+     * データベース管理オブジェクト
+     *
+     * @var DbObjectAdodb
+     */
     var $Db = null;
 
     // request param
+    /**
+     * Checked indexes in SCfW
+     * SCfWで登録先として選択されたインデックス
+     *
+     * @var string
+     */
     var $checkedIds = null;     // delimiter is "|"
                                 // ins_idx_id|ins_idx_id|ins_idx_id|...
+    /**
+     * ZIP file name
+     * ZIPファイル名
+     *
+     * @var string
+     */
     var $filename_zip = null;   // upload zip file name
+    /**
+     * New index data
+     * 新規作成インデックスデータ
+     *
+     * @var array
+     */
     var $newIndex = null;       // delimiter is "," and "|"
                                 // pid,name,pubdate|pid,name,pubdate|...
+    /**
+     * Insert user
+     * 登録ユーザー
+     *
+     * @var string
+     */
     var $insert_user = null;    // login_id of insert user
-
+    /**
+     * Change Doi flag
+     * DOI変更フラグ
+     *
+     * @var int
+     */
+    var $changeDoiFlag = null;
+    /**
+     * NC2 Login ID
+     * NC2ログインID
+     *
+     * @var string
+     */
     public $login_id = null;    // login_id
+    /**
+     * NC2 login password
+     * NC2ログインパスワード
+     *
+     * @var string
+     */
     public $password = null;    // password
 
     // member
+    /**
+     * Insert index ID list
+     * 登録インデックスIDリスト
+     *
+     * @var array
+     */
     var $index_id = array();    // insert index list
 
 
     // Add review mail setting 2009/09/30 Y.Nakao --start--
+    /**
+     * メーラーオブジェクト
+     *
+     * @var mail_Main
+     */
     var $mailMain = null;
     // Add review mail setting 2009/09/30 Y.Nakao --end--
-
+    /**
+     * Log file handle
+     * ログファイルハンドラ
+     *
+     * @var resource
+     */
     private $logFh = null;                  // File handle for log
+    /**
+     * create log flag
+     * ログファイル作成フラグ
+     *
+     * @var bool
+     */
     private $isCreateLog = true;            // default: true
+    /**
+     * Add date to log name flag
+     * ログ名に実行日時を付けるかのフラグ
+     *
+     * @var bool
+     */
     private $isAddDateToLogName = false;    // default: false
+    /**
+     * Upload file delete after process flag
+     * アップロードファイルを処理後に削除するフラグ
+     *
+     * @var bool
+     */
     private $deleteUploadFile = true;       // default: true
 
     /**
-     * construct
+     * Repository_Action_Main_Sword_Import constructor.
+     * コンストラクタ
      *
-     * @param SessionObject $session
-     * @param DbObject $db
-     * @param string $transStartDate
-     * @return class
+     * @param Session $session session object セッションオブジェクト
+     * @param DbObjectAdodb $db DB object DBオブジェクト
+     * @param string $transStartDate process start date 処理開始時間
      */
     public function __construct($session = null, $db = null, $transStartDate = null)
     {
@@ -88,12 +220,10 @@ class Repository_Action_Main_Sword_Import extends RepositoryAction
     }
 
     /**
-     * return 'error' any error
-     *        'index_error' create index error
-     *        'requestparam_error' request parameter error
-     *        'upload_error' upload file error
-     *        'warning' insert item warning
-     *        'success' success
+     * Execute
+     * 実行
+     *
+     * @return string "success"/"error" success/failed 成功/失敗
      */
     function execute()
     {
@@ -617,9 +747,24 @@ class Repository_Action_Main_Sword_Import extends RepositoryAction
                                                 $msg,
                                                 $ins_item_id,
                                                 $uri, 
-                                                $warningMsg);
+                                                $warningMsg,
+                                                $this->changeDoiFlag);
                 if($ret === false){
-                    $this->outputError("ErrorInsertItem", $msg);
+                    $error_list = array();
+                    if(strlen($array_item_data["item"][$nCnt]["item_array"][0]["TITLE"]) > 0) {
+                        $title = $array_item_data["item"][$nCnt]["item_array"][0]["TITLE"]; 
+                    } else {
+                        $title = $array_item_data["item"][$nCnt]["item_array"][0]["TITLE_ENGLISH"]; 
+                    }
+                    $error_list[] = new DetailErrorInfo(-1,       // item id
+                                                        $title,   // title
+                                                        $msg,     // error
+                                                        "",       // attr name
+                                                        "",       // input value
+                                                        "",       // regist value
+                                                        0        // error number
+                                                        );
+                    $this->outputError("ErrorInsertItem", $msg, $error_list);
                     $this->removeDirectory($tmp_dir);
                     if(isset($this->logFh))
                     {
@@ -833,6 +978,8 @@ class Repository_Action_Main_Sword_Import extends RepositoryAction
                 fclose($this->logFh);
             }
 
+            $this->exitAction();
+            $this->finalize();
             exit();
 
         } catch (Exception $ex){
@@ -848,8 +995,12 @@ class Repository_Action_Main_Sword_Import extends RepositoryAction
         }
     }
 
-    /*
-     * zip file extract
+    /**
+     * Extract ZIP file
+     * ZIPファイル解凍
+     *
+     * @param string $tmp_file to directory ZIPファイル解凍先ディレクトリ
+     * @return string extracted file path 解凍されたファイルのパス
      */
     private function extraction($tmp_file){
 
@@ -889,10 +1040,12 @@ class Repository_Action_Main_Sword_Import extends RepositoryAction
     }
 
     /**
+     * Output error by XML format
      * エラー内容をXML出力
-     * @param エラーステータス $error_msg string
-     * @param エラーに応じたサマリー $summary string
-     * @param 区切で登録アイテムごとのエラー情報 $error_list array
+     *
+     * @param string $error_msg error message エラーメッセージ
+     * @param string $summary error summary エラーサマリー
+     * @param array $error_list error object array エラーオブジェクト配列
      */
     private function outputError($error_msg, $summary, $error_list=array()){
         // Update suppleContentsEntry Y.Yamazawa --start-- 2015/03/24 --start--
@@ -901,9 +1054,7 @@ class Repository_Action_Main_Sword_Import extends RepositoryAction
         // -------------------------
         // XML
         // -------------------------
-        $ret_xml = '<?xml version="1.0" encoding="UTF-8" ?>'."\n";
-        // change sword ns 20151113 mhaya
-        //$ret_xml .= '<sword:error xmlns="http://www.w3.org/2005/Atom" xmlns:sword="http://purl.org/net/sword/" xmlns:arxiv="http://arxiv.org/schemas/atom" href="http://example.org/errors/BadManifest">'."\n";
+        $ret_xml = '<?xml version="1.0" encoding="utf-8" ?>'."\n";
         $ret_xml .= '<sword:error xmlns="http://www.w3.org/2005/Atom" xmlns:sword="http://purl.org/net/sword/terms/" xmlns:arxiv="http://arxiv.org/schemas/atom" href="http://example.org/errors/BadManifest">'."\n";
         $ret_xml .= '<title>ERROR</title>'."\n";
         $ret_xml .= '<version>2.0</version>'."\n";
@@ -916,17 +1067,17 @@ class Repository_Action_Main_Sword_Import extends RepositoryAction
         $ret_xml .= '<generator uri="'.BASE_URL.'/weko/sword/deposit.php" version="2"/>'."\n";
         $ret_xml .= '</source>'."\n";
         $ret_xml .= '<sword:treatment>Deposited items(zip) will be treated as WEKO import file which contains any WEKO contents information, and will be imported to WEKO.</sword:treatment>'."\n";
-        $ret_xml .= '<summary>'.$error_msg.'</summary>'."\n";
+        $ret_xml .= '<summary>'.htmlspecialchars($error_msg, ENT_QUOTES, 'UTF-8').'</summary>'."\n";
         if(count($error_list) > 0) {
             // sword description
             $description = "";
             for($ii = 0; $ii < count($error_list); $ii++) {
-                $description .= "ERROR: ".$error_list[$ii]->error." ";
+                $description .= "ERROR: ".Repository_Components_Util_Stringoperator::replaceSemicolonToDouble($error_list[$ii]->error)." ";
                 if($error_list[$ii]->item_id > 0) {
                     $description .= "at Item ID ".$error_list[$ii]->item_id.";";
                 }
             }
-            $ret_xml .= '<sword:verboseDescription>'.$description.'</sword:verboseDescription>'."\n";
+            $ret_xml .= '<sword:verboseDescription>'.htmlspecialchars($description, ENT_QUOTES, 'UTF-8').'</sword:verboseDescription>'."\n";
         }
         $ret_xml .= '</sword:error>';
         // Update suppleContentsEntry Y.Yamazawa --end-- 2015/03/24 --end--
@@ -937,11 +1088,14 @@ class Repository_Action_Main_Sword_Import extends RepositoryAction
 
     // Add suppleContentsEntry Y.Yamazawa --start-- 2015/03/24 --start--
     /**
+     * Create success registered XML
      * アイテム登録成功時のXML作成
-     * @param アイテムID（配列） $item_id_array
-     * @param 最初に登録したアイテムのアイテムID $start_item_id string
-     * @param 最後に登録したアイテムのアイテムID $end_item_id string
-     * @param 警告メッセージ（配列） $warning_msg array
+     *
+     * @param string $detail_uri item detail view URI アイテム詳細画面のURI
+     * @param int $start_item_id first registered item ID 最初に登録されたアイテムのアイテムID
+     * @param int $end_item_id last registered item ID 最後に登録されたアイテムのアイテムID
+     * @param array $warning_msg array warning message 警告メッセージ
+     * @return string XML XML
      */
     private function outputSuccess($detail_uri,$start_item_id,$end_item_id,$warning_msg)
     {
@@ -950,9 +1104,7 @@ class Repository_Action_Main_Sword_Import extends RepositoryAction
         // -------------------------
         // XML
         // -------------------------
-        $ret_xml = '<?xml version="1.0" encoding="UTF-8" ?>'."\n";
-        // change sword ns 20151113 mhaya
-        //$ret_xml .= '<entry xmlns="http://www.w3.org/2005/Atom" xmlns:sword="http://purl.org/net/sword/">'."\n";
+        $ret_xml = '<?xml version="1.0" encoding="utf-8" ?>'."\n";
         $ret_xml .= '<entry xmlns="http://www.w3.org/2005/Atom" xmlns:sword="http://purl.org/net/sword/terms/">'."\n";
         $ret_xml .= '<title>Repository Review</title>'."\n";
         $ret_xml .= '<version>2.0</version>'."\n";
@@ -997,11 +1149,12 @@ class Repository_Action_Main_Sword_Import extends RepositoryAction
 
     // Add suppleContentsEntry Y.Yamazawa --start-- 2015/03/24 --start--
     /**
+     * Get mail address
      * Emailアドレスの取得
      *
-     * @param ユーザーID $user_id string
-     * @param メールアドレス $email string
-     * @return boolean
+     * @param string $user_id user ID ユーザーID
+     * @param string $email mail address メールアドレス
+     * @return bool true/false get success/get failed 取得成功/取得失敗
      */
     private function emailAddress($user_id, &$email){
         // init
@@ -1032,10 +1185,12 @@ class Repository_Action_Main_Sword_Import extends RepositoryAction
 
     /**
      * check access right for insert item
+     * アイテム登録に権限が足りているか判定する
      *
-     * @param $access_role access auth's room_id delemit is ","
-     * @param $access_group access group's room_id delemit is ","
-     * @param $owner_user_id string private tree owner
+     * @param int $access_role access auth's room_id ルーム権限
+     * @param string $access_group access group's room_id グループID
+     * @param string $owner_user_id string private tree owner アイテム登録者のユーザーID
+     * @return bool true/false author/or not 権限がある/ない
      */
     function checkAccessIndex($access_role, $access_group, $owner_user_id){
 
@@ -1099,8 +1254,9 @@ class Repository_Action_Main_Sword_Import extends RepositoryAction
 
     /**
      * Get insert auth ids
+     * 登録権限を取得する
      *
-     * @return string
+     * @return string auth IDs 権限ID
      */
     public function getInsertAuthIds()
     {
@@ -1150,13 +1306,16 @@ class Repository_Action_Main_Sword_Import extends RepositoryAction
 
     /**
      * Insert new index and select check index
+     * 登録先インデックスを作成・選択する
      *
-     * @param string $newIndex
-     * @param string $checkedIds
-     * @param array $checkedIds
-     * @param string $errorMsg
-     * @param bool $writeLog
-     * @return bool
+     * @param int $newIndex new index ID 新規インデックスID
+     * @param string $checkedIds checked IDs SCfWで登録先としてチェックされたインデックスID
+     * @param array $indexIds index ID list インデックスIDリスト
+     *                         array[$ii]
+     * @param string $errorMsg error message エラーメッセージ
+     * @param $insUserId insert user ID 登録者ユーザーID
+     * @param bool $writeLog write log/or not ログに書き込む/書き込まない
+     * @return bool true/false success/failed 成功/失敗
      */
     public function insertNewIndexAndSelectCheckIndex($newIndex, &$checkedIds, &$indexIds, &$errorMsg, $insUserId, $writeLog=true)
     {
@@ -1217,6 +1376,10 @@ class Repository_Action_Main_Sword_Import extends RepositoryAction
                 // $index_info[0] is parent_index_id
                 // $index_info[1] is new index name
                 if(count($index_info) == 2 || count($index_info) == 3){
+                    // 現在時刻を設定
+                    $now_date = explode(" ", $this->TransStartDate);
+                    $pubDate = $now_date[0]." 00:00:00.000";
+                    
                     if(count($index_info) == 2){
                         array_push($index_info, "");
                     }
@@ -1241,9 +1404,6 @@ class Repository_Action_Main_Sword_Import extends RepositoryAction
                             return false;
                         }
                         if(count($result)==0){
-                            $now_date = explode(" ", $this->TransStartDate);
-                            $pubDate = $now_date[0]." 00:00:00.000";
-
                             $index = array(
                                 "index_name"              => "import",
                                 "index_name_english"      => "import",
@@ -1273,25 +1433,7 @@ class Repository_Action_Main_Sword_Import extends RepositoryAction
                         }
                         // Add index for general sword criant 2008/11/26 Y.Nakao --end--
                     }
-                    if(strlen($pub_date) > 0)
-                    {
-                        $pubDate = RepositoryOutputFilter::zeroPaddingDate($pub_date);
-                    }
-                    else
-                    {
-                        $now_date = explode(" ", $this->TransStartDate);
-                        $pubDate = $now_date[0]." 00:00:00.000";
-                    }
-                    if ($pubDate == -1) {
-                        $errorMsg = "Pub date for new index is wrong. Pub date :" + $pub_date;
-                    } else if ($pubDate == -2) {
-                        $errorMsg = "Pub date for new index is wrong. Pub date :" + $pub_date;
-                    }
-                    else if(!isset($pubDate))
-                    {
-                        $now_date = explode(" ", $this->TransStartDate);
-                        $pubDate = $now_date[0]." 00:00:00.000";
-                    }
+                
                     $index = array(
                         "index_name"              => $index_info[1],
                         "index_name_english"      => $index_info[1],
@@ -1432,9 +1574,11 @@ class Repository_Action_Main_Sword_Import extends RepositoryAction
 
     // Fix check index_id Y.Nakao 2013/06/07 --start--
     /**
-     * set session _user_id, _role_authority_id, _user_authority_id, _auth_id
+     * Set user authority to session
+     * セッションにユーザー権限をセットする
      *
-     * @param unknown_type $loginId
+     * @param string $loginId login ID ログインID
+     * @return bool true/false success/failed 成功/失敗
      */
     function setSessionUserAuthority($loginId)
     {
@@ -1486,8 +1630,10 @@ class Repository_Action_Main_Sword_Import extends RepositoryAction
 
     // Add SuppleContentsEntry Y.Yamazawa --start--
     /**
+     * Create log file
      * ログファイルの作成
-     * @param ログファイルのパス $logName
+     * 
+     * @param string $logName log file name ログファイル名
      */
     public function createSwordUpdateLogFile($logName)
     {
@@ -1499,6 +1645,7 @@ class Repository_Action_Main_Sword_Import extends RepositoryAction
     }
 
     /**
+     * Close log file
      * ログファイルを閉じる
      */
     public function closeLogFile()

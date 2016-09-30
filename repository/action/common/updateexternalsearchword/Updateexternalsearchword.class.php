@@ -1,7 +1,15 @@
 <?php
+
+/**
+ * External search keyword update action class
+ * 外部検索キーワード更新アクションクラス
+ * 
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Updateexternalsearchword.class.php 36507 2014-05-30 02:18:58Z tomohiro_ichikawa $
+// $Id: Updateexternalsearchword.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -11,39 +19,66 @@
 //
 // --------------------------------------------------------------------
 
+/**
+ * Base class for carrying out asynchronously and recursively possibility is the ability to process a long period of time
+ * 長時間処理する可能性がある機能を非同期かつ再帰的に実施するための基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/BackgroundProcess.class.php';
-require_once WEBAPP_DIR. '/modules/repository/components/RepositoryExternalSearchWordManager.class.php';
 
 /**
- * update external search word
- *
- * @package     NetCommons
- * @author      R.Matsuura(IVIS)
- * @project     NetCommons Project, supported by National Institute of Informatics
- * @access      public
+ * Common class that manages the search keyword taken out from the external search engine as an external search keyword
+ * 外部検索エンジンから取り出した検索キーワードを外部検索キーワードとして管理する共通クラス
+ */
+require_once WEBAPP_DIR. '/modules/repository/components/RepositoryExternalSearchWordManager.class.php';
+
+
+/**
+ * External search keyword update action class
+ * 外部検索キーワード更新アクションクラス
+ * 
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class Repository_Action_Common_Updateexternalsearchword extends BackgroundProcess
 {
+    /**
+     * Update record number
+     * 更新レコード数
+     *
+     * @car int
+     */
     const MAX_RECORDS = 100;
+    
+    /**
+     * Process name
+     * プロセス名
+     *
+     * @var string
+     */
     const PARAM_NAME = "Repository_Action_Common_Updateexternalsearchword";
     
     //----------------------------
     // Request parameters
     //----------------------------
     /**
-     * login_id
+     * Administrator login ID
+     * 管理者ログインID
      *
      * @var string
      */
     public $log_id = null;
     /**
-     * login_id
+     * Administrator login ID
+     * 管理者ログインID
      *
      * @var string
      */
     public $login_id = null;
     /**
-     * password
+     * Administrator password
+     * 管理者パスワード
      *
      * @var string
      */
@@ -51,6 +86,7 @@ class Repository_Action_Common_Updateexternalsearchword extends BackgroundProces
     
     /**
      * constructer
+     * コンストラクタ
      */
     public function __construct()
     {
@@ -59,8 +95,11 @@ class Repository_Action_Common_Updateexternalsearchword extends BackgroundProces
     
     /**
      * get log infomartion
+     * ログ情報取得
      *
-     * @param Object log_info
+     * @param array $log_info Log information
+     *                        array[$ii]["log_no"|"item_id"|"item_no"|"referer"]
+     * @return boolean Result 結果
      */
     protected function prepareBackgroundProcess(&$log_info) {
         
@@ -101,10 +140,11 @@ class Repository_Action_Common_Updateexternalsearchword extends BackgroundProces
     }
     
     /** 
+     * External search keyword update
+     * 外部検索キーワード更新
      * 
-     * execute background process
-     * 
-     * @param Object $log_info
+     * @param array $log_info Log information
+     *                        array[$ii]["log_no"|"item_id"|"item_no"|"referer"]
      */
     protected function executeBackgroundProcess($log_info) {
         $searchWordManager = new Repository_Components_RepositoryExternalSearchWordManager($this->Session, $this->Db, $this->TransStartDate);

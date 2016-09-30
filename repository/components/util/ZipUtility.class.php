@@ -1,22 +1,50 @@
 <?php
+
 /**
- * $Id: ZipUtility.class.php 53594 2015-05-28 05:25:53Z kaede_matsushita $
+ * ZIP file manipulation common classes
+ * ZIPファイル操作共通クラス
  *
- * ZIPファイルの操作を行う
- *
- * @author IVIS
+ * @package WEKO
+ */
+
+// --------------------------------------------------------------------
+//
+// $Id: ZipUtility.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
+//
+// Copyright (c) 2007 - 2008, National Institute of Informatics,
+// Research and Development Center for Scientific Information Resources
+//
+// This program is licensed under a Creative Commons BSD Licence
+// http://creativecommons.org/licenses/BSD/
+//
+// --------------------------------------------------------------------
+
+/**
+ * ZIP file manipulation library
+ * ZIPファイル操作ライブラリ
  */
 include_once MAPLE_DIR.'/includes/pear/File/Archive.php';
 
+/**
+ * ZIP file manipulation common classes
+ * ZIPファイル操作共通クラス
+ *
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
+ */
 class Repository_Components_Util_ZipUtility
 {
     /**
+     * Compressed into zip file
+     * ※ If you want to compress the file is not a slash to the end (which is recognized as a folder)
      * zipファイルに圧縮する
-     *
      * ※ファイルを圧縮する場合は末尾にスラッシュを付けない(フォルダとして認識される)
      *
-     * @params string $cmpFrom   圧縮元ファイル/フォルダパス
-     * @params string $cmpTo     圧縮先ファイルパス
+     * @param string $cmpFrom Compressed original file / folder path 圧縮元ファイル/フォルダパス
+     * @param string $cmpTo Compressed file path 圧縮先ファイルパス
+     * @return boolean Execution result 実行結果
      */
     public static function compress($cmpFrom, $cmpTo)
     {
@@ -45,11 +73,12 @@ class Repository_Components_Util_ZipUtility
     }
 
     /**
+     * Unzip the zip file
      * zipファイルを解凍する
      *
-     * @params string $extFrom   圧縮ファイルパス
-     * @params string $extTo     解凍先フォルダパス
-     * @return boolean zip解凍の成功失敗
+     * @param string $extFrom Compressed file path 圧縮ファイルパス
+     * @param string $extTo Destination folder path 解凍先フォルダパス
+     * @return boolean Success or failure of the zip decompression zip解凍の成功失敗
      */
     public static function extract($extFrom, $extTo)
     {
@@ -89,9 +118,11 @@ class Repository_Components_Util_ZipUtility
     }
 
     /**
-     * パスの最後に/を付ける
-     * @param パス $str
-     * @return Ambigous <string, unknown>
+     * The end of the path is a slash if not slash
+     * パスの最後がスラッシュでなければスラッシュを付ける
+     * 
+     * @param $str Path パス
+     * @return string Path after processing 処理後のパス
      */
     private static function _addSlash($str)
     {

@@ -1,7 +1,15 @@
 <?php
+
+/**
+ * View class for login confirmation of supplemental content new registration time
+ * サプリメンタルコンテンツ新規登録時のログイン確認用ビュークラス
+ *
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Logincheck.class.php 36236 2014-05-26 07:53:04Z satoshi_arata $
+// $Id: Logincheck.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -12,33 +20,106 @@
 // --------------------------------------------------------------------
 
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
-
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
 
 /**
- * [[機能説明]]
+ * View class for login confirmation of supplemental content new registration time
+ * サプリメンタルコンテンツ新規登録時のログイン確認用ビュークラス
  *
- * @package     [[package名]]
- * @access      public
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class Repository_View_Common_Item_Supple_Logincheck extends RepositoryAction
 {
 	// リクエストパラメタ
-	var $ej_item_id = null;				// EJWEKOアイテムID
-	var $ej_item_no = null;				// EJWEKOアイテム通番
-	var $ej_workflow_flag = null;		// EJWEKOのワークフローから遷移してきたことを示す
-	var $ej_workflow_active_tab = null;	// EJWEKOのワークフローのタブ情報
-	var $edit_item_id = null;			// 編集するアイテムのitem_id
-	var $ej_attribute_id = null;		// EJWEKOにおけるサプリコンテンツ所属属性ID
-	var $ej_supple_no = null;			// EJWEKOにおけるサプリコンテンツ通番
-	var $ej_page_id = null;				// EJWEKOのpage_id
-	var $ej_block_id = null;			// EJWEKOのblock_id
+	/**
+	 * EJWEKO (WEKO to register a supplicant) Item ID
+	 * EJWEKO(サプリを登録するWEKO)アイテムID
+	 *
+	 * @var int
+	 */
+	var $ej_item_id = null;
+	/**
+	 * EJWEKO item serial number
+	 * EJWEKOアイテム通番
+	 *
+	 * @var int
+	 */
+	var $ej_item_no = null;
+	/**
+	 * Indicating that it has been a transition from the workflow of EJWEKO
+	 * EJWEKOのワークフローから遷移してきたことを示す
+	 *
+	 * @var int
+	 */
+	var $ej_workflow_flag = null;
+	/**
+	 * Tab information workflow EJWEKO
+	 * EJWEKOのワークフローのタブ情報
+	 *
+	 * @var int
+	 */
+	var $ej_workflow_active_tab = null;
+	/**
+	 * Item id of edit item
+	 * 編集するアイテムのアイテムID
+	 *
+	 * @var int
+	 */
+	var $edit_item_id = null;
+	/**
+	 * Supplemental content affiliation attribute ID in the DJ WAKO
+	 * EJWEKOにおけるサプリコンテンツ所属属性ID
+	 *
+	 * @var int
+	 */
+	var $ej_attribute_id = null;
+	/**
+	 * Supplicant in EJWEKO content serial number
+	 * EJWEKOにおけるサプリコンテンツ通番
+	 *
+	 * @var int
+	 */
+	var $ej_supple_no = null;
+	/**
+	 * EJWEKO page id
+	 * EJWEKOのページID
+	 *
+	 * @var int
+	 */
+	var $ej_page_id = null;
+	/**
+	 * EJWEKO block id
+	 * EJWEKOのブロックID
+	 *
+	 * @var int
+	 */
+	var $ej_block_id = null;
 	
+    /**
+     * Session management objects
+     * Session管理オブジェクト
+     *
+     * @var Session
+     */
 	var $Session = null;
+    /**
+     * Database management objects
+     * データベース管理オブジェクト
+     *
+     * @var DbObject
+     */
 	var $Db = null;
 	
     /**
-     * [[機能説明]]
+     * To implement the login check
+     * ログインチェックを実施する
      *
      * @access  public
      */
@@ -228,7 +309,7 @@ class Repository_View_Common_Item_Supple_Logincheck extends RepositoryAction
 		// redirect
 		header("HTTP/1.1 301 Moved Permanently");
   		header("Location: ".$redirect_url);
-		
+		$this->finalize();
 		return;
     }
 }

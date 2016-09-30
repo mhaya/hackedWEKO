@@ -1,37 +1,78 @@
 <?php
+
+/**
+ * Reconstruct index view rights table
+ * 検索テーブル再構築実行クラス
+ *
+ * @package     WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Search.class.php 48455 2015-02-16 10:53:40Z atsushi_suzuki $
+// $Id: Search.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
-// Copyright (c) 2007 - 2008, National Institute of Informatics, 
+// Copyright (c) 2007 - 2008, National Institute of Informatics,
 // Research and Development Center for Scientific Information Resources
 //
 // This program is licensed under a Creative Commons BSD Licence
 // http://creativecommons.org/licenses/BSD/
 //
 // --------------------------------------------------------------------
-
-/* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
 
 /**
  * Reconstruct index view rights table
+ * 検索テーブル再構築実行クラス
  *
- * @package     NetCommons
- * @author      R.Matsuura(IVIS)
- * @project     NetCommons Project, supported by National Institute of Informatics
+ * @package     WEKO
+ * @copyright   (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license     http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
  * @access      public
  */
 class Repository_Action_Common_Reconstruction_Search extends RepositoryAction
 {
     // request parameter
-    var $login_id = null;
-    var $password = null;
+    /**
+     * login ID
+     * NC2ログインID
+     *
+     * @var int
+     */
+    public $login_id = null;
+    /**
+     * login password
+     * NC2ログインパスワード
+     *
+     * @var int
+     */
+    public $password = null;
     
     // user's authority level
+    /**
+     * user authority ID
+     * ユーザーベース権限
+     *
+     * @var int
+     */
     public $user_authority_id = "";
+    /**
+     * authority ID
+     * ユーザールーム権限
+     *
+     * @var int
+     */
     public $authority_id = '';
-    
+
+    /**
+     * Execute
+     * 実行
+     *
+     * @return string "success"/"error" success/failed 成功/失敗
+     */
     function executeApp()
     {
         // check login

@@ -1,38 +1,51 @@
 <?php
+
+/**
+ * aggregate usage statistics class
+ * 利用統計集計送信クラス
+ *
+ * @package     WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Usagestatistics.class.php 53594 2015-05-28 05:25:53Z kaede_matsushita $
+// $Id: Usagestatistics.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
-// Copyright (c) 2007 - 2008, National Institute of Informatics, 
+// Copyright (c) 2007 - 2008, National Institute of Informatics,
 // Research and Development Center for Scientific Information Resources
 //
 // This program is licensed under a Creative Commons BSD Licence
 // http://creativecommons.org/licenses/BSD/
 //
 // --------------------------------------------------------------------
-
-/* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
 
 /**
- * Usage statistics
+ * aggregate usage statistics class
+ * 利用統計集計送信クラス
  *
- * @package     NetCommons
- * @author      A.Suzuki(IVIS)
- * @project     NetCommons Project, supported by National Institute of Informatics
+ * @package     WEKO
+ * @copyright   (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license     http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
  * @access      public
  */
 class Repository_Action_Common_Usagestatistics extends RepositoryAction
 {
     // Request parameter
     /**
-     * login_id
+     * login id
+     * NC2ログインID
      *
      * @var string
      */
     public $login_id = null;
     /**
      * password
+     * NC2ログインパスワード
      *
      * @var string
      */
@@ -40,19 +53,22 @@ class Repository_Action_Common_Usagestatistics extends RepositoryAction
     
     // Member
     /**
-     * user_authority_id
+     * user authority id
+     * ユーザーベース権限
      *
      * @var int
      */
     public $user_authority_id = "";
     /**
-     * authority_id
+     * authority id
+     * ユーザールーム権限
      *
      * @var int
      */
     public $authority_id = "";
     /**
-     * user_id
+     * user id
+     * ユーザーID
      *
      * @var string
      */
@@ -60,8 +76,10 @@ class Repository_Action_Common_Usagestatistics extends RepositoryAction
     
     /**
      * Execute
+     * 実行
      *
-     * @return string
+     * @return string "success"/"error" success/failed 成功/失敗
+     * @throws AppException
      */
     public function executeApp()
     {
@@ -96,8 +114,9 @@ class Repository_Action_Common_Usagestatistics extends RepositoryAction
     
     /**
      * check execute authority
+     * 実行権限があるかチェックする
      *
-     * @return bool
+     * @return bool true/false admin/general 権限がある/ない
      */
     private function checkExecuteAuthority() {
         // Init user authorities

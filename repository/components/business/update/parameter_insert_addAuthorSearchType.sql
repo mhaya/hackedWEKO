@@ -1,0 +1,1 @@
+INSERT INTO %%DATABASE_PREFIX%%repository_parameter VALUE ('author_search_type', '0', '著者名検索の設定(0:著者名検索, 1:WEKO著者ID検索)', '1', '1', '0', '2016-03-31 00:00:00.000', '2016-03-31 00:00:00.000', '', 0);

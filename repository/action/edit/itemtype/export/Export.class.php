@@ -1,39 +1,93 @@
 <?php
+
+/**
+ * Action class for the item type export
+ * アイテムタイプエクスポート用アクションクラス
+ *
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Export.class.php 56708 2015-08-19 13:08:03Z tomohiro_ichikawa $
+// $Id: Export.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
-// Copyright (c) 2007 - 2008, National Institute of Informatics, 
+// Copyright (c) 2007 - 2008, National Institute of Informatics,
 // Research and Development Center for Scientific Information Resources
 //
 // This program is licensed under a Creative Commons BSD Licence
 // http://creativecommons.org/licenses/BSD/
 //
 // --------------------------------------------------------------------
-
-/* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
-
+/**
+ * File archive library class
+ * ファイルアーカイブライブラリクラス
+ */
 include_once MAPLE_DIR.'/includes/pear/File/Archive.php';
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
+/**
+ * Export common class
+ * エクスポート汎用処理クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/action/main/export/ExportCommon.class.php';
+/**
+ * Download class
+ * ダウンロード処理クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryDownload.class.php';
 
+/**
+ * Action class for the item type export
+ * アイテムタイプエクスポート用アクションクラス
+ * 
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
+ */
 class Repository_Action_Edit_Itemtype_Export extends RepositoryAction
 {
 	// Request param
-	var $item_type_id = null;	// Select item type ID
+	/**
+	 * Item type ID
+	 * アイテムタイプID
+	 *
+	 * @var int
+	 */
+	var $item_type_id = null;
 	
 	// Component
-	var $uploadsView = null;
-	
-	public $Session = null;
-	
-	public $Db = null;
-	
 	/**
-	 * [[機能説明]]
+	 * Uploads View components
+	 * アップロードコンポーネントクラス
 	 *
-	 * @access  public
+	 * @var Uploads_View
+	 */
+	var $uploadsView = null;
+	/**
+	 * Session management objects
+	 * Session管理オブジェクト
+	 *
+	 * @var Session
+	 */
+	public $Session = null;
+	/**
+	 * Db object
+	 * DBオブジェクト
+	 *
+	 * @var DbObjectAdodb
+	 */
+	public $Db = null;
+
+	/**
+	 * Execute
+	 * 実行
+	 *
+	 * @return bool true/false success/failed 成功/失敗
+	 * @throws RepositoryException
 	 */
 	function execute()
 	{
@@ -107,7 +161,7 @@ class Repository_Action_Edit_Itemtype_Export extends RepositoryAction
 			if ( $result == false ){
 				return false;
 			}
-			
+			$this->finalize();
 			exit();
 			
 		} catch ( RepositoryException $exception){

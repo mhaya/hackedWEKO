@@ -1,7 +1,15 @@
 <?php
+
+/**
+ * Creating custom reports Action class
+ * カスタムレポート作成アクションクラス
+ * 
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Result.class.php 56591 2015-08-18 01:37:11Z keiya_sugimoto $
+// $Id: Result.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -11,30 +19,67 @@
 //
 // --------------------------------------------------------------------
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
+/**
+ * Common class file download
+ * ファイルダウンロード共通クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryDownload.class.php';
+/**
+ * Action base class for WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/common/WekoAction.class.php';
 
 /**
- * log result action
- *
- * @package     NetCommons
- * @author      S.Kawasaki(IVIS)
- * @copyright   2006-2008 NetCommons Project
- * @license     http://www.netcommons.org/license.txt  NetCommons License
- * @project     NetCommons Project, supported by National Institute of Informatics
- * @access      public
+ * Creating custom reports Action class
+ * カスタムレポート作成アクションクラス
+ * 
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class Repository_Action_Edit_Log_Result extends WekoAction
 {
+    /**
+     * Line feed
+     * 改行コード
+     *
+     * @var string
+     */
     const CRLF = "\r\n";
     
     // out type
     // 1:insert
     // 2:download
     // 3:view
+    /**
+     * Output format(item registration)
+     * 出力形式(アイテム登録)
+     *
+     * @var int
+     */
     const TYPE_LOG_REGIST_ITEM = 1;
+    /**
+     * Output format(download)
+     * 出力形式(ダウンロード)
+     *
+     * @var int
+     */
     const TYPE_LOG_DOWNLOAD = 2;
+    /**
+     * Output format(detail screen display)
+     * 出力形式(詳細画面表示)
+     *
+     * @var int
+     */
     const TYPE_LOG_VIEW = 3;
+    /**
+     * Download format
+     * ダウンロード形式
+     *
+     * @var int
+     */
     public $type_log = null;
     // per type
     // 1:month
@@ -43,45 +88,153 @@ class Repository_Action_Edit_Log_Result extends WekoAction
     // 4:year
     // 5:item
     // 6:host
+    /**
+     * Aggregate format(day)
+     * 集計形式(日)
+     *
+     * @var int
+     */
     const PER_LOG_DAY = 1;
+    /**
+     * Aggregate format(week)
+     * 集計形式(週)
+     *
+     * @var int
+     */
     const PER_LOG_WEEK = 2;
+    /**
+     * Aggregate format(month)
+     * 集計形式(月)
+     *
+     * @var int
+     */
     const PER_LOG_MONTH = 3;
+    /**
+     * Aggregate format(year)
+     * 集計形式(年)
+     *
+     * @var int
+     */
     const PER_LOG_YEAR = 4;
+    /**
+     * Aggregate format(item)
+     * 集計形式(アイテム)
+     *
+     * @var int
+     */
     const PER_LOG_ITEM = 5;
+    /**
+     * Aggregate format(host)
+     * 集計形式(ホスト)
+     *
+     * @var int
+     */
     const PER_LOG_HOST = 6;
+    
+    /**
+     * Aggregate format
+     * 集計形式
+     *
+     * @var unknown_type
+     */
     public $per_log = null;
     // start date
+    /**
+     * Aggregate start year
+     * 集計開始年
+     *
+     * @var int
+     */
     public $sy_log = null;
+    /**
+     * Aggregate start month
+     * 集計開始月
+     *
+     * @var int
+     */
     public $sm_log = null;
+    /**
+     * Aggregate start day
+     * 集計開始日
+     *
+     * @var int
+     */
     public $sd_log = null;
     // end date
+    /**
+     * Aggregate end year
+     * 集計終了年
+     *
+     * @var int
+     */
     public $ey_log = null;
+    /**
+     * Aggregate end month
+     * 集計終了月
+     *
+     * @var int
+     */
     public $em_log = null;
+    /**
+     * Aggregate end day
+     * 集計終了日
+     *
+     * @var int
+     */
     public $ed_log = null;
 
     // download type
+    /**
+     * Download format(HTML)
+     * ダウンロード形式(HTML)
+     *
+     * @var int
+     */
     const DOWNLOAD_TYPE_HTML = 0;   // 0:html
+    
+    /**
+     * Download format(CSV)
+     * ダウンロード形式(CSV)
+     *
+     * @var int
+     */
     const DOWNLOAD_TYPE_CSV = 1;    // 1:csv
+    
+    /**
+     * Download format(TSV)
+     * ダウンロード形式(TSV)
+     *
+     * @var int
+     */
     const DOWNLOAD_TYPE_TSV = 2;    // 2:tsv
+    
+    /**
+     * Download format
+     * ダウンロード形式
+     *
+     * @var int
+     */
     public $is_csv_log = null;
 
     /**
-     * language resource object
+     * Language Resource Management object
+     * 言語リソース管理オブジェクト
      *
-     * @var object
+     * @var Smarty
      */
     private $smartyAssign = null;
 
     /**
-     * download object
+     * Download object
+     * ダウンロードオブジェクト
      *
-     * @var object
+     * @var RepositoryDownload
      */
     private $repositoryDownload = null;
     
     /**
-     * execute each custom report process
-     *
+     * Execute each custom report process
+     * カスタムレポートを出力する
      */
     function executeApp()
     {
@@ -146,7 +299,7 @@ class Repository_Action_Edit_Log_Result extends WekoAction
 
     /**
      * create error message by removing log
-     *
+     * ログ削除中のエラーメッセージ作成
      */
     private function createErrorMessage()
     {
@@ -171,8 +324,10 @@ class Repository_Action_Edit_Log_Result extends WekoAction
 
     /**
      * create html, csv file or tsv file by custom report
+     * HTMLの出力またはCSVファイル、TSVファイルのダウンロードを行う
      *
-     * @param array $items
+     * @param array $items Aggregate results 集計結果
+     *                     array[$ii]["day"|"day2"]
      */
     private function createPerDateData($items)
     {
@@ -361,9 +516,11 @@ class Repository_Action_Edit_Log_Result extends WekoAction
     }
     
     /**
-     * create html, csv file or tsv file by custom report
+     * create html, csv file or tsv file by custom report(each item)
+     * HTMLの出力またはCSVファイル、TSVファイルのダウンロードを行う(アイテム毎)
      *
-     * @param array $items
+     * @param array $items Aggregate results 集計結果
+     *                     array[$ii]["title"|"title_english"|"cnt"]
      */
     private function createPerItemData($items)
     {
@@ -536,9 +693,11 @@ class Repository_Action_Edit_Log_Result extends WekoAction
     }
     
     /**
-     * create html, csv file or tsv file by custom report
+     * create html, csv file or tsv file by custom report(each host)
+     * HTMLの出力またはCSVファイル、TSVファイルのダウンロードを行う(ホスト毎)
      *
-     * @param array $items
+     * @param array $items Aggregate results 集計結果
+     *                     array[$ii]["ip_address"|"host"|"cnt"]
      */
     private function createPerHostData($items)
     {
@@ -703,13 +862,15 @@ class Repository_Action_Edit_Log_Result extends WekoAction
     
     /**
      * create host access report table html
+     * ホスト毎の集計時、HTML文のtableタグを作成する
      *
-     * @param array $accessHtml -> custom log report table
-     * @param int $maxWidth -> max cnt length
-     * @param boolean $isDisplay -> true : exclude by excluded ip address
-     *                              false: all host custom report
-     * @param int $rowNum -> num of custom report row
-     * @return string -> host access report table html
+     * @param string $accessHtml custom log report table
+     * @param int $maxWidth max cnt length 最長幅
+     * @param boolean $isDisplay Log excluded display flag ログ除外対象表示フラグ
+     *                           true : exclude by excluded ip address
+     *                           false: all host custom report
+     * @param int $rowNum num of custom report row カスタムレポート行
+     * @return string host access report table html HTML文のtableタグ
      */
     private function createHostAccessHtml($accessHtml, $maxWidth, $isDisplay, $rowNum)
     {
@@ -778,9 +939,11 @@ class Repository_Action_Edit_Log_Result extends WekoAction
     
     /**
      * get max width by cnt
+     * 利用数から最長幅を算出する
      *
-     * @param array $items
-     * @return int
+     * @param array $items Aggregate results 集計結果
+     *                     array[$ii]["ip_address"|"host"|"cnt"]
+     * @return int Max length 最長幅
      */
     private function getMaxWidthByResult($items)
     {
@@ -797,9 +960,10 @@ class Repository_Action_Edit_Log_Result extends WekoAction
     }
     
     /**
-     * get message of output type
+     * Get message of output type
+     * 出力形式に応じたメッセージを作成する
      *
-     * @return string
+     * @return string Message メッセージ
      */
     private function getTypeByTypeLog()
     {

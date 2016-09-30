@@ -1,41 +1,66 @@
 <?php
+
+/**
+ * Action class for deletion item type
+ * アイテムタイプ削除用アクションクラス
+ *
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Delete.class.php 47749 2015-02-04 04:03:14Z tomohiro_ichikawa $
+// $Id: Delete.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
-// Copyright (c) 2007 - 2008, National Institute of Informatics, 
+// Copyright (c) 2007 - 2008, National Institute of Informatics,
 // Research and Development Center for Scientific Information Resources
 //
 // This program is licensed under a Creative Commons BSD Licence
 // http://creativecommons.org/licenses/BSD/
 //
 // --------------------------------------------------------------------
-
-/* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
+/**
+ * Search table manager class
+ * 検索テーブル管理クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositorySearchTableProcessing.class.php';
+/**
+ * Item type manager class
+ * アイテムタイプ管理クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/ItemtypeManager.class.php';
 
 /**
- * repositoryモジュール アイテムタイプ作成 アイテムタイプ削除アクション
- *
- * @package	 NetCommons
- * @author	  S.Kawasaki(IVIS)
- * @copyright   2006-2008 NetCommons Project
- * @license	 http://www.netcommons.org/license.txt  NetCommons License
- * @project	 NetCommons Project, supported by National Institute of Informatics
- * @access	  public
+ * Action class for deletion item type
+ * アイテムタイプ削除用アクションクラス
+ * 
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class Repository_Action_Edit_Itemtype_Delete extends RepositoryAction
 {
 	
 	// リクエストパラメタ
-	var $item_type_id = null;		// アイテムタイプID
-		
 	/**
-	 * [[機能説明]]
+	 * Item type ID
+	 * アイテムタイプID
 	 *
-	 * @access  public
+	 * @var int
+	 */
+	var $item_type_id = null;
+
+	/**
+	 * Execute
+	 * 実行
+	 *
+	 * @return string "success"/"error" success/failed 成功/失敗
+	 * @throws RepositoryException
 	 */
 	function execute()
 	{
@@ -140,7 +165,7 @@ class Repository_Action_Edit_Itemtype_Delete extends RepositoryAction
 				$this->failTrans();
 				throw $exception;
 			}
-			
+			$this->finalize();
 			return 'success';
 		}
 		catch ( RepositoryException $Exception) {

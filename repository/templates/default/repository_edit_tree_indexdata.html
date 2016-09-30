@@ -1,0 +1,589 @@
+<!--// ---------------------------------------------------------------------->
+<!--//                                                                     -->
+<!--// $Id: repository_edit_tree_indexdata.html 59015 2015-10-19 13:21:48Z yuko_nakao $          -->
+<!--//                                                                     -->
+<!--// Copyright (c) 2007 - 2008, National Institute of Informatics,        -->
+<!--// Research and Development Center for Scientific Information Resources -->
+<!--//                                                                     -->
+<!--// This program is licensed under a Creative Commons BSD Licence       -->
+<!--// http://creativecommons.org/licenses/BSD/                            -->
+<!--//                                                                     -->
+<!--// ---------------------------------------------------------------------->
+<{strip}>
+	<{if $action.tree_error_msg != null}>
+		<div class="error_msg al">
+			<{$action.tree_error_msg}>
+		</div>
+	<{/if}>
+	
+	<{* edit index info --start--*}>
+		<table class="full tb01">
+			<tr>
+				<th class="item_edit_list4 vt al ptb04 plr08" rowspan="2"><{$lang.repository_edittree_index}><font color="red">*</font></th>
+				<td class="item_edit_list4 vam ar ptb04 plr08 w20"><{$lang.repository_language_ja}></td>
+				<td class="item_edit_list4" colspan="2"><input type="text" id="index_name_repos<{$id}>" class="full al" disabled/></td>
+			</tr>
+			<tr>
+				<td class="item_edit_list4 vam ar ptb04 plr08 w20"><{$lang.repository_language_en}><font color="red">*</font></td>
+				<td class="item_edit_list4" colspan="2"><input type="text" id="index_name_repos<{$id}>_english" class="full al" disabled/></td>
+			</tr>
+			<tr>
+				<th class="item_edit_list4 vt al ptb04 plr08"><{$lang.repository_edittree_comment}></th>
+				<td class="item_edit_list4" colspan="3"><textarea  rows=5 cols=40 wrap=hard id="index_comment<{$id}>" class="full al" disabled></textarea></td>
+			</tr>
+			<tr class="paging">
+					<th class="item_edit_list4 vt al ptb04 plr08"><{$lang.repository_edittree_publish}></th>
+					<td class="item_edit_list4 al" colspan="3">
+						<label for="publish_repos<{$id}>">
+							<input type="checkbox" id="publish_repos<{$id}>" onclick="if(this.checked==true){$('input_date_repos').style.display='block';$('pubdate_recursive<{$id}>').checked='';}else{$('input_date_repos').style.display='none';$('pubdate_recursive<{$id}>').checked='';}" disabled/>
+								<{$lang.repository_edittree_show}><span style="color: #8a8;"><{$lang.repository_edittree_setpubdate}></span>
+						</label>
+						<div style="display: none;" id="input_date_repos" >
+							<input type="text" id="pubyear_repos<{$id}>" style="width: 40px;" onchange="javascript: treePubDateCheck();"/><{$lang.repository_edittree_year}>
+							<select id="pubmonth_repos<{$id}>" onchange="javascript: treePubDateCheck();">
+							<option value="01">1</option>
+							<option value="02">2</option>
+							<option value="03">3</option>
+							<option value="04">4</option>
+							<option value="05">5</option>
+							<option value="06">6</option>
+							<option value="07">7</option>
+							<option value="08">8</option>
+							<option value="09">9</option>
+							<option value="10">10</option>
+							<option value="11">11</option>
+							<option value="12">12</option>
+							</select><{$lang.repository_edittree_month}>
+							<select id="pubday_repos<{$id}>" onchange="javascript: treePubDateCheck();">
+							<option value="01">1</option>
+							<option value="02">2</option>
+							<option value="03">3</option>
+							<option value="04">4</option>
+							<option value="05">5</option>
+							<option value="06">6</option>
+							<option value="07">7</option>
+							<option value="08">8</option>
+							<option value="09">9</option>
+							<option value="10">10</option>
+							<option value="11">11</option>
+							<option value="12">12</option>
+							<option value="13">13</option>
+							<option value="14">14</option>
+							<option value="15">15</option>
+							<option value="16">16</option>
+							<option value="17">17</option>
+							<option value="18">18</option>
+							<option value="19">19</option>
+							<option value="20">20</option>
+							<option value="21">21</option>
+							<option value="22">22</option>
+							<option value="23">23</option>
+							<option value="24">24</option>
+							<option value="25">25</option>
+							<option value="26">26</option>
+							<option value="27">27</option>
+							<option value="28">28</option>
+							<option value="29">29</option>
+							<option value="30">30</option>
+							<option value="31">31</option>
+							</select><{$lang.repository_edittree_day}>
+						</div>
+						<input type="hidden" id="hid_pubyear_repos<{$id}>" />
+						<input type="hidden" id="hid_pubmonth_repos<{$id}>" />
+						<input type="hidden" id="hid_pubday_repos<{$id}>" />
+						
+						<div>
+							<label class="mt05 ml15" for="pubdate_recursive<{$id}>">
+								<input type="checkbox" id="pubdate_recursive<{$id}>" disabled/>
+								<{$lang.repository_edittree_pub_date_recursive}>
+							</label>
+						</div>
+					</td>
+				</tr>
+				<{* Add child index display more 2009/01/16 Y.Nakao --start-- *}>
+				<tr>
+					<th class="item_edit_list4 vt al ptb04 plr08"><{$lang.repository_edittree_display_range}></th>
+					<td class="item_edit_list4 al" colspan="3">
+						<label for="display_more<{$id}>">
+							<input type="checkbox" id="display_more<{$id}>" onclick="if(this.checked==true){$('input_display_more').style.display='block';}else{$('input_display_more').style.display='none';}" disabled/><{$lang.repository_edittree_display_more}>
+						</label>
+						<br/>
+						<div id="input_display_more" style="display: none;">
+							<{$lang.repository_edittree_display_num}><br/>
+							<input type="text" id="display_more_num<{$id}>" onkeypress="return chkNum(event);" class="ime_disabled ar w10 plr02" disabled/>
+						</div>
+					</td>
+				</tr>
+				<{* Add child index display more 2009/01/16 Y.Nakao --end-- *}>
+				
+				<{* Add new items RSS icon display select 2009/07/06 A.Suzuki --start-- *}>
+				<tr>
+					<th class="item_edit_list4 vt al ptb04 plr08"><{$lang.repository_edittree_rss_icon}></th>
+					<td class="item_edit_list4 al" colspan="3">
+						<label for="rss_display<{$id}>">
+							<input type="checkbox" id="rss_display<{$id}>" disabled/><{$lang.repository_edittree_display}><br/>
+						</label>
+					</td>
+				</tr>
+				<{* Add new items RSS icon display select 2009/07/06 A.Suzuki --end-- *}>
+                <{* Add PDF cover page setting 2013/01/29 A.Suzuki --start-- *}>
+                <tr>
+                    <th class="item_edit_list4 vt al ptb04 plr08"><{$lang.repository_edittree_pdf_cover_setting}></th>
+                    <td class="item_edit_list4 al" colspan="3">
+                        <label for="create_cover_flag<{$id}>">
+                            <input type="checkbox" id="create_cover_flag<{$id}>" disabled="disabled"/><{$lang.repository_edittree_pdf_cover_create}><br/>
+                        </label>
+                        <br>
+                        <label class="mt05 ml15" for="create_cover_recursive<{$id}>">
+                            <input type="checkbox" id="create_cover_recursive<{$id}>" disabled/>
+                            <{$lang.repository_edittree_pdf_cover_recursive}>
+                        </label>
+                    </td>
+                </tr>
+                <{* Add PDF cover page setting 2013/01/29 A.Suzuki --end-- *}>
+                <{* Add harvest public flag 2013/07/04 K.Matsuo --start-- *}>
+                <tr class="tree_access_control">
+                    <th class="item_edit_list4 vt al ptb04 plr08"><{$lang.repository_edittree_harvest_public}></th>
+                    <td class="item_edit_list4 al" colspan="3">
+                        <label for="harvest_public_state<{$id}>">
+                            <input type="checkbox" id="harvest_public_state<{$id}>" disabled="disabled"/><{$lang.repository_edittree_show}><br/>
+                        </label>
+                        <div class="red"><{$lang.repository_edittree_harvest_public_warning1}><br><{$lang.repository_edittree_harvest_public_warning2}></div>
+                    </td>
+                </tr>
+                <{* Add harvest public flag 2013/07/04 K.Matsuo --end-- *}>
+                <{* Add ISSN and biblio flag 2014/04/15 T.Ichikawa --start-- *}>
+                <tr class="issn_setting">
+                    <th class="item_edit_list4 vt al ptb04 plr08"><{$lang.repository_edittree_online_issn}></th>
+                    <td class="item_edit_list4 al" colspan="3">
+                        <div>
+                            <input type="text" class="full" name="online_issn<{$id}>" id="online_issn<{$id}>" value="" disabled /><br/>
+                            <label for="biblio_flag<{$id}>">
+                                <input type="checkbox" id="biblio_flag<{$id}>" disabled="disabled"/><{$lang.repository_edittree_post_sitelicense_user}><br/>
+                            </label>
+                            <div class="red"><{$lang.repository_edittree_online_issn_warning}>
+                        </div>
+                    </td>
+                </tr>
+                <{* Add ISSN adn biblio flag 2014/04/15 T.Ichikawa --end-- *}>
+				<{* Add contents page 2010/07/02 Y.Nakao --start-- *}>
+				<tr>
+					<th class="item_edit_list4 vt al ptb04 plr08"><{$lang.repository_edittree_display_type}></th>
+					<td class="item_edit_list4 al" colspan="3">
+						<label for="display_type_0">
+							<input type="radio" name="display_type" id="display_type_0" value="0" disabled/><{$lang.repository_edittree_display_type_0}>
+						</label>
+						<label for="display_type_1">
+							<input type="radio" name="display_type" id="display_type_1" value="1" disabled/><{$lang.repository_edittree_display_type_1}>
+						</label>
+					</td>
+				</tr>
+
+				<{* Add index list 2011/04/5 S.Abe --start-- *}>
+				<tr>
+					<th class="item_edit_list4 vt al ptb04 plr08" rowspan="3" nowrap><{$lang.repository_admin_select_index_list}></th>
+					<td class="item_edit_list4 vam ar ptb04 plr08"><{$lang.repository_admin_ranking_disp_setting}></td>
+					<td class="item_edit_list4 al" colspan="2">
+						<label for="select_index_list_display_0">
+							<input type="radio" name="select_index_list_display" id="select_index_list_display_0" value="1" onclick="inputIndexListName(1);" disabled /><{$lang.repository_admin_sort_disp}>
+						</label>
+						<label for="select_index_list_display_1">
+							<input type="radio" name="select_index_list_display" id="select_index_list_display_1" value="0" onclick="inputIndexListName(0);" disabled /><{$lang.repository_admin_sort_not_disp}>
+						</label>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="item_edit_list4" align="right"><{$lang.repository_edittree_select_list_display_name}></td>
+                    <td class="item_edit_list4">
+                        <input type="text" class="full" name="select_index_list_name" id = "select_index_list_name" value="" disabled /><br/>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="item_edit_list4" align="right"><{$lang.repository_edittree_select_list_display_name_en}></td>
+                    <td class="item_edit_list4">
+                        <input type="text" class="full"name="select_index_list_name_english" id = "select_index_list_name_english" value="" disabled /><br/>
+                    </td>
+                </tr>
+                <{* Add index list 2011/04/5 S.Abe --end-- *}>
+				
+				<{* Add contents page 2010/07/02 Y.Nakao --end-- *}>
+				
+				<{* Add tree access control list 2011/12/28 Y.Nakao --start-- *}>
+				<tr class="tree_access_control" >
+					<th class="item_edit_list4 vt al ptb04 plr08 nobr" rowspan="6"><{$lang.repository_edittree_acl}></th>
+					<th class="ranking_repos ranking_paging al item_edit_list4" colspan="2"><{$lang.repository_access_role}>(<{$lang.repository_authority_base}>)</th>
+				</tr>
+				<{* access role *}>
+				<tr class="tree_access_control">
+					<td colspan="2" class="pt00 pb00 pr00 pl00 item_edit_list4">
+						<table class="tb00 full">
+							<tr>
+								<td class="ptb04 plr08 w45 al">
+									<{$lang.repository_edittree_acl_OFF}><br/>
+									<select multiple id="exclusive_acl_role_name<{$id}>" class="full h10em" disabled></select>
+									<input type="hidden" id="exclusive_acl_role_id<{$id}>" value=""/>
+									<input type="hidden" id="exclusive_acl_user_auth_id<{$id}>" value=""/>
+								</td>
+								<td class="ptb04 plr08 w10 ac" valign="middle">
+									<br/>
+									<input type="button" class="btn_white" value="&gt;&gt;" id="acl_add_auth_btn" onclick="javascript: addACLRole();" disabled/><br/>
+									<br/>
+									<input type="button" class="btn_white" value="&lt;&lt;" id="acl_del_auth_btn" onclick="javascript: delACLRole();" disabled/>
+									<br/>
+								</td>
+								<td class="ptb04 plr08 w45 al">
+									<{$lang.repository_edittree_acl_ON}><br/>
+									<select multiple id="acl_role_name<{$id}>" class="full h10em" disabled></select>
+									<input type="hidden" id="acl_role_id<{$id}>" value=""/>
+									<input type="hidden" id="acl_user_auth_id<{$id}>" value=""/>
+								</td>
+							</tr>
+						</table>
+					</td>
+				</tr>
+				<tr class="tree_access_control">
+					<th class="ranking_repos ranking_paging al item_edit_list4" colspan="2"><{$lang.repository_access_role}>(<{$lang.repository_authority_room}>)</th>
+				</tr>
+				<tr class="tree_access_control">
+					<td colspan="2">
+						<table class="tb00 full">
+							<tr>
+								<td class="al" colspan="3">
+									<{$lang.repository_edittree_acl_ON}>
+									</br>
+									<label>
+										<input checked="checked" type="checkbox" disabled>
+										<{$smarty.const._AUTH_CHIEF_NAME}>
+									</label>
+									<label for="acl_room_auth<{$smarty.const._AUTH_MODERATE}><{$id}>">
+										<input id="acl_room_auth<{$smarty.const._AUTH_MODERATE}><{$id}>" value="<{$smarty.const._ON}>" onclick="commonCls.changeAuthority(this, '<{$id}>');" type="checkbox" disabled>
+										<{$smarty.const._AUTH_MODERATE_NAME}>
+									</label>
+									<label for="acl_room_auth<{$smarty.const._AUTH_GENERAL}><{$id}>">
+										<input id="acl_room_auth<{$smarty.const._AUTH_GENERAL}><{$id}>" value="<{$smarty.const._ON}>" onclick="commonCls.changeAuthority(this, '<{$id}>');" type="checkbox" disabled>
+										<{$smarty.const._AUTH_GENERAL_NAME}>
+									</label>
+									<label for="acl_room_auth<{$smarty.const._AUTH_GUEST}><{$id}>">
+										<input id="acl_room_auth<{$smarty.const._AUTH_GUEST}><{$id}>" value="<{$smarty.const._ON}>" onclick="commonCls.changeAuthority(this, '<{$id}>');" type="checkbox" disabled>
+										<{$smarty.const._AUTH_GUEST_NAME}>
+									</label>
+									<label for="acl_room_auth0<{$id}>">
+										<input id="acl_room_auth0<{$id}>" value="<{$smarty.const._ON}>" onclick="commonCls.changeAuthority(this, '<{$id}>');" type="checkbox" disabled>
+										<{$lang.repository_edittree_logout}>
+									</label>
+								</td>
+							</tr>
+						</table>
+					</td>
+				</tr>
+				<tr class="tree_access_control">
+					<th class="ranking_repos ranking_paging al item_edit_list4" colspan="2"><{$lang.repository_access_group}></th>
+				</tr>
+				<tr class="tree_access_control">
+					<td colspan="2" class="pt00 pb00 pr00 pl00 item_edit_list4">
+						<table class="tb00 full">
+							<tr>
+								<td class="ptb04 plr08 w45 al">
+									<{$lang.repository_edittree_acl_OFF}><br/>
+									<select multiple id="exclusive_acl_group_name<{$id}>" class="full h10em" disabled></select>
+									<input type="hidden" id="exclusive_acl_group_id<{$id}>" value=""/>
+								</td>
+								<td class="ptb04 plr08 w10 ac">
+									<br/>
+									<input type="button" class="btn_white" value="&gt;&gt;" id="acl_add_group_btn" onclick="javascript: addACLGroup();" disabled/><br/>
+									<br/>
+									<input type="button" class="btn_white" value="&lt;&lt;" id="acl_del_group_btn" onclick="javascript: delACLGroup();" disabled/>
+									<br/>
+								</td>
+								<td class="ptb04 plr08 w45 al">
+									<{$lang.repository_edittree_acl_ON}><br/>
+									<select multiple id="acl_group_name<{$id}>" class="full h10em" disabled></select>
+									<input type="hidden" id="acl_group_id<{$id}>" value=""/>
+								</td>
+							</tr>
+						</table>
+					</td>
+				</tr>
+				<{* Add tree access control list 2011/12/28 Y.Nakao --end-- *}>
+				
+				<tr class="tree_access_control">
+					<th class="item_edit_list4 vt al ptb04 plr08 nobr" rowspan="6"><{$lang.repository_access_level}></th>
+					<th class="ranking_repos ranking_paging al item_edit_list4" colspan="2"><{$lang.repository_access_role}>(<{$lang.repository_authority_base}>)</th>
+				</tr>
+				<tr class="tree_access_control">
+					<td colspan="2" class="pt00 pb00 pr00 pl00 item_edit_list4">
+						<table class="tb00 full">
+							<tr>
+								<td class="ptb04 plr08 w45 al">
+									<{$lang.repository_edittree_insert_OFF}><br/>
+									<select multiple id="not_access_role_name<{$id}>" class="full h10em" disabled>
+									</select>
+									<input type="hidden" id="not_access_role_id<{$id}>" value=""/>
+								</td>
+								<td class="ptb04 plr08 w10 ac">
+									<br/>
+									<input type="button" class="btn_white" value="&gt;&gt;" id="add_auth" onclick="javascript: addAccessAuth();" disabled/><br/>
+									<br/>
+									<input type="button" class="btn_white" value="&lt;&lt;" id="del_auth" onclick="javascript: delAccessAuth();" disabled/>
+									<br/>
+								</td>
+								<td class="ptb04 plr08 w45 al">
+									<{$lang.repository_edittree_insert_ON}><br/>
+									<select multiple id="access_role_name<{$id}>" class="full h10em" disabled>
+									</select>
+									<input type="hidden" id="access_role_id<{$id}>" value=""/>
+								</td>
+							</tr>
+						</table>
+                        <label class="mt05 mb05 ml25" for="aclRoleIds_recursive<{$id}>">
+                            <input type="checkbox" id="aclRoleIds_recursive<{$id}>" disabled/>
+                            <{$lang.repository_edittree_exclusive_acl_role_ids_recursive}>
+                        </label>
+					</td>
+				</tr>
+				<tr class="tree_access_control">
+					<th class="ranking_repos ranking_paging al item_edit_list4" colspan="2"><{$lang.repository_access_role}>(<{$lang.repository_authority_room}>)</th>
+				</tr>
+				<tr class="tree_access_control">
+					<td colspan="2">
+						<table class="tb00 full">
+							<tr>
+								<td class="al" colspan="3">
+									<{$lang.repository_edittree_insert_ON}>
+									</br>
+									<label>
+										<input checked="checked" type="checkbox" disabled>
+										<{$smarty.const._AUTH_CHIEF_NAME}>
+									</label>
+									<label for="tree_room_auth<{$smarty.const._AUTH_MODERATE}><{$id}>">
+										<input id="tree_room_auth<{$smarty.const._AUTH_MODERATE}><{$id}>" name="room_authority[<{$smarty.const._AUTH_MODERATE}>]" value="<{$smarty.const._ON}>" onclick="commonCls.changeAuthority(this, '<{$id}>');" type="checkbox" disabled>
+										<{$smarty.const._AUTH_MODERATE_NAME}>
+									</label>
+									<label for="tree_room_auth<{$smarty.const._AUTH_GENERAL}><{$id}>">
+										<input id="tree_room_auth<{$smarty.const._AUTH_GENERAL}><{$id}>" name="room_authority[<{$smarty.const._AUTH_MODERATE}>]" value="<{$smarty.const._ON}>" onclick="commonCls.changeAuthority(this, '<{$id}>');" type="checkbox" disabled>
+										<{$smarty.const._AUTH_GENERAL_NAME}>
+									</label>
+								</td>
+							</tr>
+						</table>
+                        <label class="mt05 ml20" for="aclRoomAuth_recursive<{$id}>">
+                            <input type="checkbox" id="aclRoomAuth_recursive<{$id}>" disabled/>
+                            <{$lang.repository_edittree_exclusive_acl_room_auth_recursive}>
+                        </label>
+					</td>
+				</tr>
+				<tr class="tree_access_control">
+					<th class="ranking_repos ranking_paging al item_edit_list4" colspan="2"><{$lang.repository_access_group}></th>
+				</tr>
+				<tr class="tree_access_control">
+					<td colspan="2" class="pt00 pb00 pr00 pl00 item_edit_list4">
+						<table class="tb00 full">
+							<tr>
+								<td class="ptb04 plr08 w45 al">
+									<{$lang.repository_edittree_insert_OFF}><br/>
+									<select multiple id="not_access_group_name<{$id}>" class="full h10em" disabled>
+									</select>
+									<input type="hidden" id="not_access_group_id<{$id}>" value=""/>
+								</td>
+								<td class="ptb04 plr08 w10 ac">
+									<br/>
+									<input type="button" class="btn_white" value="&gt;&gt;" id="add_group" onclick="javascript: addAccessGroup();" disabled/><br/>
+									<br/>
+									<input type="button" class="btn_white" value="&lt;&lt;" id="del_group" onclick="javascript: delAccessGroup();" disabled/>
+									<br/>
+									<input type="hidden" id="index_pid<{$id}>" style="width:50px;"/>
+									<input type="hidden" id="mod_date<{$id}>" style="width:50px;"/>
+									<input type="hidden" id="show_order<{$id}>" style="width:50px;"/>
+								</td>
+								<td class="ptb04 plr08 w45 al">
+									<{$lang.repository_edittree_insert_ON}><br/>
+									<select multiple id="access_group_name<{$id}>" class="full h10em" disabled>
+									</select>
+									<input type="hidden" id="access_group_id<{$id}>" value=""/>
+								</td>
+							</tr>
+						</table>
+                        <label class="mt05 mb05 ml25" for="aclGroupIds_recursive<{$id}>">
+                            <input type="checkbox" id="aclGroupIds_recursive<{$id}>" disabled/>
+                            <{$lang.repository_edittree_exclusive_acl_group_ids_recursive}>
+                        </label>
+					</td>
+				</tr>
+				
+				<{* Add OpenSearch URI 2010/05/10 A.Suzuki --start-- *}>
+				<tr>
+					<th class="item_edit_list4 vt al ptb04 plr08"><{$lang.repository_edittree_opensearch_uri}></th>
+					<td class="item_edit_list4 al" colspan="3">
+						<input type="text" class="full al" id="opensearch_uri<{$id}>" value="" onclick="this.select(); return false;" disabled readonly><br/>
+					</td>
+				</tr>
+				<{* Add OpenSearch URI 2010/05/10 A.Suzuki --end-- *}>
+				<{* Add index thumbnail 2010/08/20 Y.Nakao --start-- *}>
+				<tr>
+					<th class="item_edit_list4 vt al ptb04 plr08"><{$lang.repository_edittree_thumbnail}></th>
+					<td class="item_edit_list4 al" colspan="3" >
+			 			<div>
+			 				<{$lang.repository_edit_tree_upload_file_attention|smarty:nodefaults}>
+			 			</div>
+						<div id="thumbnail_input">
+							<form id="attachment_form<{$id}>" target="attachment_form<{$id}>" enctype="multipart/form-data">
+		 						<input type="file" id="thumbnail_file" disabled name="upload[]" size="30" />
+			 				</form>
+			 			</div>
+						<div style="display: none;" id="thumbnail_edit">
+							<div class="pd10"><img src="" id="thumbnail_disp" alt="" /></div>
+							<input type="button" class="btn_white mr10" value="<{$lang.repository_change}>" onclick="javascript: editThumbnail();"/>
+							<input type="button" class="btn_delete" value="<{$lang.repository_delete}>" onclick="javascript: editThumbnail();"/>
+			 			</div>
+					</td>
+				</tr>
+				<{* Add index thumbnail 2010/08/20 Y.Nakao --end-- *}>
+		</table>
+	<{* edit index info --end-- *}>
+<{/strip}>
+
+<{* onLoad処理（上位のHTMLに配置すると動かないためここに記述する *}>
+<{* make index tree 2008/12/04 Y.Nakao --start-- *}>
+<script class="nc_script" type="text/javascript">
+	// click index
+	// Add rollback bug of #292 2012/01/12 T.Koyasu -start-
+	// modify init value of edit_id ''->0
+	var edit_id = 0;
+	// Add rollback bug of #292 2012/01/12 T.Koyasu -end-
+	// drag index
+	var drag_id = "";
+	document.onmouseup = function(e){	
+		if($('tree_nodelabel'+drag_id)!=null){
+			var elm_name = $('tree_nodelabel'+drag_id);
+			elm_name.className = "nodelabel_repos";
+		}
+		if($('tree_nodeblock'+drag_id)!=null){
+			var elm_name = $('tree_nodeblock'+drag_id);
+			elm_name.className = "indexLineSelect";
+		}
+		drag_id="";
+	}
+	// element
+	var idx_name = $('index_name_repos<{$id}>');					// name of japanese
+	var idx_name_en = $('index_name_repos<{$id}>_english');			// name of english
+	var idx_comment = $('index_comment<{$id}>');					// comment of index
+	var pid = $('index_pid<{$id}>');								// parent_index_id
+	var mod_date = $('mod_date<{$id}>');							// mod_date
+	var show_order = $('show_order<{$id}>');						// show_order
+	var pub_chk = $('publish_repos<{$id}>');						// public or not
+	var pub_year = $('pubyear_repos<{$id}>');						// pub year
+	var pub_month = $('pubmonth_repos<{$id}>');						// pub month
+	var pub_day = $('pubday_repos<{$id}>');							// pub day
+	var access_group_id = $('access_group_id<{$id}>');				// access OK groups id
+	var access_group_name = $('access_group_name<{$id}>');			// access OK groups name
+	var not_access_group_id = $('not_access_group_id<{$id}>');		// access NG groups id
+	var not_access_group_name = $('not_access_group_name<{$id}>');	// access NG groups name
+	var add_group = $('add_group');									// add access group button
+	var del_group = $('del_group');									// del access group button
+	var access_role_id = $('access_role_id<{$id}>');				// access OK authorities id
+	var access_role_name = $('access_role_name<{$id}>');			// access OK authorities name
+	var not_access_role_id = $('not_access_role_id<{$id}>');		// access NG authorities id
+	var not_access_role_name = $('not_access_role_name<{$id}>');	// access NG authorities name
+	var add_auth = $('add_auth');									// add access group button
+	var del_auth = $('del_auth');									// del access group button
+	var send_alert = $('send_alert');								// send alert
+	var send_button = $('send_button');								// send button
+	// Add child index display more 2009/01/16 Y.Nakao --start--
+	var display_more = $('display_more<{$id}>');					// display more
+	var display_more_num = $('display_more_num<{$id}>');			// display more num
+	// Add child index display more 2009/01/16 Y.Nakao --end--
+	var rss_display = $('rss_display<{$id}>');						// RSS display
+	// Add config management authority 2010/02/23 Y.Nakao --start--
+	var room_auth_moderate = $('tree_room_auth<{$smarty.const._AUTH_MODERATE}><{$id}>');				// access OK room authorityes for moderate
+	var room_auth_general = $('tree_room_auth<{$smarty.const._AUTH_GENERAL}><{$id}>');					// access OK room authorityes for general
+	// Add config management authority 2010/02/23 Y.Nakao --end--
+	// Add OpenSearch URI 2010/05/10 A.Suzuki --start--
+	var opensearch_uri = $('opensearch_uri<{$id}>');				// OpenSearch URI
+	// Add OpenSearch URI 2010/05/10 A.Suzuki --end--
+	
+	// Add contents page 2010/07/02 Y.Nakao --start--
+	var display_type_0 = $('display_type_0');						// display type (list)
+	var display_type_1 = $('display_type_1');						// display type (contents)
+	// Add contents page 2010/07/02 Y.Nakao --end--
+	// Add index list 2011/04/6 S.Abe --start--
+	var select_index_list_display_0 = $('select_index_list_display_0');
+	var select_index_list_display_1 = $('select_index_list_display_1');
+	var select_index_list_name = $('select_index_list_name');
+	var select_index_list_name_english = $('select_index_list_name_english');
+	// Add index list 2011/04/6 S.Abe --end--
+	// Add tree thumbnail 2010/08/20 Y.Nakao --start--
+	var thumbnail_input = $('thumbnail_input');
+	var thumbnail_edit = $('thumbnail_edit');
+	var thumbnail_disp = $('thumbnail_disp');
+	var thumbnail_file = $('thumbnail_file');
+	var thumbnail_del = 0;
+	// Add tree thumbnail 2010/08/20 Y.Nakao --end--
+	
+	// Bugfix input scrutiny Y.Nakao 2011/06/17 --start--
+	var hid_pub_year = $('hid_pubyear_repos<{$id}>');						// hid_pub year
+	var hid_pub_month = $('hid_pubmonth_repos<{$id}>');						// hid_pub month
+	var hid_pub_day = $('hid_pubday_repos<{$id}>');							// hid_pub day
+	// Bugfix input scrutiny Y.Nakao 2011/06/17 --end--
+	
+	<{* Add tree access control list 2011/12/28 Y.Nakao --start-- *}>
+	var exclusive_acl_role_name = $('exclusive_acl_role_name<{$id}>');
+	var exclusive_acl_role_id = $('exclusive_acl_role_id<{$id}>');
+    <{* Add tree access control list 2012/03/02 T.Koyasu -start- *}>
+    var exclusive_acl_user_auth_id = $('exclusive_acl_user_auth_id<{$id}>');
+    <{* Add tree access control list 2012/03/02 T.Koyasu -end- *}>
+	var acl_add_auth_btn = $('acl_add_auth_btn');
+	var acl_del_auth_btn = $('acl_del_auth_btn');
+	var acl_role_name = $('acl_role_name<{$id}>');
+	var acl_role_id = $('acl_role_id<{$id}>');
+    <{* Add tree access control list 2012/03/02 T.Koyasu -start- *}>
+    var acl_user_auth_id = $('acl_user_auth_id<{$id}>');
+    <{* Add tree access control list 2012/03/02 T.Koyasu -end- *}>
+	var exclusive_acl_group_name = $('exclusive_acl_group_name<{$id}>');
+	var exclusive_acl_group_id = $('exclusive_acl_group_id<{$id}>');
+	var acl_add_group_btn = $('acl_add_group_btn');
+	var acl_del_group_btn = $('acl_del_group_btn');
+	var acl_group_name = $('acl_group_name<{$id}>');
+	var acl_group_id = $('acl_group_id<{$id}>');
+	var acl_room_auth_moderate = $('acl_room_auth<{$smarty.const._AUTH_MODERATE}><{$id}>');
+	var acl_room_auth_general = $('acl_room_auth<{$smarty.const._AUTH_GENERAL}><{$id}>');
+	var acl_room_auth_guest = $('acl_room_auth<{$smarty.const._AUTH_GUEST}><{$id}>');
+	var acl_room_auth_logout = $('acl_room_auth0<{$id}>');
+	<{* Add tree access control list 2011/12/28 Y.Nakao --end-- *}>
+
+    var create_cover_flag = $('create_cover_flag<{$id}>');  // PDF cover page setting
+	var harvest_public_state = $('harvest_public_state<{$id}>');
+	
+    <{* Add issn and biblio flag 2014/04/16 T.Ichikawa --start-- *}>
+    var online_issn = $('online_issn<{$id}>');
+    var biblio_flag = $('biblio_flag<{$id}>');
+    <{* Add issn and biblio flag 2014/04/16 T.Ichikawa --end-- *}>
+	// init
+	if('<{$smarty.session.MyPrivateTreeRootId}>' != ""){
+        repositoryInitTree<{$id}>('editTree<{$id}>panel','<{$id}>', 'editPrivatetree');
+	} else {
+        repositoryInitTree<{$id}>('editTree<{$id}>panel','<{$id}>', 'edit');
+	}
+	var hei = $('right_block').offsetHeight;
+	if(hei > <{$smarty.const._SNIPPET_HEIGHT}>){
+		$('editTree<{$id}>panel').style.height = hei+"px";
+	} else {
+		$('editTree<{$id}>panel').style.height = <{$smarty.const._SNIPPET_HEIGHT}>+"px";
+	}
+	
+	// update OK or not
+	if('<{$action.view_popup}>' == "delete"){
+		alert('<{$lang.repository_edittree_delete}>');
+	} else if('<{$action.view_popup}>' == "move"){
+		alert('<{$lang.repository_edittree_move}>');
+	} else if('<{$action.view_popup}>' == "pubdate_error"){
+		alert('<{$lang.repository_edittree_pubdate_error}>');
+	}
+	
+    <{* Add recursively uppdate flag 2015/01/21 S.Suzuki --start-- *}>
+	var pubdate_recursive = $('pubdate_recursive<{$id}>');
+	var create_cover_recursive = $('create_cover_recursive<{$id}>');
+	var aclRoleIds_recursive = $('aclRoleIds_recursive<{$id}>');
+	var aclRoomAuth_recursive = $('aclRoomAuth_recursive<{$id}>');
+	var aclGroupIds_recursive = $('aclGroupIds_recursive<{$id}>');
+    <{* Add recursively uppdate flag 2015/01/21 S.Suzuki --end-- *}>
+</script>

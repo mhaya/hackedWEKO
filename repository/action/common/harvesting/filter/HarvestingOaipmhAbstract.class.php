@@ -1,4 +1,12 @@
 <?php
+
+/**
+ * Harvest item registration base class
+ * ハーベストアイテム登録基底クラス
+ * 
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
 // $Id: HarvestingOaipmhAbstract.class.php 35791 2014-05-16 04:10:29Z rei_matsuura $
@@ -11,14 +19,25 @@
 //
 // --------------------------------------------------------------------
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
+/**
+ * String format conversion common classes
+ * 文字列形式変換共通クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryOutputFilter.class.php';
 
 /**
- * Repository module OAI-PMH oai_lom harvesting class
- *
- * @package repository
- * @access  public
+ * Harvest item registration base class
+ * ハーベストアイテム登録基底クラス
+ * 
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class HarvestingOaipmhAbstract extends RepositoryAction
 {
@@ -26,94 +45,562 @@ class HarvestingOaipmhAbstract extends RepositoryAction
     // Const
     // ---------------------------------------------
     // Itemtype data
+    /**
+     * Input type
+     * 入力タイプ
+     * 
+     * @var string
+     */
     const INPUT_TYPE_LINK = RepositoryConst::ITEM_ATTR_TYPE_LINK;
+    /**
+     * Input type
+     * 入力タイプ
+     * 
+     * @var string
+     */
     const INPUT_TYPE_TEXT = RepositoryConst::ITEM_ATTR_TYPE_TEXT;
+    /**
+     * Input type
+     * 入力タイプ
+     * 
+     * @var string
+     */
     const INPUT_TYPE_BIBLIOINFO = RepositoryConst::ITEM_ATTR_TYPE_BIBLIOINFO;
+    /**
+     * Input type
+     * 入力タイプ
+     * 
+     * @var string
+     */
     const INPUT_TYPE_SELECT = RepositoryConst::ITEM_ATTR_TYPE_SELECT;
+    /**
+     * Input type
+     * 入力タイプ
+     * 
+     * @var string
+     */
     const INPUT_TYPE_TEXTAREA = RepositoryConst::ITEM_ATTR_TYPE_TEXTAREA;
+    /**
+     * Input type
+     * 入力タイプ
+     * 
+     * @var string
+     */
     const INPUT_TYPE_NAME = RepositoryConst::ITEM_ATTR_TYPE_NAME;
+    /**
+     * Input type
+     * 入力タイプ
+     * 
+     * @var string
+     */
     const INPUT_TYPE_DATE = RepositoryConst::ITEM_ATTR_TYPE_DATE;
+    /**
+     * Input type
+     * 入力タイプ
+     * 
+     * @var string
+     */
     const INPUT_TYPE_CHECKBOX = RepositoryConst::ITEM_ATTR_TYPE_CHECKBOX;
     
     // Error / Warning message
+    /**
+     * Error message
+     * エラーメッセージ
+     * 
+     * @var string
+     */
     const MSG_ER_GET_TITLE = "repository_harvesting_error_get_title";
+    /**
+     * Warning message
+     * 警告メッセージ
+     * 
+     * @var string
+     */
     const MSG_WN_MISS_LANGAGE = "repository_harvesting_warning_miss_language";
     
     // Log status
+    /**
+     * Status
+     * 状態
+     * 
+     * @var int
+     */
     const LOG_STATUS_OK = RepositoryConst::HARVESTING_LOG_STATUS_OK;
+    /**
+     * Status
+     * 状態
+     * 
+     * @var int
+     */
     const LOG_STATUS_WARNING = RepositoryConst::HARVESTING_LOG_STATUS_WARNING;
+    /**
+     * Status
+     * 状態
+     * 
+     * @var int
+     */
     const LOG_STATUS_ERROR = RepositoryConst::HARVESTING_LOG_STATUS_ERROR;
     
     // Metadata array for ItemRegister
+    /**
+     * Key name
+     * キー名
+     * 
+     * @var string
+     */
     const KEY_IR_BASIC = "irBasic";
+    /**
+     * Key name
+     * キー名
+     * 
+     * @var string
+     */
     const KEY_IR_METADATA = "irMetadata";
+    /**
+     * Key name
+     * キー名
+     * 
+     * @var string
+     */
     const KEY_ITEM_ID = "item_id";
+    /**
+     * Key name
+     * キー名
+     * 
+     * @var string
+     */
     const KEY_ITEM_NO = "item_no";
+    /**
+     * Key name
+     * キー名
+     * 
+     * @var string
+     */
     const KEY_ITEM_TYPE_ID = "item_type_id";
+    /**
+     * Key name
+     * キー名
+     * 
+     * @var string
+     */
     const KEY_TITLE = "title";
+    /**
+     * Key name
+     * キー名
+     * 
+     * @var string
+     */
     const KEY_TITLE_EN = "title_english";
+    /**
+     * Key name
+     * キー名
+     * 
+     * @var string
+     */
     const KEY_LANGUAGE = "language";
+    /**
+     * Key name
+     * キー名
+     * 
+     * @var string
+     */
     const KEY_PUB_YEAR = "pub_year";
+    /**
+     * Key name
+     * キー名
+     * 
+     * @var string
+     */
     const KEY_PUB_MONTH = "pub_month";
+    /**
+     * Key name
+     * キー名
+     * 
+     * @var string
+     */
     const KEY_PUB_DAY = "pub_day";
+    /**
+     * Key name
+     * キー名
+     * 
+     * @var string
+     */
     const KEY_SEARCH_KEY = "serch_key";
+    /**
+     * Key name
+     * キー名
+     * 
+     * @var string
+     */
     const KEY_SEARCH_KEY_EN = "serch_key_english";
+    /**
+     * Key name
+     * キー名
+     * 
+     * @var string
+     */
     const KEY_ATTR_ID = "attribute_id";
+    /**
+     * Key name
+     * キー名
+     * 
+     * @var string
+     */
     const KEY_ATTR_NO = "attribute_no";
+    /**
+     * Key name
+     * キー名
+     * 
+     * @var string
+     */
     const KEY_INPUT_TYPE = "input_type";
+    /**
+     * Key name
+     * キー名
+     * 
+     * @var string
+     */
     const KEY_ATTR_VALUE = "attribute_value";
+    /**
+     * Key name
+     * キー名
+     * 
+     * @var string
+     */
     const KEY_FAMILY = "family";
+    /**
+     * Key name
+     * キー名
+     * 
+     * @var string
+     */
     const KEY_NAME = "name";
+    /**
+     * Key name
+     * キー名
+     * 
+     * @var string
+     */
     const KEY_FAMILY_RUBY = "family_ruby";
+    /**
+     * Key name
+     * キー名
+     * 
+     * @var string
+     */
     const KEY_NAME_RUBY = "name_ruby";
+    /**
+     * Key name
+     * キー名
+     * 
+     * @var string
+     */
     const KEY_EMAIL = "e_mail_address";
+    /**
+     * Key name
+     * キー名
+     * 
+     * @var string
+     */
     const KEY_AUTHOR_ID = "author_id";
+    /**
+     * Key name
+     * キー名
+     * 
+     * @var string
+     */
     const KEY_NAME_NO = "personal_name_no";
+    /**
+     * Key name
+     * キー名
+     * 
+     * @var string
+     */
     const KEY_BIBLIO_NAME = "biblio_name";
+    /**
+     * Key name
+     * キー名
+     * 
+     * @var string
+     */
     const KEY_BIBLIO_NAME_EN = "biblio_name_english";
+    /**
+     * Key name
+     * キー名
+     * 
+     * @var string
+     */
     const KEY_VOLUME = "volume";
+    /**
+     * Key name
+     * キー名
+     * 
+     * @var string
+     */
     const KEY_ISSUE = "issue";
+    /**
+     * Key name
+     * キー名
+     * 
+     * @var string
+     */
     const KEY_SPAGE = "start_page";
+    /**
+     * Key name
+     * キー名
+     * 
+     * @var string
+     */
     const KEY_EPAGE = "end_page";
+    /**
+     * Key name
+     * キー名
+     * 
+     * @var string
+     */
     const KEY_DATE_OF_ISSUED = "date_of_issued";
     
     // Others
+    /**
+     * Delimiter
+     * 区切り文字
+     * 
+     * @var string
+     */
     const IDENTIFIER_DELIMITER = ":";
+    /**
+     * Delimiter
+     * 区切り文字
+     * 
+     * @var string
+     */
     const TAXON_DELIMITER = ":";
+    /**
+     * Delimiter
+     * 区切り文字
+     * 
+     * @var string
+     */
     const NAME_DELIMITER = " ";
+    /**
+     * Language
+     * 言語
+     * 
+     * @var string
+     */
     const ITEM_LANG_JA = RepositoryConst::ITEM_LANG_JA;
+    /**
+     * Language
+     * 言語
+     * 
+     * @var string
+     */
     const ITEM_LANG_EN = RepositoryConst::ITEM_LANG_EN;
+    /**
+     * Language
+     * 言語
+     * 
+     * @var string
+     */
     const DEFAULT_LANGUAGE = RepositoryConst::ITEM_LANG_JA;
     
     // Database
+    /**
+     * Table name
+     * テーブル名
+     * 
+     * @var string
+     */
     const DB_ITEM = RepositoryConst::DBTABLE_REPOSITORY_ITEM;
+    /**
+     * Column name
+     * カラム名
+     * 
+     * @var string
+     */
     const DB_ITEM_ITEM_ID = RepositoryConst::DBCOL_REPOSITORY_ITEM_ITEM_ID;
+    /**
+     * Column name
+     * カラム名
+     * 
+     * @var string
+     */
     const DB_ITEM_ITEM_NO = RepositoryConst::DBCOL_REPOSITORY_ITEM_ITEM_NO;
+    /**
+     * Column name
+     * カラム名
+     * 
+     * @var string
+     */
     const DB_ITEM_IS_DELETE = RepositoryConst::DBCOL_COMMON_IS_DELETE;
+    /**
+     * Table name
+     * テーブル名
+     * 
+     * @var string
+     */
     const DB_ITEM_ATTR = RepositoryConst::DBTABLE_REPOSITORY_ITEM_ATTR;
+    /**
+     * Column name
+     * カラム名
+     * 
+     * @var string
+     */
     const DB_ITEM_ATTR_ITEM_ID = RepositoryConst::DBCOL_REPOSITORY_ITEM_ATTR_ITEM_ID;
+    /**
+     * Column name
+     * カラム名
+     * 
+     * @var string
+     */
     const DB_ITEM_ATTR_ITEM_NO = RepositoryConst::DBCOL_REPOSITORY_ITEM_ATTR_ITEM_NO;
+    /**
+     * Column name
+     * カラム名
+     * 
+     * @var string
+     */
     const DB_ITEM_ATTR_ATTR_ID = RepositoryConst::DBCOL_REPOSITORY_ITEM_ATTR_ATTRIBUTE_ID;
+    /**
+     * Column name
+     * カラム名
+     * 
+     * @var string
+     */
     const DB_ITEM_ATTR_ATTR_NO = RepositoryConst::DBCOL_REPOSITORY_ITEM_ATTR_ATTRIBUTE_NO;
+    /**
+     * Column name
+     * カラム名
+     * 
+     * @var string
+     */
     const DB_ITEM_ATTR_ATTR_VAL = RepositoryConst::DBCOL_REPOSITORY_ITEM_ATTR_ATTRIBUTE_VALUE;
+    /**
+     * Column name
+     * カラム名
+     * 
+     * @var string
+     */
     const DB_ITEM_ATTR_ITEM_TYPE_ID = RepositoryConst::DBCOL_REPOSITORY_ITEM_ATTR_ITEM_TYPE_ID;
+    /**
+     * Table name
+     * テーブル名
+     * 
+     * @var string
+     */
     const DB_PERSONAL_NAME = RepositoryConst::DBTABLE_REPOSITORY_PERSONAL_NAME;
+    /**
+     * Column name
+     * カラム名
+     * 
+     * @var string
+     */
     const DB_PERSONAL_NAME_ITEM_ID = RepositoryConst::DBCOL_REPOSITORY_PERSONAL_NAME_ITEM_ID;
+    /**
+     * Column name
+     * カラム名
+     * 
+     * @var string
+     */
     const DB_PERSONAL_NAME_ITEM_NO = RepositoryConst::DBCOL_REPOSITORY_PERSONAL_NAME_ITEM_NO;
+    /**
+     * Column name
+     * カラム名
+     * 
+     * @var string
+     */
     const DB_PERSONAL_NAME_ATTR_ID = RepositoryConst::DBCOL_REPOSITORY_PERSONAL_NAME_ATTRIBUTE_ID;
+    /**
+     * Column name
+     * カラム名
+     * 
+     * @var string
+     */
     const DB_PERSONAL_NAME_NAME_NO = RepositoryConst::DBCOL_REPOSITORY_PERSONAL_NAME_PERSONAL_NAME_NO;
+    /**
+     * Column name
+     * カラム名
+     * 
+     * @var string
+     */
     const DB_PERSONAL_NAME_FAMILY = RepositoryConst::DBCOL_REPOSITORY_PERSONAL_NAME_FAMILY;
+    /**
+     * Column name
+     * カラム名
+     * 
+     * @var string
+     */
     const DB_PERSONAL_NAME_NAME = RepositoryConst::DBCOL_REPOSITORY_PERSONAL_NAME_NAME;
+    /**
+     * Column name
+     * カラム名
+     * 
+     * @var string
+     */
     const DB_PERSONAL_NAME_FAMILY_RUBY = RepositoryConst::DBCOL_REPOSITORY_PERSONAL_NAME_FAMILY_RUBY;
+    /**
+     * Column name
+     * カラム名
+     * 
+     * @var string
+     */
     const DB_PERSONAL_NAME_NAME_RUBY = RepositoryConst::DBCOL_REPOSITORY_PERSONAL_NAME_NAME_RUBY;
+    /**
+     * Column name
+     * カラム名
+     * 
+     * @var string
+     */
     const DB_PERSONAL_NAME_EMAIL_ADDRES = RepositoryConst::DBCOL_REPOSITORY_PERSONAL_NAME_E_MAIL_ADDRESS;
+    /**
+     * Column name
+     * カラム名
+     * 
+     * @var string
+     */
     const DB_PERSONAL_NAME_ITEM_TYPE_ID = RepositoryConst::DBCOL_REPOSITORY_PERSONAL_NAME_ITEM_TYPE_ID;
+    /**
+     * Column name
+     * カラム名
+     * 
+     * @var string
+     */
     const DB_PERSONAL_NAME_AUTHOR_ID = RepositoryConst::DBCOL_REPOSITORY_PERSONAL_NAME_AUTHOR_ID;
     
+    /**
+     * Item type id
+     * アイテムタイプID
+     * 
+     * @var int
+     */
     private $itemtype_id = 0;
+    /**
+     * Repository id
+     * リポジトリID
+     * 
+     * @var int
+     */
     private $attr_id_repository_id = 0;
+    /**
+     * Identifier
+     * 識別子
+     * 
+     * @var int
+     */
     private $attr_id_identifier = 0;
+    /**
+     * Datestamp
+     * Datestamp
+     * 
+     * @var int
+     */
     private $attr_id_datestamp = 0;
+    /**
+     * Maximum attribute id
+     * 最大属性ID
+     * 
+     * @var int
+     */
     private $max_attr_id = 0;
     
     // ---------------------------------------------
@@ -121,8 +608,10 @@ class HarvestingOaipmhAbstract extends RepositoryAction
     // ---------------------------------------------
     /**
      * Constructor
+     * コンストラクタ
      *
-     * @return HarvestingOaipmh
+     * @param Session $Session Session object セッション管理オブジェクト
+     * @param DbObject $Db Database object データベース管理オブジェクト
      */
     public function __construct($Session, $Db){
         $this->Session = $Session;
@@ -131,8 +620,9 @@ class HarvestingOaipmhAbstract extends RepositoryAction
     
     /**
      * set itemtype id
+     * アイテムタイプID設定
      *
-     * @return HarvestingOaipmh
+     * @param int $itemtypeId Itemtype id アイテムタイプID
      */
     protected function setItemtypeId($itemtypeId){
         $this->itemtype_id = $itemtypeId;
@@ -140,8 +630,12 @@ class HarvestingOaipmhAbstract extends RepositoryAction
     
     /**
      * set param
+     * パラメータ設定
      *
-     * @return HarvestingOaipmh
+     * @param int $attr_repositoryId Repository id リポジトリID
+     * @param string $attr_identifier Identifier 識別子
+     * @param string $attr_datestamp date stamp Date stamp
+     * @param int $max_attr_id maximum attribute id 最大属性ID
      */
     protected function setRequiredParam($attr_repositoryId, $attr_identifier, $attr_datestamp, $max_attr_id){
         $this->attr_id_repository_id = $attr_repositoryId;
@@ -156,9 +650,10 @@ class HarvestingOaipmhAbstract extends RepositoryAction
     
     /**
      * Explode name string
+     * 名前分割
      *
-     * @param $str
-     * @return array
+     * @param string $str String 文字列
+     * @return array["family"|"name"] Name 名前
      */
     protected function explodeNameStr($str)
     {
@@ -181,8 +676,10 @@ class HarvestingOaipmhAbstract extends RepositoryAction
     
     /**
      * Init irBasic array
+     * アイテム基本情報初期化
      *
-     * @return array
+     * @return array Basic item information list アイテム基本情報
+     *               array["item_id"|"item_no"|"item_type_id"|"title"|"title_english"|"language"|"pub_year"|"pub_month"|"pub_day"|"serch_key"|"serch_key_english"]
      */
     protected function initIrBasic()
     {
@@ -204,8 +701,13 @@ class HarvestingOaipmhAbstract extends RepositoryAction
     
     /**
      * Create irMetadata array
+     * メタデータ一覧作成
      *
-     * @return array
+     * @param int $attrId Attribute id 属性ID
+     * @param string $inputType Input type 入力タイプ
+     * @param string $data Value 値
+     * @return array Metadata list メタデータ一覧
+     *               array["item_id"|"item_no"|"item_type_id"|"attribute_id"|"attribute_no"|"input_type"|"attribute_value"]
      */
     protected function createIrMetadata($attrId, $inputType, $data)
     {
@@ -271,8 +773,10 @@ class HarvestingOaipmhAbstract extends RepositoryAction
     
     /**
      * Init irMetadata array
+     * メタデータ一覧初期化
      *
-     * @return array
+     * @return array Metadata list メタデータ一覧
+     *               array["item_id"|"item_no"|"item_type_id"|"attribute_id"|"attribute_no"|"input_type"|"attribute_value"]
      */
     private function initIrMetadata()
     {
@@ -290,8 +794,10 @@ class HarvestingOaipmhAbstract extends RepositoryAction
     
     /**
      * Init irMetadata array for name
+     * メタデータ一覧初期化
      *
-     * @return array
+     * @return array Metadata list メタデータ一覧
+     *               array["item_id"|"item_no"|"item_type_id"|"attribute_id"|"name_no"|"input_type"|"family"|"name"|"family_ruby"|"name_ruby"|"email"|"author_id"|"language"]
      */
     private function initIrNameMetadata()
     {
@@ -315,8 +821,10 @@ class HarvestingOaipmhAbstract extends RepositoryAction
     
     /**
      * Init irMetadata array for biblio_info
+     * メタデータ一覧初期化
      *
-     * @return array
+     * @return array Metadata list メタデータ一覧
+     *               array["item_id"|"item_no"|"item_type_id"|"attribute_id"|"biblio_name"|"biblio_name_en"|"volume"|"issue"|"spage"|"epage"|"date_of_issued"|"biblio_no"]
      */
     private function initIrBiblioMetadata()
     {
@@ -340,10 +848,11 @@ class HarvestingOaipmhAbstract extends RepositoryAction
     
     /**
      * Set require metadata to array
+     * 必須オプション設定
      *
-     * @param int $repositoryId
-     * @param string $metadata
-     * @return array
+     * @param int $repositoryId Repository id リポジトリID
+     * @param string $metadata Metadata メタデータ
+     *                         array["irMetadata"][$ii]["item_id"|"item_no"|"item_type_id"|"attribute_id"|"attribute_no"|"input_type"|"attribute_value"]
      */
     protected function setRequireMetadataToArray($repositoryId, &$metadata)
     {
@@ -383,8 +892,9 @@ class HarvestingOaipmhAbstract extends RepositoryAction
     // ---------------------------------------------
     /**
      * Set TransStartDate
+     * トランザクション開始日時設定
      *
-     * @param string $transStartDate
+     * @param string $transStartDate Transaction start date トランザクション開始日時
      */
     public function setTransStartDate($transStartDate)
     {
@@ -393,12 +903,14 @@ class HarvestingOaipmhAbstract extends RepositoryAction
     
     /**
      * Get metadata array from ListRecords(record)
+     * メタデータ取得
      *
-     * @param string $metadataXml
-     * @param int $repositoryId
-     * @param array $metadata metadata[TAGNAME][NUM]["value"]
-     *                                              ["attribute"][KEY]
-     * @return bool
+     * @param string $metadataXml Metadata XML XML文字列
+     * @param int $repositoryId Repository id リポジトリID
+     * @param array $metadata Metadata list メタデータ一覧
+     *                        array[TAGNAME][$ii]["value"]
+     *                                           ["attribute"][KEY]
+     * @return boolean Result 結果
      */
     public function setMetadataFromListRecords($metadataXml, $repositoryId, &$metadata)
     {
@@ -407,11 +919,15 @@ class HarvestingOaipmhAbstract extends RepositoryAction
     
     /**
      * Check metadata
+     * メタデータチェック
      *
-     * @param array $metadata
-     * @param int $logStatus
-     * @param array $logMsg
-     * @return bool
+     * @param array $metadata Metadata メタデータ
+     *                        array["HEARDER"][0]["attributes"]["STATUS"]
+     *                        array["TITLE"|"LANGUAGE"|"URI"|"NIITYPE"]
+     * @param int $logStatus Status 状態
+     * @param array $logMsg Log message ログメッセージ
+     *                      array[$ii]
+     * @return boolean Result 結果
      */
     public function checkMetadata($metadata, &$logStatus, &$logMsg)
     {
@@ -438,13 +954,15 @@ class HarvestingOaipmhAbstract extends RepositoryAction
     
     /**
      * Check item exists
-     *
-     * @param array $metadata
-     * @param int $repositoryId
-     * @param int $itemId
-     * @param int $itemNo
-     * @param string $datestamp
-     * @param string $isDelete
+     * アイテム存在確認
+     * 
+     * @param array $metadata Metadata メタデータ
+     *                        array[KEYNAME]
+     * @param int $repositoryId Repository id リポジトリID
+     * @param int $itemId Item id アイテムID
+     * @param int $itemNo Item serial number アイテム通番
+     * @param string $datestamp Date stamp Date stamp
+     * @param string $isDelete Is delete 削除済みか
      * @return bool true: Exists / false: No exists
      */
     public function isItemExists($metadata, $repositoryId, &$itemId, &$itemNo, &$datestamp, &$isDelete)
@@ -525,11 +1043,17 @@ class HarvestingOaipmhAbstract extends RepositoryAction
     
     /**
      * Set item_id and item_no to irBasic and irMetadata
+     * アイテムID、アイテム通番設定
      *
-     * @param int $itemId
-     * @param int $itemNo
-     * @param array $metadata
-     * @return bool
+     * @param int $itemId Item id アイテムID
+     * @param int $itemNo Item serial number アイテム通番
+     * @param array $metadata Metadata メタデータ
+     *                        array[KEYNAME]
+     * @param array $irBasic Basic item information list アイテム基本情報
+     *                       array["item_id"|"item_no"|"item_type_id"|"title"|"title_english"|"language"|"pub_year"|"pub_month"|"pub_day"|"serch_key"|"serch_key_english"]
+     * @param array $irMetadata Metadata list メタデータ一覧
+     *                          array["item_id"|"item_no"|"item_type_id"|"attribute_id"|"attribute_no"|"input_type"|"attribute_value"]
+     * @return boolean Result 結果
      */
     public function setItemIdForIrData($itemId, $itemNo, &$metadata, &$irBasic, &$irMetadataArray)
     {
@@ -576,13 +1100,16 @@ class HarvestingOaipmhAbstract extends RepositoryAction
     }
     
     /**
-     * makeNameMetadataArray
+     * Get author id
+     * 著者ID取得
      * 
-     * @param int $itemId
-     * @param int $itemNo
-     * @param int $attrId
-     * @param int $nameNo
-     * @return int
+     * @param int $itemId Item id アイテムID
+     * @param int $itemNo Item serial number アイテム通番
+     * @param int $attrId Attribute id 属性ID
+     * @param int $nameNo Name number 名前通番
+     * @param int $family Family 姓
+     * @param int $name Name 名
+     * @return int Author id 著者ID
      */
     private function getAuthorIdForIrMetadata($itemId, $itemNo, $attrId, $nameNo, $family, $name)
     {
@@ -616,11 +1143,13 @@ class HarvestingOaipmhAbstract extends RepositoryAction
     
     /**
      * Set additional metadata
+     * 追加メタデータ設定
      * 
-     * @param int $itemId
-     * @param int $itemNo
-     * @param array &$metadataArray
-     * @return int
+     * @param int $itemId Item id アイテムID
+     * @param int $itemNo Item serial number アイテム通番
+     * @param array $metadata Metadata list メタデータ一覧
+     *                        array["item_id"|"item_no"|"item_type_id"|"attribute_id"|"attribute_no"|"input_type"|"attribute_value"]
+     * @return boolean Result 結果
      */
     private function setAdditionalMetadata($itemId, $itemNo, &$metadataArray)
     {
@@ -677,13 +1206,15 @@ class HarvestingOaipmhAbstract extends RepositoryAction
     
     /**
      * Set additional biblioInfo
+     * 追加メタデータ設定
      * 
-     * @param int $itemId
-     * @param int $itemNo
-     * @param int $attrId
-     * @param int $itemTypeId
-     * @param array &$metadataArray
-     * @return int
+     * @param int $itemId Item id アイテムID
+     * @param int $itemNo Item serial number アイテム通番
+     * @param int $attrId Attribute id 属性ID
+     * @param int $itemTypeId Item type id アイテムタイプID
+     * @param array $metadataArray Metadata list メタデータ一覧
+     *                             array["item_id"|"item_no"|"item_type_id"|"attribute_id"|"attribute_no"|"input_type"|"attribute_value"]
+     * @return boolean Result 結果
      */
     private function setAdditionalBiblioInfo($itemId, $itemNo, $attrId, $itemTypeId, &$metadataArray)
     {
@@ -716,14 +1247,16 @@ class HarvestingOaipmhAbstract extends RepositoryAction
     
     /**
      * Set additional name
+     * 追加メタデータ設定
      * 
-     * @param int $itemId
-     * @param int $itemNo
-     * @param int $attrId
-     * @param int $itemTypeId
-     * @param string $language
-     * @param array &$metadataArray
-     * @return int
+     * @param int $itemId Item id アイテムID
+     * @param int $itemNo Item serial number アイテム通番
+     * @param int $attrId Attribute id 属性ID
+     * @param int $itemTypeId Item type id アイテムタイプID
+     * @param string $language Language 言語
+     * @param array $metadataArray Metadata list メタデータ一覧
+     *                             array["item_id"|"item_no"|"item_type_id"|"attribute_id"|"attribute_no"|"input_type"|"attribute_value"]
+     * @return boolean Result 結果
      */
     private function setAdditionalName($itemId, $itemNo, $attrId, $itemTypeId, $language, &$metadataArray)
     {
@@ -757,13 +1290,16 @@ class HarvestingOaipmhAbstract extends RepositoryAction
     
     /**
      * Set additional attribute
+     * 追加メタデータ設定
      * 
-     * @param int $itemId
-     * @param int $itemNo
-     * @param int $attrId
-     * @param int $itemTypeId
-     * @param array &$metadataArray
-     * @return int
+     * @param int $itemId Item id アイテムID
+     * @param int $itemNo Item serial number アイテム通番
+     * @param int $attributeId Attribute id 属性ID
+     * @param int $itemTypeId Item type id アイテムタイプID
+     * @param string $inputType Input type 入力タイプ
+     * @param array $metadataArray Metadata list メタデータ一覧
+     *                             array["item_id"|"item_no"|"item_type_id"|"attribute_id"|"attribute_no"|"input_type"|"attribute_value"]
+     * @return boolean Result 結果
      */
     private function setAdditionalAttribute($itemId, $itemNo, $attrId, $itemTypeId, $inputType, &$metadataArray)
     {

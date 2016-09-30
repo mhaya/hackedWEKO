@@ -1,0 +1,1 @@
+INSERT INTO %%DATABASE_PREFIX%%repository_search_item_setup VALUE (25, 'repository_detail_search_show_name_wekoAuthorId', 1, 1, '');

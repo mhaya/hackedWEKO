@@ -114,9 +114,9 @@ SuggestJtitlePolicy.Local.prototype = {
   checkLoop: function() {
     var text = this.getInputText();
     
-    //byte”æ“¾
+    //byteæ•°å–å¾—
     var byte = this.getInputTextByte(text);
-    //2ƒoƒCƒg‚æ‚è¬‚³‚¢ê‡AƒTƒWƒFƒXƒg‚ğƒNƒŠƒA‚·‚é
+    //2ãƒã‚¤ãƒˆã‚ˆã‚Šå°ã•ã„å ´åˆã€ã‚µã‚¸ã‚§ã‚¹ãƒˆã‚’ã‚¯ãƒªã‚¢ã™ã‚‹
     if(byte < 2){
         this.oldText = text;
         
@@ -130,13 +130,13 @@ SuggestJtitlePolicy.Local.prototype = {
 
     if (text != this.oldText) {
        
-        //ŒŸõ’†–â‚¢‡‚í‚¹‚È‚¢
+        //æ¤œç´¢ä¸­å•ã„åˆã‚ã›ãªã„
         if(this.isSearchStart == false){
             this.hookBeforeSearch(this.iiCnt, this.jjCnt);
             this.oldText = text;
             this.search();
         }else{
-            //ŒŸõ’†‚Ìê‡Œ»İ“ü—Í‚³‚ê‚½’l‚ğ“ü‚ê‚Ä‚¨‚­
+            //æ¤œç´¢ä¸­ã®å ´åˆç¾åœ¨å…¥åŠ›ã•ã‚ŒãŸå€¤ã‚’å…¥ã‚Œã¦ãŠã
             this.oldText = this.getInputText();
         }
     }
@@ -144,7 +144,7 @@ SuggestJtitlePolicy.Local.prototype = {
     if(this.candidateStr != this.oldCandidateStr){
         this.oldCandidateStr = this.candidateStr;
         
-        //ŒŸõ’†–â‚¢‡‚í‚¹‚È‚¢
+        //æ¤œç´¢ä¸­å•ã„åˆã‚ã›ãªã„
         if(this.isSearchStart == false){
            this.search();
         }
@@ -163,7 +163,7 @@ SuggestJtitlePolicy.Local.prototype = {
     var text = this.getInputText();
 
     if (text == '' || text == null) {
-        //“ü—Í•¶š—ñ‚ª–³‚©‚Á‚½ê‡,‚­‚é‚­‚éÁ‚· hidden loading img Add jin
+        //å…¥åŠ›æ–‡å­—åˆ—ãŒç„¡ã‹ã£ãŸå ´åˆ,ãã‚‹ãã‚‹æ¶ˆã™ hidden loading img Add jin
         var unloadingfuncName = 'return '+'hideLoadingImage'+this.class_id+'(arg1, arg2)';
         var unloadingfunc = new Function('arg1', 'arg2', unloadingfuncName) ;
         unloadingfunc(this.iiCnt, this.jjCnt);
@@ -171,20 +171,20 @@ SuggestJtitlePolicy.Local.prototype = {
         //init
         this.clearSuggestArea();
         
-        //ŒŸõI—¹
+        //æ¤œç´¢çµ‚äº†
         this.isSearchStart = false;
     
         return;
     }
     
-     //‚­‚é‚­‚é•\¦
+     //ãã‚‹ãã‚‹è¡¨ç¤º
      var loadingfuncName = 'return '+'displayLoadingImage'+this.class_id+'(arg1, arg2)';
      var loadingfunc = new Function('arg1', 'arg2', loadingfuncName) ;
      loadingfunc(this.iiCnt, this.jjCnt);
     
-    //ŒŸõŒ‹‰Ê‚ª‚È‚¢
+    //æ¤œç´¢çµæœãŒãªã„
     if(this.isCandidateExist == false){
-        //‚­‚é‚­‚éÁ‚·
+        //ãã‚‹ãã‚‹æ¶ˆã™
         var unloadingfuncName = 'return '+'hideLoadingImage'+this.class_id+'(arg1, arg2)';
         var unloadingfunc = new Function('arg1', 'arg2', unloadingfuncName) ;
         unloadingfunc(this.iiCnt, this.jjCnt);
@@ -197,7 +197,7 @@ SuggestJtitlePolicy.Local.prototype = {
        this.createSuggestArea(resultList);
     }
     
-    //ŒŸõI—¹
+    //æ¤œç´¢çµ‚äº†
     this.isSearchStart = false;
     
   },
@@ -276,7 +276,7 @@ SuggestJtitlePolicy.Local.prototype = {
     this.suggestArea.style.display = '';
     this.suggestArea.scrollTop = 0;
     
-    //‚­‚é‚­‚éÁ‚· hidden loading img Add jin
+    //ãã‚‹ãã‚‹æ¶ˆã™ hidden loading img Add jin
     var unloadingfuncName = 'return '+'hideLoadingImage'+this.class_id+'(arg1, arg2)';
     var unloadingfunc = new Function('arg1', 'arg2', unloadingfuncName) ;
     unloadingfunc(this.iiCnt, this.jjCnt);
@@ -294,8 +294,8 @@ SuggestJtitlePolicy.Local.prototype = {
     var byte = 0;
     for (var i = 0; i < text.length; i++) {
         var c = text.charCodeAt(i);
-        //Shift_JIS: 0x0 ` 0x80, 0xa0 , 0xa1 ` 0xdf , 0xfd ` 0xff
-        //Unicode : 0x0 ` 0x80, 0xf8f0, 0xff61 ` 0xff9f, 0xf8f1 ` 0xf8f3
+        //Shift_JIS: 0x0 ï½ 0x80, 0xa0 , 0xa1 ï½ 0xdf , 0xfd ï½ 0xff
+        //Unicode : 0x0 ï½ 0x80, 0xf8f0, 0xff61 ï½ 0xff9f, 0xf8f1 ï½ 0xf8f3
         if ( (c >= 0x0 && c < 0x81) || (c == 0xf8f0) || (c >= 0xff61 && c < 0xffa0) || (c >= 0xf8f1 && c < 0xf8f4)) {
             byte += 1;
         }else {
@@ -492,7 +492,7 @@ SuggestJtitlePolicy.Local.prototype = {
       this.input.setSelectionRange(this.input.value.length, this.input.value.length);
     }
     
-    //‚­‚é‚­‚éÁ‚· hidden loading img Add jin
+    //ãã‚‹ãã‚‹æ¶ˆã™ hidden loading img Add jin
     var loadingfuncName = 'return '+'hideLoadingImage'+this.class_id+'(arg1, arg2)';
     var loadingfunc = new Function('arg1', 'arg2', loadingfuncName) ;
     loadingfunc(this.iiCnt, this.jjCnt);

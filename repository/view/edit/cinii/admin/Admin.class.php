@@ -1,83 +1,230 @@
 <?php
+
+/**
+ * CiNii admin view class
+ * CiNii管理画面viewクラス
+ *
+ * @package     WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Admin.class.php 53594 2015-05-28 05:25:53Z kaede_matsushita $
+// $Id: Admin.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
-// Copyright (c) 2007 - 2008, National Institute of Informatics, 
+// Copyright (c) 2007 - 2008, National Institute of Informatics,
 // Research and Development Center for Scientific Information Resources
 //
 // This program is licensed under a Creative Commons BSD Licence
 // http://creativecommons.org/licenses/BSD/
 //
 // --------------------------------------------------------------------
-/* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
-
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
+/**
+ * CiNii register class
+ * CiNii登録クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryShelfregistration.class.php';
 
 /**
- * [[機能説明]]
+ * CiNii admin view class
+ * CiNii管理画面viewクラス
  *
- * @package	 [[package名]]
- * @access	  public
+ * @package     WEKO
+ * @copyright   (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license     http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access      public
  */
 class Repository_View_Edit_Cinii_Admin extends RepositoryAction
 {
 	// component
+	/**
+	 * Session management objects
+	 * Session管理オブジェクト
+	 *
+	 * @var Session
+	 */
 	var $Session = null;
+	/**
+	 * Database management objects
+	 * データベース管理オブジェクト
+	 *
+	 * @var DbObjectAdodb
+	 */
 	var $Db = null;
 	
 	// member
+	/**
+	 * Item type data
+	 * アイテムタイプデータ
+	 *
+	 * @var array
+	 */
 	var $itemtype_data = null;
+	/**
+	 * ELS register result
+	 * ELS登録結果
+	 *
+	 * @var bool
+	 */
 	var $els_result = null;
+	/**
+	 * Selected index name
+	 * 選択中のインデックス名
+	 *
+	 * @var string
+	 */
 	var $selIdx_name = null;
+	/**
+	 * Position index
+	 * 所属インデックス
+	 *
+	 * @var int
+	 */
 	var $position_index = null;
+	/**
+	 * Selected index ID
+	 * 選択中のインデックスID
+	 *
+	 * @var int
+	 */
 	var $selIdx_id = null;
+	/**
+	 * All success flag
+	 * 全成功フラグ
+	 *
+	 * @var bool
+	 */
 	var $all_success = null;
+	/**
+	 * ELS download status
+	 * ELSダウンロード状態
+	 *
+	 * @var int
+	 */
 	var $els_download = null;
+	/**
+	 * ELS auto entry flag
+	 * ELS自動登録実行フラグ
+	 *
+	 * @var int
+	 */
 	var $els_auto_entry = null;
+	/**
+	 * ELS entry flag
+	 * ELS登録フラグ
+	 *
+	 * @var int
+	 */
 	var $els_entry = null;
-	// visible tab index
+	/**
+	 * ELS view active tab
+	 * ELS管理画面で選択中のタブ
+	 *
+	 * @var int
+	 */
 	var $els_active_tab = null;
 	// ssh path
+	/**
+	 * SCP command
+	 * SCP実行コマンド
+	 *
+	 * @var string
+	 */
 	var $scp_cmd = null;
+	/**
+	 * SSH command
+	 * SSHコマンド
+	 *
+	 * @var string
+	 */
 	var $ssh_cmd = null;
 	// scp path
+	/**
+	 * SCP command path
+	 * SCP実行コマンドパス
+	 *
+	 * @var string
+	 */
 	var $path_ssh = null;
+	/**
+	 * SSH command path
+	 * SSHコマンドのパス
+	 *
+	 * @var string
+	 */
 	var $path_scp = null;
-	// ELS aut entry check
+	/**
+	 * ELS auto entry checkbox
+	 * 画面でのELS自動登録チェックボックスの値
+	 *
+	 * @var string
+	 */
 	var $els_auto = null;
-	// login id for ELS
+	/**
+	 * ELS login ID
+	 * ELSログインID
+	 *
+	 * @var string
+	 */
 	var $els_login_id = null;
-	// ELS server connect status
+	/**
+	 * connect ELS sercer status
+	 * ELSサーバとの接続状態
+	 *
+	 * @var int
+	 */
 	var $els_connect = null;
+	/**
+	 * connect SCP to ELS server
+	 * ELSサーバとのSCP疎通状態
+	 *
+	 * @var int
+	 */
 	var $els_scp = null;
 	
 	// Add file copy to contents lab 2010/06/25 A.Suzuki --start--
+	/**
+	 * Lab connect
+	 * Lab connect
+	 *
+	 * @var null
+	 */
 	var $lab_connect = null;
+	/**
+	 * Lab SCP
+	 * Lab SCP
+	 *
+	 * @var null
+	 */
 	var $lab_scp = null;
 	// Add file copy to contents lab 2010/06/25 A.Suzuki --end--
 	
     // Add Shelf registration to contents lab 2012/10/21 T.Koyasu -start-
     /**
-     * show 'now executing...' or not
-     *
-     * @var string: true : file is exists -> now executing
-     *              false: file is not exists -> ready
+     * registration flag
+	 * 登録実行中フラグ
+	 *
+	 * @var bool
      */
     public $shelfRegistrationFlg = 'false';
     
     /**
+	 *
+	 * Convert file index list
+	 * コンバートに失敗したインデックスリスト
      * ELS convert failed index ids and index names of the last shelf registration
      *
-     * @var array: convertFailedIndexList[cnt]['indexId'] = index_id
-     *                                        ['indexName'] = index_name
-     *                                        ['url'] = opensearchUrl
+	 * @var array array[$ii]["index_id"|"indexName"|"url"]
      */
     public $convertFailedIndexList = array();
     
     /**
      * for kill process
+	 * 処理強制終了フラグ
      *
      * @var string
      */
@@ -85,7 +232,13 @@ class Repository_View_Edit_Cinii_Admin extends RepositoryAction
     // Add Shelf registration to contents lab 2012/10/21 T.Koyasu -end-
 	
     // Add Shelf registration to contents lab 2012/10/21 T.Koyasu -start-
-    // add constructor
+	/**
+	 * Repository_View_Edit_Cinii_Admin constructor.
+	 * コンストラクタ
+	 *
+	 * @param Session $Session session object セッションオブジェクト
+	 * @param DbObjectAdodb $Db DB object DBオブジェクト
+	 */
     public function Repository_View_Edit_Cinii_Admin($Session = null, $Db = null)
     {
         if(isset($Session))
@@ -98,11 +251,12 @@ class Repository_View_Edit_Cinii_Admin extends RepositoryAction
         }
     }
     // Add Shelf registration to contents lab 2012/10/21 T.Koyasu -end-
-    
+
 	/**
-	 * [[機能説明]]
+	 * Execute
+	 * 実行
 	 *
-	 * @access  public
+	 * @return string "success"/"error" success/failed 成功/失敗
 	 */
 	function executeApp()
 	{
@@ -386,9 +540,9 @@ class Repository_View_Edit_Cinii_Admin extends RepositoryAction
     // Add Shelf registration to contents lab 2012/10/21 T.Koyasu -start-
     /**
      * check temporary file exists
+	 * 一時ファイル存在チェック
      *
-     * @return string:true  :executing
-     *                false :is not execute
+     * @return bool true/false exist/not exist 存在する/存在しない
      */
     private function checkExecuteShelfRegistration()
     {
@@ -416,9 +570,10 @@ class Repository_View_Edit_Cinii_Admin extends RepositoryAction
     
     /**
      * set ELS convert failed index list
+	 * ELS形式への変換に失敗したインデックスのリストを作成する
      *
-     * @param RepositoryShelfregistration $shelfregistration
-     * @return boolean
+     * @param RepositoryShelfregistration $shelfregistration ELS登録処理オブジェクト
+	 * @return bool true/false success/failed 成功/失敗
      */
     private function setConvertFailedIndexList($shelfregistration)
     {

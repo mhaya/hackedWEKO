@@ -1,7 +1,15 @@
 <?php
+
+/**
+ * View class for the help screen display
+ * ヘルプ画面表示用ビュークラス
+ * 
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Help.class.php 53594 2015-05-28 05:25:53Z kaede_matsushita $
+// $Id: Help.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -12,25 +20,57 @@
 // --------------------------------------------------------------------
 
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
 
 /**
- * [[機能説明]]
- *
- * @package     [[package名]]
- * @access      public
+ * View class for the help screen display
+ * ヘルプ画面表示用ビュークラス
+ * 
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class Repository_View_Common_Help extends RepositoryAction
 {
 	// セッションとデータベースのオブジェクトを受け取る
+    /**
+     * Session management objects
+     * Session管理オブジェクト
+     *
+     * @var Session
+     */
     var $Session = null;
+    /**
+     * Database management objects
+     * データベース管理オブジェクト
+     *
+     * @var DbObject
+     */
     var $Db = null;
     
     //リクエストパラメータ
+    /**
+     * Help id
+     * ヘルプID
+     *
+     * @var int
+     */
     var $helpID = null;
+    /**
+     * Hekp path
+     * ヘルプパス
+     *
+     * @var string
+     */
     var $helpPath = "";
     /**
-     * [[機能説明]]
+     * Help display
+     * ヘルプ表示
      *
      * @access  public
      */

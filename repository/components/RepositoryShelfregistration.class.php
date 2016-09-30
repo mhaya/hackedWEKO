@@ -1,7 +1,15 @@
 <?php
+
+/**
+ * ELS automatic registration common classes
+ * ELS自動登録共通クラス
+ * 
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: RepositoryShelfregistration.class.php 22551 2013-05-13 00:57:50Z yuko_nakao $
+// $Id: RepositoryShelfregistration.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -11,20 +19,30 @@
 //
 // --------------------------------------------------------------------
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
+
 require_once WEBAPP_DIR. '/modules/repository/action/edit/cinii/admin/Admin.class.php';
+
 require_once WEBAPP_DIR. '/modules/repository/view/edit/cinii/admin/Admin.class.php';
 
 /**
- * Repository module cinii class
- *
- * @package repository
+ * ELS automatic registration common classes
+ * ELS自動登録共通クラス
+ * 
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
  * @access public
  */
 class RepositoryShelfregistration extends RepositoryAction
 {
     /**
      * progress file path
+     * ワークファイルパス
      *
      * @var string
      */
@@ -32,6 +50,7 @@ class RepositoryShelfregistration extends RepositoryAction
     
     /**
      * temporary progress file path
+     * 一時ファイル
      *
      * @var string
      */
@@ -39,6 +58,7 @@ class RepositoryShelfregistration extends RepositoryAction
     
     /**
      * directory path of progress file
+     * 作業ディレクトリパス
      *
      * @var string
      */
@@ -46,6 +66,7 @@ class RepositoryShelfregistration extends RepositoryAction
     
     /**
      * ELS convert failed index_id list file path
+     * 変換に失敗したインデックスID一覧ファイルパス
      *
      * @var string
      */
@@ -53,6 +74,7 @@ class RepositoryShelfregistration extends RepositoryAction
     
     /**
      * state of shelf registration
+     * ステータス
      *
      * @var string : start -> create progress file and start shelf registration
      *             : running -> executing shelf registration
@@ -63,6 +85,7 @@ class RepositoryShelfregistration extends RepositoryAction
     
     /**
      * index id is registration
+     * 選択済みインデックスID
      *
      * @var int
      */
@@ -70,6 +93,7 @@ class RepositoryShelfregistration extends RepositoryAction
     
     /**
      * check result to connect lab contents
+     * LAB接続状況
      *
      * @var string: true -> connect is success
      *              false-> connect is failed
@@ -78,10 +102,11 @@ class RepositoryShelfregistration extends RepositoryAction
     
     /**
      * constructor
+     * コンストラクタ
      *
-     * @param Object $Session
-     * @param Object $Db
-     * @return RepositoryShelfregistration
+     * @param Session $Session Session management objects Session管理オブジェクト
+     * @param Dbobject $Db Database management objects データベース管理オブジェクト
+     * @param string $TransStartDate Transaction start date and time トランザクション開始日時
      */
     public function RepositoryShelfregistration($Session, $Db, $TransStartDate){
         $this->Session = $Session;
@@ -96,8 +121,9 @@ class RepositoryShelfregistration extends RepositoryAction
     
     /**
      * check work file is exists or not
+     * ワークファイルが存在するか否か
      *
-     * @return boolean
+     * @return boolean Result 結果
      */
     public function checkExistsWorkFile()
     {
@@ -111,8 +137,9 @@ class RepositoryShelfregistration extends RepositoryAction
     
     /**
      * get now status from workfile
+     * ステータス取得
      *
-     * @return string
+     * @return string Status ステータス
      */
     public function getStatus()
     {
@@ -121,8 +148,9 @@ class RepositoryShelfregistration extends RepositoryAction
     
     /**
      * Open progress file
+     * 進捗ファイルを開く
      * 
-     * @param $executeFlg execute or not
+     * @param $executeFlg execute or not 実施フラグ
      */
     public function openProgressFile($executeFlg=true)
     {
@@ -181,6 +209,7 @@ class RepositoryShelfregistration extends RepositoryAction
     
     /**
      * Create progress file
+     * 進捗ファイル作成
      */
     public function createProgressFile()
     {
@@ -232,9 +261,10 @@ class RepositoryShelfregistration extends RepositoryAction
     }
     
     /**
-     * get no deleted all index ids 
+     * get no deleted all index ids
+     * 削除されていないインデックスID一覧取得 
      *
-     * @return array
+     * @return array[$ii]
      */
     private function getAllIndexIds()
     {
@@ -259,6 +289,7 @@ class RepositoryShelfregistration extends RepositoryAction
     
     /**
      * Delete progress file
+     * 進捗ファイル削除
      */
     public function deleteShelfregistrationFiles()
     {
@@ -272,7 +303,7 @@ class RepositoryShelfregistration extends RepositoryAction
     
     /**
      * Shlef registration end process
-     *
+     * 自動登録終了
      */
     public function endShelfregistration()
     {
@@ -283,9 +314,10 @@ class RepositoryShelfregistration extends RepositoryAction
 
     /**
      * Update progress file
+     * 進捗ファイル更新
      * 
-     * @param string $url
-     * @return bool
+     * @param string $url URL URL
+     * @return boolean Result 結果
      */
     public function updateProgressFile()
     {
@@ -324,8 +356,9 @@ class RepositoryShelfregistration extends RepositoryAction
     
     /**
      * execute shelf registration
+     * 自動登録開始
      *
-     * @return boolean
+     * @return boolean Result 結果
      */
     public function executeShelfRegistration()
     {
@@ -408,8 +441,10 @@ class RepositoryShelfregistration extends RepositoryAction
     /**
      * entry data
      * this method is the copy of action/edit/cinii/els/entry
+     * データ登録
      *
-     * @return string: true -> success
+     * @return string Result 結果
+     *                 true -> success
      *                 lab_NG -> lab connect is success, entry to contents lab is failed
      *                 false -> failed
      */
@@ -684,8 +719,9 @@ class RepositoryShelfregistration extends RepositoryAction
     
     /**
      * Entry registered index_id to parameter table
+     * ELSに登録したインデックスID一覧をパラメータテーブルに保存
      *
-     * @param $index_id int indexID
+     * @param int $index_id indexID インデックスID
      */
     private function entryRegisteredIndex($index_id)
     {
@@ -733,7 +769,7 @@ class RepositoryShelfregistration extends RepositoryAction
     
     /**
      * for kill process
-     *
+     * プロセス終了
      */
     public function killProcess()
     {
@@ -769,8 +805,10 @@ class RepositoryShelfregistration extends RepositoryAction
     
     /**
      * get ELS convert failed index_id list
+     * 変換に失敗したインデックスID一覧を取得
      *
-     * @return array: index_ids
+     * @return array Index id list インデックス一覧
+     *               array[$ii]
      */
     public function getConvertFailedIndexList()
     {
@@ -801,8 +839,9 @@ class RepositoryShelfregistration extends RepositoryAction
     
     /**
      * create convert failed index list file
+     * 変換に失敗したインデックスID一覧ファイルを作成する
      *
-     * @return boolean
+     * @return boolean Result 結果
      */
     public function createConvertFailedIndexList()
     {
@@ -821,7 +860,7 @@ class RepositoryShelfregistration extends RepositoryAction
     
     /**
      * delete convert failed index list when progress file is not exists
-     *
+     * 変換に失敗したインデックスID一覧ファイルを削除する
      */
     public function deleteConvertFailedIndexList()
     {
@@ -831,9 +870,10 @@ class RepositoryShelfregistration extends RepositoryAction
     }
     
     /**
+     * Output log
      * ログ出力
      *
-     * @param string $addMsg
+     * @param string $addMsg Message メッセージ
      */
     public function outputLog($addMsg="")
     {

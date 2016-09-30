@@ -1,294 +1,401 @@
 <?php
+
+/**
+ * Item register: Action for input metadata
+ * アイテム登録：メタデータ入力画面からの入力処理アクション
+ *
+ * @package     WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Edittexts.class.php 58457 2015-10-06 02:18:19Z tatsuya_koyasu $
+// $Id: Edittexts.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
-// Copyright (c) 2007 - 2008, National Institute of Informatics, 
+// Copyright (c) 2007 - 2008, National Institute of Informatics,
 // Research and Development Center for Scientific Information Resources
 //
 // This program is licensed under a Creative Commons BSD Licence
 // http://creativecommons.org/licenses/BSD/
 //
 // --------------------------------------------------------------------
-
-/* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
+/**
+ * Item register class
+ * アイテム登録処理クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/ItemRegister.class.php';
+/**
+ * Name authority class
+ * 氏名メタデータ管理クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/NameAuthority.class.php';
 
 /**
+ * Item register: Action for input metadata
  * アイテム登録：メタデータ入力画面からの入力処理アクション
  *
+ * @package     WEKO
+ * @copyright   (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license     http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
  * @access      public
  */
 class Repository_Action_Main_Item_Edittexts extends RepositoryAction
 {
     // リクエストパラメーター
     /**
+     * Request parameter array of basic information section
      * 基本情報部分のリクエストパラメタ配列
+     *
      * @var array
      */
     public $base_attr = null;
     
     /**
+     * Item public date year
      * アイテム公開日：年
+     *
      * @var string
      */
     public $item_pub_date_year = null;
     
     /**
+     * Item public date month
      * アイテム公開日：月
+     *
      * @var string
      */
     public $item_pub_date_month = null;
     
     /**
+     * Item public date day
      * アイテム公開日：日
+     *
      * @var string
      */
     public $item_pub_date_day = null;
     
     /**
+     * Keyword
      * キーワード
+     *
      * @var string
      */
     public $item_keyword = null;
     
     /**
+     * Keyword english
      * キーワード(英)
+     *
      * @var string
      */
     public $item_keyword_english = null;
     
     /**
+     * attribute "text" input array
      * "text"属性入力値配列
+     *
      * @var array
      */
     public $item_attr_text = null;
     
     /**
+     * attribute "textarea" input array
      * "textarea"属性入力値配列
+     *
      * @var array
      */
     public $item_attr_textarea = null;
     
     /**
+     * attribute "checkbox" input array
      * "checkbox"属性入力値配列
+     *
      * @var array
      */
     public $item_attr_checkbox = null;
     
     /**
+     * attribute "name: family" input array
      * "name"属性：姓 入力値配列
+     *
      * @var array
      */
     public $item_attr_name_family = null;
     
     /**
+     * attribute "name: first name" input array
      * "name"属性：名 入力値配列
+     *
      * @var array
      */
     public $item_attr_name_given = null;
     
     /**
+     * attribute "name: family(english)" input array
      * "name"属性：姓(英語) 入力値配列
+     *
      * @var array
      */
     public $item_attr_name_family_ruby = null;
     
     /**
+     * attribute "name: first name(english)" input array
      * "name"属性：名(英語) 入力値配列
+     *
      * @var array
      */
     public $item_attr_name_given_ruby = null;
     
     /**
+     * attribute "name: email" input array
      * "name"属性：E-mail 入力値配列
+     *
      * @var array
      */
     public $item_attr_name_email = null;
     
     /**
+     * attribute "name: prefix" input array
      * "name"属性：著者ID prefix 入力値配列
+     *
      * @var array
      */
     public $item_attr_name_author_id_prefix = null;
     
     /**
+     * attribute "name: suffix" input array
      * "name"属性：著者ID suffix 入力値配列
+     *
      * @var array
      */
     public $item_attr_name_author_id_suffix = null;
     
     /**
+     * attribute "select" input array
      * "select"属性入力値配列
+     *
      * @var array
      */
     public $item_attr_select = null;
     
     /**
+     * attribute "link: URL" input array
      * "link"属性：URL 入力値配列
+     *
      * @var array
      */
     public $item_attr_link = null;
     
     /**
+     * attribute "link: display name" input array
      * "link"属性：表示名 入力値配列
+     *
      * @var array
      */
     public $item_attr_link_name = null;
     
     /**
+     * attribute "radio" input array
      * "radio"属性入力値配列
+     *
      * @var array
      */
     public $item_attr_radio = null;
     
     /**
+     * attribute "biblio: name" input array
      * 書誌情報：雑誌名 入力値配列
+     *
      * @var array
      */
     public $item_attr_biblio_name = null;
     
     /**
+     * attribute "biblio: name(english)" input array
      * 書誌情報：雑誌名(英) 入力値配列
+     *
      * @var array
      */
     public $item_attr_biblio_name_english = null;
     
     /**
+     * attribute "biblio: volume" input array
      * 書誌情報：巻 入力値配列
+     *
      * @var array
      */
     public $item_attr_biblio_volume = null;
     
     /**
+     * attribute "biblio: issue" input array
      * 書誌情報：号 入力値配列
+     *
      * @var array
      */
     public $item_attr_biblio_issue = null;
     
     /**
+     * attribute "biblio: start page" input array
      * 書誌情報：開始ページ 入力値配列
+     *
      * @var array
      */
     public $item_attr_biblio_spage = null;
     
     /**
+     * attribute "biblio: end page" input array
      * 書誌情報：終了ページ 入力値配列
+     *
      * @var array
      */
     public $item_attr_biblio_epage = null;
     
     /**
+     * attribute "biblio: publish date" input array
      * 書誌情報：発行年月日 入力値配列
+     *
      * @var array
      */
     public $item_attr_biblio_dateofissued = null;
     
     /**
+     * attribute "biblio: publish year" input array
      * 書誌情報：発行年 入力値配列
+     *
      * @var array
      */
     public $item_attr_biblio_dateofissued_year = null;
     
     /**
+     * attribute "biblio: publish month" input array
      * 書誌情報：発行月 入力値配列
+     *
      * @var array
      */
     public $item_attr_biblio_dateofissued_month = null;
     
     /**
+     * attribute "biblio: publish day" input array
      * 書誌情報：発行日 入力値配列
+     *
      * @var array
      */
     public $item_attr_biblio_dateofissued_day = null;
     
     /**
+     * attribute "date" input array
      * 日付 入力値配列
+     *
      * @var array
      */
     public $item_attr_date = null;
     
     /**
+     * attribute "date: year" input array
      * 日付：年 入力値配列
+     *
      * @var array
      */
     public $item_attr_date_year = null;
     
     /**
+     * attribute "date: month" input array
      * 日付：月 入力値配列
+     *
      * @var array
      */
     public $item_attr_date_month = null;
     
     /**
+     * attribute "date: day" input array
      * 日付：日 入力値配列
+     *
      * @var array
      */
     public $item_attr_date_day = null;
     
     /**
+     * attribute "header: headline" input array
      * 見出し：大見出し 入力値配列
+     *
      * @var array
      */
     public $item_attr_heading = null;
     
     /**
+     * attribute "header: headline(english)" input array
      * 見出し：大見出し(英) 入力値配列
+     *
      * @var array
      */
     public $item_attr_heading_en = null;
     
     /**
+     * attribute "header: subhead" input array
      * 見出し：小見出し 入力値配列
+     *
      * @var array
      */
     public $item_attr_heading_sub = null;
     
     /**
+     * attribute "header: subhead(english)" input array
      * 見出し：小見出し(英) 入力値配列
+     *
      * @var array
      */
     public $item_attr_heading_sub_en = null;
     
     /**
+     * Contributor flag
      * Contributor：フラグ
+     *
      * @var string
      */
     public $item_contributor = null;
     
     /**
+     * Contributor handle name
      * Contributor：ハンドル名
+     *
      * @var string
      */
     public $item_contributor_handle = null;
     
     /**
+     * Contributor member name
      * Contributor：会員氏名
      * @var string
      */
     public $item_contributor_name= null;
     
     /**
+     * Contributor mail address
      * Contributor：e-mailアドレス
      * @var string
      */
     public $item_contributor_email = null;
     
     /**
+     * Feedback mail address
      * フィードバックメール送信先メールアドレス
      * @var string
      */
     public $send_feedback_mail_address_mailaddresses = null;
     
     /**
+     * Feedback mail user name
      * フィードバックメール送信先ユーザー名
      * @var string
      */
     public $send_feedback_mail_address_authors = null;
     
     /**
+     * Process mode
      * 処理モード
      *   'selecttype'   : アイテムタイプ選択画面
      *   'files'        : ファイル選択画面
@@ -308,23 +415,34 @@ class Repository_Action_Main_Item_Edittexts extends RepositoryAction
     public $save_mode = null;
     
     /**
+     * Target metadata number
      * 処理対象のメタデータ番号
      * @var string
      */
     public $target = null;
     
     /**
+     * Target attribute number
      * 処理対象の属性番号
      * @var string
      */
     public $attridx = null;
     
     // メンバ変数
+    /**
+     * Warning message
+     * 警告メッセージ
+     *
+     * @var array
+     */
     private $warningMsg = array();  // 警告メッセージ
     
     /**
-     * 実行処理
-     * @see RepositoryAction::executeApp()
+     * Execute
+     * 実行
+     *
+     * @return string "success"/"error" success/failed 成功/失敗
+     * @throws AppException
      */
     protected function executeApp()
     {
@@ -1418,13 +1536,13 @@ class Repository_Action_Main_Item_Edittexts extends RepositoryAction
     // Add Contributor(Posted agency) A.Suzuki 2011/12/13 --start--
     /**
      * Get contributor's user_id by handle, name and email
+     * ハンドル名・メールアドレスからContributorのユーザーIDを取得する
      *
-     * @param string $handle
-     * @param string $name
-     * @param string $email
-     * @param string &$outContributorUserId
-     * @return string "Success", "NotExist", "Conflict"
-     * @access private
+     * @param string $handle handle name ハンドル名
+     * @param string $name member name 会員氏名
+     * @param string $email mail address メールアドレス
+     * @param string &$outContributorUserId Contributor user ID ContributorユーザーID
+     * @return string "Success"/"NotExist"/"Conflict" 取得成功/存在しないユーザー/複数存在する
      */
     private function getUserIdForContributor($handle, $name, $email, &$outContributorUserId)
     {
@@ -1466,10 +1584,10 @@ class Repository_Action_Main_Item_Edittexts extends RepositoryAction
     
     /**
      * Search contributor's user_id by handle
+     * ハンドル名からContributorユーザーIDを取得する
      *
-     * @param string $handle
-     * @return string
-     * @access private
+     * @param string $handle handle name ハンドル名
+     * @return string user ID ユーザーID
      */
     private function searchContributorByHandle($handle)
     {
@@ -1490,10 +1608,11 @@ class Repository_Action_Main_Item_Edittexts extends RepositoryAction
 
     /**
      * Search contributor's user_id by name
+     * 会員氏名からContributorユーザーIDを取得する
      *
-     * @param string $name
-     * @return array()
-     * @access private
+     * @param string $name member name 会員氏名
+     * @return array Contributor user ID ContributorユーザーID
+     *                array[$ii]
      */
     private function searchContributorByName($name)
     {
@@ -1523,10 +1642,11 @@ class Repository_Action_Main_Item_Edittexts extends RepositoryAction
 
     /**
      * Search contributor's user_id by email
+     * メールアドレスからContributorユーザーIDを検索する
      *
-     * @param string $email
-     * @return array()
-     * @access private
+     * @param string $email mail address メールアドレス
+     * @return array Contributor user ID ContributorユーザーID
+     *                array[$ii]
      */
     private function searchContributorByEmail($email)
     {
@@ -1556,13 +1676,15 @@ class Repository_Action_Main_Item_Edittexts extends RepositoryAction
 
     /**
      * Find Unique Contributor
+     * ユニークなContributorを検索する
      *
-     * @param string $userIdsByHandle
-     * @param array() $userIdsByName
-     * @param array() $userIdsByEmail
-     * @param string &$outContributor
-     * @return string "Success", "NotExist", "Conflict"
-     * @access private
+     * @param string $userIdByHandle user ID by handle name ハンドル名から取得したユーザーID
+     * @param array $userIdsByName user ID by member name 会員氏名から取得したユーザーID
+     *                              array[$ii]
+     * @param array() $userIdsByEmail user ID by mail address メールアドレスから取得したユーザーID
+     *                                 array[$ii]
+     * @param string &$outContributor Contributor use Contributorユーザー
+     * @return string "Success"/"NotExist"/"Conflict" 取得成功/存在しないユーザー/複数存在する
      */
     private function narrowDownContributor($userIdByHandle, $userIdsByName, $userIdsByEmail, &$outContributor)
     {
@@ -1630,7 +1752,16 @@ class Repository_Action_Main_Item_Edittexts extends RepositoryAction
        // Successを返却
        return RepositoryConst::ITEM_CONTRIBUTOR_STATUS_SUCCESS;
     }
-    
+
+    /**
+     * Search Contributor in metadata list
+     * メタデータからContributorユーザーを探す
+     *
+     * @param string $searchKey search key 検索キー
+     * @param array $candidateList metadata list メタデータリスト
+     *                              array[$ii]
+     * @return bool true/false exist/not exist 存在する/存在しない
+     */
     private function existContributorInMetaList($searchKey, $candidateList)
     {
         if(isset($candidateList))

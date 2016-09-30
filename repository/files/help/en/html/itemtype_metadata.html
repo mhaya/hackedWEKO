@@ -1,6 +1,6 @@
 <!--// ---------------------------------------------------------------------->
 <!--//                                                                     -->
-<!--// $Id: itemtype_metadata.html 53594 2015-05-28 05:25:53Z kaede_matsushita $          -->
+<!--// $Id: itemtype_metadata.html 68946 2016-06-16 09:47:19Z tatsuya_koyasu $          -->
 <!--//                                                                     -->
 <!--// Copyright (c) 2007 - 2008, National Institute of Informatics,        -->
 <!--// Research and Development Center for Scientific Information Resources -->
@@ -1361,8 +1361,8 @@
 							</tr>
 							<tr>
 								<th>必須</th>
-								<th>一覧表示</th>
 								<th>複数可否</th>
+								<th>一覧表示</th>
 								<th>改行指定</th>
 								<th>非表示</th>
 							</tr>
@@ -1461,7 +1461,7 @@
 							</tr>
 							<tr>
 								<td nowrap>チェックボックス</td>
-								<td>複数不可</td>
+								<td>複数可</td>
 								<td>複数選択(チェックボックス)入力</td>
 								<td nowrap>
 									<input type="checkbox" />aaa<br/>
@@ -1670,27 +1670,25 @@
 									<input type="file"/>
 								</td>
 							</tr>
+                            <tr>
+                                <td nowrap>課金ファイル</td>
+                                <td>複数不可<br>改行指定</td>
+                                <td>ファイル入力</td>
+                                <td nowrap>
+                                    <input type="file"/>
+                                </td>
+                            </tr>
 							<tr>
 								<td nowrap>サムネイル</td>
-								<td>&nbsp;</td>
+								<td>改行指定</td>
 								<td>画像ファイル(PNG,JPEGなど)入力</td>
 								<td nowrap>
 									<input type="file"/>
 								</td>
 							</tr>
-							<!--
-							<tr>
-								<td nowrap>課金ファイル</td>
-								<td>改行指定</td>
-								<td>ファイル入力および課金設定</td>
-								<td nowrap>
-									<input type="file"/>
-								</td>
-							</tr>
-							-->
 							<tr>
 								<td nowrap>サプリメンタルコンテンツ</td>
-								<td>任意</td>
+								<td>複数可</td>
 								<td>
 									サプリメンタルコンテンツ登録<br/>
 								</td>
@@ -1700,11 +1698,11 @@
 							</tr>
 							<tr>
 								<td nowrap>見出し</td>
-								<td>インデックス検索のみ</td>
+								<td>複数不可</td>
 								<td>
 									大見出し、大見出し（英語）、小見出し、小見出し（英語）<br/>
 								</td>
-								<td>ツリー編集の検索結果表示形式から目次形式を選択する事で表示されます。<br/>
+								<td>ツリー編集の検索結果表示形式から目次形式に設定し、インデックス検索時に表示されます。<br/>
 									表示方法は<a href="./tree_edit.html#tree_edit">インデックスの情報の編集</a>をご覧ください。
 								<br/>
 								</td>

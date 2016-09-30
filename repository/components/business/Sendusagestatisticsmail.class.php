@@ -1,29 +1,77 @@
 <?php
+
 /**
- * $Id: Sendusagestatisticsmail.class.php 51356 2015-04-01 09:26:22Z tomohiro_ichikawa $
- * 
+ * Repository Components Business Send Usage Statistics Feedback Mail Class
  * フィードバックメール送信ビジネスクラス
- * 
- * @author IVIS
- * @sinse 2014/11/11
+ *
+ * @package     WEKO
+ */
+
+// --------------------------------------------------------------------
+//
+// $Id: Aggregatesitelicenseusagestatistics.class.php 68463 2016-06-06 06:05:40Z tomohiro_ichikawa $
+//
+// Copyright (c) 2007 - 2008, National Institute of Informatics,
+// Research and Development Center for Scientific Information Resources
+//
+// This program is licensed under a Creative Commons BSD Licence
+// http://creativecommons.org/licenses/BSD/
+//
+// --------------------------------------------------------------------
+/**
+ * Business logic abstract class
+ * ビジネスロジック基底クラス
  */
  require_once WEBAPP_DIR. '/modules/repository/components/FW/BusinessBase.class.php';
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
  require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
- 
+
+/**
+ * Repository Components Business Send Usage Statistics Feedback Mail Class
+ * フィードバックメール送信ビジネスクラス
+ *
+ * @package     WEKO
+ * @copyright   (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license     http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access      public
+ */
 class Repository_Components_Business_Sendusagestatisticsmail extends BusinessBase
 {
-    // プログレスファイル
+    /**
+     * Progress file
+     * プログレスファイル
+     *
+     * @var string
+     */
     private $workFile = "";
-    // 一次プログレスファイル
+    /**
+     * Temporary progress file
+     * 一時プログレスファイル
+     *
+     * @var string
+     */
     private $tmpWorkFile = "";
-    // フィードバックメール送信ログ
+    /**
+     * Send feedback mail log
+     * フィードバックメール送信ログ
+     *
+     * @var string
+     */
     private $logFile = "";
-    
-    // 処理停止時間
+    /**
+     * Stop processing time
+     * 処理停止時間
+     *
+     * @var int
+     */
     private $sleepSec = 1;
     
     /**
-     * constructer
+     * Set path
+     * 各パスを設定する
      */
     public function __construct()
     {
@@ -34,14 +82,15 @@ class Repository_Components_Business_Sendusagestatisticsmail extends BusinessBas
     }
     
     /**
+     * Read progress file
      * プログレスファイルを読み込む
      * 
-     * @param  string $mailAddress
-     * @param  int    $orderNum
-     * @param  bool   $isAuthor
-     * @param  int    $authorId
-     * @param  bool   $executeFlg execute or not
-     * @return bool
+     * @param  string $mailAddress mail address メールアドレス
+     * @param  int    $orderNum number 番号
+     * @param  bool   $isAuthor author flag 著者判定フラグ
+     * @param  int    $authorId author ID 著者ID
+     * @param  bool   $executeFlg true/false execute/not 実行する/しない
+     * @return string execute mode 実行モード
      */
     public function openProgressFile(&$mailAddress="", &$orderNum=0, &$isAuthor=false, &$authorId=0, $executeFlg=true) {
         $this->debugLog(__FUNCTION__ , __FILE__, __CLASS__, __LINE__);
@@ -100,9 +149,10 @@ class Repository_Components_Business_Sendusagestatisticsmail extends BusinessBas
     }
     
     /**
+     * Create progress file
      * プログレスファイルを作成する
-     * 
-     * @return bool
+     *
+     * @return bool true/false success/failed 成功/失敗
      */
     public function createProgressFile() {
         $this->debugLog(__FUNCTION__ , __FILE__, __CLASS__, __LINE__);
@@ -158,9 +208,10 @@ class Repository_Components_Business_Sendusagestatisticsmail extends BusinessBas
     }
     
     /**
+     * Update progress file
      * プログレスファイルを更新する
-     * 
-     * @return bool
+     *
+     * @return bool true/false success/failed 成功/失敗
      */
     public function updateProgressFile() {
         $this->debugLog(__FUNCTION__ , __FILE__, __CLASS__, __LINE__);
@@ -202,9 +253,10 @@ class Repository_Components_Business_Sendusagestatisticsmail extends BusinessBas
     }
     
     /**
+     * Process before send feedback mail
      * フィードバックメール送信の前処理を行う
-     * 
-     * @return bool
+     *
+     * @return bool true/false success/failed 成功/失敗
      */
     public function startSendMail() {
         $this->debugLog(__FUNCTION__ , __FILE__, __CLASS__, __LINE__);
@@ -244,9 +296,10 @@ class Repository_Components_Business_Sendusagestatisticsmail extends BusinessBas
     }
     
     /**
+     * Process After send feedback mail
      * フィードバックメール送信の後処理を行う
-     * 
-     * @return bool
+     *
+     * @return bool true/false success/failed 成功/失敗
      */
     public function endSendMail() {
         $this->debugLog(__FUNCTION__ , __FILE__, __CLASS__, __LINE__);
@@ -273,10 +326,12 @@ class Repository_Components_Business_Sendusagestatisticsmail extends BusinessBas
     }
     
     /**
+     * Update the last execution time of the feedback e-mail transmission
      * フィードバックメール送信の最終実行時刻を更新する
      * 
-     * @param  string $endDate
-     * @return bool
+     * @param  string $endDate latest execute date 最終実行時刻
+     * @return bool true/false update success/update failed 更新成功/更新失敗
+     * @throws AppException
      */
     public function updateSendMailEndDate($endDate="") {
         $this->debugLog(__FUNCTION__ , __FILE__, __CLASS__, __LINE__);
@@ -297,6 +352,7 @@ class Repository_Components_Business_Sendusagestatisticsmail extends BusinessBas
     }
     
     /**
+     * Kill the process
      * 処理を強制終了する
      */
     public function killProcess() {
@@ -312,8 +368,9 @@ class Repository_Components_Business_Sendusagestatisticsmail extends BusinessBas
     
     /**
      * Check setting config
+     * 設定を確認する
      *
-     * @return bool
+     * @return bool true/false no problem/problem 問題無し/問題あり
      */
     public function checkSettingConfig() {
         $this->debugLog(__FUNCTION__ , __FILE__, __CLASS__, __LINE__);
@@ -332,15 +389,16 @@ class Repository_Components_Business_Sendusagestatisticsmail extends BusinessBas
     
     /**
      * Execute send mail
-     * 
-     * @param  string $mailAddress
-     * @param  int    $orderNum
-     * @param  int    $authorId
-     * @param  bool   $isAuthor
-     * @param  int    $year
-     * @param  int    $month
-     * @param  string $language
-     * @return bool
+     * メール送信実行
+     *
+     * @param  string $mailAddress mail address メールアドレス
+     * @param  int    $orderNum number 番号
+     * @param  int    $authorId author ID 著者ID
+     * @param  bool   $isAuthor author flag 著者判定フラグ
+     * @param  int    $year year 年
+     * @param  int    $month month 月
+     * @param  string $language language 表示言語
+     * @return bool true/false success/failed 成功/失敗
      */
     public function executeSendMail($mailAddress, $orderNum, $authorId, $isAuthor, $year, $month, $language) {
         $this->debugLog(__FUNCTION__ , __FILE__, __CLASS__, __LINE__);
@@ -415,10 +473,17 @@ class Repository_Components_Business_Sendusagestatisticsmail extends BusinessBas
             $body .= $smartyAssign->getLang("repository_feedback_mail_body_unnecessary")."\n\n";
             $body .= $smartyAssign->getLang("repository_feedback_mail_body_month").$yearMonth."\n\n";
             
+            // 総合計出力用
+            $total_files = 0;
+            $total_views = 0;
+            $total_downloads = 0;
+            
             foreach($items as $item) {
                 // Get usage statistics
                 $views = $usagestatistics->getUsagesViews($item["item_id"], $item["item_no"], $year, $month);
+                $total_views += $views["total"];
                 $downloads = $usagestatistics->getUsagesDownloads($item["item_id"], $item["item_no"], $year, $month);
+                $total_files += count($downloads);
                 
                 $title = "";
                 if($lang == "japanese") {
@@ -441,6 +506,7 @@ class Repository_Components_Business_Sendusagestatisticsmail extends BusinessBas
                     $body .= $smartyAssign->getLang("repository_feedback_mail_body_downloads")."\n";
                 }
                 foreach($downloads as $download) {
+                    $total_downloads += $download["usagestatistics"]["total"];
                     $fileName = $download["display_name"];
                     if(strlen($fileName) == 0) {
                         $fileName = $download["file_name"];
@@ -449,6 +515,16 @@ class Repository_Components_Business_Sendusagestatisticsmail extends BusinessBas
                 }
                 $body .= "\n";
             }
+            
+            // 総合計出力
+            $body .= "----------------------------------------\n";
+            $body .= $smartyAssign->getLang("repository_label_feedback_mail_body_total")."\n";
+            $body .= "----------------------------------------\n";
+            $body .= $smartyAssign->getLang("repository_label_feedback_mail_body_total_items")." (".sprintf("%6s", count($items)).")\n";
+            $body .= $smartyAssign->getLang("repository_label_feedback_mail_body_total_files")." (".sprintf("%6s", $total_files).")\n";
+            $body .= $smartyAssign->getLang("repository_label_feedback_mail_body_total_views")." (".sprintf("%6s", $total_views).")\n";
+            $body .= $smartyAssign->getLang("repository_label_feedback_mail_body_total_downloads")." (".sprintf("%6s", $total_downloads).")\n";
+            $body .= "\n";
             
             $mailMain->setBody($body);
             
@@ -478,6 +554,7 @@ class Repository_Components_Business_Sendusagestatisticsmail extends BusinessBas
     
     /**
      * Delete progress file
+     * プログレスファイルを削除する
      */
     private function deleteSendMailWorkFile() {
         $this->debugLog(__FUNCTION__ , __FILE__, __CLASS__, __LINE__);
@@ -491,6 +568,7 @@ class Repository_Components_Business_Sendusagestatisticsmail extends BusinessBas
     
     /**
      * Delete log file
+     * ログファイルを削除する
      */
     private function deleteSendMailLogFile() {
         $this->debugLog(__FUNCTION__ , __FILE__, __CLASS__, __LINE__);
@@ -504,9 +582,11 @@ class Repository_Components_Business_Sendusagestatisticsmail extends BusinessBas
     
     /**
      * Update send mail start date
+     * フィードバック送信開始日時を更新する
      * 
-     * @param string $startDate
-     * @return bool
+     * @param string $startDate send start date 送信開始日時
+     * @return bool true/false update success/update failed 更新成功/更新失敗
+     * @throws AppException
      */
     private function updateSendMailStartDate($startDate="") {
         $this->debugLog(__FUNCTION__ , __FILE__, __CLASS__, __LINE__);
@@ -528,9 +608,11 @@ class Repository_Components_Business_Sendusagestatisticsmail extends BusinessBas
     
     /**
      * Get send mail start date
+     * フィードバックメール送信開始日時を取得する
      * 
-     * @param string &$startDate
-     * @return bool
+     * @param string $startDate send start date 送信開始日時
+     * @return bool true/false get success/get failed 取得成功/取得失敗
+     * @throws AppException
      */
     private function getSendMailStartDate(&$startDate) {
         $this->debugLog(__FUNCTION__ , __FILE__, __CLASS__, __LINE__);
@@ -555,9 +637,11 @@ class Repository_Components_Business_Sendusagestatisticsmail extends BusinessBas
     
     /**
      * Get send mail end date
+     * フィードバックメール送信終了日時を取得する
      * 
-     * @param string &$endDate
-     * @return bool
+     * @param string $endDate send finish date 送信終了日時
+     * @return bool true/false get success/get failed 取得成功/取得失敗
+     * @throws AppException
      */
     private function getSendMailEndDate(&$endDate) {
         $this->debugLog(__FUNCTION__ , __FILE__, __CLASS__, __LINE__);
@@ -581,13 +665,14 @@ class Repository_Components_Business_Sendusagestatisticsmail extends BusinessBas
     }
     
     /**
-     * Send mail log
+     * Write send mail log
+     * メール送信ログを書き込む
      * 
-     * @param string $status
-     * @param string $mailAddress
-     * @param int    $orderNum
-     * @param bool   $isAuthor
-     * @return bool
+     * @param string $status send status 送信状態
+     * @param string $mailAddress mail address 送信先メールアドレス
+     * @param  int    $orderNum number 番号
+     * @param  bool   $isAuthor author flag 著者判定フラグ
+     * @return bool true/false update success/update failed 更新成功/更新失敗
      */
     private function writeSendMailLog($status, $mailAddress, $orderNum, $isAuthor) {
         $this->debugLog(__FUNCTION__ , __FILE__, __CLASS__, __LINE__);
@@ -611,8 +696,10 @@ class Repository_Components_Business_Sendusagestatisticsmail extends BusinessBas
     
     /**
      * Get address list
+     * メールアドレス一覧を取得する
      * 
-     * @return array
+     * @return array mail address list メールアドレス一覧
+     *                array[$ii][$columnName]
      */
     private function getAddressList() {
         $this->debugLog(__FUNCTION__ , __FILE__, __CLASS__, __LINE__);
@@ -630,8 +717,9 @@ class Repository_Components_Business_Sendusagestatisticsmail extends BusinessBas
     
     /**
      * Get exclude address
+     * 除外メールアドレスを取得する
      * 
-     * @return string
+     * @return string exclude address list 除外メールアドレスリスト
      */
     private function getExcludeAddress() {
         $this->debugLog(__FUNCTION__ , __FILE__, __CLASS__, __LINE__);
@@ -656,9 +744,12 @@ class Repository_Components_Business_Sendusagestatisticsmail extends BusinessBas
     
     /**
      * Get target address list
+     * 送信対象メールアドレス一覧を取得する
      * 
-     * @param string $excludeAddress
-     * @return array
+     * @param string $excludeAddress exlude address list 除外メールアドレス一覧
+     * @return array target address list 送信対象メールアドレスリスト
+     *                array[$ii][$columnName]
+     * @throws AppException
      */
     private function getTargetAddressList($excludeAddress) {
         $this->debugLog(__FUNCTION__ , __FILE__, __CLASS__, __LINE__);
@@ -692,11 +783,13 @@ class Repository_Components_Business_Sendusagestatisticsmail extends BusinessBas
     }
     
     /**
-     * Get user_id by mail address
+     * Get user id by mail address
+     * メールアドレスからユーザーIDを取得する
      * 
-     * @param string $address
-     * @param int $orderNum
-     * @return string
+     * @param string $address mail address メールアドレス
+     * @param  int    $orderNum number 番号
+     * @return string user ID ユーザーID
+     * @throws AppException
      */
     private function getUserIdByMailAddress($address, $orderNum) {
         $this->debugLog(__FUNCTION__ , __FILE__, __CLASS__, __LINE__);
@@ -723,14 +816,13 @@ class Repository_Components_Business_Sendusagestatisticsmail extends BusinessBas
     }
     
     /**
-     * Get item registered by user
+     * Get item registered by user ID
+     * ユーザーIDから登録アイテムを取得する
      * 
-     * @param string $userId
-     * @return array $ret[n]["item_id"]
-     *                      ["item_no"]
-     *                      ["title"]
-     *                      ["title_english"]
-     *                      ["uri"]
+     * @param string $userId user ID ユーザーID
+     * @return array item data list アイテム情報一覧
+     *                $array[$ii]["item_id"|"item_no"|"title"|"title_english"|"uri"]
+     * @throws AppException
      */
     private function getItemRegisteredByUser($userId) {
         $this->debugLog(__FUNCTION__ , __FILE__, __CLASS__, __LINE__);
@@ -759,9 +851,11 @@ class Repository_Components_Business_Sendusagestatisticsmail extends BusinessBas
     
     /**
      * Get user name by user_id
+     * ユーザーIDからユーザー名を取得する
      * 
-     * @param string $userId
-     * @return string
+     * @param string $userId user ID ユーザーID
+     * @return string user name ユーザー名
+     * @throws AppException
      */
     private function getUserName($userId) {
         $this->debugLog(__FUNCTION__ , __FILE__, __CLASS__, __LINE__);
@@ -811,14 +905,13 @@ class Repository_Components_Business_Sendusagestatisticsmail extends BusinessBas
     }
     
     /**
-     * Get item registered by author
+     * Get item registered by author ID
+     * 著者IDから登録アイテムを取得する
      * 
-     * @param string $authorId
-     * @return array $ret[n]["item_id"]
-     *                      ["item_no"]
-     *                      ["title"]
-     *                      ["title_english"]
-     *                      ["uri"]
+     * @param string $authorId author ID 著者ID
+     * @return array item data list アイテム情報一覧
+     *                $array[$ii]["item_id"|"item_no"|"title"|"title_english"|"uri"]
+     * @throws AppException
      */
     private function getItemRegisteredByAuthor($authorId) {
         $this->debugLog(__FUNCTION__ , __FILE__, __CLASS__, __LINE__);
@@ -850,10 +943,12 @@ class Repository_Components_Business_Sendusagestatisticsmail extends BusinessBas
     }
     
     /**
-     * Get author name
+     * Get author name by author ID
+     * 著者IDから著者名を取得する
      * 
-     * @param string $authorId
-     * @return string
+     * @param string $authorId author ID 著者ID
+     * @return string author name 著者名
+     * @throws AppException
      */
     private function getAuthorName($authorId) {
         $this->debugLog(__FUNCTION__ , __FILE__, __CLASS__, __LINE__);
@@ -910,9 +1005,11 @@ class Repository_Components_Business_Sendusagestatisticsmail extends BusinessBas
     
     /**
      * Get mailaddress by author id
+     * 著者IDからメールアドレスを取得する
      * 
-     * @param string $authorId
-     * @return string
+     * @param string $authorId author ID 著者ID
+     * @return string mail address メールアドレス
+     * @throws AppException
      */
     private function getAuthorMailAddressByAuthorId($authorId) {
         $this->debugLog(__FUNCTION__ , __FILE__, __CLASS__, __LINE__);

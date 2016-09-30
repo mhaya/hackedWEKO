@@ -1,7 +1,15 @@
 <?php
+
+/**
+ * Action class for the item type DB registration
+ * アイテムタイプDB登録用アクションクラス
+ *
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Adddb.class.php 53594 2015-05-28 05:25:53Z kaede_matsushita $
+// $Id: Adddb.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -10,41 +18,92 @@
 // http://creativecommons.org/licenses/BSD/
 //
 // --------------------------------------------------------------------
-
-/* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
+/**
+ * Search table manager class
+ * 検索テーブル管理クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositorySearchTableProcessing.class.php';
 
 /**
- * repositoryモジュール アイテムタイプ作成 アイテムタイプDB登録アクション
- *
- * @package     NetCommons
- * @author      S.Kawasaki(IVIS)
- * @copyright   2006-2008 NetCommons Project
- * @license     http://www.netcommons.org/license.txt  NetCommons License
- * @project     NetCommons Project, supported by National Institute of Informatics
- * @access      public
+ * Action class for the item type DB registration
+ * アイテムタイプDB登録用アクションクラス
+ * 
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class Repository_Action_Edit_Itemtype_Adddb extends RepositoryAction
 {
 	// リクエストパラメタ
-	var $metadata_title = null;		// メタデータ項目名配列
-	var $metadata_type = null;		// メタデータタイプ配列
-	var $metadata_required = null;	// メタデータ必須フラグ列
-	var $metadata_disp = null;		// メタデータ一覧表示フラグ列
-	
-	// 2008/02/28
-	var $metadata_candidate = null;	// メタデータ選択候補配列
-	var $metadata_plural = null;	// メタデータ複数可否配列
-	var $metadata_newline = null;	// メタデータ改行指定配列
-	
-	// 2009/01/28
-	var $metadata_hidden = null;	// メタデータ非表示設定配列
-		
     /**
-     * [[機能説明]]
+     * Metadata title array
+     * メタデータ項目配列
      *
-     * @access  public
+     * @var array
+     */
+	var $metadata_title = null;
+    /**
+     * Metadata type array
+     * メタデータタイプ配列
+     *
+     * @var array
+     */
+	var $metadata_type = null;
+    /**
+     * Metadata required flag array
+     * メタデータ必須フラグ配列
+     *
+     * @var array
+     */
+	var $metadata_required = null;
+    /**
+     * Metadata show list flag array
+     * メタデータ一覧表示フラグ配列
+     *
+     * @var array
+     */
+	var $metadata_disp = null;
+    /**
+     * Metadata candidate array
+     * メタデータ選択候補配列
+     *
+     * @var array
+     */
+	var $metadata_candidate = null;
+    /**
+     * Metadata plural enable flag array
+     * メタデータ複数可否フラグ配列
+     *
+     * @var array
+     */
+	var $metadata_plural = null;
+    /**
+     * Metadata new line flag array
+     * メタデータ改行指定配列
+     *
+     * @var array
+     */
+	var $metadata_newline = null;
+    /**
+     * Metadata hidden flag array
+     * メタデータ非表示フラグ配列
+     *
+     * @var array
+     */
+	var $metadata_hidden = null;
+
+    /**
+     * Execute
+     * 実行
+     *
+     * @return string "success"/"error" success/failed 成功/失敗
+     * @throws RepositoryException
      */
     function execute()
     {
@@ -96,7 +155,7 @@ class Repository_Action_Edit_Itemtype_Adddb extends RepositoryAction
 			    		 "ins_user_id, mod_user_id, ".
 			    		 "del_user_id, ins_date, mod_date, del_date, is_delete) ".
 	                     "VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?); ";
-				$params = null;
+				$params = array();
 	            $params[] = $item_type_id;		// item_type_id
 	            $params[] = $item_type_name;	// item_type_name
 	            $params[] = $item_type_name;	// item_type_short_name
@@ -227,9 +286,9 @@ class Repository_Action_Edit_Itemtype_Adddb extends RepositoryAction
 			    			 "(item_type_id, attribute_id, show_order, ".
 			    			 " attribute_name, attribute_short_name, input_type, is_required, ".
 			    			 " plural_enable, line_feed_enable, list_view_enable, hidden, ".
-			    			 " junii2_mapping, dublin_core_mapping, lom_mapping, lido_mapping, display_lang_type, ins_user_id, mod_user_id, ".
+			    			 " junii2_mapping, dublin_core_mapping, lom_mapping, lido_mapping, spase_mapping, display_lang_type, ins_user_id, mod_user_id, ".
 			    			 " del_user_id, ins_date, mod_date, del_date, is_delete) ".
-	                		 "VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?); ";
+	                		 "VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?); ";
 					$params = null;
 		            $params[] = $item_type_id;				// item_type_id
 		            $params[] = $ii+1;						// attribute_id
@@ -246,6 +305,7 @@ class Repository_Action_Edit_Itemtype_Adddb extends RepositoryAction
 		            $params[] = "";								// dublin_core_mapping
 		            $params[] = "";                             // lom_mapping
 		            $params[] = "";                             // lido_mapping
+                    $params[] = "";                             // spase_mapping
 		            $params[] = "";								// display_lang_type
 		            $params[] = $user_id;						// ins_user_id
 		            $params[] = $user_id;						// mod_user_id
@@ -363,7 +423,7 @@ class Repository_Action_Edit_Itemtype_Adddb extends RepositoryAction
 		        // Add id server connect check for "file_price" 2009/04/01 Y.Nakao --end--
 		    	
 		        $this->Session->setParameter("redirect_flg", "itemtype");	// Add update OK message 2009/01/23 A.Suzuki
-		        
+		        $this->finalize();
 		        return 'redirect';
 //		    	return 'success_create';
 	    	}
@@ -734,10 +794,10 @@ class Repository_Action_Edit_Itemtype_Adddb extends RepositoryAction
 			    			 " attribute_name, attribute_short_name, ". 
 			    			 " input_type, is_required, ".
 			    			 " plural_enable, line_feed_enable, list_view_enable, hidden, ".
-			   				 " junii2_mapping, dublin_core_mapping, lom_mapping, lido_mapping, display_lang_type, ".
+			   				 " junii2_mapping, dublin_core_mapping, lom_mapping, lido_mapping, spase_mapping, display_lang_type, ".
 			   				 " ins_user_id, mod_user_id, del_user_id, ".
 			   				 " ins_date, mod_date, del_date, is_delete) ".
-	                		 "VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?); ";
+	                		 "VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?); ";
 			   			$params = null;
 			            $params[] = $item_type_id;					// item_type_id
 			            $params[] = $attr_id;						// attribute_id
@@ -753,7 +813,8 @@ class Repository_Action_Edit_Itemtype_Adddb extends RepositoryAction
 			            $params[] = "";								// junii2_mapping
 			            $params[] = "";								// dublin_core_mapping
 			            $params[] = "";                             // lom_mapping
-			            $params[] = "";                             // lido_mapping
+                        $params[] = "";                             // lido_mapping
+                        $params[] = "";                             // spase_mapping
     		            $params[] = "";								// display_lang_type
 			            $params[] = $user_id;						// ins_user_id
 			            $params[] = $user_id;						// mod_user_id
@@ -946,6 +1007,9 @@ class Repository_Action_Edit_Itemtype_Adddb extends RepositoryAction
 		    	$this->Session->removeParameter("metadata_num");	// アイテムメタデータ数を1に
 		    	
 		    	$this->Session->setParameter("redirect_flg", "itemtype");	// Add update OK message 2009/01/23 A.Suzuki
+		    	
+                $this->finalize();
+		    	
 				return 'redirect';
 //		    	return 'success_edit';
 	    	}
@@ -969,13 +1033,14 @@ class Repository_Action_Edit_Itemtype_Adddb extends RepositoryAction
     	    return "error";
 		}
     }
-    
-    // Add multi language K.Matsuo 2013/07/24 --start--
+
     /**
      * Add Multi language to DB
+     * 多言語情報をDBへ追加する
      *
-     * @param int $itemTypeId itemtype id
-     * @param array $attrMultiID attribute_id arrayid List
+     * @param int $itemTypeId itemtype id アイテムタイプID
+     * @param array $attrMultiID attribute id list 属性IDリスト
+     * @throws RepositoryException
      */
     private function addMultiLanguageTitle($itemTypeId, $attrMultiID)
     {
@@ -1057,6 +1122,5 @@ class Repository_Action_Edit_Itemtype_Adddb extends RepositoryAction
             throw $exception;
         }
     }
-    // Add multi language K.Matsuo 2013/07/24 --end--
 }
 ?>

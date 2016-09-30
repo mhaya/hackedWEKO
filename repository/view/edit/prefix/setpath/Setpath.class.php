@@ -1,7 +1,13 @@
 <?php
+/**
+ * View class for use in the OpenSSL path verification
+ * OpenSSLパス確認用ビュークラス
+ *
+ * @package WEKO
+ */
 // --------------------------------------------------------------------
 //
-// $Id: Setpath.class.php 53594 2015-05-28 05:25:53Z kaede_matsushita $
+// $Id: Setpath.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -13,19 +19,26 @@
 
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
 
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
 
 /**
- * [[機能説明]]
+ * View class for use in the OpenSSL path verification
+ * OpenSSLパス確認用ビュークラス
  *
- * @package     [[package名]]
- * @access      public
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class Repository_View_Edit_Prefix_Setpath extends RepositoryAction
 {
-		
     /**
-     * [[機能説明]]
+     * To view the OpenSSL path
+     * OpenSSLパスを表示する
      *
      * @access  public
      */

@@ -1,6 +1,6 @@
 <!--// ---------------------------------------------------------------------->
 <!--//                                                                     -->
-<!--// $Id: repository_item_edit_editdoi.html 53594 2015-05-28 05:25:53Z kaede_matsushita $          -->
+<!--// $Id: repository_item_edit_editdoi.html 71850 2016-09-15 02:01:09Z keiya_sugimoto $          -->
 <!--//                                                                     -->
 <!--// Copyright (c) 2007 - 2008, National Institute of Informatics,        -->
 <!--// Research and Development Center for Scientific Information Resources -->
@@ -41,22 +41,22 @@
                     <{/if}>
                     <map name="flowImgMap<{$id}>_doi">
                         <{if $smarty.session.edit_flag != 1}>
-                            <area onclick="repositoryCls['<{$id}>'].repositoryItemEditDoi('selecttype'); return false;" title="<{$lang.repository_item_selecttype}>" style="cursor: pointer;" shape="poly" coords="0,0,0,37,132,37,140,19,140,18,132,0">
+                            <area onclick="javascript: grantDoi('selecttype');" title="<{$lang.repository_item_selecttype}>" style="cursor: pointer;" shape="poly" coords="0,0,0,37,132,37,140,19,140,18,132,0">
                         <{/if}>
-                        <area onclick="repositoryCls['<{$id}>'].repositoryItemEditDoi('files'); return false;" title="<{$lang.repository_item_editfiles}>" style="cursor: pointer;" shape="poly" coords="132,0,140,18,140,19,132,37,272,37,280,19,280,18,272,0">
-                        <area onclick="repositoryCls['<{$id}>'].repositoryItemEditDoi('texts'); return false;" title="<{$lang.repository_item_edittexts}>" style="cursor: pointer;" shape="poly" coords="272,0,280,18,280,19,272,37,412,37,420,19,420,18,412,0">
-                        <area onclick="repositoryCls['<{$id}>'].repositoryItemEditDoi('links'); return false;" title="<{$lang.repository_item_editlinks}>" style="cursor: pointer;" shape="poly" coords="412,0,420,18,420,19,412,37,552,37,560,19,560,18,552,0">
-                        <{*<area onclick="repositoryCls['<{$id}>'].repositoryItemEditDoi('doi'); return false;" title="<{$lang.repository_item_add_doi}>" style="cursor: pointer;" shape="poly" coords="552,0,560,18,560,19,552,37,692,37,700,19,700,18,692,0">*}>
-                        <area onclick="repositoryCls['<{$id}>'].repositoryItemEditDoi('confirm'); return false;" title="<{$lang.repository_item_confirm}>" style="cursor: pointer;" shape="poly" coords="692,0,700,18,700,19,692,37,841,37,841,0">
+                        <area onclick="javascript: grantDoi('files');" title="<{$lang.repository_item_editfiles}>" style="cursor: pointer;" shape="poly" coords="132,0,140,18,140,19,132,37,272,37,280,19,280,18,272,0">
+                        <area onclick="javascript: grantDoi('texts');" title="<{$lang.repository_item_edittexts}>" style="cursor: pointer;" shape="poly" coords="272,0,280,18,280,19,272,37,412,37,420,19,420,18,412,0">
+                        <area onclick="javascript: grantDoi('links');" title="<{$lang.repository_item_editlinks}>" style="cursor: pointer;" shape="poly" coords="412,0,420,18,420,19,412,37,552,37,560,19,560,18,552,0">
+                        <{*<area onclick="javascript: grantDoi('doi');" title="<{$lang.repository_item_add_doi}>" style="cursor: pointer;" shape="poly" coords="552,0,560,18,560,19,552,37,692,37,700,19,700,18,692,0">*}>
+                        <area onclick="javascript: grantDoi('confirm');" title="<{$lang.repository_item_confirm}>" style="cursor: pointer;" shape="poly" coords="692,0,700,18,700,19,692,37,841,37,841,0">
                     </map>
                     <map name="flowImgMap<{$id}>_no_doi">
                         <{if $smarty.session.edit_flag != 1}>
-                            <area onclick="repositoryCls['<{$id}>'].repositoryItemEditDoi('selecttype'); return false;" title="<{$lang.repository_item_selecttype}>" style="cursor: pointer;" shape="poly" coords="0,0,0,37,132,37,140,19,140,18,132,0">
+                            <area onclick="javascript: grantDoi('selecttype');" title="<{$lang.repository_item_selecttype}>" style="cursor: pointer;" shape="poly" coords="0,0,0,37,132,37,140,19,140,18,132,0">
                         <{/if}>
-                        <area onclick="repositoryCls['<{$id}>'].repositoryItemEditDoi('texts'); return false;" title="<{$lang.repository_item_edittexts}>" style="cursor: pointer;" shape="poly" coords="132,0,140,18,140,19,132,37,272,37,280,19,280,18,272,0">
-                        <area onclick="repositoryCls['<{$id}>'].repositoryItemEditDoi('links'); return false;" title="<{$lang.repository_item_editlinks}>" style="cursor: pointer;" shape="poly" coords="272,0,280,18,280,19,272,37,412,37,420,19,420,18,412,0">
-                        <{*<area onclick="repositoryCls['<{$id}>'].repositoryItemEditDoi('doi'); return false;" title="<{$lang.repository_item_add_doi}>" style="cursor: pointer;" shape="poly" coords="412,0,420,18,420,19,412,37,552,37,560,19,560,18,552,0">*}>
-                        <area onclick="repositoryCls['<{$id}>'].repositoryItemEditDoi('confirm'); return false;" title="<{$lang.repository_item_confirm}>" style="cursor: pointer;" shape="poly" coords="552,0,560,18,560,19,552,37,701,37,701,0">
+                        <area onclick="javascript: grantDoi('texts');" title="<{$lang.repository_item_edittexts}>" style="cursor: pointer;" shape="poly" coords="132,0,140,18,140,19,132,37,272,37,280,19,280,18,272,0">
+                        <area onclick="javascript: grantDoi('links');" title="<{$lang.repository_item_editlinks}>" style="cursor: pointer;" shape="poly" coords="272,0,280,18,280,19,272,37,412,37,420,19,420,18,412,0">
+                        <{*<area onclick="javascript: grantDoi('doi');" title="<{$lang.repository_item_add_doi}>" style="cursor: pointer;" shape="poly" coords="412,0,420,18,420,19,412,37,552,37,560,19,560,18,552,0">*}>
+                        <area onclick="javascript: grantDoi('confirm');" title="<{$lang.repository_item_confirm}>" style="cursor: pointer;" shape="poly" coords="552,0,560,18,560,19,552,37,701,37,701,0">
                     </map>
 				</td>
 			</tr>
@@ -65,8 +65,8 @@
 
 	<div class="mt10" align=center>
 		<input type="button" class="btn_back" value="<{$lang.repository_return}>" onclick="commonCls.sendView('<{$id}>','repository_view_main_item_editlinks'); return false;">
-		<input type="button" class="btn_blue" value="<{$lang.repository_save}>" onclick="repositoryCls['<{$id}>'].repositoryItemEditDoi('stay');return false;" />
-		<input type="button" class="btn_next" value="<{$lang.repository_page_next}>" onclick="repositoryCls['<{$id}>'].repositoryItemEditDoi('next');return false;" />
+		<input type="button" class="btn_blue" value="<{$lang.repository_save}>" onclick="javascript: grantDoi('stay');" />
+		<input type="button" class="btn_next" value="<{$lang.repository_page_next}>" onclick="javascript: grantDoi('next');" />
 	</div>
     <center>
         <{if $action.errMsg != null && count($action.errMsg) > 0}>
@@ -91,19 +91,28 @@
     <{if $action.doi_status == '0' && $action.displays_doi_grant == true}>
       <table>
         <tbody>
+        <{if defined("_REPOSITORY_WEKO_DOISUFFIX_FREE") && $smarty.const._REPOSITORY_WEKO_DOISUFFIX_FREE}>
+          <tr>
+            <td  style="padding-top : 10px; padding-left : 5px">
+            </td>
+            <td  style="padding-top : 10px; padding-left : 5px" colspan="2" align="left">
+              <b><{$lang.repository_label_input_only_suffix}></b>
+            </td>
+          </tr>
+        <{/if}>
         <{if strlen($action.prefix_jalcdoi) > 0 && $smarty.const._REPOSITORY_JALC_DOI == true}>
           <tr>
             <td  style="padding-top : 10px; padding-left : 5px">
               <input type="checkbox" id="id_entry_jalcdoi_checkbox" name="entry_jalcdoi_checkbox" value="<{$action.suffix}>" align="center" onclick="javascript: changeJalcdoiCheckbox();" >
             </td>
-            <td  style="padding-top : 10px; padding-left : 5px">
+            <td  style="padding-top : 10px; padding-left : 5px" align="left">
               <label style="display: block; width:100%;height:100%;" for="id_entry_jalcdoi_checkbox">
                 <{$lang.repository_item_enter_jalcdoi}>
               </label>
             </td>
-            <td  style="padding-top : 10px; padding-left : 10px">
+            <td  style="padding-top : 10px; padding-left : 10px" align="left">
               <label style="display: block; width:100%;height:100%;" for="id_entry_jalcdoi_checkbox">
-                http://doi.org/<{$action.prefix_jalcdoi}>/<{if $action.prefix_flag > 0}><{$action.prefix_yhandle}>.<{/if}><{$action.suffix}>
+                http://doi.org/<{$action.prefix_jalcdoi}>/<{if !defined("_REPOSITORY_WEKO_DOISUFFIX_FREE") || !$smarty.const._REPOSITORY_WEKO_DOISUFFIX_FREE}><{if $action.prefix_flag > 0}><{$action.prefix_yhandle}>.<{/if}><{$action.suffix}><{else}><input type="text" id="id_entry_jalcdoi_text" name="entry_jalcdoi_text" align="center" onfocus="javascript: focusJalcdoiText()" ><{/if}>
               </label>
               <input type="hidden" id="id_entry_jalcdoi_hidden" name="entry_jalcdoi_hidden" value="http://doi.org/<{$action.prefix_jalcdoi}>/<{$action.suffix}>">
             </td>
@@ -114,14 +123,14 @@
             <td  style="padding-top : 10px; padding-left : 5px">
               <input type="checkbox" id="id_entry_crossref_checkbox" name="entry_crossref_checkbox" value="<{$action.suffix}>" align="center" onclick="javascript: changeCrossrefCheckbox();" >
             </td>
-            <td  style="padding-top : 10px; padding-left : 5px">
+            <td  style="padding-top : 10px; padding-left : 5px" align="left">
               <label style="display: block; width:100%;height:100%;" for="id_entry_crossref_checkbox">
                 <{$lang.repository_item_enter_crossref}>
               </label>
             </td>
-            <td  style="padding-top : 10px; padding-left : 10px">
+            <td  style="padding-top : 10px; padding-left : 10px" align="left">
               <label style="display: block; width:100%;height:100%;" for="id_entry_crossref_checkbox">
-                http://doi.org/<{$action.prefix_crossref}>/<{if $action.prefix_flag > 0}><{$action.prefix_yhandle}>.<{/if}><{$action.suffix}>
+                http://doi.org/<{$action.prefix_crossref}>/<{if !defined("_REPOSITORY_WEKO_DOISUFFIX_FREE") || !$smarty.const._REPOSITORY_WEKO_DOISUFFIX_FREE}><{if $action.prefix_flag > 0}><{$action.prefix_yhandle}>.<{/if}><{$action.suffix}><{else}><input type="text" id="id_entry_crossref_text" name="entry_crossref_text" align="center" onfocus="javascript: focusCrossrefText()" ><{/if}>
               </label>
               <input type="hidden" id="id_entry_crossref_hidden" name="entry_crossref_hidden" value="http://doi.org/<{$action.prefix_crossref}>/<{$action.suffix}>">
             </td>
@@ -132,28 +141,34 @@
             <td  style="padding-top : 10px; padding-left : 5px">
               <input type="checkbox" id="id_entry_datacite_checkbox" name="entry_datacite_checkbox" value="<{$action.suffix}>" align="center" onclick="javascript: changeDataciteCheckbox();" >
             </td>
-            <td  style="padding-top : 10px; padding-left : 5px">
+            <td  style="padding-top : 10px; padding-left : 5px" align="left">
               <label style="display: block; width:100%;height:100%;" for="id_entry_datacite_checkbox">
                 <{$lang.repository_item_enter_datacite}>
               </label>
             </td>
-            <td  style="padding-top : 10px; padding-left : 10px">
+            <td  style="padding-top : 10px; padding-left : 10px" align="left">
               <label style="display: block; width:100%;height:100%;" for="id_entry_datacite_checkbox">
-                http://doi.org/<{$action.prefix_datacite}>/<{if $action.prefix_flag > 0}><{$action.prefix_yhandle}>.<{/if}><{$action.suffix}>
+                http://doi.org/<{$action.prefix_datacite}>/<{if !defined("_REPOSITORY_WEKO_DOISUFFIX_FREE") || !$smarty.const._REPOSITORY_WEKO_DOISUFFIX_FREE}><{if $action.prefix_flag > 0}><{$action.prefix_yhandle}>.<{/if}><{$action.suffix}><{else}><input type="text" id="id_entry_datacite_text" name="entry_datacite_text" align="center" onfocus="javascript: focusDataciteText()" ><{/if}>
               </label>
               <input type="hidden" id="id_entry_datacite_hidden" name="entry_datacite_hidden" value="http://doi.org/<{$action.prefix_datacite}>/<{$action.suffix}>">
             </td>
           </tr>
         <{/if}>
+        <{if strlen($action.prefix_library_jalcdoi) > 0}>
+          <tr>
+            <td  style="padding-top : 10px; padding-left : 5px">
+            </td>
+            <td  style="padding-top : 10px; padding-left : 5px" align="left">
+              <{$lang.repository_item_enter_library_jalcdoi}>
+            </td>
+            <td  style="padding-top : 10px; padding-left : 10px" align="left">
+                <input type="text" id="id_entry_library_jalcdoi_text" name="entry_library_jalcdoi_text" align="center" onfocus="javascript: focusLibraryJalcdoiText()" ><label for="id_entry_library_jalcdoi_text"></label>
+                <input type="hidden" id="id_entry_library_jalcdoi_hidden" name="entry_library_jalcdoi_hidden" value="http://doi.org/<{$action.prefix_library_jalcdoi}>/<{$action.suffix}>">
+            </td>
+          </tr>
+        <{/if}>
         </tbody>
       </table>
-     <{if strlen($action.prefix_library_jalcdoi) > 0}>
-      <div class="paging" style="margin-left:33%" align="left">
-        <{$lang.repository_item_enter_library_jalcdoi}></br>
-        <input type="text" id="id_entry_library_jalcdoi_text" name="entry_library_jalcdoi_text" align="center" onfocus="javascript: focusLibraryJalcdoiText()" ><label for="id_entry_library_jalcdoi_text"></label>
-        <input type="hidden" id="id_entry_library_jalcdoi_hidden" name="entry_library_jalcdoi_hidden" value="http://doi.org/<{$action.prefix_library_jalcdoi}>/<{$action.suffix}>">
-      </div>
-     <{/if}>
     <{elseif $action.doi_status == '1'}>
      <div class="paging">
        <input type="button" class="btn_delete_doi ar" align="center" value="<{if $action.registed_library_jalcdoi == 1}><{$lang.repository_item_delete_library_jalcdoi}><{elseif $action.registed_doi == 1}><{$lang.repository_item_delete_jalcdoi}><{elseif $action.registed_doi == 2}><{$lang.repository_item_delete_crossref}><{else}><{$lang.repository_item_delete_datacite}><{/if}>" onclick="if(!commonCls.confirm('<{$lang.repository_item_delete_jalcdoi_confirm}>'))return false; commonCls.sendView('<{$id}>', {'action':'repository_view_main_item_editdoi', 'drop_doi':'true'}); return false;">
@@ -167,8 +182,8 @@
   </form>
 
   <input type="button" class="btn_back" value="<{$lang.repository_return}>" onclick="commonCls.sendView('<{$id}>', 'repository_view_main_item_editlinks');return false;">
-  <input type="button" class="btn_blue" value="<{$lang.repository_save}>" onclick="repositoryCls['<{$id}>'].repositoryItemEditDoi('stay');return false;" />
-  <input type="button" class="btn_next" value="<{$lang.repository_page_next}>" onclick="repositoryCls['<{$id}>'].repositoryItemEditDoi('next');return false;" />
+  <input type="button" class="btn_blue" value="<{$lang.repository_save}>" onclick="javascript: grantDoi('stay');" />
+  <input type="button" class="btn_next" value="<{$lang.repository_page_next}>" onclick="javascript: grantDoi('next');" />
  </div>
 
 </div>
@@ -176,27 +191,45 @@
 <script class="nc_script" type="text/javascript">
     changeJalcdoiCheckbox = function()
     {
-        if($(id_entry_jalcdoi_checkbox).checked == true)
+        var checkJalcdoi = document.getElementById("id_entry_jalcdoi_checkbox");
+        if(checkJalcdoi.checked == true)
         {
             var checkCrossRef = document.getElementById("id_entry_crossref_checkbox");
-            
             if (checkCrossRef)
             {
-                $(id_entry_crossref_checkbox).checked = false;
+                checkCrossRef.checked = false;
+            }
+            
+            var textCrossRef = document.getElementById("id_entry_crossref_text");
+            if (textCrossRef)
+            {
+                textCrossRef.value = "";
             }
             
             var checkDataCite = document.getElementById("id_entry_datacite_checkbox");
-            
             if (checkDataCite)
             {
-                $(id_entry_datacite_checkbox).checked = false;
+                checkDataCite.checked = false;
+            }
+            
+            var textDatacite = document.getElementById("id_entry_datacite_text");
+            if (textDatacite)
+            {
+                textDatacite.value = "";
             }
             
             var textLibraryJalcdoi = document.getElementById("id_entry_library_jalcdoi_text");
-            
             if (textLibraryJalcdoi)
             {
-                $(id_entry_library_jalcdoi_text).value = "";
+                textLibraryJalcdoi.value = "";
+            }
+        }
+        else
+        {
+            var textJalcdoi = document.getElementById("id_entry_jalcdoi_text");
+            if (textJalcdoi)
+            {
+                textJalcdoi.value = "";
             }
         }
         
@@ -206,27 +239,45 @@
 <script class="nc_script" type="text/javascript">
     changeCrossrefCheckbox = function()
     {
-        if($(id_entry_crossref_checkbox).checked == true)
+        var checkCrossRef = document.getElementById("id_entry_crossref_checkbox");
+        if(checkCrossRef.checked == true)
         {
             var checkJalcdoi = document.getElementById("id_entry_jalcdoi_checkbox");
-            
             if (checkJalcdoi)
             {
-                $(id_entry_jalcdoi_checkbox).checked = false;
+                checkJalcdoi.checked = false;
+            }
+            
+            var textJalcdoi = document.getElementById("id_entry_jalcdoi_text");
+            if (textJalcdoi)
+            {
+                textJalcdoi.value = "";
             }
             
             var checkDataCite = document.getElementById("id_entry_datacite_checkbox");
-            
             if (checkDataCite)
             {
-                $(id_entry_datacite_checkbox).checked = false;
+                checkDataCite.checked = false;
+            }
+            
+            var textDatacite = document.getElementById("id_entry_datacite_text");
+            if (textDatacite)
+            {
+                textDatacite.value = "";
             }
             
             var textLibraryJalcdoi = document.getElementById("id_entry_library_jalcdoi_text");
-            
             if (textLibraryJalcdoi)
             {
-                $(id_entry_library_jalcdoi_text).value = "";
+                textLibraryJalcdoi.value = "";
+            }
+        }
+        else
+        {
+            var textCrossRef = document.getElementById("id_entry_crossref_text");
+            if (textCrossRef)
+            {
+                textCrossRef.value = "";
             }
         }
         
@@ -236,28 +287,172 @@
 <script class="nc_script" type="text/javascript">
     changeDataciteCheckbox = function()
     {
-        if($(id_entry_datacite_checkbox).checked == true)
+        var checkDataCite = document.getElementById("id_entry_datacite_checkbox");
+        if(checkDataCite.checked == true)
         {
             var checkJalcdoi = document.getElementById("id_entry_jalcdoi_checkbox");
-            
             if (checkJalcdoi)
             {
-                $(id_entry_jalcdoi_checkbox).checked = false;
+                checkJalcdoi.checked = false;
+            }
+            
+            var textJalcdoi = document.getElementById("id_entry_jalcdoi_text");
+            if (textJalcdoi)
+            {
+                textJalcdoi.value = "";
             }
             
             var checkCrossRef = document.getElementById("id_entry_crossref_checkbox");
-            
             if (checkCrossRef)
             {
-                $(id_entry_crossref_checkbox).checked = false;
+                checkCrossRef.checked = false;
+            }
+            
+            var textCrossRef = document.getElementById("id_entry_crossref_text");
+            if (textCrossRef)
+            {
+                textCrossRef.value = "";
             }
             
             var textLibraryJalcdoi = document.getElementById("id_entry_library_jalcdoi_text");
-            
             if (textLibraryJalcdoi)
             {
-                $(id_entry_library_jalcdoi_text).value = "";
+                textLibraryJalcdoi.value = "";
             }
+        }
+        else
+        {
+            var textDatacite = document.getElementById("id_entry_datacite_text");
+            if (textDatacite)
+            {
+                textDatacite.value = "";
+            }
+        }
+        
+        return false;
+    }
+</script>
+<script class="nc_script" type="text/javascript">
+    focusJalcdoiText = function()
+    {
+        var checkJalcdoi = document.getElementById("id_entry_jalcdoi_checkbox");
+        if (checkJalcdoi)
+        {
+            checkJalcdoi.checked = true;
+        }
+        
+        var checkCrossRef = document.getElementById("id_entry_crossref_checkbox");
+        if (checkCrossRef)
+        {
+            checkCrossRef.checked = false;
+        }
+        
+        var textCrossRef = document.getElementById("id_entry_crossref_text");
+        if (textCrossRef)
+        {
+            textCrossRef.value = "";
+        }
+        
+        var checkDataCite = document.getElementById("id_entry_datacite_checkbox");
+        if (checkDataCite)
+        {
+            checkDataCite.checked = false;
+        }
+        
+        var textDatacite = document.getElementById("id_entry_datacite_text");
+        if (textDatacite)
+        {
+            textDatacite.value = "";
+        }
+        
+        var textLibraryJalcdoi = document.getElementById("id_entry_library_jalcdoi_text");
+        if (textLibraryJalcdoi)
+        {
+            textLibraryJalcdoi.value = "";
+        }
+        
+        return false;
+    }
+</script>
+<script class="nc_script" type="text/javascript">
+    focusCrossrefText = function()
+    {
+        var checkJalcdoi = document.getElementById("id_entry_jalcdoi_checkbox");
+        if (checkJalcdoi)
+        {
+            checkJalcdoi.checked = false;
+        }
+        
+        var textJalcdoi = document.getElementById("id_entry_jalcdoi_text");
+        if (textJalcdoi)
+        {
+            textJalcdoi.value = "";
+        }
+        
+        var checkCrossRef = document.getElementById("id_entry_crossref_checkbox");
+        if (checkCrossRef)
+        {
+            checkCrossRef.checked = true;
+        }
+        
+        var checkDataCite = document.getElementById("id_entry_datacite_checkbox");
+        if (checkDataCite)
+        {
+            checkDataCite.checked = false;
+        }
+        
+        var textDatacite = document.getElementById("id_entry_datacite_text");
+        if (textDatacite)
+        {
+            textDatacite.value = "";
+        }
+        
+        var textLibraryJalcdoi = document.getElementById("id_entry_library_jalcdoi_text");
+        if (textLibraryJalcdoi)
+        {
+            textLibraryJalcdoi.value = "";
+        }
+        
+        return false;
+    }
+</script>
+<script class="nc_script" type="text/javascript">
+    focusDataciteText = function()
+    {
+        var checkJalcdoi = document.getElementById("id_entry_jalcdoi_checkbox");
+        if (checkJalcdoi)
+        {
+            checkJalcdoi.checked = false;
+        }
+        
+        var textJalcdoi = document.getElementById("id_entry_jalcdoi_text");
+        if (textJalcdoi)
+        {
+            textJalcdoi.value = "";
+        }
+        
+        var checkCrossRef = document.getElementById("id_entry_crossref_checkbox");
+        if (checkCrossRef)
+        {
+            checkCrossRef.checked = false;
+        }
+        
+        var textCrossRef = document.getElementById("id_entry_crossref_text");
+        if (textCrossRef)
+        {
+            textCrossRef.value = "";
+        }
+        
+        var checkDataCite = document.getElementById("id_entry_datacite_checkbox");
+        if (checkDataCite)
+        {
+            checkDataCite.checked = true;
+        }
+        
+        var textLibraryJalcdoi = document.getElementById("id_entry_library_jalcdoi_text");
+        if (textLibraryJalcdoi)
+        {
+            textLibraryJalcdoi.value = "";
         }
         
         return false;
@@ -267,25 +462,65 @@
     focusLibraryJalcdoiText = function()
     {
         var checkJalcdoi = document.getElementById("id_entry_jalcdoi_checkbox");
-            
         if (checkJalcdoi)
         {
-            $(id_entry_jalcdoi_checkbox).checked = false;
+            checkJalcdoi.checked = false;
+        }
+        
+        var textJalcdoi = document.getElementById("id_entry_jalcdoi_text");
+        if (textJalcdoi)
+        {
+            textJalcdoi.value = "";
         }
         
         var checkCrossRef = document.getElementById("id_entry_crossref_checkbox");
-            
         if (checkCrossRef)
         {
-            $(id_entry_crossref_checkbox).checked = false;
+            checkCrossRef.checked = false;
+        }
+        
+        var textCrossRef = document.getElementById("id_entry_crossref_text");
+        if (textCrossRef)
+        {
+            textCrossRef.value = "";
         }
         
         var checkDataCite = document.getElementById("id_entry_datacite_checkbox");
-        
         if (checkDataCite)
         {
-            $(id_entry_datacite_checkbox).checked = false;
+            checkDataCite.checked = false;
         }
+        
+        var textDatacite = document.getElementById("id_entry_datacite_text");
+        if (textDatacite)
+        {
+            textDatacite.value = "";
+        }
+        
+        return false;
+    }
+</script>
+<script class="nc_script" type="text/javascript">
+    grantDoi = function(save_mode)
+    {
+        var checkJalcdoi = document.getElementById("id_entry_jalcdoi_checkbox");
+        var checkCrossRef = document.getElementById("id_entry_crossref_checkbox");
+        var checkDataCite = document.getElementById("id_entry_datacite_checkbox");
+        var textLibraryJalcdoi = document.getElementById("id_entry_library_jalcdoi_text");
+        <{if $action.doi_status == '0' && $action.displays_doi_grant == true}>
+            if((checkJalcdoi && checkJalcdoi.checked == true) 
+               || (checkCrossRef && checkCrossRef.checked == true) 
+               || (checkDataCite && checkDataCite.checked == true) 
+               || (textLibraryJalcdoi && textLibraryJalcdoi.value.length > 0))
+            {
+                if(!commonCls.confirm('<{$lang.repository_label_grant_doi_confirm}>'))
+                {
+                    return false;
+                }
+            }
+        <{/if}>
+        
+        repositoryCls['<{$id}>'].repositoryItemEditDoi(save_mode);
         
         return false;
     }

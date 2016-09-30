@@ -1,6 +1,6 @@
 <!--// ---------------------------------------------------------------------->
 <!--//                                                                     -->
-<!--// $Id: repository_edit_tree_confirm.html 24105 2013-07-17 06:56:06Z koji_matsuo $          -->
+<!--// $Id: repository_edit_tree_confirm.html 65499 2016-04-05 04:22:45Z tomohiro_ichikawa $          -->
 <!--//                                                                     -->
 <!--// Copyright (c) 2007 - 2008, National Institute of Informatics,        -->
 <!--// Research and Development Center for Scientific Information Resources -->
@@ -26,7 +26,7 @@
 					<{*when select root index, show warning*}>
 					<{if $action.sel_node_id==0}>
 						<br>
-						<p style="color:#ff0000">
+						<p style="color: #ff0000; font-size: 28px;">
 							<img src="<{$smarty.const.BASE_URL}>/images/repository/tree/warning.png">
 							<{$lang.repository_edittree_rootindex_warning}>
 						</p>
@@ -43,7 +43,16 @@
 				<{/if}>
 				<input type="button" class="btn_white" onclick="commonCls.removeBlock('<{$id}>');" value="<{$lang.repository_cancel}>" />
 			</td>
+        </tr>
+		<{if $action.sel_node_id==0}>
+        <tr>
+            <td>
+                <div align="right">
+                    <input type="checkbox" id="delete_rootindex_check<{$id}>"><label for="delete_rootindex_check<{$id}>"><{$lang.repository_edittree_rootindex_delete_ok}></label>
+                </div>
+            </td>
 		</tr>
+		<{/if}>
 	</table>
 </div>
 
@@ -54,9 +63,16 @@
 
 <script class="nc_script" type="text/javascript">
 	delFolder = function(){
+		<{if $action.sel_node_id == 0}>
+			if(document.getElementById("delete_rootindex_check<{$id}>").checked == false) {
+				alert("<{$lang.repository_edittree_rootindex_delete_prompt}>");
+				return false;
+			}
+		<{/if}>
 		if(!commonCls.confirm('<{$lang.repository_confimation_delete}>')){
 			return false;
 		}
+
 		commonCls.removeBlock('<{$id}>');
 		if('<{$smarty.session.MyPrivateTreeRootId}>' != ""){
 			repositoryCls['<{$id}>'].repositoryDeleteIndex('<{$action.sel_node_pid}>', '<{$action.sel_node_id}>', 'delete_all', '<{$page_id}>', '<{$block_id}>', 'editPrivatetree');

@@ -1,7 +1,15 @@
 <?php
+
+/**
+ * Action class for multiple items export
+ * 複数アイテムエクスポート用アクションクラス
+ *
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: List.class.php 38124 2014-07-01 06:56:02Z rei_matsuura $
+// $Id: List.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -12,33 +20,79 @@
 // --------------------------------------------------------------------
 
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
-
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR.'/modules/repository/components/RepositoryAction.class.php';
+/**
+ * Search common classes
+ * 検索共通クラス
+ */
 require_once WEBAPP_DIR.'/modules/repository/components/RepositorySearch.class.php';
+/**
+ * Item authority common classes
+ * アイテム権限共通クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryItemAuthorityManager.class.php';
 
 /**
- * [[機能説明]]
+ * Action class for multiple items export
+ * 複数アイテムエクスポート用アクションクラス
  *
- * @package     [[package名]]
- * @access      public
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class Repository_Action_Main_Export_List extends RepositoryAction
 {
     // リクエストパラメタ
+    /**
+     * Export type
+     * エクスポート種別
+     *
+     * @var boolean
+     */
     var $check_flg = null;      // チェックしたものをExport->true,表示中すべて->false
+    /**
+     * Export item flag list
+     * エクスポートアイテムフラグ一覧
+     *
+     * @var array[$ii]
+     */
     var $export_check = null;   // チェックボックスのチェック状態
+    /**
+     * All item export flag
+     * 全アイテムエクスポートフラグ
+     *
+     * @var string
+     */
     var $all_flg = null;        // 全てのアイテムをエクスポート
     
     // Fix admin or insert user export action. 2013/05/22 Y.Nakao --start--
+    /**
+     * File export flag
+     * ファイルエクスポートフラグ
+     *
+     * @var int
+     */
     const EXPORT_FILE_ON = 1;
+    /**
+     * WEKO validator object
+     * WEKOバリデータオブジェクト
+     *
+     * @var Repository_Validator_DownloadCheck
+     */
     private $RepositoryValidator = null;
     // Fix admin or insert user export action. 2013/05/22 Y.Nakao --end--
     
     /**
-     * [[機能説明]]
+     * To get the information to be displayed in the item list export screen
+     * アイテム一覧エクスポート画面に表示する情報を取得する
      *
-     * @access  public
+     * @access public
+     * @return boolean Result 結果
      */
     function execute()
     {
@@ -196,7 +250,7 @@ class Repository_Action_Main_Export_List extends RepositoryAction
                 // 未実装
                 print "終了処理失敗";
             }
-            
+            $this->finalize();
             return 'success';
         }
         catch ( RepositoryException $exception ) {
@@ -206,24 +260,22 @@ class Repository_Action_Main_Export_List extends RepositoryAction
     
     /**
      * count file size
+     * ファイルサイズ計算
      *
-     * @param array $itemAttrType
-     * @param array $itemAttr
+     * @param array $itemAttrType Item Type attribute information アイテムタイプ属性情報
+     *                            array[$ii]["item_type_id"|"attribute_id"|"show_order"|"attribute_name"|"attribute_short_name"|"input_type"|"is_required"|"plural_enable"|"line_feed_enable"|"list_view_enable"|"hidden"|"junii2_mapping"|"dublin_core_mapping"|"lom_mapping"|"lido_mapping"|"spase_mapping"|"display_lang_type"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     * @param array $itemAttr Item information アイテム情報
+     *                        array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"personal_name_no"|"family"|"name"|"family_ruby"|"name_ruby"|"e_mail_address"|"item_type_id"|"author_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"show_order"|"mime_type"|"extension"|"file"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"display_name"|"display_type"|"show_order"|"mime_type"|"extension"|"prev_id"|"file_prev"|"file_prev_name"|"license_id"|"license_notation"|"pub_date"|"flash_pub_date"|"item_type_id"|"browsing_flag"|"cover_created_flag"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"biblio_no"|"biblio_name"|"biblio_name_english"|"volume"|"issue"|"start_page"|"end_page"|"date_of_issued"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"display_name"|"display_type"|"show_order"|"mime_type"|"extension"|"prev_id"|"file_prev"|"file_prev_name"|"license_id"|"license_notation"|"pub_date"|"flash_pub_date"|"item_type_id"|"browsing_flag"|"cover_created_flag"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"|"price"]
+     *                        array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"supple_no"|"item_type_id"|"supple_weko_item_id"|"supple_title"|"supple_title_en"|"uri"|"supple_item_type_name"|"mime_type"|"file_id"|"supple_review_status"|"supple_review_date"|"supple_reject_status"|"supple_reject_date"|"supple_reject_reason"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"attribute_no"|"attribute_value"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     * @return int File size ファイルサイズ
      */
     private function getFileSize($itemAttrType, $itemAttr)
     {
-        // get file save path
-        $contents_path = $this->getFileSavePath("file");
-        if(strlen($contents_path) == 0){
-            // default directory
-            $contents_path = BASE_DIR.'/webapp/uploads/repository/files';
-        }
-        // check directory exists 
-        if( !(file_exists($contents_path)) ){
-            $errMsg = 'Not exists file save point.';
-            return 0;
-        }
-        
         $file_size = 0;
         for($jj=0;$jj<count($itemAttrType);$jj++)
         {
@@ -241,13 +293,12 @@ class Repository_Action_Main_Export_List extends RepositoryAction
                     $status = $this->RepositoryValidator->checkFileAccessStatus($itemAttr[$jj][$kk]);    // change $validator into $this->RepositoryValidator 2013/09/13 K.Matsushita
                     if( $status == "free" || $status == "already" || $status == "admin" || $status == "license" )
                     {
+                        // Add File replace T.Koyasu 2016/02/29 --start--
                         // this file use can download
-                        $file_path = $contents_path.DIRECTORY_SEPARATOR.
-                                     $itemAttr[$jj][$kk]['item_id'].'_'.
-                                     $itemAttr[$jj][$kk]['attribute_id'].'_'.
-                                     $itemAttr[$jj][$kk]['file_no'].'.'.
-                                     $itemAttr[$jj][$kk]['extension'];
-                        $size = filesize($file_path);
+                        $business = BusinessFactory::getFactory()->getBusiness("businessContentfiletransaction");
+                        $fileInfo = $business->getFileStat($itemAttr[$jj][$kk]['item_id'], $itemAttr[$jj][$kk]['attribute_id'], $itemAttr[$jj][$kk]['file_no']);
+                        // Add File replace T.Koyasu 2016/02/29 --end--
+                        $size = $fileInfo["size"];
                         if(is_numeric($size)){
                             $file_size += $size;
                         }

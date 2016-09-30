@@ -1,7 +1,15 @@
 <?php
+
+/**
+ * Common class PDF cover page creation, updating, and deleting process
+ * PDFカバーページ作成・更新・削除処理共通クラス
+ *
+ * @package     WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Pdfcover.class.php 57131 2015-08-26 05:16:29Z tomohiro_ichikawa $
+// $Id: Pdfcover.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -10,56 +18,137 @@
 // http://creativecommons.org/licenses/BSD/
 //
 // --------------------------------------------------------------------
+/**
+ * Business logic abstract class
+ * ビジネスロジック基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/FW/BusinessBase.class.php';
+/**
+ * File process utility class
+ * ファイル処理ユーティリティークラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/util/Fileprocess.class.php';
+/**
+ * Fpdf library class
+ * FPDFライブラリクラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/Fpdf.class.php';
+/**
+ * Physical file lock class
+ * 物理ファイルロッククラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/LockPhysicalFile.class.php';
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
+/**
+ * Repository module constant class
+ * WEKO共通定数クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryConst.class.php';
+/**
+ * Const for DB class
+ * DB用共通定数クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryDatabaseConst.class.php';
+/**
+ * Handle manager class
+ * ハンドル管理クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryHandleManager.class.php';
 
+/**
+ * Common class PDF cover page creation, updating, and deleting process
+ * PDFカバーページ作成・更新・削除処理共通クラス
+ * 
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
+ */
 class Repository_Components_business_Pdfcover extends BusinessBase
 {
     /**
      * RepositoryAction class instance
+     * RepositoryActionクラスオブジェクト
      *
      * @var RepositoryAction
-     * @access private
      */
     private $repositoryAction = null;
-    
+    /**
+     * Error message
+     * エラーメッセージ
+     * 
+     * @var string
+     */
     private $errormsg = "";
     
     // -------------------------------------------------------
     // Const
     // -------------------------------------------------------
+    /**
+     * PDF cover page grantees file name
+     * PDFカバーページ付与対象ファイル名
+     */
     const PDF_NAME_TARGET = "target.pdf";
+    /**
+     * PDF cover page file name
+     * PDFカバーページファイル名
+     */
     const PDF_NAME_COVER = "cover.pdf";
+    /**
+     * PDF cover page granted complete file name
+     * PDFカバーページ付与完了ファイル名
+     */
     const PDF_NAME_COMBINED = "combined.pdf";
+    /**
+     * PDF cover page grantees original file name
+     * PDFカバーページ付与対象元ファイル名
+     */
     const PDF_NAME_ORG_TARGET = "org_target.pdf";
     
     // Error message
+    /**
+     * PDF cover page creation failure error message
+     * PDFカバーページ作成失敗エラーメッセージ
+     */
     const ERR_CANNOT_CREATE = "Could not create PDF cover page.";
+    /**
+     * PDF cover page deletion failure error message
+     * PDFカバーページ削除失敗エラーメッセージ
+     */
     const ERR_CANNOT_DELETE = "Could not delete PDF cover page.";
+    /**
+     * PDF cover page deletion processing completion flag value
+     * PDFカバーページ削除処理完了フラグ値
+     */
     const RESET_CREATED_FLG = 0;
     
     // PDF cover page delete status
+    /**
+     * PDF cover pages Delete success
+     * PDFカバーページ削除成功
+     */
     const DELETE_COVER_SUCCESS = 0;
+    /**
+     * PDF cover page deletion failure
+     * PDFカバーページ削除失敗
+     */
     const DELETE_COVER_FAILED = 1;
+    /**
+     * PDF cover pages Delete stop
+     * PDFカバーページ削除中止
+     */
     const DELETE_COVER_CANNCEL = 2;
-    
-    
-    
+
     // -------------------------------------------------------
     // Constructor
     // -------------------------------------------------------
     /**
-     * Constructor
-     *
-     * @param Session $Session
-     * @param Db $Db
-     * @param string $TransStartDate
+     * Run before the start of treatment
+     * 実行開始前処理
      */
     protected function onInitialize()
     {
@@ -79,8 +168,9 @@ class Repository_Components_business_Pdfcover extends BusinessBase
     // -------------------------------------------------------
     /**
      * Getter for errorMsg
+     * エラーメッセージGetter
      *
-     * @return string
+     * @return string Error message エラーメッセージ
      */
     public function getErrorMsg()
     {
@@ -91,18 +181,24 @@ class Repository_Components_business_Pdfcover extends BusinessBase
     // PUBLIC
     // -------------------------------------------------------
     /**
-     * Execute create PDF cover page
+     * It will grant the cover page (if you remove the cover page from the actual file, to update the actual file)
+     * カバーページを付与する(実ファイルからカバーページを削除した場合、実ファイルを更新する)
      *
-     * @return bool
-     * @access public
+     * @param int $itemId Item ID for identifying the file ファイルを特定するためのアイテムID
+     * @param int $itemNo Item sequence number for identifying the file ファイルを特定するためのアイテム通番
+     * @param int $attributeId Attribute ID for identifying the file ファイルを特定するための属性ID
+     * @param int $fileNo File sequence number for identifying the file ファイルを特定するためのファイル通番
+     * @param string $workDir Working directory path 作業ディレクトリパス
+     * @param int $ver Version for identifying the file ファイルを特定するためのバージョン
+     * @return string File path of the processing result 処理結果のファイルパス
      */
-    public function grantPdfCover($itemId, $itemNo, $attributeId, $fileNo, $workDir)
+    public function grantPdfCover($itemId, $itemNo, $attributeId, $fileNo, $workDir, $ver = null)
     {
         $this->debugLog("businessPdfover", __FILE__, __CLASS__, __LINE__);
         
         // Delete created cover page
         $workFile = "";
-        $result = $this->deleteCoverPage($itemId, $itemNo, $attributeId, $fileNo, $workDir, $workFile);
+        $result = $this->deleteCoverPage($itemId, $itemNo, $attributeId, $fileNo, $workDir, $workFile, $ver);
         if($result == self::DELETE_COVER_FAILED) {
             $this->debugLog("[".__FUNCTION__."]"." do not execute create cover page", __FILE__, __CLASS__, __LINE__);
             return $workFile;
@@ -137,25 +233,39 @@ class Repository_Components_business_Pdfcover extends BusinessBase
     }
     
     /**
-     * delete cover page
-     * @return string
+     * It is copied to the working directory you specify to remove the cover page file
+     * カバーページを削除したファイルを指定した作業用ディレクトリにコピーする
+     *
+     * @param int $itemId Item ID for identifying the file ファイルを特定するためのアイテムID
+     * @param int $itemNo Item sequence number for identifying the file ファイルを特定するためのアイテム通番
+     * @param int $attributeId Attribute ID for identifying the file ファイルを特定するための属性ID
+     * @param int $fileNo File sequence number for identifying the file ファイルを特定するためのファイル通番
+     * @param string $workDir Working directory path 作業ディレクトリパス
+     * @param string $workFile Work file path 作業用ファイルパス
+     * @param int $ver Version for identifying the file ファイルを特定するためのバージョン
+     * @return int cover page delete status カバーページの削除状態
      */
-    public function deleteCoverPage($itemId, $itemNo, $attributeId, $fileNo, $workDir, &$workFile)
+    public function deleteCoverPage($itemId, $itemNo, $attributeId, $fileNo, $workDir, &$workFile, $ver = null)
     {
         // 論文ファイル名
-        $targetFilePath = $this->getTargetPdfFilePath($itemId, $attributeId, $fileNo);
+        $extension = $this->searchFileExtension($itemId, $itemNo, $attributeId, $fileNo);
+        $targetFilePath = $this->getTargetPdfFilePath($itemId, $attributeId, $fileNo, $extension);
         // 作業用一時ファイル名
         $workFile = $workDir.self::PDF_NAME_TARGET;
         
         // 削除処理が実行されない場合はfilesからそのままコピーして終了する
-        $result = $this->deleteCoverPageInternal($itemId, $itemNo, $attributeId, $fileNo, $workDir, $workFile, $targetFilePath);
+        $result = $this->deleteCoverPageInternal($itemId, $itemNo, $attributeId, $fileNo, $extension, $workDir, $workFile, $targetFilePath);
         if($result == self::DELETE_COVER_CANNCEL) {
-            // files内の論文ファイルをコピーしてそのパスを返す
-            // 失敗した場合例外を投げる
-            if(!copy($targetFilePath, $workFile)) {
-                $this->errorLog("[".__FUNCTION__."]"." Failed copy from files/", __FILE__, __CLASS__, __LINE__);
-                throw new AppException($targetFilePath."copy failed.");
+            // カバーページの削除がされていないファイルが古いバージョンのファイルにある可能性については
+            // 極小であると考えられるため、古いバージョンファイルにカバーページが付いている場合について特に対応はしない
+            $businessName = "businessContentfiletransaction";
+            $this->infoLog($businessName, __FILE__, __CLASS__, __LINE__);
+            $business = BusinessFactory::getFactory()->getBusiness($businessName);
+            if(!isset($ver) || $ver < 0){
+                $ver = 0;
             }
+            $business->copyTo($itemId, $attributeId, $fileNo, $ver, $workFile);
+            
             $this->debugLog("[".__FUNCTION__."]"." ".$itemId."_".$attributeId."_".$fileNo.".pdf copy to work directory.", __FILE__, __CLASS__, __LINE__);
         }
         
@@ -163,10 +273,20 @@ class Repository_Components_business_Pdfcover extends BusinessBase
     }
     
     /**
-     * delete cover page
-     * @return string
+     * Delete cover page
+     * カバーページ削除
+     *
+     * @param int $itemId Item ID for identifying the file ファイルを特定するためのアイテムID
+     * @param int $itemNo Item sequence number for identifying the file ファイルを特定するためのアイテム通番
+     * @param int $attributeId Attribute ID for identifying the file ファイルを特定するための属性ID
+     * @param int $fileNo File sequence number for identifying the file ファイルを特定するためのファイル通番
+     * @param string $extension file extension ファイル拡張子
+     * @param string $workDir Working directory path 作業ディレクトリパス
+     * @param string $workFile Work file path 作業用ファイルパス
+     * @param string $targetFilePath execute target file path 処理対象ファイルパス
+     * @return int execution result 実行結果
      */
-    private function deleteCoverPageInternal($itemId, $itemNo, $attributeId, $fileNo, $workDir, $workFile, $targetFilePath)
+    private function deleteCoverPageInternal($itemId, $itemNo, $attributeId, $fileNo, $extension, $workDir, $workFile, $targetFilePath)
     {
         // Check PDFTK
         $pdftkCmd = $this->getCmdPdftk();
@@ -182,7 +302,7 @@ class Repository_Components_business_Pdfcover extends BusinessBase
             $this->debugLog("[".__FUNCTION__."]"." Not exist PDF cover page", __FILE__, __CLASS__, __LINE__);
             return self::DELETE_COVER_CANNCEL;
         }
-        $this->debugLog("[".__FUNCTION__."]"." Start deletecover page ".$itemId."_".$attributeId."_".$fileNo.".pdf", __FILE__, __CLASS__, __LINE__);
+        $this->debugLog("[".__FUNCTION__."]"." Start deletecover page ".$itemId."_".$attributeId."_".$fileNo.".".$extension, __FILE__, __CLASS__, __LINE__);
         
         // ロックを取得する
         $lockPhysicalFile = new Repository_Components_LockPhysicalFile();
@@ -205,7 +325,22 @@ class Repository_Components_business_Pdfcover extends BusinessBase
         
         return self::DELETE_COVER_SUCCESS;
     }
-    
+
+    /**
+     * Execute to delete cover page
+     * カバーページ削除実行
+     *
+     * @param string $pdftkCmd PDFTK command path PDFTKコマンドの実行パス
+     * @param int $itemId Item ID for identifying the file ファイルを特定するためのアイテムID
+     * @param int $itemNo Item sequence number for identifying the file ファイルを特定するためのアイテム通番
+     * @param int $attributeId Attribute ID for identifying the file ファイルを特定するための属性ID
+     * @param int $fileNo File sequence number for identifying the file ファイルを特定するためのファイル通番
+     * @param string $workDir Working directory path 作業ディレクトリパス
+     * @param string $workFile Work file path 作業用ファイルパス
+     * @param string $targetFilePath execute target file path 処理対象ファイルパス
+     * @return bool true/false success/failed 成功/失敗
+     * @throws AppException
+     */
     private function deleteCoverExecute($pdftkCmd, $itemId, $itemNo, $attributeId, $fileNo, $workDir, $workFile, $targetFilePath){
         // 作業ファイルの作成
         // 失敗した場合例外を投げる
@@ -308,11 +443,12 @@ class Repository_Components_business_Pdfcover extends BusinessBase
     }
     
     /**
+     * It determines whether or not to grant the PDF cover page
      * PDFカバーページを付与するか判定する
      *
-     * @param  int $itemId
-     * @param  int $itemNo
-     * @return bool
+     * @param  int  $itemId    item ID         アイテムID
+     * @param  int  $itemNo    item number     アイテム通番
+     * @return bool true/false grant/not grant 付与する/付与しない
      */
     public function checkCreatePdfCover($itemId, $itemNo) {
         // 付与フラグ
@@ -362,10 +498,12 @@ class Repository_Components_business_Pdfcover extends BusinessBase
     }
     
     /**
-     * Get parameter for PDF Cover by param_name
+     * Get parameter for PDF Cover by parameter name
+     * パラメータ名からPDFカバーページ付与実行フラグを取得する
      *
-     * @param string $paramName
-     * @return array
+     * @param string $paramName parameter name パラメータ名
+     * @return array            PDF cover page grant flag PDFカバーページ付与実行フラグ
+     *                           array["param_value"]
      */
     public function getPdfCoverParamRecord($paramName)
     {
@@ -389,9 +527,9 @@ class Repository_Components_business_Pdfcover extends BusinessBase
     // -------------------------------------------------------
     /**
      * Check PDFTK command
+     * PDFTKコマンド実行パスを取得する
      *
-     * @return bool
-     * @access private
+     * @return string|false PDFTK command path/get failed PDFTKコマンドパス文字列/取得失敗
      */
     private function getCmdPdftk()
     {
@@ -422,9 +560,9 @@ class Repository_Components_business_Pdfcover extends BusinessBase
     
     /**
      * Check ImageMagick command
+     * ImageMagickコマンド実行パスを取得する
      *
-     * @return bool
-     * @access private
+     * @return string|false ImageMagick command path/get failed ImageMagickコマンドパス文字列/取得失敗
      */
     private function getCmdImageMagick()
     {
@@ -455,9 +593,15 @@ class Repository_Components_business_Pdfcover extends BusinessBase
     
     /**
      * Create cover page
+     * PDFカバーページを作成する
      *
-     * @return bool
-     * @access private
+     * @param string $outputFile output file name 出力ファイル名
+     * @param int $itemId Item ID for identifying the file ファイルを特定するためのアイテムID
+     * @param int $itemNo Item sequence number for identifying the file ファイルを特定するためのアイテム通番
+     * @param int $attributeId Attribute ID for identifying the file ファイルを特定するための属性ID
+     * @param int $fileNo File sequence number for identifying the file ファイルを特定するためのファイル通番
+     * @param string $workDir Working directory path 作業ディレクトリパス
+     * @return bool true/false success/failed 成功/失敗
      */
     private function createCoverPage($outputFile, $itemId, $itemNo, $attributeId, $fileNo, $workDir)
     {
@@ -521,9 +665,13 @@ class Repository_Components_business_Pdfcover extends BusinessBase
     
     /**
      * Check existing cover page
+     * PDFカバーページの有無を確認する
      *
-     * @return bool false: Not exist / true: Existing
-     * @access private
+     * @param int $itemId Item ID for identifying the file ファイルを特定するためのアイテムID
+     * @param int $itemNo Item sequence number for identifying the file ファイルを特定するためのアイテム通番
+     * @param int $attributeId Attribute ID for identifying the file ファイルを特定するための属性ID
+     * @param int $fileNo File sequence number for identifying the file ファイルを特定するためのファイル通番
+     * @return int 1/0 exist/not exist カバーページが存在する/カバーページが存在しない
      */
     public function getPdfCoverPageNum($itemId, $itemNo, $attributeId, $fileNo)
     {
@@ -551,13 +699,13 @@ class Repository_Components_business_Pdfcover extends BusinessBase
     
     /**
      * Divide PDF pages
+     * PDFカバーページを分離する
      *
-     * @param string $pdftkCmd
-     * @param string $target
-     * @param string $tmpTarget
-     * @param string $range
-     * @return bool
-     * @access private
+     * @param string $pdftkCmd　PDFTK command path               PDFTKコマンドパス
+     * @param string $target    File to be processed             処理対象ファイル
+     * @param string $tmpTarget Temporary file to be processed   処理対象一時ファイル
+     * @param string $range     PDF cover page separation number PDFカバーページ分離枚数
+     * @return bool true/false  success/failed                   成功/失敗
      */
     private function dividePdf($pdftkCmd, $target, $tmpTarget, $range)
     {
@@ -580,9 +728,12 @@ class Repository_Components_business_Pdfcover extends BusinessBase
     
     /**
      * Combine PDF pages
+     * PDFカバーページを結合する
      *
-     * @return bool
-     * @access private
+     * @param string $workFile original file 元ファイル
+     * @param string $coverFile cover page file カバーページファイル
+     * @param string $combineFile combined file 結合ファイル
+     * @return bool true/false success/failed 成功/失敗
      */
     private function combinePdf($workFile, $coverFile, $combineFile)
     {
@@ -613,9 +764,14 @@ class Repository_Components_business_Pdfcover extends BusinessBase
     
     /**
      * Make PDF thumbnail
+     * PDFファイルのサムネイルを作成する
      *
-     * @return bool
-     * @access private
+     * @param int $itemId Item ID for identifying the file ファイルを特定するためのアイテムID
+     * @param int $itemNo Item sequence number for identifying the file ファイルを特定するためのアイテム通番
+     * @param int $attributeId Attribute ID for identifying the file ファイルを特定するための属性ID
+     * @param int $fileNo File sequence number for identifying the file ファイルを特定するためのファイル通番
+     * @param string $workFile Work file path 作業用ファイルパス
+     * @return bool true/false success/failed 成功/失敗
      */
     public function makeThumbnail($itemId, $itemNo, $attributeId, $fileNo, $workFile)
     {
@@ -689,8 +845,14 @@ class Repository_Components_business_Pdfcover extends BusinessBase
     }
     
     /**
+     * Delete thumbnail
      * サムネイル情報削除
-     * 
+     *
+     * @param int $itemId Item ID for identifying the file ファイルを特定するためのアイテムID
+     * @param int $itemNo Item sequence number for identifying the file ファイルを特定するためのアイテム通番
+     * @param int $attributeId Attribute ID for identifying the file ファイルを特定するための属性ID
+     * @param int $fileNo File sequence number for identifying the file ファイルを特定するためのファイル通番
+     * @return bool true/false success/failed 成功/失敗
      */
     private function deleteThumbnail($itemId, $itemNo, $attributeId, $fileNo)
     {
@@ -717,9 +879,14 @@ class Repository_Components_business_Pdfcover extends BusinessBase
     
     /**
      * Update file thumbnail
+     * サムネイル情報更新
      *
-     * @param string $filePath
-     * @return bool
+     * @param string $filePath file path サムネイルファイルパス
+     * @param int $itemId Item ID for identifying the file ファイルを特定するためのアイテムID
+     * @param int $itemNo Item sequence number for identifying the file ファイルを特定するためのアイテム通番
+     * @param int $attributeId Attribute ID for identifying the file ファイルを特定するための属性ID
+     * @param int $fileNo File sequence number for identifying the file ファイルを特定するためのファイル通番
+     * @return bool true/false success/failed 成功/失敗
      */
     private function updateThumbnail($filePath, $itemId, $itemNo, $attributeId, $fileNo)
     {
@@ -744,13 +911,18 @@ class Repository_Components_business_Pdfcover extends BusinessBase
     
     /**
      * Get target PDF file Path
+     * 処理対象ファイルパス取得
      *
-     * @return string
-     * @access private
+     * @param int $itemId Item ID for identifying the file ファイルを特定するためのアイテムID
+     * @param int $attributeId Attribute ID for identifying the file ファイルを特定するための属性ID
+     * @param int $fileNo File sequence number for identifying the file ファイルを特定するためのファイル通番
+     * @param string $extension file extension ファイル拡張子
+     * @return string $targetFilePath target file path 処理対象ファイルパス
      */
-    private function getTargetPdfFilePath($itemId, $attributeId, $fileNo)
+    private function getTargetPdfFilePath($itemId, $attributeId, $fileNo, $extension)
     {
-        $fileName = $itemId."_".$attributeId."_".$fileNo.".pdf";
+        // ファイル名組立
+        $fileName = $itemId."_".$attributeId."_".$fileNo.".".$extension;
         
         $dirPath = $this->repositoryAction->getFileSavePath("file");
         if(strlen($dirPath) == 0) {
@@ -772,9 +944,13 @@ class Repository_Components_business_Pdfcover extends BusinessBase
     // Mod delete pdf cover 2015/01/26 K.Matsushita -start-
     /**
      * Reset cover_created_flag
-     * 
-     * @return bool
-     * @access private
+     * カバーページ付与済みフラグを更新する
+     *
+     * @param int $itemId Item ID for identifying the file ファイルを特定するためのアイテムID
+     * @param int $itemNo Item sequence number for identifying the file ファイルを特定するためのアイテム通番
+     * @param int $attributeId Attribute ID for identifying the file ファイルを特定するための属性ID
+     * @param int $fileNo File sequence number for identifying the file ファイルを特定するためのファイル通番
+     * @return bool true/false success/failed 成功/失敗
      */
     private function resetCoverCreatedFlag($itemId, $itemNo, $attributeId, $fileNo)
     {
@@ -806,7 +982,13 @@ class Repository_Components_business_Pdfcover extends BusinessBase
     
     /**
      * Get cover delete status
-     * @return boolean|string
+     * カバーページ削除済フラグを取得する
+     *
+     * @param int $itemId Item ID for identifying the file ファイルを特定するためのアイテムID
+     * @param int $itemNo Item sequence number for identifying the file ファイルを特定するためのアイテム通番
+     * @param int $attributeId Attribute ID for identifying the file ファイルを特定するための属性ID
+     * @param int $fileNo File sequence number for identifying the file ファイルを特定するためのファイル通番
+     * @return int|bool deleted flag/false カバーページ削除済フラグ値/取得失敗
      */
     private function getCoverDeleteStatus($itemId, $itemNo, $attributeId, $fileNo){
         $params = array();
@@ -828,7 +1010,13 @@ class Repository_Components_business_Pdfcover extends BusinessBase
     }
     /**
      * Insert cover delete status
-     * @return boolean
+     * カバーページ削除済フラグを追加する
+     *
+     * @param int $itemId Item ID for identifying the file ファイルを特定するためのアイテムID
+     * @param int $itemNo Item sequence number for identifying the file ファイルを特定するためのアイテム通番
+     * @param int $attributeId Attribute ID for identifying the file ファイルを特定するための属性ID
+     * @param int $fileNo File sequence number for identifying the file ファイルを特定するためのファイル通番
+     * @return bool true/false success/failed 成功/失敗
      */
     private function insertCoverDeleteStatus($itemId, $itemNo, $attributeId, $fileNo){
         $query = "INSERT INTO {repository_cover_delete_status} ".
@@ -850,7 +1038,14 @@ class Repository_Components_business_Pdfcover extends BusinessBase
     }
     /**
      * Update cover delete status
-     * @return boolean
+     * カバーページ削除済みフラグを更新する
+     *
+     * @param int $status deleted flag カバーページ削除済フラグ値
+     * @param int $itemId Item ID for identifying the file ファイルを特定するためのアイテムID
+     * @param int $itemNo Item sequence number for identifying the file ファイルを特定するためのアイテム通番
+     * @param int $attributeId Attribute ID for identifying the file ファイルを特定するための属性ID
+     * @param int $fileNo File sequence number for identifying the file ファイルを特定するためのファイル通番
+     * @return bool true/false success/failed 成功/失敗
      */
     private function updateCoverDeleteStatus($status, $itemId, $itemNo, $attributeId, $fileNo){
         $query = "UPDATE {repository_cover_delete_status} ".
@@ -876,8 +1071,9 @@ class Repository_Components_business_Pdfcover extends BusinessBase
     
     /**
      * get pdf cover header align
+     * PDFカバーページヘッダー情報を取得する
      *
-     * @return string
+     * @return string $headerAlign cover header align カバーページヘッダー
      */
      private function getPdfCoverHeaderAlign() {
         $result = $this->repositoryAction->getPdfCoverParamRecord(RepositoryConst::PDF_COVER_PARAM_NAME_HEADER_ALIGN);
@@ -901,8 +1097,17 @@ class Repository_Components_business_Pdfcover extends BusinessBase
     
     /**
      * get pdf cover footer license
+     * PDFカバーページフッターライセンス情報を取得する
      *
-     * @return string
+     * @param int $itemId Item ID for identifying the file ファイルを特定するためのアイテムID
+     * @param int $itemNo Item sequence number for identifying the file ファイルを特定するためのアイテム通番
+     * @param int $attributeId Attribute ID for identifying the file ファイルを特定するための属性ID
+     * @param int $fileNo File sequence number for identifying the file ファイルを特定するためのファイル通番
+     * @param string $licenseId license ID ライセンスID
+     * @param string $notation notation 表記法
+     * @param string $licenseImagePath license image file path ラインセスイメージ画像ファイルパス
+     * @param string $licenseTextUrl license text URL ライセンス情報のURL
+     * @return bool true/false success/failed 成功/失敗
      */
      private function getPdfCoverFooterLicense($itemId, $itemNo, $attributeId, $fileNo, &$licenseId, &$notation, &$licenseImagePath, &$licenseTextUrl) {
         $query = "SELECT ".RepositoryConst::DBCOL_REPOSITORY_FILE_LICENSE_ID.", ".
@@ -948,9 +1153,12 @@ class Repository_Components_business_Pdfcover extends BusinessBase
      }
      
     /**
-     * safe copy
+     * safe replace
+     * 安全な置換処理
      *
-     * @return string
+     * @param string $orgFile original file 元ファイル
+     * @param string $newFile new file コピーファイル
+     * @return string|bool original backup file path/false 元ファイルのバックアップパス/置換失敗
      */
      private function safeReplace($orgFile, $newFile) {
         // 対象ディレクトリに新ファイルを複製
@@ -974,5 +1182,33 @@ class Repository_Components_business_Pdfcover extends BusinessBase
         
         return $orgFile.".orgTmp";
      }
+
+    /**
+     * Search file extension
+     * ファイルの拡張子情報を取得する
+     *
+     * @param int $itemId Item ID for identifying the file ファイルを特定するためのアイテムID
+     * @param int $itemNo Item sequence number for identifying the file ファイルを特定するためのアイテム通番
+     * @param int $attributeId Attribute ID for identifying the file ファイルを特定するための属性ID
+     * @param int $fileNo File sequence number for identifying the file ファイルを特定するためのファイル通番
+     * @return string file extension ファイル拡張子
+     */
+    private function searchFileExtension($itemId, $itemNo, $attributeId, $fileNo) {
+        $query = "SELECT extension FROM {repository_file} ".
+            "WHERE is_delete = ? ".
+            "AND item_id = ? ".
+            "AND item_no = ? ".
+            "AND attribute_id = ? ".
+            "AND file_no = ? ";
+        $params = array();
+        $params[] = 0;
+        $params[] = $itemId;
+        $params[] = $itemNo;
+        $params[] = $attributeId;
+        $params[] = $fileNo;
+        $result = $this->executeSql($query, $params);
+
+        return $result[0]["extension"];
+    }
 }
 ?>

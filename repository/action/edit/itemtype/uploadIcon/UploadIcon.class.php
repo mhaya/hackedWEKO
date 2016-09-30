@@ -1,9 +1,17 @@
 <?php
+
+/**
+ * Item type icon upload class
+ * アイテムタイプアイコンアップロードクラス
+ *
+ * @package     WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: UploadIcon.class.php 3 2010-02-02 05:07:44Z atsushi_suzuki $
+// $Id: UploadIcon.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
-// Copyright (c) 2007 - 2008, National Institute of Informatics, 
+// Copyright (c) 2007 - 2008, National Institute of Informatics,
 // Research and Development Center for Scientific Information Resources
 //
 // This program is licensed under a Creative Commons BSD Licence
@@ -11,25 +19,46 @@
 //
 // --------------------------------------------------------------------
 
-/* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
-
 /**
- * [[機能説明]]
+ * Item type icon upload class
+ * アイテムタイプアイコンアップロードクラス
  *
- * @package     [[package名]]
+ * @package     WEKO
+ * @copyright   (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license     http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
  * @access      public
  */
 class Repository_Action_Edit_Itemtype_Uploadicon
 {
 	// 使用コンポーネントを受け取るため
-	var $Session = null;
-	var $Db = null;
-	var $uploadsAction = null;
 	/**
-     * [[機能説明]]
-     *
-     * @access  public
-     */
+	 * Session management objects
+	 * Session管理オブジェクト
+	 *
+	 * @var Session
+	 */
+	var $Session = null;
+	/**
+	 * DB object
+	 * DBオブジェクト
+	 *
+	 * @var DbObjectAdodb
+	 */
+	var $Db = null;
+	/**
+	 * Data upload objects
+	 * データアップロードオブジェクト
+	 *
+	 * @var Uploads_View
+	 */
+	var $uploadsAction = null;
+
+	/**
+	 * Execute
+	 * 実行
+	 *
+	 * @return bool true/false success/failed 成功/失敗
+	 */
     function execute()
     {
 		//ガーベージフラグが"1"の場合、いつかファイル・DB共にクリアしてくれる。

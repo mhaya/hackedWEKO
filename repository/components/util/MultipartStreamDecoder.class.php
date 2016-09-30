@@ -1,4 +1,12 @@
 <?php
+
+/**
+ * Read a common class of the uploaded file in a multi-part
+ * マルチパートでアップロードされたファイルの読み込み共通クラス
+ * 
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
 // $Id: MultipartStreamDecoder.class.php 42605 2015-04-02 01:02:01Z yuya_yamazawa $
@@ -10,40 +18,58 @@
 // http://creativecommons.org/licenses/BSD/
 //
 // --------------------------------------------------------------------
+/**
+ * Stream operation common classes
+ * Stream操作共通クラス
+ */
 require_once WEBAPP_DIR.'/modules/repository/components/FW/IO/FileStream.class.php';
+
+/**
+ * Exception class
+ * 例外基底クラス
+ */
 require_once WEBAPP_DIR.'/modules/repository/components/FW/AppException.class.php';
 
 /**
- * マルチパートでアップロードされたファイルを読み取り
- * 指定したパスに吐き出す。
- *
- * @author IVIS
- *
+ * Read a common class of the uploaded file in a multi-part
+ * マルチパートでアップロードされたファイルの読み込み共通クラス
+ * 
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class Repository_Components_Util_MultipartStreamDecoder
 {
     /**
+     * Header, footer part of the boundary read maximum byte values
      * ヘッダー,フッター部の境界読み込み最大バイト値
-     * @var number
+     * @var int
      */
     const READ_BOUNDARY_MAX_SIZE = 1024;
 
     /**
+     * The maximum number of bytes read file contents
      * ファイル内容最大読み込みバイト数
-     * @var number
+     * @var int
      */
     const READ_FILE_MAX_SIZE = 4096;
 
     /**
+     * To decode the uploaded files in a multi-part
+     * 1. Argument checking
+     * 2. The first reading of the line of the file. Acquisition of Boundary
+     * 3. Decode the file
+     * 4. Delete in the case of illegal data
      * マルチパートでアップロードされたファイルをデコードする
      * 1.引数チェック
      * 2.ファイルの最初の行の読み込み。Boundaryの取得
      * 3.ファイルのデコード
      * 4.不正データの場合の削除
-     * @param FileStream $readFileStream php://inputのFileStreamクラス
-     * @param string $oututFile 出力先パス
-     * @throws AppException
-     * @return array ファイル名リスト
+     * 
+     * @param FileStream $readFileStream FileStream object open the upload data アップロードデータを開いたFileStreamオブジェクト
+     * @param string $oututFile Output destination path 出力先パス
+     * @return array File name list ファイル名リスト
      */
     public static function decodeMultiPartFile($readFileStream,$oututFile)
     {
@@ -84,11 +110,12 @@ class Repository_Components_Util_MultipartStreamDecoder
     }
 
     /**
+     * Read up to boundary value of the header
      * ヘッダーの境界値までを読み込む
-     * @param FileStream $readFileStream php://inputのFileStreamクラス
-     * @param string $tmp_buffer_data 一時保存用buffer
-     * @throws AppException
-     * @return string Boundary
+     * 
+     * @param FileStream $readFileStream FileStream object open the upload data アップロードデータを開いたFileStreamオブジェクト
+     * @param string $tmp_buffer_data Temporary storage buffer 一時保存用バッファ
+     * @return string Boundary string バウンダリ文字列
      */
     private static function readHeadBoundary($readFileStream,&$tmp_buffer_data)
     {
@@ -112,12 +139,13 @@ class Repository_Components_Util_MultipartStreamDecoder
     }
 
     /**
+     * Reads the header part
      * ヘッダー部分を読み込む
-     * @param FileStream $readFileStream php://inputのFileStreamクラス
-     * @param string $oututFilePath 出力先パス
-     * @param string $tmp_buffer_data 一時保存用buffer
-     * @param string $fileName ファイル名
-     * @throws AppException
+     * 
+     * @param FileStream $readFileStream FileStream object open the upload data アップロードデータを開いたFileStreamオブジェクト
+     * @param string $oututFilePath Output destination path 出力先パス
+     * @param string $tmp_buffer_data Temporary storage buffer 一時保存用バッファ
+     * @param string $fileName File name ファイル名
      */
     private static function readHeader($readFileStream,$oututFilePath,&$tmp_buffer_data,&$fileName)
     {
@@ -161,12 +189,13 @@ class Repository_Components_Util_MultipartStreamDecoder
     }
 
     /**
-     * ヘッダー部分後のデータをbuffer(一時保持用)に保持する
-     * @param string $readStreamData
-     * @param string $oututFilePath 出力先パス
-     * @param string $tmp_buffer_data buffer(一時保持用)
-     * @param string $fileName ファイル名
-     * @throws AppException
+     * To retain the data after the header part in a buffer (for temporary holding)
+     * ヘッダー部分後のデータをバッファ(一時保持用)に保持する
+     * 
+     * @param string $readStreamData Read elaborate string 読込んだ文字列
+     * @param string $oututFilePath Output destination path 出力先パス
+     * @param string $tmp_buffer_data Temporary storage buffer 一時保存用バッファ
+     * @param string $fileName File name ファイル名
      */
     private static function keepstreamDataAfterHeader($readStreamData,$oututFilePath,&$tmp_buffer_data,&$fileName)
     {
@@ -194,14 +223,16 @@ class Repository_Components_Util_MultipartStreamDecoder
     }
 
     /**
-     * ファイルをデコードする
-     * @param FileStream $readFileStream php:inputのファイルポインタを持つFileStreamクラス
-     * @param string $oututFilePath 出力先パス
-     * @param string $boundary Boundary
-     * @param string $tmp_buffer_data 一時保存用buffer
-     * @param string $decodedFile デコードするファイル名
-     * @param boolean $deleteFlag デコードしたファイルの削除フラグ
-     * @return boolean ファイルのデコード再開フラグ
+     * Read the uploaded files, and outputs it to the specified path
+     * アップロードされたファイルを読み込み、指定されたパスに出力する
+     * 
+     * @param FileStream $readFileStream FileStream object open the upload data アップロードデータを開いたFileStreamオブジェクト
+     * @param string $oututFilePath Output destination path 出力先パス
+     * @param string $boundary Boundary string バウンダリ文字列
+     * @param string $tmp_buffer_data Temporary storage buffer 一時保存用バッファ
+     * @param string $decodedFile File name that you want to decode デコードするファイル名
+     * @param boolean $deleteFlag Delete flag of the decoded file デコードしたファイルの削除フラグ
+     * @return boolean Decode resume flag in the file ファイルのデコード再開フラグ
      */
     private static function decodePartFile($readFileStream,$oututFilePath,$boundary,&$tmp_buffer_data,&$decodedFile,&$deleteFlag)
     {
@@ -222,10 +253,12 @@ class Repository_Components_Util_MultipartStreamDecoder
     }
 
     /**
+     * Acquisition of the output destination path
      * 出力先パスの取得
-     * @param 出力先パス $path
-     * @param ファイル名 $decodedFile
-     * @return 出力先パス
+     * 
+     * @param $path Output destination path 出力先パス
+     * @param $decodedFile File name ファイル名
+     * @return string Output destination path 出力先パス
      */
     private static function outputFilePath($path,&$decodedFile)
     {
@@ -258,13 +291,15 @@ class Repository_Components_Util_MultipartStreamDecoder
     }
 
     /**
-     * ファイル内容をデコードする
-     * @param FileStream $readFileStream php:inputのファイルポインタを持つFileStreamクラス
-     * @param FileStream $outputFileStream 出力先のファイルポインタを持つFileStreamクラス
-     * @param string $boundary Boundary
-     * @param string $tmp_buffer_data 一時保存用buffer
-     * @param boolean $deleteFlag デコードしたファイルの削除フラグ
-     * @return boolean デコードを再度行う場合はtrue 行わない場合はfalse
+     * Read the uploaded file data, to restore the original file data
+     * アップロードされたファイルデータを読み込み、元のファイルデータを復元する
+     * 
+     * @param FileStream $readFileStream FileStream object open the upload data アップロードデータを開いたFileStreamオブジェクト
+     * @param FileStream $outputFileStream FileStream object of the output destination 出力先のFileStreamオブジェクト
+     * @param string $boundary Boundary string バウンダリ文字列
+     * @param string $tmp_buffer_data Temporary storage buffer 一時保存用バッファ
+     * @param boolean $deleteFlag Delete flag of the decoded file デコードしたファイルの削除フラグ
+     * @return boolean Decode incomplete flag (false If you do not true in the case of performing again) デコード未了フラグ(再度行う場合はtrue 行わない場合はfalse)
      */
     private static function decodeFile($readFileStream,$outputFileStream,$boundary,&$tmp_buffer_data,&$deleteFlag)
     {
@@ -314,14 +349,16 @@ class Repository_Components_Util_MultipartStreamDecoder
     }
 
     /**
-     * Boundaryが存在するか
-     * @param string $streamReadData Streamから読み込んだデータ
-     * @param FileStream $outputFileStream 出力先のファイルポインタ
-     * @param string $boundary Boundary値
-     * @param string $tmp_buffer_data 一時保存用buffer
-     * @param string $tmpStreamData Streamから読み込んだデータから最後の文字列をBoudaryサイズ分切り取ったデータ
-     * @param string $partDataAfterBoundary Boundary文字列後に存在するデータ
-     * @return boolean true:Boundaryが存在 false:Boundaryが存在しない
+     * Whether or not the boundary string is present
+     * バウンダリ文字列が存在するか否か
+     * 
+     * @param string $streamReadData Read data from Stream Streamから読み込んだデータ
+     * @param FileStream $outputFileStream The output destination of the file pointer 出力先のファイルポインタ
+     * @param string $boundary Boundary string バウンダリ文字列
+     * @param string $tmp_buffer_data Temporary storage buffer 一時保存用バッファ
+     * @param string $tmpStreamData Data to the end of the string from the data was cut Boudary size of read from Stream Streamから読み込んだデータから最後の文字列をバウンダリサイズ分切り取ったデータ
+     * @param string $partDataAfterBoundary Data that exist after the boundary string バウンダリ文字列後に存在するデータ
+     * @return boolean Boundary existence (true: boundary exists, false: boundary does not exist) バウンダリ存在有無(true:バウンダリが存在,false:バウンダリが存在しない)
      */
     private static function existBoundary($streamReadData,$outputFileStream,$boundary,&$tmp_buffer_data,&$tmpStreamData,&$partDataAfterBoundary)
     {

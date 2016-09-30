@@ -1,7 +1,13 @@
 <?php
+/**
+ * View class for workflow screen display
+ * インポート完了画面表示用ビュークラス
+ *
+ * @package WEKO
+ */
 // --------------------------------------------------------------------
 //
-// $Id: Confirm.class.php 48455 2015-02-16 10:53:40Z atsushi_suzuki $
+// $Id: Confirm.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -12,36 +18,68 @@
 // --------------------------------------------------------------------
 
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
 
 /**
- * [[view import result]]
+ * View class for workflow screen display
+ * インポート完了画面表示用ビュークラス
  *
- * @access      public
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class Repository_View_Edit_Import_Confirm extends RepositoryAction
 {
     // component 
+    /**
+     * Session management objects
+     * Session管理オブジェクト
+     *
+     * @var Session
+     */
     var $Session = null;
     // member
+    /**
+     * Error message
+     * エラーメッセージ
+     *
+     * @var string
+     */
     var $error_msg = null;
     
     // Add e-person 2013/12/04 R.Matsuura --start--
     /**
      * import mode
+     * インポートモード
+     * 
+     * @var int
      */
     public $importmode = null;
     /**
      * authority import success number
+     * インポート数
+     * 
+     * @var int
      */
     public $successnum = null;
     /**
-     * help icon display flag
+     * Help icon display flag
+     * ヘルプアイコン表示フラグ
+     *
+     * @var int
      */
     public $help_icon_display =  null;
     // Add e-person 2013/12/04 R.Matsuura --end--
     
     /**
+     * Import completion screen display
+     * インポート完了画面表示
+     * 
      * @access  public
      */
     function executeApp()

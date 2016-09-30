@@ -1,7 +1,15 @@
 <?php
+
+/**
+ * Import post-processing action class
+ * インポート後処理アクションクラス
+ *
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Confirm.class.php 58647 2015-10-10 08:13:31Z tatsuya_koyasu $
+// $Id: Confirm.class.php 71165 2016-08-22 09:20:28Z keiya_sugimoto $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -12,40 +20,81 @@
 // --------------------------------------------------------------------
 
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
-
+/**
+ * ZIP file manipulation library
+ * ZIPファイル操作ライブラリ
+ */
 include_once MAPLE_DIR.'/includes/pear/File/Archive.php';
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
+/**
+ * Item shelf registration processing common classes
+ * アイテム一括登録処理共通クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/action/edit/import/ImportCommon.class.php';;
+/**
+ * ZIP file manipulation common classes
+ * ZIPファイル操作共通クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/util/ZipUtility.class.php';
 
 
 /**
- * [[import終了時、確認画面表示用action]]
+ * Import post-processing action class
+ * インポート後処理アクションクラス
  *
- * @package     [[package名]]
- * @access      public
- * @version 1.0 新規作成
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class Repository_Action_Edit_Import_Confirm extends RepositoryAction
 {
+    /**
+     * Index id list
+     * 画面で指定されたインデックスIDリスト
+     *
+     * @var array[$ii]
+     */
     var $index_id = null;   // 画面で指定されたインデックスIDリスト
+    /**
+     * Checked index id list
+     * チェックされているインデックスのID列(|区切り)
+     *
+     * @var string
+     */
     var $CheckedIds = null; // チェックされているインデックスのID列(|区切り)
     
+    /**
+     * Session management objects
+     * Session管理オブジェクト
+     *
+     * @var Session
+     */
     var $Session = null;
     
     // Add review mail setting 2009/09/30 Y.Nakao --start--
+    /**
+     * Mail management objects
+     * メール管理オブジェクト
+     *
+     * @var Mail_Main
+     */
     var $mailMain = null;
     // Add review mail setting 2009/09/30 Y.Nakao --end--
     
     /**
-     * [[インポート処理大元]]
+     * Run import
+     * インポート実行
      *
      * Zipファイルから解凍
      * ->アイテムをZipにあるぶん登録
      * ->すでに登録済みは登録しない(他に登録済みがなくても)
      * ->アイテムタイプはかぶることがある
-     * 
-     * @access  public
+     * @return string Result 結果
      */
     function execute()
     {
@@ -256,8 +305,21 @@ class Repository_Action_Edit_Import_Confirm extends RepositoryAction
                 // insert 1 item
                 $ret = $import_common->itemEntry($array_item_data['item'][$nCnt], $tmp_dir, $array_item, $this->index_id, $item_type_info[$nCnt], $array_item_data['item_type'][$nCnt], $error_msg, $item_id, $detail_uri, $warningMsg);
                 if($ret === false){
+                    $error_info = array();
+                    $error_info[0] = array();
+                    $error_info[0]["error"] = $error_msg;
+                    if($this->Session->getParameter("_lang") == "english" && strlen($array_item_data["item"][$ii]["item_array"][0]["TITLE_ENGLISH"]) > 0) {
+                        $error_info[0]["title"] = $array_item_data["item"][$nCnt]["item_array"][0]["TITLE_ENGLISH"]; 
+                    } else {
+                        $error_info[0]["title"] = $array_item_data["item"][$nCnt]["item_array"][0]["TITLE"]; 
+                    }
+                    $error_info[0]["item_id"] = $array_item_data["item"][$nCnt]["item_array"][0]["ITEM_ID"];
+                    $error_info[0]["attr_name"] = "";
+                    $error_info[0]["input_value"] = "";
+                    $error_info[0]["regist_value"] = "";
+                    $error_info[0]["error_no"] = 0;
                     $exception = new RepositoryException( "ERR_MSG_xxx-xxx1", 001 );
-                    $this->Session->setParameter("error_msg", $error_msg);
+                    $this->Session->setParameter("error_info", $error_info);
                     // ROLLBACK
                     $this->failTrans();
                     throw $exception;
@@ -266,6 +328,7 @@ class Repository_Action_Edit_Import_Confirm extends RepositoryAction
                 if(strlen($warningMsg) > 0){
                     $array_item[$nCnt]["error_msg"] = $warningMsg;
                 } else {
+                    // おそらくPHP Noticeを回避するため、空文字を詰めている 2016/08/18
                     $array_item[$nCnt]["error_msg"] = $error_msg;
                 }
                 
@@ -406,8 +469,12 @@ class Repository_Action_Edit_Import_Confirm extends RepositoryAction
         }
     }
 
-    /*
+    /**
      * zip file extract
+     * ZIPファイル解凍
+     * 
+     * @return string|boolean string Directory path ディレクトリパス
+     *                        boolean Result 結果
      */
     private function extraction(){
 

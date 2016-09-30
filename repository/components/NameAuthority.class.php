@@ -1,7 +1,15 @@
 <?php
+
+/**
+ * Name authority common classes
+ * 著者名典拠共通クラス
+ * 
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: NameAuthority.class.php 58457 2015-10-06 02:18:19Z tatsuya_koyasu $
+// $Id: NameAuthority.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -11,20 +19,75 @@
 //
 // --------------------------------------------------------------------
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
+/**
+ * Date manipulation library
+ * 日付操作ライブラリ
+ */
 include_once WEBAPP_DIR. '/modules/repository/files/pear/Date.php';
 
+/**
+ * Name authority common classes
+ * 著者名典拠共通クラス
+ * 
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
+ */
 class NameAuthority extends Action
 {
     // member
+    /**
+     * Session management objects
+     * Session管理オブジェクト
+     *
+     * @var Session
+     */
     private $Session = null;
+    /**
+     * Database management objects
+     * データベース管理オブジェクト
+     *
+     * @var DbObject
+     */
     private $Db = null;
+    /**
+     * User id
+     * ユーザID
+     *
+     * @var string
+     */
     private $user_id = null;
+    /**
+     * Date Modified
+     * 更新日時
+     *
+     * @var string
+     */
     private $mod_date = null;
+    /**
+     * Block ID of arranged WEKO to NC2
+     * NC2に配置されたWEKOのブロックID
+     *
+     * @var int
+     */
     private $block_id = 0;
+    /**
+     * ID of the page WEKO is located
+     * WEKOが配置されているページのID
+     *
+     * @var int
+     */
     private $room_id = 0;
     
     /**
-     * INIT
+     * Constructor
+     * コンストラクタ
+     *
+     * @param Session $Session Session management objects Session管理オブジェクト
+     * @param DbObject $Db Database management objects データベース管理オブジェクト
+     * @param int $block_id Block ID of arranged WEKO to NC2 NC2に配置されたWEKOのブロックID
+     * @param int $room_id ID of the page WEKO is located WEKOが配置されているページのID
      */
     public function NameAuthority($Session, $Db, $block_id=0, $room_id=0){
         if($Session != null){
@@ -49,24 +112,33 @@ class NameAuthority extends Action
      *
      * @param int $block_id
      */
+    /**
+     * Set block id
+     * ブロックID設定
+     *
+     * @param int $block_id Block id ブロックID
+     */
     public function setBlockId($block_id){
         $this->block_id = $block_id;
     }
     
     /**
      * Set room id
+     * ルームID設定
      *
-     * @param int $room_id
+     * @param int $room_id Room id ルームID
      */
     public function setRoomId($room_id){
         $this->room_id = $room_id;
     }
     
     /**
-     * Name authority Insert
-     * @param array()
-     * @return boolean
-     * @access  public
+     * Name authority data insertion
+     * 著者名典拠データ挿入
+     *
+     * @param array $params Insert parameters 挿入パラメータ
+     *                      array["author_id"|"language"|"family"|"name"|"family_ruby"|"name_ruby"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     * @return boolean Execution result 実行結果
      */
     private function insNameAuthority($params=array())
     {
@@ -78,10 +150,14 @@ class NameAuthority extends Action
     }
     
     /**
-     * Name Authority Update
-     * @param array()
-     * @return boolean
-     * @access  public
+     * Name authority data update
+     * 著者名典拠データ更新
+     *
+     * @param array $params Update parameters 更新パラメータ
+     *                      array["author_id"|"language"|"family"|"name"|"family_ruby"|"name_ruby"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     * @param array $where_params Condition parameters 条件パラメータ
+     *                            array["author_id"|"language"|"family"|"name"|"family_ruby"|"name_ruby"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     * @return boolean Execution result 実行結果
      */
     private function updNameAuthority($params=array(), $where_params=array())
     {
@@ -93,13 +169,17 @@ class NameAuthority extends Action
     }
     
     /**
-     * Name Authority Select
-     * @param array where_params
-     * @param array order_params
-     * @param function func
-     * @param array    func_param
-     * @return boolean
-     * @access  public
+     * Name authority acquisition
+     * 著者名典拠取得
+     * 
+     * @param array $where_params Condition parameters 条件パラメータ
+     *                            array["author_id"|"language"|"family"|"name"|"family_ruby"|"name_ruby"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     * @param array order_params Order parameters 順序パラメータ
+     *                           array["author_id"|"language"|"family"|"name"|"family_ruby"|"name_ruby"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     * @param function Callback function コールバック関数
+     * @param array Callback argument コールバック引数
+     * @return array Execution result 実行結果
+     *                         array[$ii]["author_id"|"language"|"family"|"name"|"family_ruby"|"name_ruby"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
      */
     public function getNameAuthority($where_params=array(), $order_params=array(), $func = null, $func_param = null)
     {
@@ -111,10 +191,12 @@ class NameAuthority extends Action
     }
     
     /**
-     * External AuthorId Prefix Insert
-     * @param array()
-     * @return boolean
-     * @access  public
+     * External author ID prefix insertion
+     * 外部著者ID prefix挿入
+     *
+     * @param array $params Insert parameters 挿入パラメータ
+     *                      array["prefix_id"|"prefix_name"|"url"|"block_id"|"room_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     * @return boolean Execution result 実行結果
      */
     private function insExternalAuthorIdPrefix($params=array())
     {
@@ -131,6 +213,17 @@ class NameAuthority extends Action
      * @return boolean
      * @access  public
      */
+    
+    /**
+     * External author ID prefix update
+     * 外部著者ID prefix更新
+     *
+     * @param array $params Update parameters 挿入パラメータ
+     *                      array["prefix_id"|"prefix_name"|"url"|"block_id"|"room_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     * @param array $where_params Condition parameters 条件パラメータ
+     *                            array["prefix_id"|"prefix_name"|"url"|"block_id"|"room_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     * @return boolean Execution result 実行結果
+     */
     private function updExternalAuthorIdPrefix($params=array(), $where_params=array())
     {
         $result = $this->Db->updateExecute("repository_external_author_id_prefix", $params, $where_params);
@@ -141,13 +234,17 @@ class NameAuthority extends Action
     }
     
     /**
-     * External AuthorId Prefix Select
-     * @param array where_params
-     * @param array order_params
-     * @param function func
-     * @param array    func_param
-     * @return boolean
-     * @access  public
+     * External author ID prefix acquisition
+     * 外部著者ID prefix取得
+     * 
+     * @param array $where_params Condition parameters 条件パラメータ
+     *                            array["prefix_id"|"prefix_name"|"url"|"block_id"|"room_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     * @param array $order_params Order parameters 順序パラメータ
+     *                           array["prefix_id"|"prefix_name"|"url"|"block_id"|"room_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     * @param function $func Callback function コールバック関数
+     * @param array $func_param Callback argument コールバック引数
+     * @return array Execution result 実行結果
+     *               array[$ii]["prefix_id"|"prefix_name"|"url"|"block_id"|"room_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
      */
     public function getExternalAuthorIdPrefix($where_params=array(), $order_params=array(), $func = null, $func_param = null)
     {
@@ -163,8 +260,15 @@ class NameAuthority extends Action
      *
      * @return array() 
      */
+    /**
+     * External author ID prefix list acquisition
+     * 外部著者ID prefix一覧取得
+     *
+     * @return array External author ID prefix list 外部著者ID prefix一覧
+     *               array[$ii]["prefix_id"|"prefix_name"|"block_id"|"room_id"]
+     */
     public function getExternalAuthorIdPrefixList(){
-        $query = "SELECT prefix_id, prefix_name, block_id, room_id ".
+        $query = "SELECT prefix_id, prefix_name, url, block_id, room_id ".
                  "FROM ".DATABASE_PREFIX."repository_external_author_id_prefix ".
                  "WHERE ((block_id = 0 AND room_id = 0) OR (block_id = ? AND room_id = ?)) ".
                  "AND is_delete = 0 ".
@@ -181,10 +285,13 @@ class NameAuthority extends Action
     }
     
     /**
-     * Get external authorID prefix and suffix 
+     * External author ID prefix and suffix acquisition
+     * 外部著者ID prefixおよびsuffix取得
      *
-     * @param int $author_id
-     * @return array() 
+     * @param int $author_id Author id 著者ID
+     * @param boolean $getEmailFlag Whether or not to get the e-mail address メールアドレスを取得するか否か
+     * @return array External author ID prefix and suffix 外部著者ID prefixおよびsuffix
+     *               array[$ii]["suffix.prefix_id"|"suffix.suffix"]
      */
     public function getExternalAuthorIdPrefixAndSuffix($author_id, $getEmailFlag=false){
         $query = "SELECT suffix.prefix_id, suffix.suffix ".
@@ -214,11 +321,12 @@ class NameAuthority extends Action
     }
     
     /**
-     * Add external authorID prefix 
+     * External author ID prefix added
+     * 外部著者ID prefix追加
      *
-     * @param string $prefix_name
-     * @param int $prefix_id
-     * @return int $prefix_id
+     * @param string $prefix_name External author ID prefix name 外部著者ID prefix名
+     * @param int $prefix_id Unique ID of the external author ID prefix 外部著者ID prefixのユニークID
+     * @return boolean Execution result 実行結果
      */
     public function addExternalAuthorIdPrefix($prefix_name, $prefix_id=0){
         if($prefix_id==0){
@@ -245,13 +353,16 @@ class NameAuthority extends Action
     }
     
     /**
-     * Update external authorID prefix
+     * External author ID prefix update
+     * 外部著者ID prefix更新
      *
-     * @param int $prefix_id
-     * @return array()
+     * @param int $prefix_id Unique ID of the external author ID prefix 外部著者ID prefixのユニークID
+     * @param string $url External author ID URL 外部著者ID URL
+     * @return boolean Execution result 実行結果
      */
-    private function updateExternalAuthorIdPrefix($prefix_id){
+    private function updateExternalAuthorIdPrefix($prefix_id, $url){
         $params = array(
+                        "url" => $url,
                         "mod_user_id" => $this->user_id,
                         "del_user_id" => 0,
                         "mod_date" => $this->mod_date,
@@ -271,16 +382,27 @@ class NameAuthority extends Action
      *
      * @return int $new_prefix_id
      */
+    /**
+     * New unique ID acquisition of external author ID
+     * 外部著者IDの新規ユニークID取得
+     *
+     * @return int Unique ID ユニークID
+     */
     private function getNewPrefixId(){
         $new_prefix_id = intval($this->Db->nextSeq("repository_external_author_id_prefix"));
         return $new_prefix_id;
     }
     
     /**
-     * Entry external authorID prefix 
+     * Entry external authorID prefix data
+     * 外部著者IDのプレフィックス情報を追加する
      *
-     * @param array() $prefix_data[x]["prefix_id"]
-     *                               ["prefix_name"]
+     * @param array $prefix_data External author id prefix data
+     *                           外部著者IDのプレフィックス情報
+     *                           array[$ii]["prefix_id"|"prefix_name"|"url"]
+     *
+     * @return boolean Whether or not entry external authorID prefix data success
+     *                 外部著者IDのプレフィックス情報の追加に成功したかどうか
      */
     public function entryExternalAuthorIdPrefix($prefix_data){
         // Delete record by block_id and room_id
@@ -306,16 +428,20 @@ class NameAuthority extends Action
         
         // Update or Insert record
         for($ii=0;$ii<count($prefix_data);$ii++){
-            if($prefix_data[$ii]["prefix_name"]!="e_mail_address" && $prefix_data[$ii]["prefix_id"]!=1 && $prefix_data[$ii]["prefix_id"]!=2 && $prefix_data[$ii]["prefix_id"]!=3){
+            if($prefix_data[$ii]["prefix_name"]!="e_mail_address"){
                 if(($prefix_data[$ii]["prefix_id"]==0 || $prefix_data[$ii]["prefix_id"]==null) && $prefix_data[$ii]["prefix_name"]!=""){
                     // Insert record
-                    $result = $this->addExternalAuthorIdPrefix($prefix_data[$ii]["prefix_name"]);
+                    $prefixId = $this->addExternalAuthorIdPrefix($prefix_data[$ii]["prefix_name"]);
+                    if($prefixId===false){
+                        return false;
+                    }
+                    $result = $this->updateExternalAuthorIdPrefix($prefixId, $prefix_data[$ii]["url"]);
                     if($result===false){
                         return false;
                     }
-                } else {
+                } else if($prefix_data[$ii]["prefix_name"]!="") {
                     // Update record
-                    $result = $this->updateExternalAuthorIdPrefix($prefix_data[$ii]["prefix_id"]);
+                    $result = $this->updateExternalAuthorIdPrefix($prefix_data[$ii]["prefix_id"], $prefix_data[$ii]["url"]);
                     if($result===false){
                         return false;
                     }
@@ -327,8 +453,9 @@ class NameAuthority extends Action
     
     /**
      * Get new author_id
+     * 新規著者ID取得
      * 
-     * @return int $author_id
+     * @return int Author id 著者ID
      */
     public function getNewAuthorId(){
         $query = "SELECT MAX(author_id) FROM ".DATABASE_PREFIX."repository_name_authority;";
@@ -341,9 +468,13 @@ class NameAuthority extends Action
     }
     
     /**
-     * Get name authority data
-     * 
-     * @return int $author_id
+     * Name authority data acquisition
+     * 著者名典拠データ取得
+     *
+     * @param int $author_id Author id 著者ID
+     * @param string $language Language 言語
+     * @return array Name authority data 著者名典拠データ
+     *               array[$ii]["author_id"|"language"|"family"|"name"|"family_ruby"|"name_ruby"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
      */
     public function getNameAuthorityData($author_id, $language){
         $where_params = array(
@@ -357,10 +488,11 @@ class NameAuthority extends Action
     }
     
     /**
-     * Get external authorID's prefix_name by prefix_id
+     * Get the external author ID prefix name
+     * 外部著者ID prefix名を取得
      *
-     * @param int $prefix_id
-     * @param string prefix_name
+     * @param int $prefix_id Unique ID ユニークID
+     * @return string External author ID prefix name 外部著者ID prefix名
      */
     public function getExternalAuthorIdPrefixName($prefix_id){
         $where_params = array("prefix_id" => $prefix_id);
@@ -372,10 +504,12 @@ class NameAuthority extends Action
     }
     
     /**
-     * Get external authorID data by author_id, block_id and room_id
+     * External author ID prefix and suffix get attached straps to the author ID
+     * 著者IDに紐付く外部著者ID prefixおよびsuffix取得
      *
-     * @param int $prefix_id
-     * @return array()
+     * @param int $author_id Author id 著者ID
+     * @return array Execution result 実行結果
+     *               array[$ii]["SUFFIX.author_id"|"SUFFIX.prefix_id"|"PREFIX.prefix_name"|"SUFFIX.suffix"]
      */
     public function getExternalAuthorIdData($author_id){
         $query = "SELECT SUFFIX.author_id, SUFFIX.prefix_id, PREFIX.prefix_name, SUFFIX.suffix ".
@@ -399,10 +533,11 @@ class NameAuthority extends Action
     }
     
     /**
-     * Get external authorID prefix_id by prefix_name
+     * Unique ID acquisition of external author ID prefix
+     * 外部著者ID prefixのユニークID取得
      *
-     * @param string $prefix_name
-     * @return int $prefix_id
+     * @param string $prefix_name External author ID prefix name 外部著者ID prefix名
+     * @return int Unique ID of external author ID prefix
      */
     public function getExternalAuthorIdPrefixId($prefix_name){
         $where_params = array(
@@ -426,16 +561,18 @@ class NameAuthority extends Action
 
     
     /**
-     * Search author data for suggest
+     * Search for author information for suggestions display
+     * サジェスト表示用に著者情報を検索
      *
-     * @param string $surName
-     * @param string $givenName
-     * @param string $surNameRuby
-     * @param string $givenNameRuby
-     * @param string $emailAddress
-     * @param string $externalAuthorID
-     * @param string $language 
-     * @return array()
+     * @param string $surName Last name 姓
+     * @param string $givenName Name 名
+     * @param string $surNameRuby Last name (reading) 姓(ヨミ)
+     * @param string $givenNameRuby Name (reading) 名(ヨミ)
+     * @param string $emailAddress Mail address メールアドレス
+     * @param string $externalAuthorID External author ID suffix 外部著者ID suffix
+     * @param string $language Language 言語
+     * @return array Author information 著者情報
+     *               array[$ii]["AUTHOR.author_id"|"AUTHOR.family"|"$surNameRuby"|"AUTHOR.family_ruby"|"AUTHOR.name_ruby"|"SUFFIX.suffix"]
      */
     public function searchSuggestData($surName, $givenName, $surNameRuby, $givenNameRuby, $emailAddress, $externalAuthorID, $language=""){
         $query = "SELECT DISTINCT AUTHOR.author_id, AUTHOR.family, AUTHOR.name, ".
@@ -541,12 +678,9 @@ class NameAuthority extends Action
      * duplicate key insert external author id
      * 外部著者IDを上書き保存する
      *
-     * @param array $extAuthorIdArray[$ii]["prefix_id"]
-     *                                    ["suffix"]
-     *                                    ["old_prefix_id"]
-     *                                    ["old_suffix"]
-     *                                    ["prefix_name"]
-     * @param int $authorId
+     * @param array $extAuthorIdArray External author ID prefix and suffix 外部著者ID prefixおよびsuffix
+     *                                array[$ii]["prefix_id"|"suffix"|"old_prefix_id"|"old_suffix"|"prefix_name"]
+     * @param int $authorId Author id 著者ID
      */
     private function upsertExternalAuthorId($extAuthorIdArray, $authorId){
         // Prefixが配列内に含まれているので、それを利用して保存する
@@ -586,9 +720,10 @@ class NameAuthority extends Action
      * Get a list of the author ID that partially match the external author ID
      * 外部著者ID群に部分一致する著者IDの一覧を取得する
      *
-     * @param array $extAuthorIdArray
-     * @return array: 外部著者IDのいずれかに一致した著者IDの一覧
-     *                $authorIds[$ii]["author_id"] = value
+     * @param array $extAuthorIdArray External author ID prefix and suffix 外部著者ID prefixおよびsuffix
+     *                                array[$ii]["prefix_id"|"suffix"|"old_prefix_id"|"old_suffix"|"prefix_name"]
+     * @return array List of author ID that matches the one of the external author ID 外部著者IDのいずれかに一致した著者IDの一覧
+     *               $authorIds[$ii]["author_id"]
      */
     private function selectAuthorIdList($extAuthorIdArray){
         $params = array();
@@ -626,10 +761,10 @@ class NameAuthority extends Action
      * in the external author ID stick string to an external author ID and the author ID
      * 未入力を除き、外部著者ID群と著者IDに紐付く外部著者ID群に差異がないことを確認する
      *
-     * @param array $extAuthorIdArray
-     * @param int $authorId
-     * @return boolean: true  -> データベースと入力の差異はある
-     *                  false -> データベースと入力に差異がない
+     * @param array $extAuthorIdArray External author ID prefix and suffix 外部著者ID prefixおよびsuffix
+     *                                array[$ii]["prefix_id"|"suffix"|"old_prefix_id"|"old_suffix"|"prefix_name"]
+     * @param int $authorId Authur id 著者ID
+     * @return boolean Whether or not there is a difference in the database and input データベースと入力に差異があるか否か
      */
     private function isDiffExternalAuthorId($extAuthorIdArray, $authorId){
         // 著者IDのprefixおよびsuffixを全て取得する
@@ -677,9 +812,10 @@ class NameAuthority extends Action
      * identify author id by input external id list and database
      * データベースに登録されている外部著者IDと入力された外部著者ID群から著者を特定し、外部著者IDを登録する
      *
-     * @param array $extAuthorIdArray
-     * @param int $authorId
-     * @return int
+     * @param array $extAuthorIdArray External author ID prefix and suffix 外部著者ID prefixおよびsuffix
+     *                                array[$ii]["prefix_id"|"suffix"|"old_prefix_id"|"old_suffix"|"prefix_name"]
+     * @param int $authorId Author id 著者ID
+     * @return int Author id 著者ID
      */
     private function identifyAuthorId($extAuthorIdArray, $authorId){
         $retAuthorId = 0;
@@ -698,13 +834,9 @@ class NameAuthority extends Action
      * identify author id by external id for new
      * 著者新規登録時に外部著者ID群より著者IDを特定し、外部著者IDを登録する
      *
-     * @param array $extAuthorIdArray[$ii]["prefix_id"]
-     *                                    ["suffix"]
-     *                                    ["old_prefix_id"]
-     *                                    ["old_suffix"]
-     *                                    ["prefix_name"]
-     * @return int: $authorId = 0 -> 該当著者無し
-     *              $authorId > 0 -> 該当著者の著者ID、外部著者IDに関して更新済み
+     * @param array $extAuthorIdArray External author ID prefix and suffix 外部著者ID prefixおよびsuffix
+     *                                array[$ii]["prefix_id"|"suffix"|"old_prefix_id"|"old_suffix"|"prefix_name"]
+     * @return int Corresponding author ID(0: None) 該当著者ID(0:該当なし)
      */
     private function identifyAuthorIdForNew($extAuthorIdArray){
         $authorId = 0;
@@ -742,13 +874,9 @@ class NameAuthority extends Action
      * is exists mail address by external id list
      * 外部著者ID群内にメールアドレスが存在するかを確認する
      *
-     * @param array $extAuthorIdArray[$ii]["prefix_id"]
-     *                                    ["suffix"]
-     *                                    ["old_prefix_id"]
-     *                                    ["old_suffix"]
-     *                                    ["prefix_name"]
-     * @return boolean: 外部著者ID群の中にメールアドレスが存在するか否か true ->  存在する
-     *                                                        false -> 存在しない
+     * @param array $extAuthorIdArray External author ID prefix and suffix 外部著者ID prefixおよびsuffix
+     *                                array[$ii]["prefix_id"|"suffix"|"old_prefix_id"|"old_suffix"|"prefix_name"]
+     * @return boolean Whether or not the e-mail address in the external author ID group is present 外部著者ID群の中にメールアドレスが存在するか否か
      */
     private function isExistsMailaddress($extAuthorIdArray){
         // 外部著者ID群の中からpreifxが0である値がないかを探す
@@ -765,9 +893,10 @@ class NameAuthority extends Action
      * identify author id by external id for editting
      * 編集している著者の著者IDを外部著者IDから特定し、外部著者IDを登録する
      *
-     * @param array $extAuthorIdArray
-     * @param int $editAuthorId: 編集中著者ID
-     * @return int: 外部著者IDから特定した著者ID
+     * @param array $extAuthorIdArray External author ID prefix and suffix 外部著者ID prefixおよびsuffix
+     *                                array[$ii]["prefix_id"|"suffix"|"old_prefix_id"|"old_suffix"|"prefix_name"]
+     * @param int $editAuthorId Edited author ID 編集中著者ID
+     * @return int Author ID that you identified from outside the author ID 外部著者IDから特定した著者ID
      */
     private function identifyAuthorIdForEdit($extAuthorIdArray, $editAuthorId){
         if(count($extAuthorIdArray) === 0){
@@ -795,19 +924,13 @@ class NameAuthority extends Action
     
     /**
      * Entry NameAuthority data
+     * 著者名典拠データ登録
      * 
-     * @param array $metadata   $metadata["family"]
-     *                                   ["name"]
-     *                                   ["family_ruby"]
-     *                                   ["name_ruby"]
-     *                                   ["e_mail_address"]
-     *                                   ["author_id"]
-     *                                   ["language"]
-     *                                   ["external_author_id"][x]["prefix_id"]
-     *                                                            ["suffix"]
-     * @param string $errMsg
-     * @param boolean $noMergeFlag  false: Execute merge external_author_id
-     *                               true: Not execute merge external_author_id
+     * @param array $metadata Author information 著者メタデータ
+     *                        array["family"|"name"|"family_ruby"|"name_ruby"|"e_mail_address"|"author_id"|"language"]
+     *                        array["external_author_id"][x]["prefix_id"|"suffix"]
+     * @param string $errMsg Error message エラーメッセージ
+     * @param boolean Whether merge is not performed マージが実施されなかったか否か
      */
     public function entryNameAuthority($metadata, &$errMsg, $noMerge=false){
         if(count($metadata)==0){
@@ -876,11 +999,14 @@ class NameAuthority extends Action
     }
     
     /**
-     * Get author by PrefixID and Suffix
+     * Get the author information from external author ID
+     * 外部著者IDから著者情報を取得
      *
-     * @param int $prefixId
-     * @param string $suffix
-     * @return unknown
+     * @param int $prefixId Unique ID of the external author ID prefix 外部著者ID prefixのユニークID
+     * @param string $suffix External author ID suffix 外部著者ID suffix
+     * @return array Author information 著者情報
+     *               array[$ii]["AUTHOR.author_id"|"AUTHOR.language"|"AUTHOR.family"|"AUTHOR.name"|"AUTHOR.family_ruby"|"AUTHOR.name_ruby"|"SUFFIX.prefix_id"|"SUFFIX.suffix"]
+     *               array[$ii]["external_author_id"][$ii]["suffix.prefix_id"|"suffix.suffix"]
      */
     public function getAuthorByPrefixAndSuffix($prefixId, $suffix){
         $query = "SELECT AUTHOR.author_id, AUTHOR.language, AUTHOR.family, ".
@@ -912,10 +1038,10 @@ class NameAuthority extends Action
     
     /**
      * Get author by PrefixID and Suffix
+     * 著者IDを外部著者IDから取得
      *
-     * @param int $prefixId
-     * @param string $suffix
-     * @return int: 著者ID
+     * @param string $suffix External author ID suffix 外部著者ID suffix
+     * @return int Author id 著者ID
      */
     public function getSuggestAuthorBySuffix($suffix){
         $query = "SELECT DISTINCT author_id ".

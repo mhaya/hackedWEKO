@@ -1,7 +1,15 @@
 <?php
+
+/**
+ * WEKO logic-based base class
+ * WEKOロジックベース基底クラス
+ * 
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: RepositoryLogicBase.class.php 30197 2013-12-19 09:55:45Z rei_matsuura $
+// $Id: RepositoryLogicBase.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -13,38 +21,68 @@
 
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
 
+/**
+ * Repository module constant class
+ * WEKO共通定数クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryConst.class.php';
+/**
+ * WEKO logger class
+ * WEKOロガークラス
+ */
+require_once WEBAPP_DIR. '/modules/repository/components/FW/AppLogger.class.php';
 
+/**
+ * WEKO logic-based base class
+ * WEKOロジックベース基底クラス
+ * 
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
+ */
 class RepositoryLogicBase
 {
 
     /**
-     * セッション管理
+     * Session management objects
+     * Session管理オブジェクト
      *
-     * @var session
+     * @var Session
      */
     protected $Session = null;
     
     /**
-     * データベースアクセスクラス
+     * Database access object
+     * データベースアクセスオブジェクト
      *
-     * @var dbAccess
+     * @var RepositoryDbAccess
      */
     protected $dbAccess = null;
     
     /**
+     * Transaction start date and time
      * トランザクション開始日時
      *
-     * @var transStartDate
+     * @var string
      */  
     protected $transStartDate = '';
     
     /**
-     * initialize
+     * Logger
+     * ロガー
      *
-     * @param var $Session Session
-     * @param var $db DbObjectAdodb or RepositoryDbAccess
-     * @param string $TransStartDate TransStartDate
+     * @var Logger
+     */  
+    protected $Logger = null;
+    
+    /**
+     * Constructor
+     * コンストラクタ
+     *
+     * @param Session $Session Session セッション管理オブジェクト
+     * @param DbObjectAdodb $db DB object データベース管理オブジェクト
+     * @param string $TransStartDate Transaction start date トランザクション開始日時
      */
     protected function __construct($session, $db, $startDate)
     {
@@ -80,18 +118,17 @@ class RepositoryLogicBase
             throw new InvalidArgumentException("RepositoryLogicBase : Failed construct, but argument at transStartDate.");
         }
         $this->transStartDate = $startDate;
+        
+        // logger
+        $this->Logger = new AppLogger();
     }
     
     /**
+     * To add a common item to the query parameters (insertion)
      * クエリパラメータに共通項目を追加する（挿入）
-     * 追加するパラメータは
-     * 作成ユーザーID、
-     * 更新ユーザーID、
-     * 作成日時、
-     * 更新日時、
-     * 削除フラグ
      *
-     * @param array $params クエリ用パラメータ
+     * @param array $params Query parameters クエリ用パラメータ
+     *                      array[$ii]
      */
     protected function addSystemPramsForInsert(&$params)
     {
@@ -104,13 +141,11 @@ class RepositoryLogicBase
     }
     
     /**
+     * To add a common item to the query parameters (update)
      * クエリパラメータに共通項目を追加する（更新）
-     * 追加するパラメータは
-     * 更新ユーザーID、
-     * 更新日時、
-     * 削除フラグ
      *
-     * @param array $params クエリ用パラメータ
+     * @param array $params Query parameters クエリ用パラメータ
+     *                      array[$ii]
      */
     protected function addSystemPramsForUpdate(&$params)
     {
@@ -119,13 +154,11 @@ class RepositoryLogicBase
     }
     
     /**
+     * To add a common item to the query parameters (Delete)
      * クエリパラメータに共通項目を追加する（削除）
-     * 追加するパラメータは
-     * 更新ユーザーID、
-     * 更新日時、
-     * 削除フラグ
      *
-     * @param array $params クエリ用パラメータ
+     * @param array $params Query parameters クエリ用パラメータ
+     *                      array[$ii]
      */
     protected function addSystemPramsForDelete(&$params)
     {

@@ -1,7 +1,15 @@
 <?php
+
+/**
+ * View class for supplemental content Delete confirmation pop-up display
+ * サプリメンタルコンテンツ削除確認ポップアップ表示用ビュークラス
+ *
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Deletepopup.class.php 9461 2011-06-16 00:39:22Z yuko_nakao $
+// $Id: Deletepopup.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -12,31 +20,81 @@
 // --------------------------------------------------------------------
 
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
-
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
 
 /**
- * [[機能説明]]
+ * View class for supplemental content Delete confirmation pop-up display
+ * サプリメンタルコンテンツ削除確認ポップアップ表示用ビュークラス
  *
- * @package     [[package名]]
- * @access      public
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class Repository_View_Common_Item_Supple_Deletepopup extends RepositoryAction
 {
 	// リクエストパラメタ
+    /**
+     * Item id
+     * アイテムID
+     *
+     * @var int
+     */
 	var $item_id = null;					// アイテムID
+    /**
+     * Item serial number
+     * アイテム通番
+     *
+     * @var int
+     */
 	var $item_no = null;					// アイテム通番
+	/**
+	 * Supplemental contents serial number
+	 * サプリ通番
+	 *
+	 * @var int
+	 */
 	var $supple_no = null;					// サプリメンタルコンテンツ通番
+	/**
+	 * 
+	 * 本体詳細画面URL
+	 *
+	 * @var string
+	 */
 	var $supple_url = null;					// 本体詳細画面URL
+	/**
+	 * 
+	 * 選択中タブ情報
+	 *
+	 * @var int
+	 */
 	var $supple_workflow_active_tab = null;	// 選択中タブ情報
 	
+    /**
+     * Session management objects
+     * Session管理オブジェクト
+     *
+     * @var Session
+     */
 	var $Session = null;
+    /**
+     * Database management objects
+     * データベース管理オブジェクト
+     *
+     * @var DbObject
+     */
 	var $Db = null;
 	
     /**
-     * [[機能説明]]
+     * Supplemental content Delete confirmation pop-up display
+     * サプリメンタルコンテンツ削除確認ポップアップ表示
      *
      * @access  public
+     * @return string Result 結果
      */
     function execute()
     {
@@ -80,11 +138,13 @@ class Repository_View_Common_Item_Supple_Deletepopup extends RepositoryAction
         if($this->repository_admin_base && $auth_id >= $this->repository_admin_room){
             // admin
             $result = $this->exitAction();
+            $this->finalize();
             return 'success';
         }
         if($result[0]['ins_user_id'] == $user_id){
             // supple contents insert user
             $result = $this->exitAction();
+            $this->finalize();
             return 'success';
         }
         $query = "SELECT * ".
@@ -108,6 +168,7 @@ class Repository_View_Common_Item_Supple_Deletepopup extends RepositoryAction
         if($result[0]['ins_user_id'] == $user_id){
             // supple contents insert user
             $result = $this->exitAction();
+            $this->finalize();
             return 'success';
         }
         //Bugfix check delete authority. Y.Nakao 2011/06/15 --end--

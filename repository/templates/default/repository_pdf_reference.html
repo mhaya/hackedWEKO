@@ -21,14 +21,14 @@
 			<{assign var="referenceNumber" value=$smarty.section.i.index}>
 				<tr>
 					<th class="al th_col_repos">
-						<{*Ql•¶Œ£ƒwƒbƒ_*}>
+						<{*å‚è€ƒæ–‡çŒ®ãƒ˜ãƒƒãƒ€*}>
 						<{$action.fileName[i]}>
 					</th>
 				</tr>
 				<tr>
 					<td>
 						<div class="pl10" id="repository<{$referenceNumber}>">
-							<{*Ql•¶Œ£ƒf[ƒ^*}>
+							<{*å‚è€ƒæ–‡çŒ®ãƒ‡ãƒ¼ã‚¿*}>
 							<img src="<{$smarty.const.CORE_BASE_URL}>/images/common/indicator.gif">
 							<{$lang.repository_loading}>
 						</div>
@@ -73,15 +73,15 @@ function showReferenceRow(url, number) {
 <{*Ajax protocol error S.Suzuki 2013/10/15 --start--*}>
 <script class="nc_script" type="text/javascript">
 function ajaxFailure(number) {
-	// ’ÊMƒGƒ‰[ communication error
+	// é€šä¿¡ã‚¨ãƒ©ãƒ¼ communication error
 	
-	// ƒ[ƒh’†ƒƒbƒZ[ƒW‚ğÁ‹ delete loading message
+	// ãƒ­ãƒ¼ãƒ‰ä¸­ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ã‚’æ¶ˆå» delete loading message
 	var tableHeader = document.getElementById("repository" + number);
 	while (tableHeader.hasChildNodes()) {
 		tableHeader.removeChild(tableHeader.firstChild);
 	}
 	
-	// ƒGƒ‰[ƒƒbƒZ[ƒW‚Ìİ’è set error message
+	// ã‚¨ãƒ©ãƒ¼ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ã®è¨­å®š set error message
 	var errorMessage = document.createTextNode("<{$lang.repository_loading_error}>");
 	tableHeader.appendChild(errorMessage);
 }
@@ -93,63 +93,63 @@ function ajaxFailure(number) {
 function showReferenceData(json, number){
 	var referenceData = eval("(" + json + ")");
 	
-	// ƒ[ƒh’†ƒƒbƒZ[ƒW‚ğÁ‹ delete loading message
+	// ãƒ­ãƒ¼ãƒ‰ä¸­ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ã‚’æ¶ˆå» delete loading message
 	var tableData = document.getElementById("repository" + number);
 	
 	while (tableData.hasChildNodes()) {
 		tableData.removeChild(tableData.firstChild);
 	}
 	
-	// ˆø—pî•ñ‚ğ•\¦‚·‚éƒGƒŠƒA‚ğİ’è set reference data area
+	// å¼•ç”¨æƒ…å ±ã‚’è¡¨ç¤ºã™ã‚‹ã‚¨ãƒªã‚¢ã‚’è¨­å®š set reference data area
 	var referenceTable = document.createElement('table');
 	tableData.appendChild(referenceTable);
 		
 	if ((json == "{}") == 0) {
-		// JSON‚Ì’†g‚ª‚ ‚éê‡
+		// JSONã®ä¸­èº«ãŒã‚ã‚‹å ´åˆ
 		
-		// JSONƒf[ƒ^‚ğƒe[ƒuƒ‹‚Ìs‚É’Ç‰Á add JSON data to table row
+		// JSONãƒ‡ãƒ¼ã‚¿ã‚’ãƒ†ãƒ¼ãƒ–ãƒ«ã®è¡Œã«è¿½åŠ  add JSON data to table row
 		for (var ii = 0; ii < referenceData.bibrefs.length; ii++) {
-			// ƒe[ƒuƒ‹‚Ìs‚ğì¬ create table row
+			// ãƒ†ãƒ¼ãƒ–ãƒ«ã®è¡Œã‚’ä½œæˆ create table row
 			var referenceTableRow = document.createElement('tr')
 			referenceTable.appendChild(referenceTableRow);
 			
-			// ƒe[ƒuƒ‹‚ÌF‚ğİ’è set row color
+			// ãƒ†ãƒ¼ãƒ–ãƒ«ã®è‰²ã‚’è¨­å®š set row color
 			if (ii % 2 != 0) {
 				referenceTableRow.setAttribute('bgcolor', '#EEEEEE');
 			} else {
 				referenceTableRow.setAttribute('bgcolor', '#FCFCFC');
 			}
 			
-			// ƒe[ƒuƒ‹‚Ìƒf[ƒ^‚ğì¬ create table data
+			// ãƒ†ãƒ¼ãƒ–ãƒ«ã®ãƒ‡ãƒ¼ã‚¿ã‚’ä½œæˆ create table data
 			var  referenceTableData = document.createElement('td')
 			referenceTableRow.appendChild(referenceTableData);
 			
-			// ƒf[ƒ^‚ğƒpƒfƒBƒ“ƒO padding data
+			// ãƒ‡ãƒ¼ã‚¿ã‚’ãƒ‘ãƒ‡ã‚£ãƒ³ã‚° padding data
 			var referenceString = document.createElement('div')
 			referenceString.setAttribute('class', 'pd05');
 			referenceTableData.appendChild(referenceString);
 			
-			// ƒe[ƒuƒ‹‚Éstring‚Ìƒf[ƒ^‚ğ’Ç‰Á add string data to table 
+			// ãƒ†ãƒ¼ãƒ–ãƒ«ã«stringã®ãƒ‡ãƒ¼ã‚¿ã‚’è¿½åŠ  add string data to table 
 			var string = document.createTextNode(referenceData.bibrefs[ii].string);
 			referenceString.appendChild(string);
 			
-			// ƒe[ƒuƒ‹‚ÉsameAs‚Ìƒf[ƒ^‚ğ’Ç‰Á add sameAs data to table 
+			// ãƒ†ãƒ¼ãƒ–ãƒ«ã«sameAsã®ãƒ‡ãƒ¼ã‚¿ã‚’è¿½åŠ  add sameAs data to table 
 			for (jj = 0; jj < referenceData.bibrefs[ii].sameAs.length; jj++) {
-				// ƒe[ƒuƒ‹‚Éurl‚Ìƒf[ƒ^‚ğ’Ç‰Á add url data to table 
+				// ãƒ†ãƒ¼ãƒ–ãƒ«ã«urlã®ãƒ‡ãƒ¼ã‚¿ã‚’è¿½åŠ  add url data to table 
 				var urlLink = document.createElement('a');
 				urlLink.setAttribute('target','_blank');
 				urlLink.setAttribute('href', referenceData.bibrefs[ii].sameAs[jj].url);
 				
-				// ƒe[ƒuƒ‹‚Éicon‚Ìƒf[ƒ^‚ğ’Ç‰Á add icon data to table 
+				// ãƒ†ãƒ¼ãƒ–ãƒ«ã«iconã®ãƒ‡ãƒ¼ã‚¿ã‚’è¿½åŠ  add icon data to table 
 				var img1 = document.createElement('img');
 				if ( (referenceData.bibrefs[ii].sameAs[jj].annotator).match("cinii") ) {
-					// CiNii‚Ìê‡ case of Cinii
+					// CiNiiã®å ´åˆ case of Cinii
 					img1.setAttribute('src', '<{$smarty.const.CORE_BASE_URL}>/images/repository/default/iconCiNii.png');
 				} else if ( (referenceData.bibrefs[ii].sameAs[jj].annotator).match("webcat") ) {
-					// webcat‚Ìê‡ case of webcat
+					// webcatã®å ´åˆ case of webcat
 					img1.setAttribute('src', '<{$smarty.const.CORE_BASE_URL}>/images/repository/default/iconWebcat.png');
 				} else {
-					// crossref‚Ìê‡ case of crossref
+					// crossrefã®å ´åˆ case of crossref
 					img1.setAttribute('src', '<{$smarty.const.CORE_BASE_URL}>/images/repository/default/iconCrossref.png');
 				}
 				urlLink.appendChild(img1);
@@ -157,9 +157,9 @@ function showReferenceData(json, number){
 			}
 		}
 	} else {
-		// JSON‚Ì’†g‚ª‚È‚¢ê‡ no JSON data case
+		// JSONã®ä¸­èº«ãŒãªã„å ´åˆ no JSON data case
 		
-		// ˆø—pî•ñ‚ª‚È‚¢ê‡‚ÌƒƒbƒZ[ƒW‚ğ•\¦ show no reference message
+		// å¼•ç”¨æƒ…å ±ãŒãªã„å ´åˆã®ãƒ¡ãƒƒã‚»ãƒ¼ã‚¸ã‚’è¡¨ç¤º show no reference message
 		var referenceRow = document.createElement("tr");
 		var referenceData = document.createElement("td");
 		var noReferenceMessage = document.createTextNode("<{$lang.repository_no_reference_data}>");

@@ -1,7 +1,15 @@
 <?php
+
+/**
+ * View class for redirect screen display
+ * リダイレクト画面表示用ビュークラス
+ *
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Redirect.class.php 53594 2015-05-28 05:25:53Z kaede_matsushita $
+// $Id: Redirect.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -12,30 +20,75 @@
 // --------------------------------------------------------------------
 
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
 
 /**
- * [[機能説明]]
+ * View class for redirect screen display
+ * リダイレクト画面表示用ビュークラス
  *
- * @package     [[package名]]
- * @access      public
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class Repository_View_Common_Redirect extends RepositoryAction
 {
 	// セッションとデータベースのオブジェクトを受け取る
+    /**
+     * Session management objects
+     * Session管理オブジェクト
+     *
+     * @var Session
+     */
     var $Session = null;
+    /**
+     * Database management objects
+     * データベース管理オブジェクト
+     *
+     * @var DbObject
+     */
     var $Db = null;
 
     // member
+    /**
+     * Redirect url
+     * リダイレクトURL
+     *
+     * @var string
+     */
     var $redirect_url = "";
+    /**
+     * Redirect block id
+     * リダイレクトブロックID
+     *
+     * @var int
+     */
     var $redirect_block_id = "";
+    /**
+     * Redirect message
+     * リダイレクトメッセージ
+     *
+     * @var string
+     */
     var $redirect_message = "";
+    /**
+     * Top page transition flag
+     * トップページ遷移フラグ
+     *
+     * @var string
+     */
     var $top_flag = "false";
     
     /**
-     * [[機能説明]]
+     * Redirection screen display
+     * リダイレクト画面表示
      *
      * @access  public
+     * @return string Result 結果
      */
     function executeApp()
     {
@@ -63,6 +116,8 @@ class Repository_View_Common_Redirect extends RepositoryAction
 			$this->redirect_url .= "index.php?action=pages_view_main&active_action=repository_view_edit_tree";
 		} else if($this->Session->getParameter("redirect_flg") == "privatetree_update"){
 			$this->redirect_url .= "index.php?action=pages_view_main&active_action=repository_view_main_privatetree";
+		} else if($this->Session->getParameter("redirect_flg") == "logreport" || $this->Session->getParameter("redirect_flg") == "sitelicensemail"){
+			$this->redirect_url .= "index.php?action=pages_view_main&active_action=repository_view_edit_log";
 		} else if($this->Session->getParameter("redirect_flg") == "supple"){
 			if($this->Session->getParameter("ej_workflow_flag") == "true"){
 				$this->redirect_url = $this->Session->getParameter("ej_weko_url")."index.php?action=pages_view_main&active_action=repository_view_common_item_supple_redirect".

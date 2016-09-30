@@ -1,7 +1,14 @@
 <?php
+/**
+ * Action for supple item register and delete class
+ * サプリアイテム既存登録＆削除用アクション
+ *
+ * @package     WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Supple.class.php 53594 2015-05-28 05:25:53Z kaede_matsushita $
+// $Id: Supple.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics,
 // Research and Development Center for Scientific Information Resources
@@ -10,78 +17,113 @@
 // http://creativecommons.org/licenses/BSD/
 //
 // --------------------------------------------------------------------
-
-/* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR.'/modules/repository/components/common/WekoAction.class.php';
+/**
+ * Handle manager class
+ * ハンドル管理クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryHandleManager.class.php';
+/**
+ * Search table manager class
+ * 検索テーブル管理クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositorySearchTableProcessing.class.php';
 
 /**
+ * Action for supple item register and delete class
  * サプリアイテム既存登録＆削除用アクション
  *
- @author IVIS
+ * @package     WEKO
+ * @copyright   (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license     http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access      public
  */
 class Repository_Action_Main_Item_Supple extends WekoAction
 {
 	// 使用コンポーネントを受け取るため
 	/**
+	 * Mail main components
 	 * mailMainのコンポーネント
+	 *
 	 * @var Mail_Main
 	 */
 	public $mailMain = null;
 
 	// リクエストパラメータ
 	/**
+	 * Item ID
 	 * アイテムID
-	 * @var number
+	 *
+	 * @var int
 	 */
 	public $item_id = null;
 
 	/**
+	 * Item number
 	 * アイテムNo
-	 * @var number
+	 *
+	 * @var int
 	 */
 	public $item_no = null;
 
 	/**
+	 * supple content mode(register or delete)
 	 * サプリコンテンツのモード(登録or削除)
+	 *
 	 * @var string
 	 */
 	public $mode = null;
 
 	/**
+	 * supple contents URL
 	 * サプリコンテンツURL
+	 *
 	 * @var string
 	 */
 	public $weko_key = null;
 
 	/**
+	 * supple number
 	 * サプリNo
-	 * @var unknown
+	 *
+	 * @var int
 	 */
 	public $supple_no = null;
 
 	/**
+	 * workflow flag
 	 * ワークフローフラグ
-	 * @var unknown
+	 *
+	 * @var bool
 	 */
 	public $workflow_flag = null;
 
 	/**
+	 * workflow active tab
 	 * ワークフローアクティブタブ
+	 *
 	 * @var string
 	 */
 	public $workflow_active_tab = null;
-
-    /**
-     * 1.既存登録ボタン押下の場合
-     * 1-1.サプリコンテンツの登録を行う
-     * 2.削除ボタン押下の場合
-     * 2-2.サプリコンテンツの削除を行う
-     * @see ActionBase::executeApp()
-     */
+	
+	/**
+	 * Execute
+	 * 実行
+	 *
+	 * @return string "success"/"workflow"/"error" success/return workflow/failed 成功/ワークフロー画面へ戻る/失敗
+	 */
     protected function executeApp()
     {
+		/**
+		 * 1.既存登録ボタン押下の場合
+		 * 1-1.サプリコンテンツの登録を行う
+		 * 2.削除ボタン押下の場合
+		 * 2-2.サプリコンテンツの削除を行う
+		 */
         // Update suppleContentsEntry Y.Yamazawa --start-- 2015/03/17 --start--
         try{
             // デコード

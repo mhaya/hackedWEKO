@@ -1,7 +1,15 @@
 <?php
+
+/**
+ * File access privileges and action class for file license setting
+ * ファイルアクセス権限およびファイルライセンス設定用アクションクラス
+ * 
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Embargo.class.php 40574 2014-08-28 00:24:04Z tatsuya_koyasu $
+// $Id: Embargo.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -12,52 +20,127 @@
 // --------------------------------------------------------------------
 
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
+/**
+ * String format conversion common classes
+ * 文字列形式変換共通クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryOutputFilter.class.php';
 
 /**
- * [[アイテム管理actionアクション]]
- * 指定されたエンバーゴ設定
+ * File access privileges and action class for file license setting
+ * ファイルアクセス権限およびファイルライセンス設定用アクションクラス
  * 
- * @package	 [[package名]]
- * @access	  public
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class Repository_Action_Edit_Item_Embargo extends RepositoryAction
 {
     // コンポーネント受け取り
+    /**
+     * Session management objects
+     * Session管理オブジェクト
+     *
+     * @var Session
+     */
     var $Session = null;
+    /**
+     * Database management objects
+     * データベース管理オブジェクト
+     *
+     * @var DbObject
+     */
     var $Db = null;
     
     // 選択インデックスID
+    /**
+     * Select index ID
+     * 選択インデックスID
+     *
+     * @var int
+     */
     var $selindex_id = null;
     
-    // 選択されたエンバーゴ設定
-    // 1:オープンアクセス
-    // 2:オープンアクセス日指定
-    // 3:会員のみ
+    /**
+     * Select embargo flag
+     * 1: Open Access
+     * 2: Open access date specified
+     * 3: Members Only
+     * 選択されたエンバーゴ設定
+     * 1:オープンアクセス
+     * 2:オープンアクセス日指定
+     * 3:会員のみ
+     *
+     * @var int
+     */
     var $embargo_flag = null;
     
-    // オープンアクセス日    
+    // オープンアクセス日
+    /**
+     * Open access year
+     * オープンアクセス年
+     *
+     * @var int
+     */
     var $embargo_year = null;
+    /**
+     * Open access month
+     * オープンアクセス月
+     *
+     * @var int
+     */
     var $embargo_month = null;
+    /**
+     * Open access day
+     * オープンアクセス日
+     *
+     * @var int
+     */
     var $embargo_day = null;
     
     // 選択ライセンスID
     // 0:は自由記述
+    /**
+     * Select license ID
+     * 0: free description
+     * 選択ライセンスID
+     * 0:は自由記述
+     *
+     * @var int
+     */
     var $license_id = null;
     
     // 自由記述の場合のライセンス用文字列
+    /**
+     * License for a string in the case of a free description
+     * 自由記述の場合のライセンス用文字列
+     *
+     * @var string
+     */
     var $licence_free_text = null;
     
     // 配下のフォルダへ再帰的に設定を行うかどうかのフラグ
     // true:再帰的に設定する
     // false:再帰的に設定しない
+    /**
+     * Of whether or not to recursively set to a folder under the flag ( "true": set recursively, "false": do not set recursively)
+     * 配下のフォルダへ再帰的に設定を行うかどうかのフラグ("true":再帰的に設定する、"false":再帰的に設定しない)
+     *
+     * @var string
+     */
     var $embargo_recursion = null;
     
     /**
-     * [[公開・エンバーゴ]]
+     * File access permissions and file license settings
+     * ファイルアクセス権限およびファイルライセンス設定
      *
-     * @access  public
+     * @return string Result 結果
      */
     function execute()
     {
@@ -187,7 +270,7 @@ class Repository_Action_Edit_Item_Embargo extends RepositoryAction
             
             // エラーメッセージ開放
             $this->Session->removeParameter("error_msg");
-            
+            $this->finalize();
             return 'success';
         }
         catch ( RepositoryException $Exception) {
@@ -207,10 +290,13 @@ class Repository_Action_Edit_Item_Embargo extends RepositoryAction
     }
     
     /**
+     * To get all the index ID of the underlying index, which is specified by the argument
      * 引数で指定されるインデックス配下のインデックスIDをすべて取得する
      *
-     * @param $index_id インデックスID
-     * @param $embargo_index_id 結果を格納
+     * @param int $index_id Index id インデックスID
+     * @param array $embargo_index_id Index id list インデックスID一覧
+     *                                array[$ii]
+     * @return boolean Result 結果
      */
     function getSubIndexId($index_id, &$embargo_index_id){
         // 指定されたインデックスIDの直下にあるインデックスIDを取得
@@ -240,10 +326,13 @@ class Repository_Action_Edit_Item_Embargo extends RepositoryAction
     }
     
     /**
+     * Obtain the ID and serial number of the item directly below the index specified by the argument
      * 引数で指定されるインデックス直下のアイテムのIDと通番を取得
      *
-     * @param $index_id インデックスID
-     * @param $item_info 結果を格納
+     * @param int $index_id Index id インデックスID
+     * @param array $item_info Item information list アイテム情報一覧
+     *                              array[$ii]["item_id"|"item_no"|"mod_date"]
+     * @return boolean Result 結果
      */
     function getItemInfo($index_id, &$item_info){
         $query = "SELECT item_id, item_no ".
@@ -288,12 +377,13 @@ class Repository_Action_Edit_Item_Embargo extends RepositoryAction
     }
     
     /**
-     * アイテムIDと通番から、そのアイテムがファイルを持っているかチェックする。
-     * ファイルを持っていた場合、エンバーゴを設定する。
+     * From the item ID and serial number, if the item is to check that you have the file, it had a file, set the embargo.
+     * アイテムIDと通番から、そのアイテムがファイルを持っているかチェックし、ファイルを持っていた場合、エンバーゴを設定する。
      *
-     * @param $item_id 対象アイテムID
-     * @param $item_no 対象アイテム通番
-     * @param $mod_date 対象アイテム更新日時
+     * @param int $item_id Item idアイテムID
+     * @param int $item_no Item serial number アイテム通番
+     * @param string $mod_date Item update date and time アイテム更新日時
+     * @return boolean Result 結果
      */
     function setFileEmbargo($item_id, $item_no, $mod_date){
         ///// ファイルの存在チェック //////
@@ -422,8 +512,13 @@ class Repository_Action_Edit_Item_Embargo extends RepositoryAction
     }
     
     /**
+     * Return date of data (int) in the date string
      * 年月日のデータ(int)を日付文字列にして返す
-     * action/main/item/adddbから移植
+     *
+     * @param int $year Year 年
+     * @param int $month Month 月
+     * @param int $day Day 日
+     * @return string Date string 日付文字列
      */
     function generateDateStr($year, $month, $day){
         $str_year = strval($year);

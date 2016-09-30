@@ -1,7 +1,13 @@
 <?php
+/**
+ * Image display view class for prefix acquisition
+ * prefix取得用画像表示ビュークラス
+ *
+ * @package WEKO
+ */
 // --------------------------------------------------------------------
 //
-// $Id: Image.class.php 53594 2015-05-28 05:25:53Z kaede_matsushita $
+// $Id: Image.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -13,20 +19,34 @@
 
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
 
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
 
 /**
- * [[機能説明]]
+ * Image display view class for prefix acquisition
+ * prefix取得用画像表示ビュークラス
  *
- * @package     [[package名]]
- * @access      public
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class Repository_View_Edit_Prefix_Image extends RepositoryAction
 {
+    /**
+     * Now date
+     * 現在日時
+     *
+     * @var string
+     */
 	var $nowtime = null;
 	
     /**
-     * [[機能説明]]
+     * Display image for prefix acquisition
+     * prefix取得用画像表示
      *
      * @access  public
      */

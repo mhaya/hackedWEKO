@@ -1,7 +1,15 @@
 <?php
+
+/**
+ * DB object wrapper Class
+ * DBオブジェクトラッパークラス
+ *
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: RepositoryDbAccess.class.php 38124 2014-07-01 06:56:02Z rei_matsuura $
+// $Id: RepositoryDbAccess.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -11,23 +19,34 @@
 //
 // --------------------------------------------------------------------
 
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
 
 /**
- * Repository Db Access Class
- * 
+ * DB object wrapper Class
+ * DBオブジェクトラッパークラス
+ *
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class RepositoryDbAccess
 {
     /**
-     * Database Constance
+     * Database Instance
+     * DBオブジェクト
      *
-     * @var DbContainer
+     * @var DbObjectAdodb
      */
     private $Db = null;
     
     /**
      * constructor
+     * コンストラクタ
      * 
      * @param $Db DbObjectAdodb
      */
@@ -42,11 +61,14 @@ class RepositoryDbAccess
     
     /**
      * Execute Query
+     * クエリ実行
      *
-     * @var $query : query of sql
-     * @var $params : array(0=>param1, 1=>param2, ...)
-     * 
-     * @return array() or boolean : $result
+     * @param string $query query of sql SQL文
+     * @param array $params query parameters クエリパラメータ
+     *                     array(0=>param1, 1=>param2, ...)
+     * @return array $result query result クエリ実行結果
+     *          bool  false execute failed 実行失敗
+     * @throws RepositoryException
      */
     public function executeQuery($query, $params = array())
     {
@@ -67,9 +89,10 @@ class RepositoryDbAccess
         return $result;
     }
     /**
+     * Number of updated or deleted record retrieval
      * 更新・削除レコード数取得
-     * @return integer : 更新/削除レコード数
-     *         bool    : false 更新/削除レコード無し または未サポート
+     * @return int  $result update or delete record number 更新/削除レコード数
+     *          bool false   No update or delete            更新/削除レコード無し または未サポート
      * @access public
      */
     public function affectedRows() {
@@ -78,23 +101,22 @@ class RepositoryDbAccess
     }
     /**
      * LOB更新用
-     * @param    string     $tableName       対象テーブル名称
-     * @param    string   $column          カラム名称
-     * @param    string   $path　　　　　　パス
-     * @param    array    $where
-     * @param    string   $blobtype
-     * @return boolean true or false
-     * @access    public
+     * @param  string  $tableName table name    対象テーブル名称
+     * @param  string  $column    column number カラム名称
+     * @param  string  $path      file path     パス
+     * @param  array   $where     where         場所
+     * @param  string  $blobtype  blob type     BLOBタイプ
+     * @return bool               true or false 実行結果成否
      */
     function updateBlobFile($tableName, $column, $path, $where, $blobtype='BLOB') {
         $result = $this->Db->UpdateBlobFile($tableName, $column, $path, $where, $blobtype);
         return $result;
     }
     /**
+     * Returns the last state or error messages.
      * 最後の状態あるいはエラーメッセージを返します。
      *
-     * @return    srting    エラーメッセージ
-     * @access    public
+     * @return string error message エラーメッセージ
      */
     function ErrorMsg() {
         return $this->Db->ErrorMsg();
@@ -102,6 +124,7 @@ class RepositoryDbAccess
     
     /**
      * Db object getter
+     * DBオブジェクト取得
      *
      * @return DbObjectAdodb
      */
@@ -109,6 +132,5 @@ class RepositoryDbAccess
     {
         return $this->Db;
     }
-
 }
 ?>

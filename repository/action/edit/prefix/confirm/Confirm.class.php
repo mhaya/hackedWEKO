@@ -1,7 +1,15 @@
 <?php
+
+/**
+ * Action class for cooperation data creation of the Y handle (http://id.nii.ac.jp/)
+ * Yハンドル(http://id.nii.ac.jp/)との連携データ作成用アクションクラス
+ * 
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Confirm.class.php 57169 2015-08-26 12:01:09Z tatsuya_koyasu $
+// $Id: Confirm.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -12,23 +20,47 @@
 // --------------------------------------------------------------------
 
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
+/**
+ * Y handle (http://id.nii.ac.jp/) cooperative processing common classes
+ * Yハンドル(http://id.nii.ac.jp/)連携処理共通クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/IDServer.class.php';
+/**
+ * Handle management common classes
+ * ハンドル管理共通クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryHandleManager.class.php';
 
 /**
- * [[機能説明]]
- *
- * @package     [[package名]]
- * @access      public
+ * Action class for cooperation data creation of the Y handle (http://id.nii.ac.jp/)
+ * Yハンドル(http://id.nii.ac.jp/)との連携データ作成用アクションクラス
+ * 
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class Repository_Action_Edit_Prefix_Confirm extends RepositoryAction
 {
 	// リクエストパラメタ
+	/**
+	 * Authentication string
+	 * 認証文字列
+	 *
+	 * @var string
+	 */
 	var $captcha_string = null;
 
 	/**
-	 * @access  public
+	 * Register the Y handle prefix
+	 * Yハンドル prefixを登録
+	 * 
+	 * @return string Result 結果
 	 */
 	function execute()
 	{
@@ -100,6 +132,7 @@ class Repository_Action_Edit_Prefix_Confirm extends RepositoryAction
 			
 			// アクション終了処理
 			$result = $this->exitAction();	// トランザクションが成功していればCOMMITされる
+			$this->finalize();
 			return 'success';
 		}
 		catch ( RepositoryException $Exception) {

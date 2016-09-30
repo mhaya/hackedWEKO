@@ -1,73 +1,199 @@
 <?php
+
+/**
+ * Action class for the inter-item link set
+ * アイテム間リンク設定用アクションクラス
+ *
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Linkact.class.php 45650 2014-12-24 09:40:34Z keiya_sugimoto $
+// $Id: Linkact.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
-// Copyright (c) 2007 - 2008, National Institute of Informatics, 
+// Copyright (c) 2007 - 2008, National Institute of Informatics,
 // Research and Development Center for Scientific Information Resources
 //
 // This program is licensed under a Creative Commons BSD Licence
 // http://creativecommons.org/licenses/BSD/
 //
 // --------------------------------------------------------------------
-
-/* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR.'/modules/repository/components/RepositoryAction.class.php';
+/**
+ * Search process class
+ * 検索処理クラス
+ */
 require_once WEBAPP_DIR.'/modules/repository/components/RepositorySearch.class.php';
 
 /**
- * [[機能説明]]
- *
- * @package     [[package名]]
- * @access      public
+ * Action class for the inter-item link set
+ * アイテム間リンク設定用アクションクラス
+ * 
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class Repository_Action_Main_Item_Linkact extends RepositoryAction
 {
     // リクエストパラメタ
-    var $search_keyword = null; // 検索キーワード
-//  var $list_view_num = null;  // 1ページに表示する件数
-    var $keychange_Flg = null;  // キーワードチェンジフラグ
-//  var $page_no = null;    // 現在のページ番号
-    var $sort_order_index = null;   // ソートオーダーセレクトのIndexか格納される予定
-//  var $export_print = null;   // Export,印刷の処理形態SelIdx
-    var $export_check = null;   // Export,印刷用チェックマーク配列
-    var $index_id = null;   // ツリーから渡されるインデックスID
-//  var $open_node_id = null;   // 開いているノードのindex_id文字列(1,2,3,4,…)
-    var $index_name = null; // ツリーから渡されるインデックス名
-    
-    var $del_id = null;     // リンクリストから削除するアイテムのID
-    var $add_id = null;     // リンクリストに追加するアイテムのID
-    
+    /**
+     * Search keyword
+     * 検索キーワード
+     *
+     * @var string
+     */
+    var $search_keyword = null;
+    /**
+     * Keyword change flag
+     * キーワードチェンジフラグ
+     *
+     * @var bool
+     */
+    var $keychange_Flg = null;
+    /**
+     * Sort order select index ID
+     * ソートオーダーセレクトのインデックスID
+     *
+     * @var int
+     */
+    var $sort_order_index = null;
+    /**
+     * For export print check mark array
+     * Export印刷用チェックマーク配列
+     *
+     * @var array
+     */
+    var $export_check = null;
+    /**
+     * Index ID
+     * インデックスID
+     *
+     * @var int
+     */
+    var $index_id = null;
+    /**
+     * Index name
+     * インデックス名
+     *
+     * @var string
+     */
+    var $index_name = null;
+    /**
+     * item ID for delete link list
+     * リンクリストから削除するアイテムのID
+     *
+     * @var int
+     */
+    var $del_id = null;
+    /**
+     * item ID for add link list
+     * リンクリストに追加するアイテムのID
+     *
+     * @var int
+     */
+    var $add_id = null;
+    /**
+     * Item relation select
+     * アイテムリンクの選択値
+     *
+     * @var array
+     */
     var $item_relation_select = null;
     
     // メンバ変数
+    /**
+     * Item ID
+     * アイテムID
+     *
+     * @var int
+     */
     var $Item_ID = null;
+    /**
+     * Item number
+     * アイテム通番
+     *
+     * @var int
+     */
     var $Item_No = null;
 
     // オプション用
-    var $save_mode = null;      // 処理モード
-                                // "next" : リンク設定画面へ (デフォルト)
-                                // "add_row" : 属性の数を増やす
-                                // "up_row" : 属性を入れ替える (attridx-th属性が上に)
-                                // "down_row" : 属性を入れ替える (attridx-th属性が下に)
-    var $target = null;         // 処理対象のリンク番号あるいは検索結果番号
-    var $keyword = null;        // キーワード
+    /**
+     * Process mode
+     * 処理モード
+     *
+     * @var string
+     */
+    var $save_mode = null; // "next" : リンク設定画面へ (デフォルト)
+                              // "add_row" : 属性の数を増やす
+                              // "up_row" : 属性を入れ替える (attridx-th属性が上に)
+                              // "down_row" : 属性を入れ替える (attridx-th属性が下に)
+    /**
+     * Processed by the link number or search result number,
+     * 処理対象のリンク番号、あるいは検索結果番号
+     *
+     * @var int
+     */
+    var $target = null;
+    /**
+     * Keyword
+     * キーワード
+     *
+     * @var string
+     */
+    var $keyword = null;
+    /**
+     * Opening node index ID
+     * 開いているノードのインデックスID
+     *
+     * @var string
+     */
     var $opening_ids = null;    // 開いているノードのindex_id文字列(1,2,3,4,…)
     
     // Add join set insert index and set item links 2008/12/17 Y.Nakao --start--
+    /**
+     * Opening index Id
+     * 開いているインデックスのID
+     *
+     * @var string
+     */
     var $OpendIds = null;       // open index ids(delemit is ",")
+    /**
+     * Checked index ID
+     * チェックされたインデックスのID
+     *
+     * @var string
+     */
     var $CheckedIds = null;     // check index ids(delemit is "|")
+    /**
+     * Checked index name
+     * チェックされたインデックスの名前
+     *
+     * @var string
+     */
     var $CheckedNames = null;   // check index names(delemit is "|")
     // Add join set insert index and set item links 2008/12/17 Y.Nakao --end--
     
     // Add simple keyword search A.Suzuki 2010/04/12 --start--
+    /**
+     * simple search or detail search
+     * 簡易検索か詳細検索か
+     *
+     * @var null
+     */
     var $search_type = null;    // 簡易検索/詳細検索を示す
     // Add simple keyword search A.Suzuki 2010/04/12 --end--
     
     /**
-     * アイテム間リンク設定画面の画面操作を受けるアクション。画面遷移は基本無し。
+     * Execute
+     * 実行
      *
-     * @access  public
+     * @return string "success"/"error" success/failed 成功/失敗
+     * @throws RepositoryException
      */
     function execute()
     {
@@ -268,6 +394,7 @@ class Repository_Action_Main_Item_Linkact extends RepositoryAction
             }
             // リンク画面へ
             $this->Session->removeParameter("error_msg");
+            $this->finalize();
 //          $this->Session->setParameter("error_msg", $this->save_mode .' '.$this->target);
             return 'success';
         } catch ( RepositoryException $Exception) {
@@ -288,10 +415,11 @@ class Repository_Action_Main_Item_Linkact extends RepositoryAction
     
     /**
      * Return index name by index_id
+     * インデックスIDからインデックス名を検索して返す
      *
-     * @param int $index_id
-     * @param string $lang
-     * @return string $index_name
+     * @param int $index_id index ID インデックスID
+     * @param string $lang language 表示言語
+     * @return string $index_name index name インデックス名
      */
     function getIndexName($index_id, $lang){
         $query = "SELECT index_name, index_name_english".
@@ -326,10 +454,13 @@ class Repository_Action_Main_Item_Linkact extends RepositoryAction
     // Fix change file download action 2013/5/9 Y.Nakao --start--
     /**
      * search link item
+     * リンクされたアイテムを探す
      *
-     * @param string $keyword
-     * @param int $indexId
-     * @return array
+     * @param string $keyword keyword キーワード
+     * @param int $indexId index ID インデックスID
+     * @return array linked item data リンクされたアイテム情報配列
+     *                array["item"][$ii]["item_id"|"item_no"|"revision_no"|"item_type_id"|"prev_revision_no"|"title"|"title_english"|"language"|"review_status"|"review_date"|"shown_status"|"shown_date"|"reject_status"|"reject_date"|"reject_reason"|"serch_key"|"serch_key_english"|"remark"|"uri"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                     ["item_type"][$ii]["item_type_id"|"item_type_name"|"item_type_short_name"|"explanation"|"mapping_info"|"icon_name"|"icon_mime_type"|"icon_extension"|"icon"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
      */
     private function searchLinkItem($keyword, $indexId)
     {

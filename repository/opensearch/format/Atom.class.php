@@ -1,7 +1,15 @@
 <?php
+
+/**
+ * Opensearch Atom format common classes
+ * Opensearch Atom形式共通クラス
+ * 
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Atom.class.php 53594 2015-05-28 05:25:53Z kaede_matsushita $
+// $Id: Atom.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -10,46 +18,97 @@
 // http://creativecommons.org/licenses/BSD/
 //
 // --------------------------------------------------------------------
+/**
+ * Opensearch common format base class
+ * Opensearch共通形式基底クラス
+ */
 require_once WEBAPP_DIR."/modules/repository/opensearch/format/FormatAbstract.class.php";
 
 /**
- * repository search class
+ * Opensearch Atom format common classes
+ * Opensearch Atom形式共通クラス
  * 
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class Repository_OpenSearch_Atom extends Repository_Opensearch_FormatAbstract
 {
+    /**
+     * ATOM name space
+     * ATOM名前空間
+     *
+     * @var string
+     */
     const XMLNS_ATOM        = "http://www.w3.org/2005/Atom";
+    /**
+     * DC name space
+     * DC名前空間
+     *
+     * @var string
+     */
     const XMLNS_DC          = "http://purl.org/dc/elements/1.1/";
+    /**
+     * PRISM name space
+     * PRISM名前空間
+     *
+     * @var string
+     */
     const XMLNS_PRISM       = "http://prismstandard.org/namespaces/basic/2.0/";
+    /**
+     * OPENSEARCH name space
+     * OPENSEARCH名前空間
+     *
+     * @var string
+     */
     const XMLNS_OPEN_SEARCH = "http://a9.com/-/spec/opensearch/1.1/";
+    /**
+     * WEKO_LOG name space
+     * WEKO_LOG名前空間
+     *
+     * @var string
+     */
     const XMLNS_WEKO_LOG    = "/wekolog/";
-
+   
+    // blockidを引数として受け取るように変更 mhaya start
     /** blockid保持用 mhaya **/
     private $blockid = array();
-
-    // start blockidを引数として受け取るように変更 mhaya
+ 
     /**
+     * Constructor
      * コンストラクタ
+     *
+     * @param Session $session Session management objects Session管理オブジェクト
+     * @param Dbobject $db Database management objects データベース管理オブジェクト
      */
-    /*
-    public function __construct($session, $db)
-    {
-        parent::__construct($session, $db);
-    }
-    */
+    //public function __construct($session, $db)
     public function __construct($session, $db,$blockid)
     {
         parent::__construct($session, $db);
         $this->blockid = $blockid;
      }
-    // end mhaya
-    
+    // blockidを引数として受け取るように変更 mhaya end
+ 
     /**
-     * make ATOM XML for open search 
+     * make Atom XML for open search 
+     * Atom作成
      * 
-     * @param array $result RepositorySearch $searchResult
-     * @param array $searchResult search result
-     * @return string
+     * @param array $request Request parameter リクエストパラメータ
+     * @param int $total total hit num HIT件数
+     * @param int sIdx start index num 開始番号
+     * @param array $searchResult Search result 検索結果
+     *                            array["item"][$ii]["item_id"|"item_no"|"revision_no"|"item_type_id"|"prev_revision_no"|"title"|"title_english"|"language"|"review_status"|"review_date"|"shown_status"|"shown_date"|"reject_status"|"reject_date"|"reject_reason"|"serch_key"|"serch_key_english"|"remark"|"uri"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                            array["item_type"][$ii]["item_type_id"|"item_type_name"|"item_type_short_name"|"explanation"|"mapping_info"|"icon_name"|"icon_mime_type"|"icon_extension"|"icon"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                            array["item_attr_type"][$ii]["item_type_id"|"attribute_id"|"show_order"|"attribute_name"|"attribute_short_name"|"input_type"|"is_required"|"plural_enable"|"line_feed_enable"|"list_view_enable"|"hidden"|"junii2_mapping"|"dublin_core_mapping"|"lom_mapping"|"lido_mapping"|"spase_mapping"|"display_lang_type"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                            array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"personal_name_no"|"family"|"name"|"family_ruby"|"name_ruby"|"e_mail_address"|"item_type_id"|"author_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                            array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"show_order"|"mime_type"|"extension"|"file"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                            array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"display_name"|"display_type"|"show_order"|"mime_type"|"extension"|"prev_id"|"file_prev"|"file_prev_name"|"license_id"|"license_notation"|"pub_date"|"flash_pub_date"|"item_type_id"|"browsing_flag"|"cover_created_flag"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                            array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"biblio_no"|"biblio_name"|"biblio_name_english"|"volume"|"issue"|"start_page"|"end_page"|"date_of_issued"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                            array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"display_name"|"display_type"|"show_order"|"mime_type"|"extension"|"prev_id"|"file_prev"|"file_prev_name"|"license_id"|"license_notation"|"pub_date"|"flash_pub_date"|"item_type_id"|"browsing_flag"|"cover_created_flag"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"|"price"]
+     *                            array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"supple_no"|"item_type_id"|"supple_weko_item_id"|"supple_title"|"supple_title_en"|"uri"|"supple_item_type_name"|"mime_type"|"file_id"|"supple_review_status"|"supple_review_date"|"supple_reject_status"|"supple_reject_date"|"supple_reject_reason"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                            array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"attribute_no"|"attribute_value"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     * @return string Output string 出力文字列
      */
     public function outputXml($request, $total, $sIdx, $searchResult)
     {
@@ -78,9 +137,10 @@ class Repository_OpenSearch_Atom extends Repository_Opensearch_FormatAbstract
     
     /**
      * output header
+     * ヘッダ出力
      * 
-     * @param array $result RepositorySearch $searchResult
-     * @return string
+     * @param array $request Request parameter リクエストパラメータ
+     * @return string Output string 出力文字列
      */
     private function outputHeader($request)
     {
@@ -102,9 +162,22 @@ class Repository_OpenSearch_Atom extends Repository_Opensearch_FormatAbstract
     }
     
     /**
-     * @param array $result RepositorySearch $searchResult
-     * @param array $searchResult search result
-     * @return string
+     * output parameter
+     * パラメータ出力
+     * 
+     * @param array $request Request parameter リクエストパラメータ
+     * @param array $searchResult Search result 検索結果
+     *                            array["item"][$ii]["item_id"|"item_no"|"revision_no"|"item_type_id"|"prev_revision_no"|"title"|"title_english"|"language"|"review_status"|"review_date"|"shown_status"|"shown_date"|"reject_status"|"reject_date"|"reject_reason"|"serch_key"|"serch_key_english"|"remark"|"uri"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                            array["item_type"][$ii]["item_type_id"|"item_type_name"|"item_type_short_name"|"explanation"|"mapping_info"|"icon_name"|"icon_mime_type"|"icon_extension"|"icon"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                            array["item_attr_type"][$ii]["item_type_id"|"attribute_id"|"show_order"|"attribute_name"|"attribute_short_name"|"input_type"|"is_required"|"plural_enable"|"line_feed_enable"|"list_view_enable"|"hidden"|"junii2_mapping"|"dublin_core_mapping"|"lom_mapping"|"lido_mapping"|"spase_mapping"|"display_lang_type"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                            array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"personal_name_no"|"family"|"name"|"family_ruby"|"name_ruby"|"e_mail_address"|"item_type_id"|"author_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                            array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"show_order"|"mime_type"|"extension"|"file"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                            array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"display_name"|"display_type"|"show_order"|"mime_type"|"extension"|"prev_id"|"file_prev"|"file_prev_name"|"license_id"|"license_notation"|"pub_date"|"flash_pub_date"|"item_type_id"|"browsing_flag"|"cover_created_flag"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                            array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"biblio_no"|"biblio_name"|"biblio_name_english"|"volume"|"issue"|"start_page"|"end_page"|"date_of_issued"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                            array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"display_name"|"display_type"|"show_order"|"mime_type"|"extension"|"prev_id"|"file_prev"|"file_prev_name"|"license_id"|"license_notation"|"pub_date"|"flash_pub_date"|"item_type_id"|"browsing_flag"|"cover_created_flag"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"|"price"]
+     *                            array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"supple_no"|"item_type_id"|"supple_weko_item_id"|"supple_title"|"supple_title_en"|"uri"|"supple_item_type_name"|"mime_type"|"file_id"|"supple_review_status"|"supple_review_date"|"supple_reject_status"|"supple_reject_date"|"supple_reject_reason"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                            array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"attribute_no"|"attribute_value"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     * @return string Output string 出力文字列
      */
     private function outputParameter($request, $searchResult)
     {
@@ -174,12 +247,22 @@ class Repository_OpenSearch_Atom extends Repository_Opensearch_FormatAbstract
     
     
     /**
-     * output entry
+     * Output item information
+     * アイテム情報出力
      * 
-     * @param int $itemId
-     * @param int $itemNo
-     * @return string
-     *
+     * @param array $request Request parameter リクエストパラメータ
+     * @param array $searchResult Search result 検索結果
+     *                            array["item"][$ii]["item_id"|"item_no"|"revision_no"|"item_type_id"|"prev_revision_no"|"title"|"title_english"|"language"|"review_status"|"review_date"|"shown_status"|"shown_date"|"reject_status"|"reject_date"|"reject_reason"|"serch_key"|"serch_key_english"|"remark"|"uri"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                            array["item_type"][$ii]["item_type_id"|"item_type_name"|"item_type_short_name"|"explanation"|"mapping_info"|"icon_name"|"icon_mime_type"|"icon_extension"|"icon"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                            array["item_attr_type"][$ii]["item_type_id"|"attribute_id"|"show_order"|"attribute_name"|"attribute_short_name"|"input_type"|"is_required"|"plural_enable"|"line_feed_enable"|"list_view_enable"|"hidden"|"junii2_mapping"|"dublin_core_mapping"|"lom_mapping"|"lido_mapping"|"spase_mapping"|"display_lang_type"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                            array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"personal_name_no"|"family"|"name"|"family_ruby"|"name_ruby"|"e_mail_address"|"item_type_id"|"author_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                            array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"show_order"|"mime_type"|"extension"|"file"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                            array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"display_name"|"display_type"|"show_order"|"mime_type"|"extension"|"prev_id"|"file_prev"|"file_prev_name"|"license_id"|"license_notation"|"pub_date"|"flash_pub_date"|"item_type_id"|"browsing_flag"|"cover_created_flag"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                            array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"biblio_no"|"biblio_name"|"biblio_name_english"|"volume"|"issue"|"start_page"|"end_page"|"date_of_issued"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                            array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"display_name"|"display_type"|"show_order"|"mime_type"|"extension"|"prev_id"|"file_prev"|"file_prev_name"|"license_id"|"license_notation"|"pub_date"|"flash_pub_date"|"item_type_id"|"browsing_flag"|"cover_created_flag"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"|"price"]
+     *                            array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"supple_no"|"item_type_id"|"supple_weko_item_id"|"supple_title"|"supple_title_en"|"uri"|"supple_item_type_name"|"mime_type"|"file_id"|"supple_review_status"|"supple_review_date"|"supple_reject_status"|"supple_reject_date"|"supple_reject_reason"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                            array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"attribute_no"|"attribute_value"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     * @return string Output string 出力文字列
      */
     private function outputEntry($request, $searchResult)
     {
@@ -232,6 +315,8 @@ class Repository_OpenSearch_Atom extends Repository_Opensearch_FormatAbstract
             {
                 $xml .= '       <link rel="alternate" type="text/xml" href="'.$this->RepositoryAction->forXmlChange($itemData[self::DATA_OAIORE][$jj]).'" />'.self::LF;
             }
+            // File Preview
+            $xml .= $this->generateLinkTagForFilePreview($itemData);
             // id => detail uri
             $xml .= '       <id>'.$this->RepositoryAction->forXmlChange($searchResult[$ii]["uri"]).'</id>'.self::LF;
             
@@ -257,7 +342,6 @@ class Repository_OpenSearch_Atom extends Repository_Opensearch_FormatAbstract
             for($jj=0; $jj<count($itemData[self::DATA_FILE_URI]); $jj++)
             {
                 $xml .= '       <dc:identifier>'.$this->RepositoryAction->forXmlChange("file_id:".$itemData[self::DATA_FILE_URI][$jj]).'</dc:identifier>'.self::LF;
-
                 //start enclosure file link を追加する変更 mhaya
                 
                 //リダイレクト後のURLを作成する
@@ -273,8 +357,9 @@ class Repository_OpenSearch_Atom extends Repository_Opensearch_FormatAbstract
                 $xml .= '       <link rel="enclosure" title="'.$this->RepositoryAction->forXmlChange($itemData[self::DATA_FILE_NAME][$jj]).'" type="'.$this->RepositoryAction->forXmlChange($itemData[self::DATA_MIME_TYPE][$jj]).'" href="'.$this->RepositoryAction->forXmlChange($url).'" />'.self::LF;
 
                 //end mhaya
-            }
 
+	    }
+            
             // creator
             for($jj=0;$jj<count($itemData[self::DATA_CREATOR]);$jj++)
             {
@@ -416,8 +501,9 @@ class Repository_OpenSearch_Atom extends Repository_Opensearch_FormatAbstract
     
     /**
      * output footer
+     * フッター出力
      *
-     * @return string
+     * @return string Output string 出力文字列
      */
     private function outputFooter()
     {
@@ -425,5 +511,39 @@ class Repository_OpenSearch_Atom extends Repository_Opensearch_FormatAbstract
         return $xml;
     }
     
+    /**
+     * Generate link tag for file preview
+     * ファイルプレビュー画像用のリンクタグを生成する
+     *
+     * @param array $itemData Item data
+     *                        アイテムデータ
+     *                        array["title"|"alternative"|"uri"|...][$jj]["item_id"|"item_no"|"attribute_id"|...]
+     *
+     * @return string xml node generated
+     *                生成したXMLノード
+     */
+    private function generateLinkTagForFilePreview($itemData)
+    {
+        $xml = "";
+        for ($jj = 0; $jj < count($itemData[self::DATA_URL]); $jj++)
+        {
+            $link = BASE_URL . "/index.php?action=repository_action_common_download&" . 
+                    RepositoryConst::DBCOL_REPOSITORY_FILE_ITEM_ID . "=" . $itemData[self::DATA_URL][$jj][RepositoryConst::DBCOL_REPOSITORY_FILE_ITEM_ID] . "&" .
+                    RepositoryConst::DBCOL_REPOSITORY_FILE_ITEM_NO . "=" . $itemData[self::DATA_URL][$jj][RepositoryConst::DBCOL_REPOSITORY_FILE_ITEM_NO] . "&" .
+                    RepositoryConst::DBCOL_REPOSITORY_FILE_ATTRIBUTE_ID . "=" . $itemData[self::DATA_URL][$jj][RepositoryConst::DBCOL_REPOSITORY_FILE_ATTRIBUTE_ID] . "&" .
+                    RepositoryConst::DBCOL_REPOSITORY_FILE_FILE_NO . "=" . $itemData[self::DATA_URL][$jj][RepositoryConst::DBCOL_REPOSITORY_FILE_FILE_NO] . "&" .
+                    RepositoryConst::DBCOL_REPOSITORY_FILE_FILE_PREV . "=true";
+            $length = $this->loadFilePreviewSize($itemData[self::DATA_URL][$jj][RepositoryConst::DBCOL_REPOSITORY_FILE_ITEM_ID], 
+                                                 $itemData[self::DATA_URL][$jj][RepositoryConst::DBCOL_REPOSITORY_FILE_ITEM_NO], 
+                                                 $itemData[self::DATA_URL][$jj][RepositoryConst::DBCOL_REPOSITORY_FILE_ATTRIBUTE_ID], 
+                                                 $itemData[self::DATA_URL][$jj][RepositoryConst::DBCOL_REPOSITORY_FILE_FILE_NO]);
+            if($length > 0)
+            {
+                $xml .= '       <link rel="enclosure" href="'.$this->RepositoryAction->forXmlChange($link).'" length="'.$this->RepositoryAction->forXmlChange($length).'" />'.self::LF;
+            }
+        }
+        
+        return $xml;
+    }
 }
 ?>

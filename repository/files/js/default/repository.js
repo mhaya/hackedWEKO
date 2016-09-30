@@ -226,24 +226,6 @@ clsRepository.prototype = {
 		params["target_el"] = top_el;
 		commonCls.send(params);
 	},
-	// Add site License 2008/10/20 Y.Nakao --end--
-	// Goto CreateFulltext (S.Kawasaki)
-	repositoryCreateFullText: function() {
-		var top_el = $(this.id);
-		var forms = top_el.getElementsByTagName("form");
-		var len = forms.length;
-		var form_data = "";
-		for (i=0; i<len; i++) {
-			form_data += "&" + Form.serialize(forms[i]);
-		}
-		var params = new Object();
-		params["method"] = "post";
-		params["param"] = "action=repository_action_edit_createfulltext" + form_data;
-		params["top_el"] = top_el;
-		params["loading_el"] = top_el;
-		params["target_el"] = top_el;
-		commonCls.send(params);
-	},
 	repositoryItemTypeCreate: function() {
 		var top_el = $(this.id);
 		var form = document.getElementById('itemtype_create');
@@ -1041,11 +1023,23 @@ clsRepository.prototype = {
 			$('candidate_'+rowNo).style.display = "";
 			elem_required.disabled = false;
 			elem_hidden.disabled = false;
-			// plural disabled to true
+			
 			elem_plural.checked = false;
 			elem_plural.disabled = true;
-			elem_plural_display.style.display = "";
-			elem_plural_dummy.style.display = "none";
+			if(selIdx == 3){
+				// checkbox
+				elem_plural.checked = true;
+				elem_plural.disabled = false;
+				elem_plural_display.style.display = "none";
+				elem_plural_dummy.style.display = "";
+			} else {
+				// radio / select
+				// plural disabled to true
+				elem_plural.checked = false;
+				elem_plural.disabled = true;
+				elem_plural_display.style.display = "";
+				elem_plural_dummy.style.display = "none";
+			}
 			elem_newline_display.style.display = "";
 			elem_newline_dummy.style.display = "none";
 			if(elem_hidden.checked != true){
@@ -1346,11 +1340,20 @@ clsRepository.prototype = {
 			$('candidate_'+rowNo).style.display = "";
 			elem_required.disabled = false;
 			elem_hidden.disabled = false;
-			// plural disabled to true
-			elem_plural.checked = false;
-			elem_plural.disabled = true;
-			elem_plural_display.style.display = "";
-			elem_plural_dummy.style.display = "none";
+			if(selIdx == 3){
+				// checkbox
+				elem_plural.checked = true;
+				elem_plural.disabled = false;
+				elem_plural_display.style.display = "none";
+				elem_plural_dummy.style.display = "";
+			} else {
+				// radio / select
+				// plural disabled to true
+				elem_plural.checked = false;
+				elem_plural.disabled = true;
+				elem_plural_display.style.display = "";
+				elem_plural_dummy.style.display = "none";
+			}
 			elem_newline_display.style.display = "";
 			elem_newline_dummy.style.display = "none";
 			if(elem_hidden.checked != true){
@@ -2459,6 +2462,25 @@ clsRepository.prototype = {
 		commonCls.send(params);
 	},
 	// Modify for use privatetree 2013/04/15 K.Matsuo --end--
+	// Modify for edit index metadata 2015/11/11 T.Ichikawa --start--
+	onSubmitEdittreeAllData: function(param, returnHtml)
+	{
+		var top_el = $(this.id);
+		var params = new Object();
+		// Send FormData & argument
+		if(returnHtml == 'privateTree'){
+			params["method"] = "get";
+			params["param"] = 'action=repository_action_main_privatetree'+param;
+		} else {
+			params["method"] = "post";
+			params["param"] = 'action=repository_action_edit_treeupdate'+param;
+		}
+		params["top_el"] = top_el;
+		params["loading_el"] = top_el;
+		params["target_el"] = top_el;
+		commonCls.send(params);
+	},
+	// Modify for edit index metadata 2015/11/11 T.Ichikawa --end--
 	// change index tree for edit tree 2008/12/11 Y.Nakao --end--
 	
 	// Add set embargo action 2008/07/10 Y.Nakao --start--
@@ -2543,6 +2565,7 @@ clsRepository.prototype = {
                         || children[j].name == "harvesting_baseUrl[]"
                         || children[j].name == "harvesting_post_index[]"
                         || children[j].name == "harvesting_post_name[]"
+                        || children[j].name == "harvesting_set_param[]"
                     )
                     && children[j].value == ""
                   )
@@ -2690,6 +2713,7 @@ clsRepository.prototype = {
                         || children[j].name == "harvesting_baseUrl[]"
                         || children[j].name == "harvesting_post_index[]"
                         || children[j].name == "harvesting_post_name[]"
+                        || children[j].name == "harvesting_set_param[]"
                     )
                     && children[j].value == ""
                   )
@@ -2785,6 +2809,7 @@ clsRepository.prototype = {
                         || children[j].name == "harvesting_baseUrl[]"
                         || children[j].name == "harvesting_post_index[]"
                         || children[j].name == "harvesting_post_name[]"
+                        || children[j].name == "harvesting_set_param[]"
                     )
                     && children[j].value == ""
                   )
@@ -3231,10 +3256,6 @@ clsRepository.prototype = {
         {
             pars = "action=repository_action_common_usagestatisticsmail";
         }
-        else if(action == 'sitelicensemail')
-        {
-            pars = "action=repository_action_common_sitelicensemail";
-        }
         else if(action == 'reconstructindexauth')
         {
             pars = "action=repository_action_common_reconstruction_indexauthority";
@@ -3271,9 +3292,7 @@ clsRepository.prototype = {
                                     res.responseText == "Start send feedback mail." || 
                                     res.responseText == "Start send feedback mail.\n" || 
                                     res.responseText == "Start Update Stopwordl." || 
-                                    res.responseText == "Start Update Stopword.\n" || 
-                                    res.responseText == "Start send site license mail." || 
-                                    res.responseText == "Start send site license mail.\n"
+                                    res.responseText == "Start Update Stopword.\n"
                                     )
 								{
 									document.location.href =
@@ -3320,7 +3339,7 @@ clsRepository.prototype = {
 	repositoryIndexThumbnailFileUpload: function(pars, returnHtml)
 	{
 		if($('thumbnail_file').value.length == 0) {
-			this.onSubmitEdittree_repos(pars, returnHtml);
+			this.onSubmitEdittreeAllData(pars, returnHtml);
 			return;
 		}
 		var attachment_params = new Object();
@@ -3330,7 +3349,7 @@ clsRepository.prototype = {
 		attachment_params['param'] = {"action":"repository_action_edit_treethumbnail"};
 
 		// set call back function
-		attachment_params['callbackfunc'] = function(){this.onSubmitEdittree_repos(pars, returnHtml);}.bind(this);
+		attachment_params['callbackfunc'] = function(){this.onSubmitEdittreeAllData(pars, returnHtml);}.bind(this);
 		
 		commonCls.sendAttachment(attachment_params);
 	},
@@ -3467,7 +3486,38 @@ clsRepository.prototype = {
 		commonCls.send(params);
     },
     // Add ListDelete A.Jin --end--
-	
+    repositorySendSitelicenseMail: function(page_id, block_id, sitelicenseIds, fromYear, fromMonth, toYear, toMonth) {
+		var url = _nc_base_url + "/index.php";
+		var pars = "action=repository_action_edit_sitelicense_sendmail" + 
+		"&sitelicense_ids=" + sitelicenseIds +
+		"&from_year=" + fromYear +
+		"&from_month=" + fromMonth +
+		"&to_year=" + toYear +
+		"&to_month=" + toMonth +
+		"&page_id=" + page_id +
+		"&block_id=" + block_id;
+
+		var myAjax = new Ajax.Request(
+			url,
+			{
+				method: 'post',
+				parameters: pars,
+				onFailure : function(){
+					alert(error);
+				},
+				onSuccess : function(res){
+					if(res.responseText == "Start send sitelicensemail."){
+						location.href = _nc_base_url+
+							"/?action=pages_view_main&active_action=repository_view_common_redirect"+
+							"&page_id="+page_id+
+							"&block_id="+block_id;
+					} else {
+						alert(error);
+					}
+				}
+			}
+		);
+    },
 
 	
 	/**
@@ -3857,7 +3907,7 @@ clsRepository.prototype = {
 			// Opera 12.0以上でDrag＆Dropのファイル追加可能
 			array = /opera[\s\/]+([\d\.]+)/.exec(userAgent);
 			var Version = array[1].split('.')[0];
-			if(Version > 12){
+			if(Version >= 12){
 				return true;
 			}
 		} else if (userAgent.indexOf('msie') >= 0) {
@@ -3866,11 +3916,15 @@ clsRepository.prototype = {
 			// MSIE 10.0以上でDrag＆Dropのファイル追加可能
 			array = /msie ([\d\.]+)/.exec(userAgent);
 			var Version = array[1].split('.')[0];
-			if(Version > 10){
+			if(Version >= 10){
 				return true;
 			}
 		} else if (userAgent.indexOf('trident') >= 0) {
 			//IE11
+			
+			return true;
+		} else if (userAgent.indexOf('edge') >= 0) {
+			// Edge(Windows10)
 			
 			return true;
 		} else if (userAgent.indexOf('firefox') >= 0) {
@@ -3879,7 +3933,7 @@ clsRepository.prototype = {
 			// Firefox 4.0以上でDrag＆Dropのファイル追加可能
 			array = /firefox\/([\d\.]+)/.exec(userAgent);
 			var Version = array[1].split('.')[0];
-			if(Version > 4){
+			if(Version >= 4){
 				return true;
 			}
 		} else if (userAgent.indexOf('chrome') >= 0) {
@@ -3888,7 +3942,7 @@ clsRepository.prototype = {
 			// Chrome7以上でDrag＆Dropのファイル追加可能
 			array = /chrome\/([\d\.]+)/.exec(userAgent);
 			var Version = array[1].split('.')[0];
-			if(Version > 7){
+			if(Version >= 7){
 				return true;
 			}
 		} else if (userAgent.indexOf('safari') >= 0) {
@@ -3897,7 +3951,7 @@ clsRepository.prototype = {
 			// Safari5以上でDrag＆Dropのファイル追加可能
 			array = /version\/([\d\.]+)/.exec(userAgent);
 			var Version = array[1].split('.')[0];
-			if(Version > 5){
+			if(Version >= 5){
 				return true;
 			}
 		}

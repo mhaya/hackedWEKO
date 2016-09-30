@@ -1,7 +1,15 @@
 <?php
+
+/**
+ * Action class for WEKO import format downloads of items
+ * アイテムのWEKOインポート形式ダウンロード用アクションクラス
+ * 
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Detaildownload.class.php 57277 2015-08-28 04:30:00Z keiya_sugimoto $
+// $Id: Detaildownload.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -13,38 +21,95 @@
 
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
 
+/**
+ * ZIP file manipulation library
+ * ZIPファイル操作ライブラリ
+ */
 include_once MAPLE_DIR.'/includes/pear/File/Archive.php';
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
+
+/**
+ * Item export processing common classes
+ * アイテムエクスポート処理共通クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/action/main/export/ExportCommon.class.php';
+/**
+ * Common class file download
+ * ファイルダウンロード共通クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryDownload.class.php';
+/**
+ * Item authority common classes
+ * アイテム権限共通クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryItemAuthorityManager.class.php';
 
 /**
- * [[機能説明]]
- *
- * @package     [[package名]]
- * @access      public
+ * Action class for WEKO import format downloads of items
+ * アイテムのWEKOインポート形式ダウンロード用アクションクラス
+ * 
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class Repository_Action_Main_Export_Detaildownload extends RepositoryAction
 {
 	// リクエストパラメータを受け取るため
 	//var $item_type_id = null;		//前画面で選択したアイテムタイプID(編集時)
+    /**
+     * Item id
+     * アイテムID
+     *
+     * @var int
+     */
 	var $item_id = null;
+    /**
+     * Item serial number
+     * アイテム通番
+     *
+     * @var int
+     */
 	var $item_no = null;
+	/**
+	 * All file download flag
+	 * 全ファイルダウンロードフラグ
+	 *
+	 * @var string
+	 */
 	var $check_radio = null;
+	/**
+	 * Download flag of each file
+	 * 各ファイルのダウンロードフラグ
+	 *
+	 * @var string
+	 */
 	var $license_check = null;
 	
 	// ダウンロード用メンバ
+    /**
+     * Data upload objects
+     * データアップロードオブジェクト
+     *
+     * @var Uploads_View
+     */
 	var $uploadsView = null;
 	
     /**
-     * [[機能説明]]
+     * Export item
+     * アイテムをエクスポートする
      *
      * @access  public
      */
     function executeApp()
     {
     	try {
+    	    $this->exitFlag = true;
+    	    
 			if ($this->Session != null) {
 				// エラー処理を記述する。（未実装）
 				// return 'false'
@@ -177,16 +242,19 @@ class Repository_Action_Main_Export_Detaildownload extends RepositoryAction
 			// 出力したファイルをZip形式で圧縮する
 			$output_files = $export_info["output_files"];
 			array_push( $output_files, $filename );
-				
+			
+			// zip用の一時ディレクトリを作成
+            $tmp_dir_zip = $businessWorkdirectory->create();
+            
 			File_Archive::extract(
-				$output_files,
-				File_Archive::toArchive($zip_file, File_Archive::toFiles( $tmp_dir ))
+				File_Archive::read($tmp_dir),
+				File_Archive::toArchive($zip_file, File_Archive::toFiles( $tmp_dir_zip ))
 			);
 			
 			//ダウンロードアクション処理
 			// Add RepositoryDownload action 2010/03/30 A.Suzuki --start--
 			$repositoryDownload = new RepositoryDownload();
-			$repositoryDownload->downloadFile($tmp_dir.$zip_file, "export.zip");
+			$repositoryDownload->downloadFile($tmp_dir_zip.$zip_file, "export.zip");
 			// Add RepositoryDownload action 2010/03/30 A.Suzuki --end--
             
 			// アクション終了処理
@@ -195,12 +263,6 @@ class Repository_Action_Main_Export_Detaildownload extends RepositoryAction
 				// 未実装
 				print "終了処理失敗";
 			}			
-			//return 'success';
-			
-			// zipファイル損傷対応 2008/08/25 Y.Nakao --start--
-			exit();
-			// zipファイル損傷対応 2008/08/25 Y.Nakao --end--
-			
 		} catch ( RepositoryException $exception){
 			// 未実装
 		}

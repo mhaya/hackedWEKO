@@ -1,46 +1,92 @@
 <?php
+/**
+ * Action class for other language setting of meta data item names attached straps to the item type
+ * アイテムタイプに紐付くメタデータ項目名の他言語設定用アクションクラス
+ *
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Multilang.class.php 15605 2012-02-20 09:30:55Z tatsuya_koyasu $
+// $Id: Aggregatesitelicenseusagestatistics.class.php 68463 2016-06-06 06:05:40Z tomohiro_ichikawa $
 //
-// Copyright (c) 2007 - 2008, National Institute of Informatics, 
+// Copyright (c) 2007 - 2008, National Institute of Informatics,
 // Research and Development Center for Scientific Information Resources
 //
 // This program is licensed under a Creative Commons BSD Licence
 // http://creativecommons.org/licenses/BSD/
 //
 // --------------------------------------------------------------------
-
-/* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
 
 /**
- * [[機能説明]]
- *
- * @package     [[package名]]
- * @access      public
+ * Action class for other language setting of meta data item names attached straps to the item type
+ * アイテムタイプに紐付くメタデータ項目名の他言語設定用アクションクラス
+ * 
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class Repository_Action_Edit_Itemtype_Multilang extends RepositoryAction
 {
     // 2008/02/25 itemtype を item_type に変更
     // 使用コンポーネントを受け取るため
+    /**
+     * Session management objects
+     * Session管理オブジェクト
+     *
+     * @var Session
+     */
     var $Session = null;
+    /**
+     * DB object
+     * DBオブジェクト
+     *
+     * @var DbObjectAdodb
+     */
     var $Db = null;
     
     // リクエストパラメータを受け取るため
-    // リクエストパラメタ
-    public $metadata_multititle = null;     // メタデータ項目名配列
-    // リクエストパラメタ
-    public $metadata_defaulttitle = null;     // メタデータ項目名配列
-    // リクエストパラメタ
-    public $default_edit_flag = null;     // デフォルトを変更するかのフラグ
-    // リクエストパラメタ
-    public $edit_id = null;     // 編集データID
+    /**
+     * Metadata multi language title array
+     * メタデータ項目多言語配列
+     *
+     * @var array
+     */
+    public $metadata_multititle = null;
+    /**
+     * Metadata title array
+     * メタデータ項目配列
+     *
+     * @var array
+     */
+    public $metadata_defaulttitle = null;
+    /**
+     * Edit flag
+     * デフォルトを変更するかのフラグ
+     *
+     * @var bool
+     */
+    public $default_edit_flag = null;
+    /**
+     * Edit ID
+     * 編集データID
+     *
+     * @var int
+     */
+    public $edit_id = null;
     
     /**
-     * [[機能説明]]
+     * Execute
+     * 実行
      *
-     * @access  public
+     * @return string "success"/"error" success/failed 成功/失敗
+     * @throws RepositoryException
      */
     function execute()
     {
@@ -78,6 +124,7 @@ class Repository_Action_Edit_Itemtype_Multilang extends RepositoryAction
                 //$exception->setDetailMsg( $DetailMsg );             //詳細メッセージ設定
                 throw $exception;
             }
+            $this->finalize();
             return 'success';
         } catch (RepositoryException $Exception) {
             //アクション終了処理

@@ -1,7 +1,15 @@
 <?php
+
+/**
+ * Action class for the item display order setting
+ * アイテム表示順序設定用アクションクラス
+ * 
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Customsort.class.php 33161 2014-03-24 05:51:26Z tomohiro_ichikawa $
+// $Id: Customsort.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -12,35 +20,73 @@
 // --------------------------------------------------------------------
 
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
+
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
 
 /**
- * [[アイテム管理actionアクション]]
- * 表示順序設定Action
+ * Action class for the item display order setting
+ * アイテム表示順序設定用アクションクラス
  * 
- * @package	 [[package名]]
- * @access	  public
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class Repository_Action_Edit_Item_Customsort extends RepositoryAction
 {
     // コンポーネント受け取り
+    /**
+     * Session management objects
+     * Session管理オブジェクト
+     *
+     * @var Session
+     */
     var $Session = null;
+    /**
+     * Database management objects
+     * データベース管理オブジェクト
+     *
+     * @var DbObject
+     */
     var $Db = null;
 
     //*********************
     //リクエストパラメータ
     //*********************
     // 選択インデックスID
+    /**
+     * Select index ID
+     * 選択インデックスID
+     *
+     * @var int
+     */
     public $targetIndexId = null;
     // 移動元表示順序インデックス
+    /**
+     * Move the original display order index
+     * 移動元表示順序インデックス
+     *
+     * @var int
+     */
     public $currentSortOrder = null;
     // 移動先表示順序インデックス
+    /**
+     * Destination display order index
+     * 移動先表示順序インデックス
+     *
+     * @var int
+     */
     public $targetSortOrder = null;
 
     /**
-     * 表示順序設定execute
+     * Display order setting
+     * 表示順序設定
      *
-     * @access  public
+     * @return string Result 結果
      */
     function execute()
     {
@@ -81,6 +127,7 @@ class Repository_Action_Edit_Item_Customsort extends RepositoryAction
                 $this->failTrans();                                                 //トランザクション失敗を設定(ROLLBACK)
                 throw $exception;
             }
+            $this->finalize();
             
             // エラーメッセージ開放
             $this->Session->removeParameter("error_msg");
@@ -103,10 +150,10 @@ class Repository_Action_Edit_Item_Customsort extends RepositoryAction
     }
     
     /**
+     * To update the display order index of less than or equal to the specified index by the argument
      * 引数で指定したインデックス以下の表示順インデックスを更新する
      *
-     * @return string success成功/error失敗
-     * 
+     * @return string Result 結果
      */
     private function updateCustomSortOrder(){
         //1. 表示順序インデックスの振り直し

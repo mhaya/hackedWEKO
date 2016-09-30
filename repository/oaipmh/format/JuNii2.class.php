@@ -1,7 +1,15 @@
 <?php
+
+/**
+ * Item information output class in junii2
+ * junii2でのアイテム情報出力クラス
+ *
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: JuNii2.class.php 49321 2015-03-03 12:15:32Z keiya_sugimoto $
+// $Id: JuNii2.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -10,38 +18,71 @@
 // http://creativecommons.org/licenses/BSD/
 //
 // --------------------------------------------------------------------
+/**
+ * OAI-PMH item information output base class
+ * OAI-PMHアイテム情報出力基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/oaipmh/format/FormatAbstract.class.php';
+
+/**
+ * Name authority common classes
+ * 著者名典拠共通クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/NameAuthority.class.php';
+/**
+ * Handle management common classes
+ * ハンドル管理共通クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryHandleManager.class.php';
 
+/**
+ * Item information output class in junii2
+ * junii2でのアイテム情報出力クラス
+ *
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
+ */
 class Repository_Oaipmh_JuNii2 extends Repository_Oaipmh_FormatAbstract
 {
     /**
-     * miinOccurs, maxOccurs check array
+     * Minimum and maximum number of items for determination array
+     * 最小・最大項目数判定用配列
      *
-     * @var array
+     * @var array["title"|"date"|"niitype"|"uri"|"volume"|"jtitle"|"issue"|"spage"|"epa"|""|""|""|""|""|""]
      */
     private $occurs = array();
     /**
      * item language string
+     * アイテム言語
      * 
      * @var string
      */
     private $strItemLanguage = null;
     /**
      * for instance of RepositoryHandleManager class
+     * ハンドル管理オブジェクト
      * 
      * @var object
      */
     private $repositoryHandleManager = null;
     /**
+     * Constructor
      * コンストラクタ
+     * 
+     * @param Session $sesssion Session management objects Session管理オブジェクト
+     * @param DbObject $db Database management objects データベース管理オブジェクト
      */
     public function __construct($session, $db)
     {
         parent::__construct($session, $db);
     }
     
+    /**
+     * Initialize
+     * 初期化
+     */
     private function initialize()
     {
         $this->occurs = array(  RepositoryConst::JUNII2_TITLE=>1,
@@ -72,10 +113,21 @@ class Repository_Oaipmh_JuNii2 extends Repository_Oaipmh_FormatAbstract
     }
     
     /**
-     * output OAI-PMH metadata Tag format DublinCore
+     * Output item information
+     * アイテム情報を出力
      *
-     * @param array $itemData $this->getItemData return
-     * @return string xml
+     * @param array $itemData Item data アイテムデータ
+     *                        array["item"][$ii]["item_id"|"item_no"|"revision_no"|"item_type_id"|"prev_revision_no"|"title"|"title_english"|"language"|"review_status"|"review_date"|"shown_status"|"shown_date"|"reject_status"|"reject_date"|"reject_reason"|"serch_key"|"serch_key_english"|"remark"|"uri"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_type"][$ii]["item_type_id"|"item_type_name"|"item_type_short_name"|"explanation"|"mapping_info"|"icon_name"|"icon_mime_type"|"icon_extension"|"icon"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_attr_type"]["item_type_id"|"attribute_id"|"show_order"|"attribute_name"|"attribute_short_name"|"input_type"|"is_required"|"plural_enable"|"line_feed_enable"|"list_view_enable"|"hidden"|"junii2_mapping"|"dublin_core_mapping"|"lom_mapping"|"lido_mapping"|"spase_mapping"|"display_lang_type"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"personal_name_no"|"family"|"name"|"family_ruby"|"name_ruby"|"e_mail_address"|"item_type_id"|"author_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"show_order"|"mime_type"|"extension"|"file"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"display_name"|"display_type"|"show_order"|"mime_type"|"extension"|"prev_id"|"file_prev"|"file_prev_name"|"license_id"|"license_notation"|"pub_date"|"flash_pub_date"|"item_type_id"|"browsing_flag"|"cover_created_flag"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"biblio_no"|"biblio_name"|"biblio_name_english"|"volume"|"issue"|"start_page"|"end_page"|"date_of_issued"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"display_name"|"display_type"|"show_order"|"mime_type"|"extension"|"prev_id"|"file_prev"|"file_prev_name"|"license_id"|"license_notation"|"pub_date"|"flash_pub_date"|"item_type_id"|"browsing_flag"|"cover_created_flag"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"|"price"]
+     *                        array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"supple_no"|"item_type_id"|"supple_weko_item_id"|"supple_title"|"supple_title_en"|"uri"|"supple_item_type_name"|"mime_type"|"file_id"|"supple_review_status"|"supple_review_date"|"supple_reject_status"|"supple_reject_date"|"supple_reject_reason"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"attribute_no"|"attribute_value"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     * @return string The output string 出力文字列
      */
     public function outputRecord($itemData)
     {
@@ -150,9 +202,10 @@ class Repository_Oaipmh_JuNii2 extends Repository_Oaipmh_FormatAbstract
     }
     
     /**
-     * header ooutput
+     * The output of the header part
+     * ヘッダー部分の出力
      *
-     * @return string
+     * @return string The output string 出力文字列
      */
     private function outputHeader()
     {
@@ -165,9 +218,11 @@ class Repository_Oaipmh_JuNii2 extends Repository_Oaipmh_FormatAbstract
     
     /**
      * item basic data output
+     * アイテム基本情報出力
      *
-     * @param array $baseData
-     * @return string
+     * @param array $baseData Item base information アイテム基本情報
+     *              array["item_id"|"item_no"|"revision_no"|"item_type_id"|"prev_revision_no"|"title"|"title_english"|"language"|"review_status"|"review_date"|"shown_status"|"shown_date"|"reject_status"|"reject_date"|"reject_reason"|"serch_key"|"serch_key_english"|"remark"|"uri"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     * @return string The output string 出力文字列
      */
     private function outputBasicData($baseData)
     {
@@ -241,15 +296,25 @@ class Repository_Oaipmh_JuNii2 extends Repository_Oaipmh_FormatAbstract
     }
     
     /**
-     * output metadata
+     * Metadata output
+     * メタデータ出力
      *
-     * @param array $itemAttrType mapping info. マッピング情報
-     * @param array $itemAttr metadata ingo. メタデータ情報
-     * @return string
+     * @param array $itemAttrType Mapping info. マッピング情報
+     *                            array["item_type_id"|"attribute_id"|"show_order"|"attribute_name"|"attribute_short_name"|"input_type"|"is_required"|"plural_enable"|"line_feed_enable"|"list_view_enable"|"hidden"|"junii2_mapping"|"dublin_core_mapping"|"lom_mapping"|"lido_mapping"|"spase_mapping"|"display_lang_type"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     * @param array $itemAttr Metadata ingo. メタデータ情報
+     *                        array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"personal_name_no"|"family"|"name"|"family_ruby"|"name_ruby"|"e_mail_address"|"item_type_id"|"author_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"show_order"|"mime_type"|"extension"|"file"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"display_name"|"display_type"|"show_order"|"mime_type"|"extension"|"prev_id"|"file_prev"|"file_prev_name"|"license_id"|"license_notation"|"pub_date"|"flash_pub_date"|"item_type_id"|"browsing_flag"|"cover_created_flag"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"biblio_no"|"biblio_name"|"biblio_name_english"|"volume"|"issue"|"start_page"|"end_page"|"date_of_issued"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"display_name"|"display_type"|"show_order"|"mime_type"|"extension"|"prev_id"|"file_prev"|"file_prev_name"|"license_id"|"license_notation"|"pub_date"|"flash_pub_date"|"item_type_id"|"browsing_flag"|"cover_created_flag"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"|"price"]
+     *                        array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"supple_no"|"item_type_id"|"supple_weko_item_id"|"supple_title"|"supple_title_en"|"uri"|"supple_item_type_name"|"mime_type"|"file_id"|"supple_review_status"|"supple_review_date"|"supple_reject_status"|"supple_reject_date"|"supple_reject_reason"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"attribute_no"|"attribute_value"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     * @return string The output string 出力文字列
      */
     private function outputMetadta($itemAttrType, $itemAttr)
     {
         $xml = '';
+        
         $value = '';
         for($ii=0; $ii<count($itemAttrType); $ii++)
         {
@@ -327,8 +392,8 @@ class Repository_Oaipmh_JuNii2 extends Repository_Oaipmh_FormatAbstract
                     // Add for Bug No.1 Fixes R.Matsuura 2013/09/24 --end--
                     else
                     {
+			// Add description tag mhaya 2015/11/30 --start--
                         if(_REPOSITORY_REPON_JUNII2_EXDESCRIPTION==true){
-                        // Add description tag mhaya 2015/11/30 --start--
                             $attr_name = $itemAttrType[$ii][RepositoryConst::DBCOL_REPOSITORY_ITEM_ATTR_TYPE_ATTRIBUTE_NAME];
                             $xml .= $this->outputAttributeValue($junii2Map, $value, $lang,array(),$attr_name);
                         }else{
@@ -336,6 +401,9 @@ class Repository_Oaipmh_JuNii2 extends Repository_Oaipmh_FormatAbstract
                             $xml .= $this->outputAttributeValue($junii2Map, $value, $lang,array());
                         }
                         // Add description tag mhaya 2015/11/30 --end--
+
+                        // when is value, output. 値があれば出力
+                        $xml .= $this->outputAttributeValue($junii2Map, $value, $lang);
                     }
                 }
             }
@@ -345,14 +413,16 @@ class Repository_Oaipmh_JuNii2 extends Repository_Oaipmh_FormatAbstract
     }
     
     /**
-     * output xml for mapping info.
+     * To output the XML in accordance with mapping settings
+     * マッピング設定に従いXMLを出力する
      *
-     * @param string $mapping
-     * @param string $value
-     * @param string $lang
-     * @param array $authorIdArray
+     * @param string $mapping Mapping マッピング
+     * @param string $value Metadata メタデータ
+     * @param string $lang Language 言語
+     * @param array $authorIdArray External author id list 外部著者ID一覧
+     *                             array["prefix"|"suffix"]
      * @param string $attr_name
-     * @return string
+     * @return string The output string 出力文字列
      */
     private function outputAttributeValue($mapping, $value, $lang="", $authorIdArray=array(),$attr_name="")
     {
@@ -415,6 +485,7 @@ class Repository_Oaipmh_JuNii2 extends Repository_Oaipmh_FormatAbstract
                     $xml = $this->outputDescription($value);
                 }
                 // Add description tag mhaya 2015/11/30 --end--
+                $xml = $this->outputDescription($value);
                 break;
                 // Update JuNii2 ver3 R.Matsuura 2013/09/24 --start--
             case RepositoryConst::JUNII2_PUBLISHER:
@@ -575,10 +646,11 @@ class Repository_Oaipmh_JuNii2 extends Repository_Oaipmh_FormatAbstract
      *   is necessary.
      *   minOccurs = 1, maxOccurs = 1
      *   option = lang
+     * titleタグを出力する
      * 
-     * @param string $title
-     * @param string $lang
-     * @return string
+     * @param string $title title title
+     * @param string $lang Language 言語
+     * @return string The output string 出力文字列
      */
     private function outputTitle($title, $lang="")
     {
@@ -610,10 +682,11 @@ class Repository_Oaipmh_JuNii2 extends Repository_Oaipmh_FormatAbstract
      * alternative output
      *   minOccurs = 0, maxOccurs = unbounded
      *   option = lang
+     * alternativeタグを出力する
      * 
-     * @param string $alternative
-     * @param string $lang
-     * @return string
+     * @param string $alternative alternative alternative
+     * @param string $lang Language 言語
+     * @return string The output string 出力文字列
      */
     private function outputAlternative($alternative, $lang="")
     {
@@ -630,12 +703,13 @@ class Repository_Oaipmh_JuNii2 extends Repository_Oaipmh_FormatAbstract
      * creator output
      *   minOccurs = 0, maxOccurs = unbounded
      *   option = lang
+     * creatorタグを出力する
      * 
-     * @param string $creator
-     * @param string $lang
-     * // Add JuNii2 ver3 R.Matsuura 2013/09/24
-     * @param array $authorIdArray
-     * @return string
+     * @param string $creator creator creator
+     * @param string $lang Language 言語
+     * @param array $authorIdArray External author id 外部著者ID
+     *                             array["prefix"|"suffix"]
+     * @return string The output string 出力文字列
      */
     private function outputCreator($creator, $lang="", $authorIdArray=array())
     {
@@ -660,9 +734,10 @@ class Repository_Oaipmh_JuNii2 extends Repository_Oaipmh_FormatAbstract
      * subject output
      *   minOccurs = 0, maxOccurs = unbounded
      *   option = null
+     * subjectタグを出力する
      * 
-     * @param string $subject
-     * @return string
+     * @param string $subject subject subject
+     * @return string The output string 出力文字列
      */
     private function outputSubject($subject)
     {
@@ -674,10 +749,11 @@ class Repository_Oaipmh_JuNii2 extends Repository_Oaipmh_FormatAbstract
      * NIIsubject output
      *   minOccurs = 0, maxOccurs = unbounded
      *   option = version
+     * NIIsubjectタグを出力する
      * 
-     * @param string $niiSubject
-     * @param string $version
-     * @return string
+     * @param string $niiSubject NIIsubject NIIsubject
+     * @param string $version Version バージョン
+     * @return string The output string 出力文字列
      */
     private function outputNIISubject($niiSubject, $version="")
     {
@@ -694,10 +770,11 @@ class Repository_Oaipmh_JuNii2 extends Repository_Oaipmh_FormatAbstract
      * NDC output
      *   minOccurs = 0, maxOccurs = unbounded
      *   option = version
+     * NDCタグを出力する
      * 
-     * @param string $NDC
-     * @param string $version
-     * @return string
+     * @param string $NDC NDC NDC
+     * @param string $version Version バージョン
+     * @return string The output string 出力文字列
      */
     private function outputNDC($NDC, $version="")
     {
@@ -714,10 +791,11 @@ class Repository_Oaipmh_JuNii2 extends Repository_Oaipmh_FormatAbstract
      * NDLC output
      *   minOccurs = 0, maxOccurs = unbounded
      *   option = version
+     * NDLCタグを出力する
      * 
-     * @param string $NDLC
-     * @param string $version
-     * @return string
+     * @param string $NDLC NDLC NDLC
+     * @param string $version Version バージョン
+     * @return string The output string 出力文字列
      */
     private function outputNDLC($NDLC, $version="")
     {
@@ -734,10 +812,11 @@ class Repository_Oaipmh_JuNii2 extends Repository_Oaipmh_FormatAbstract
      * BSH output
      *   minOccurs = 0, maxOccurs = unbounded
      *   option = version
+     * BSHタグを出力する
      * 
-     * @param string $BSH
-     * @param string $version
-     * @return string
+     * @param string $BSH BSH BSH
+     * @param string $version Version バージョン
+     * @return string The output string 出力文字列
      */
     private function outputBSH($BSH, $version="")
     {
@@ -754,10 +833,11 @@ class Repository_Oaipmh_JuNii2 extends Repository_Oaipmh_FormatAbstract
      * NDLSH output
      *   minOccurs = 0, maxOccurs = unbounded
      *   option = version
+     * NDLSHタグを出力する
      * 
-     * @param string $NDLSH
-     * @param string $version
-     * @return string
+     * @param string $NDLSH NDLSH NDLSH
+     * @param string $version Version バージョン
+     * @return string The output string 出力文字列
      */
     private function outputNDLSH($NDLSH, $version="")
     {
@@ -774,10 +854,11 @@ class Repository_Oaipmh_JuNii2 extends Repository_Oaipmh_FormatAbstract
      * MeSH output
      *   minOccurs = 0, maxOccurs = unbounded
      *   option = version
+     * MeSHタグを出力する
      * 
-     * @param string $MeSH
-     * @param string $version
-     * @return string
+     * @param string $MeSH MeSH MeSH
+     * @param string $version Version バージョン
+     * @return string The output string 出力文字列
      */
     private function outputMeSH($MeSH, $version="")
     {
@@ -794,10 +875,11 @@ class Repository_Oaipmh_JuNii2 extends Repository_Oaipmh_FormatAbstract
      * DDC output
      *   minOccurs = 0, maxOccurs = unbounded
      *   option = version
+     * DDCタグを出力する
      * 
-     * @param string $DDC
-     * @param string $version
-     * @return string
+     * @param string $DDC DDC DDC
+     * @param string $version Version バージョン
+     * @return string The output string 出力文字列
      */
     private function outputDDC($DDC, $version="")
     {
@@ -814,10 +896,11 @@ class Repository_Oaipmh_JuNii2 extends Repository_Oaipmh_FormatAbstract
      * LCC output
      *   minOccurs = 0, maxOccurs = unbounded
      *   option = version
+     * LCCタグを出力する
      * 
-     * @param string $LCC
-     * @param string $version
-     * @return string
+     * @param string $LCC LCC LCC
+     * @param string $version Version バージョン
+     * @return string The output string 出力文字列
      */
     private function outputLCC($LCC, $version="")
     {
@@ -834,10 +917,11 @@ class Repository_Oaipmh_JuNii2 extends Repository_Oaipmh_FormatAbstract
      * UDC output
      *   minOccurs = 0, maxOccurs = unbounded
      *   option = version
+     * UDCタグを出力する
      * 
-     * @param string $UDC
-     * @param string $version
-     * @return string
+     * @param string $UDC UDC UDC
+     * @param string $version Version バージョン
+     * @return string The output string 出力文字列
      */
     private function outputUDC($UDC, $version="")
     {
@@ -854,10 +938,11 @@ class Repository_Oaipmh_JuNii2 extends Repository_Oaipmh_FormatAbstract
      * LCSH output
      *   minOccurs = 0, maxOccurs = unbounded
      *   option = version
+     * LCSHタグを出力する
      * 
-     * @param string $LCSH
-     * @param string $version
-     * @return string
+     * @param string $LCSH LCSH LCSH
+     * @param string $version Version バージョン
+     * @return string The output string 出力文字列
      */
     private function outputLCSH($LCSH, $version="")
     {
@@ -873,10 +958,11 @@ class Repository_Oaipmh_JuNii2 extends Repository_Oaipmh_FormatAbstract
     /**
      * description output
      *   minOccurs = 0, maxOccurs = unbounded
+     * descriptionタグを出力する
      * 
-     * @param string $description
-     $ @param string $attr_name
-     * @return string
+     * @param string $description description description
+     * @param string $attr_name add mhaya
+     * @return string The output string 出力文字列
      */
     private function outputDescription($description,$attr_name="")
     {
@@ -893,12 +979,13 @@ class Repository_Oaipmh_JuNii2 extends Repository_Oaipmh_FormatAbstract
      * publisher output
      *   minOccurs = 0, maxOccurs = unbounded
      *   option = lang
+     * publisherタグを出力する
      * 
-     * @param string $publisher
-     * @param string $lang
-     * // Add JuNii2 ver3 R.Matsuura 2013/09/24
-     * @param array $authorIdArray
-     * @return string
+     * @param string $publisher publisher publisher
+     * @param string $lang Language 言語
+     * @param array $authorIdArray External author id 外部著者ID
+     *                             array["prefix"|"suffix"]
+     * @return string The output string 出力文字列
      */
     private function outputPublisher($publisher, $lang="", $authorIdArray=array())
     {
@@ -923,12 +1010,13 @@ class Repository_Oaipmh_JuNii2 extends Repository_Oaipmh_FormatAbstract
      * contributor output
      *   minOccurs = 0, maxOccurs = unbounded
      *   option = lang
+     * contributorタグを出力する
      * 
-     * @param string $contributor
-     * @param string $lang
-     * // Add JuNii2 ver3 R.Matsuura 2013/09/24
-     * @param array $authorIdArray
-     * @return string
+     * @param string $contributor contributor contributor
+     * @param string $lang Language 言語
+     * @param array $authorIdArray External author id 外部著者ID
+     *                             array["prefix"|"suffix"]
+     * @return string The output string 出力文字列
      */
     private function outputContributor($contributor, $lang="", $authorIdArray=array())
     {
@@ -952,9 +1040,10 @@ class Repository_Oaipmh_JuNii2 extends Repository_Oaipmh_FormatAbstract
     /**
      * date output
      *   minOccurs = 0, maxOccurs = unbounded
+     * dateタグを出力する
      * 
-     * @param string $date
-     * @return string
+     * @param string $date date date
+     * @return string The output string 出力文字列
      */
     private function outputDate($date)
     {
@@ -971,9 +1060,10 @@ class Repository_Oaipmh_JuNii2 extends Repository_Oaipmh_FormatAbstract
     /**
      * type output
      *   minOccurs = 0, maxOccurs = unbounded
+     * typeタグを出力する
      * 
-     * @param string $type
-     * @return string
+     * @param string $type type type
+     * @return string The output string 出力文字列
      */
     private function outputType($type)
     {
@@ -985,9 +1075,10 @@ class Repository_Oaipmh_JuNii2 extends Repository_Oaipmh_FormatAbstract
      * output NIIType
      *   is necessary.
      *   minOccurs = 1, maxOccurs = 1
+     * NIITypeタグを出力する
      * 
-     * @param string $niiType
-     * @return string
+     * @param string $niiType NIIType NIIType
+     * @return string The output string 出力文字列
      */
     private function outputNIIType($niiType)
     {
@@ -1029,9 +1120,10 @@ class Repository_Oaipmh_JuNii2 extends Repository_Oaipmh_FormatAbstract
     /**
      * format output
      *   minOccurs = 0, maxOccurs = unbounded
+     * formatタグを出力する
      * 
-     * @param string $type
-     * @return string
+     * @param string $format format format
+     * @return string The output string 出力文字列
      */
     private function outputFormat($format)
     {
@@ -1042,9 +1134,10 @@ class Repository_Oaipmh_JuNii2 extends Repository_Oaipmh_FormatAbstract
     /**
      * identifier output
      *   minOccurs = 0, maxOccurs = unbounded
+     * identifierタグを出力する
      * 
-     * @param string $type
-     * @return string
+     * @param string $identifier identifier identifier
+     * @return string The output string 出力文字列
      */
     private function outputIdentifier($identifier)
     {
@@ -1056,9 +1149,10 @@ class Repository_Oaipmh_JuNii2 extends Repository_Oaipmh_FormatAbstract
      * URI output
      *   is necessary.
      *   minOccurs = 1, maxOccurs = 1
+     * URIタグを出力する
      * 
-     * @param string $URI
-     * @return string
+     * @param string $URI URI URI
+     * @return string The output string 出力文字列
      */
     private function outputURI($URI)
     {
@@ -1087,9 +1181,10 @@ class Repository_Oaipmh_JuNii2 extends Repository_Oaipmh_FormatAbstract
     /**
      * fullTextURL output
      *   minOccurs = 0, maxOccurs = unbounded
+     * fullTextURLタグを出力する
      * 
-     * @param string $fullTextURL
-     * @return string
+     * @param string $fullTextURL fullTextURL fullTextURL
+     * @return string The output string 出力文字列
      */
     private function outputFullTextURL($fullTextURL)
     {
@@ -1100,9 +1195,10 @@ class Repository_Oaipmh_JuNii2 extends Repository_Oaipmh_FormatAbstract
     /**
      * issn output
      *   minOccurs = 0, maxOccurs = unbounded
+     * ISSNタグを出力する
      * 
-     * @param string $issn
-     * @return string
+     * @param string $issn ISSN ISSN
+     * @return string The output string 出力文字列
      */
     private function outputISSN($issn)
     {
@@ -1114,9 +1210,10 @@ class Repository_Oaipmh_JuNii2 extends Repository_Oaipmh_FormatAbstract
     /**
      * ncid output
      *   minOccurs = 0, maxOccurs = unbounded
+     * NCIDタグを出力する
      * 
-     * @param string $ncid
-     * @return string
+     * @param string $ncid NCID NCID
+     * @return string The output string 出力文字列
      */
     private function outputNCID($ncid)
     {
@@ -1128,10 +1225,11 @@ class Repository_Oaipmh_JuNii2 extends Repository_Oaipmh_FormatAbstract
      * jtitle output
      *   minOccurs = 0, maxOccurs = 1
      *   option = lang
+     * jtitleタグを出力する
      * 
-     * @param string $jtitle
-     * @param string $lang
-     * @return string
+     * @param string $jtitle jtitle jtitle
+     * @param string $lang Language 言語
+     * @return string The output string 出力文字列
      */
     private function outputJtitle($jtitle, $lang="")
     {
@@ -1160,9 +1258,10 @@ class Repository_Oaipmh_JuNii2 extends Repository_Oaipmh_FormatAbstract
     /**
      * volume output
      *   minOccurs = 0, maxOccurs = 1
+     * volumeタグを出力する
      * 
-     * @param string $volume
-     * @return string
+     * @param string $volume volume volume
+     * @return string The output string 出力文字列
      */
     private function outputVolume($volume)
     {
@@ -1186,9 +1285,10 @@ class Repository_Oaipmh_JuNii2 extends Repository_Oaipmh_FormatAbstract
     /**
      * issue output
      *   minOccurs = 0, maxOccurs = 1
+     * issueタグを出力する
      * 
-     * @param string $issue
-     * @return string
+     * @param string $issue issue issue
+     * @return string The output string 出力文字列
      */
     private function outputIssue($issue)
     {
@@ -1212,9 +1312,10 @@ class Repository_Oaipmh_JuNii2 extends Repository_Oaipmh_FormatAbstract
     /**
      * spage output
      *   minOccurs = 0, maxOccurs = 1
+     * spageタグを出力する
      * 
-     * @param string $issue
-     * @return string
+     * @param string $spage spage spage
+     * @return string The output string 出力文字列
      */
     private function outputSpage($spage)
     {
@@ -1238,9 +1339,10 @@ class Repository_Oaipmh_JuNii2 extends Repository_Oaipmh_FormatAbstract
     /**
      * epage output
      *   minOccurs = 0, maxOccurs = 1
+     * epageタグを出力する
      * 
-     * @param string $epage
-     * @return string
+     * @param string $epage epage epage
+     * @return string The output string 出力文字列
      */
     private function outputEpage($epage)
     {
@@ -1264,9 +1366,10 @@ class Repository_Oaipmh_JuNii2 extends Repository_Oaipmh_FormatAbstract
     /**
      * dateofissued output
      *   minOccurs = 0, maxOccurs = 1
+     * dateofissuedタグを出力する
      * 
-     * @param string $epage
-     * @return string
+     * @param string $dateofissued dateofissued dateofissued
+     * @return string The output string 出力文字列
      */
     private function outputDateofissued($dateofissued)
     {
@@ -1291,9 +1394,10 @@ class Repository_Oaipmh_JuNii2 extends Repository_Oaipmh_FormatAbstract
     /**
      * source output
      *   minOccurs = 0, maxOccurs = unbounded
+     * sourceタグを出力する
      * 
-     * @param string $source
-     * @return string
+     * @param string $source source source
+     * @return string The output string 出力文字列
      */
     private function outputSource($source)
     {
@@ -1304,9 +1408,10 @@ class Repository_Oaipmh_JuNii2 extends Repository_Oaipmh_FormatAbstract
     /**
      * language output
      *   minOccurs = 0, maxOccurs = unbounded
+     * languageタグを出力する
      * 
-     * @param string $language
-     * @return string
+     * @param string $language language language
+     * @return string The output string 出力文字列
      */
     private function outputLanguage($language)
     {
@@ -1320,9 +1425,10 @@ class Repository_Oaipmh_JuNii2 extends Repository_Oaipmh_FormatAbstract
     /**
      * relation output
      *   minOccurs = 0, maxOccurs = unbounded
+     * relationタグを出力する
      * 
-     * @param string $language
-     * @return string
+     * @param string $relation relation relation
+     * @return string The output string 出力文字列
      */
     private function outputRelation($relation)
     {
@@ -1333,9 +1439,10 @@ class Repository_Oaipmh_JuNii2 extends Repository_Oaipmh_FormatAbstract
     /**
      * pmid output
      *   minOccurs = 0, maxOccurs = 1
+     * pmidタグを出力する
      * 
-     * @param string $pmid
-     * @return string
+     * @param string $pmid pmid pmid
+     * @return string The output string 出力文字列
      */
     private function outputPmid($pmid)
     {
@@ -1359,9 +1466,10 @@ class Repository_Oaipmh_JuNii2 extends Repository_Oaipmh_FormatAbstract
     /**
      * doi output
      *   minOccurs = 0, maxOccurs = 1
+     * doiタグを出力する
      * 
-     * @param string $doi
-     * @return string
+     * @param string $doi doi doi
+     * @return string The output string 出力文字列
      */
     private function outputDoi($doi)
     {
@@ -1385,9 +1493,10 @@ class Repository_Oaipmh_JuNii2 extends Repository_Oaipmh_FormatAbstract
     /**
      * isVersionOf output
      *   minOccurs = 0, maxOccurs = unbounded
+     * isVersionOfタグを出力する
      * 
-     * @param string $isVersionOf
-     * @return string
+     * @param string $isVersionOf isVersionOf isVersionOf
+     * @return string The output string 出力文字列
      */
     private function outputIsVersionOf($isVersionOf)
     {
@@ -1398,9 +1507,10 @@ class Repository_Oaipmh_JuNii2 extends Repository_Oaipmh_FormatAbstract
     /**
      * hasVersion output
      *   minOccurs = 0, maxOccurs = unbounded
+     * hasVersionタグを出力する
      * 
-     * @param string $hasVersion
-     * @return string
+     * @param string $hasVersion hasVersion hasVersion
+     * @return string The output string 出力文字列
      */
     private function outputHasVersion($hasVersion)
     {
@@ -1411,9 +1521,10 @@ class Repository_Oaipmh_JuNii2 extends Repository_Oaipmh_FormatAbstract
     /**
      * isReplacedBy output
      *   minOccurs = 0, maxOccurs = unbounded
+     * isReplacedByタグを出力する
      * 
-     * @param string $isReplacedBy
-     * @return string
+     * @param string $isReplacedBy isReplacedBy isReplacedBy
+     * @return string The output string 出力文字列
      */
     private function outputIsReplacedBy($isReplacedBy)
     {
@@ -1422,11 +1533,12 @@ class Repository_Oaipmh_JuNii2 extends Repository_Oaipmh_FormatAbstract
     }
     
     /**
-     * replaces output
+     * isReplaces output
      *   minOccurs = 0, maxOccurs = unbounded
+     * isReplacesタグを出力する
      * 
-     * @param string $isReplacedBy
-     * @return string
+     * @param string $isReplaces isReplaces isReplaces
+     * @return string The output string 出力文字列
      */
     private function outputReplaces($isReplaces)
     {
@@ -1437,9 +1549,10 @@ class Repository_Oaipmh_JuNii2 extends Repository_Oaipmh_FormatAbstract
     /**
      * isRequiredBy output
      *   minOccurs = 0, maxOccurs = unbounded
+     * isRequiredByタグを出力する
      * 
-     * @param string $isRequiredBy
-     * @return string
+     * @param string $isRequiredBy isRequiredBy isRequiredBy
+     * @return string The output string 出力文字列
      */
     private function outputIsRequiredBy($isRequiredBy)
     {
@@ -1450,9 +1563,10 @@ class Repository_Oaipmh_JuNii2 extends Repository_Oaipmh_FormatAbstract
     /**
      * requires output
      *   minOccurs = 0, maxOccurs = unbounded
+     * requiresタグを出力する
      * 
-     * @param string $requires
-     * @return string
+     * @param string $requires requires requires
+     * @return string The output string 出力文字列
      */
     private function outputRequires($requires)
     {
@@ -1463,9 +1577,10 @@ class Repository_Oaipmh_JuNii2 extends Repository_Oaipmh_FormatAbstract
     /**
      * isPartOf output
      *   minOccurs = 0, maxOccurs = unbounded
+     * isPartOfタグを出力する
      * 
-     * @param string $isPartOf
-     * @return string
+     * @param string $isPartOf isPartOf isPartOf
+     * @return string The output string 出力文字列
      */
     private function outputIsPartOf($isPartOf)
     {
@@ -1476,9 +1591,10 @@ class Repository_Oaipmh_JuNii2 extends Repository_Oaipmh_FormatAbstract
     /**
      * hasPart output
      *   minOccurs = 0, maxOccurs = unbounded
+     * hasPartタグを出力する
      * 
-     * @param string $hasPart
-     * @return string
+     * @param string $hasPart hasPart hasPart
+     * @return string The output string 出力文字列
      */
     private function outputHasPart($hasPart)
     {
@@ -1489,9 +1605,10 @@ class Repository_Oaipmh_JuNii2 extends Repository_Oaipmh_FormatAbstract
     /**
      * isReferencedBy output
      *   minOccurs = 0, maxOccurs = unbounded
+     * isReferencedByタグを出力する
      * 
-     * @param string $isReferencedBy
-     * @return string
+     * @param string $isReferencedBy isReferencedBy isReferencedBy
+     * @return string The output string 出力文字列
      */
     private function outputIsReferencedBy($isReferencedBy)
     {
@@ -1502,9 +1619,10 @@ class Repository_Oaipmh_JuNii2 extends Repository_Oaipmh_FormatAbstract
     /**
      * references output
      *   minOccurs = 0, maxOccurs = unbounded
+     * referencesタグを出力する
      * 
-     * @param string $references
-     * @return string
+     * @param string $references references references
+     * @return string The output string 出力文字列
      */
     private function outputReferences($references)
     {
@@ -1515,9 +1633,10 @@ class Repository_Oaipmh_JuNii2 extends Repository_Oaipmh_FormatAbstract
     /**
      * isFormatOf output
      *   minOccurs = 0, maxOccurs = unbounded
+     * isFormatOfタグを出力する
      * 
-     * @param string $isFormatOf
-     * @return string
+     * @param string $isFormatOf isFormatOf isFormatOf
+     * @return string The output string 出力文字列
      */
     private function outputIsFormatOf($isFormatOf)
     {
@@ -1528,9 +1647,10 @@ class Repository_Oaipmh_JuNii2 extends Repository_Oaipmh_FormatAbstract
     /**
      * hasFormat output
      *   minOccurs = 0, maxOccurs = unbounded
+     * hasFormatタグを出力する
      * 
-     * @param string $hasFormat
-     * @return string
+     * @param string $hasFormat hasFormat hasFormat
+     * @return string The output string 出力文字列
      */
     private function outputHasFormat($hasFormat)
     {
@@ -1541,9 +1661,10 @@ class Repository_Oaipmh_JuNii2 extends Repository_Oaipmh_FormatAbstract
     /**
      * coverage output
      *   minOccurs = 0, maxOccurs = unbounded
+     * coverageタグを出力する
      * 
-     * @param string $coverage
-     * @return string
+     * @param string $coverage coverage coverage
+     * @return string The output string 出力文字列
      */
     private function outputCoverage($coverage)
     {
@@ -1554,9 +1675,10 @@ class Repository_Oaipmh_JuNii2 extends Repository_Oaipmh_FormatAbstract
     /**
      * spatial output
      *   minOccurs = 0, maxOccurs = unbounded
+     * spatialタグを出力する
      * 
-     * @param string $spatial
-     * @return string
+     * @param string $spatial spatial spatial
+     * @return string The output string 出力文字列
      */
     private function outputSpatial($spatial)
     {
@@ -1567,9 +1689,10 @@ class Repository_Oaipmh_JuNii2 extends Repository_Oaipmh_FormatAbstract
     /**
      * NIIspatial output
      *   minOccurs = 0, maxOccurs = unbounded
+     * NIIspatialタグを出力する
      * 
-     * @param string $NIIspatial
-     * @return string
+     * @param string $NIIspatial NIIspatial NIIspatial
+     * @return string The output string 出力文字列
      */
     private function outputNIISpatial($NIIspatial)
     {
@@ -1580,9 +1703,10 @@ class Repository_Oaipmh_JuNii2 extends Repository_Oaipmh_FormatAbstract
     /**
      * temporal output
      *   minOccurs = 0, maxOccurs = unbounded
+     * temporalタグを出力する
      * 
-     * @param string $temporal
-     * @return string
+     * @param string $temporal temporal temporal
+     * @return string The output string 出力文字列
      */
     private function outputTemporal($temporal)
     {
@@ -1593,9 +1717,10 @@ class Repository_Oaipmh_JuNii2 extends Repository_Oaipmh_FormatAbstract
     /**
      * NIItemporal output
      *   minOccurs = 0, maxOccurs = unbounded
+     * NIItemporalタグを出力する
      * 
-     * @param string $NIItemporal
-     * @return string
+     * @param string $NIItemporal NIItemporal NIItemporal
+     * @return string The output string 出力文字列
      */
     private function outputNIITemporal($NIItemporal)
     {
@@ -1606,9 +1731,10 @@ class Repository_Oaipmh_JuNii2 extends Repository_Oaipmh_FormatAbstract
     /**
      * rights output
      *   minOccurs = 0, maxOccurs = unbounded
+     * rightsタグを出力する
      * 
-     * @param string $rights
-     * @return string
+     * @param string $rights rights rights
+     * @return string The output string 出力文字列
      */
     private function outputRights($rights)
     {
@@ -1619,9 +1745,10 @@ class Repository_Oaipmh_JuNii2 extends Repository_Oaipmh_FormatAbstract
     /**
      * textversion output
      *   minOccurs = 0, maxOccurs = 1
+     * textversionタグを出力する
      * 
-     * @param string $textversion
-     * @return string
+     * @param string $textversion textversion textversion
+     * @return string The output string 出力文字列
      */
     private function outputTextversion($textversion)
     {
@@ -1645,11 +1772,13 @@ class Repository_Oaipmh_JuNii2 extends Repository_Oaipmh_FormatAbstract
     
     /**
      * return XML element.
+     * XMLタグを出力する
      *
-     * @param string $tag
-     * @param string $value
-     * @param array $oution array($key=>$value, $key=>$value, ... )
-     * @return string
+     * @param string $tag Tag name タグ名
+     * @param string $value Value 値
+     * @param array $oution Option オプション
+     *                      array($key=>$value, $key=>$value, ... )
+     * @return string The output string 出力文字列
      */
     private function outputElement($tag, $value, $option=array())
     {
@@ -1682,9 +1811,11 @@ class Repository_Oaipmh_JuNii2 extends Repository_Oaipmh_FormatAbstract
     
     /**
      * output item reference link
+     * アイテムの参照を出力する
      *
-     * @param array $reference
-     * @return string
+     * @param array $reference Reference information 参照情報
+     *                         array[$ii]["item_id"|"item_no"|"reference"]
+     * @return string The output string 出力文字列
      */
     private function outputReference($reference)
     {
@@ -1712,8 +1843,10 @@ class Repository_Oaipmh_JuNii2 extends Repository_Oaipmh_FormatAbstract
     
     /**
      * occurs check
+     * 最大最小項目数のチェック
      * 
-     * return bool true:OK, false:failed
+     * return boolean Is valid 問題ないか否か
+     *                true:OK, false:failed
      *
      */
     private function occursCheck()
@@ -1844,9 +1977,10 @@ class Repository_Oaipmh_JuNii2 extends Repository_Oaipmh_FormatAbstract
     }
     
     /**
-     * output footer
+     * Footer output
+     * フッター出力
      *
-     * @return string
+     * @return string The output string 出力文字列
      */
     private function outputFooter()
     {
@@ -1858,10 +1992,11 @@ class Repository_Oaipmh_JuNii2 extends Repository_Oaipmh_FormatAbstract
     // Add new prefix 2013/12/24 T.Ichikawa --start--
     /**
      * SelfDOI output
+     * selfDOIタグを出力する
      *
-     * @param int $item_id
-     * @param int $item_no
-     * @return string
+     * @param int $item_id Item id アイテムID
+     * @param int $item_no Item serial number アイテム通番
+     * @return string The output string 出力文字列
      */
     private function outputSelfDOI($item_id, $item_no)
     {
@@ -1908,7 +2043,10 @@ class Repository_Oaipmh_JuNii2 extends Repository_Oaipmh_FormatAbstract
         return $xml;
     }
     
-    
+    /**
+     * Get RepositoryHandleManager object
+     * ハンドル管理オブジェクトを取得
+     */
     private function getRepositoryHandleManager()
     {
         if(!isset($this->repositoryHandleManager)){
@@ -1927,9 +2065,10 @@ class Repository_Oaipmh_JuNii2 extends Repository_Oaipmh_FormatAbstract
     /**
      * ISBN output
      *   minOccurs = 0, maxOccurs = 1
+     * ISBNタグを出力する
      *
-     * @param string $strIsbn
-     * @return string
+     * @param string $strIsbn ISBN ISBN
+     * @return string The output string 出力文字列
      */
     private function outputISBN($strIsbn)
     {
@@ -1941,9 +2080,10 @@ class Repository_Oaipmh_JuNii2 extends Repository_Oaipmh_FormatAbstract
     /**
      * NAID output
      *   minOccurs = 0, maxOccurs = 1
+     * NAIDタグを出力する
      *
-     * @param string $strNaid
-     * @return string
+     * @param string $strNaid NAID NAID
+     * @return string The output string 出力文字列
      */
     private function outputNAID($strNaid)
     {
@@ -1964,9 +2104,10 @@ class Repository_Oaipmh_JuNii2 extends Repository_Oaipmh_FormatAbstract
     /**
      * Ichushi output
      *   minOccurs = 0, maxOccurs = 1
+     * ichushiタグを出力する
      *
-     * @param string $strIchushi
-     * @return string
+     * @param string $strIchushi ichushi ichushi
+     * @return string The output string 出力文字列
      */
     private function outputIchushi($strIchushi)
     {
@@ -1987,9 +2128,10 @@ class Repository_Oaipmh_JuNii2 extends Repository_Oaipmh_FormatAbstract
     /**
      * grantid output
      *   minOccurs = 0, maxOccurs = 1
+     * grantidタグを出力する
      *
-     * @param string $strGrantId
-     * @return string
+     * @param string $strGrantId grantid grantid
+     * @return string The output string 出力文字列
      */
     private function outputGrantid($strGrantId)
     {
@@ -2010,9 +2152,10 @@ class Repository_Oaipmh_JuNii2 extends Repository_Oaipmh_FormatAbstract
     /**
      * dateofgranted output
      *   minOccurs = 0, maxOccurs = 1
+     * dateofgrantedタグを出力する
      *
-     * @param string $strDateofgrant
-     * @return string
+     * @param string $strDateofgrant dateofgranted dateofgranted
+     * @return string The output string 出力文字列
      */
     private function outputDateofgranted($strDateofgrant)
     {
@@ -2033,9 +2176,10 @@ class Repository_Oaipmh_JuNii2 extends Repository_Oaipmh_FormatAbstract
     /**
      * degreename output
      *   minOccurs = 0, maxOccurs = 1
+     * degreenameタグを出力
      *
-     * @param string $strDegreename
-     * @return string
+     * @param string $strDegreename degreename degreename
+     * @return string The output string 出力文字列
      */
     private function outputDegreename($strDegreename)
     {
@@ -2055,9 +2199,10 @@ class Repository_Oaipmh_JuNii2 extends Repository_Oaipmh_FormatAbstract
     /**
      * grantor output
      *   minOccurs = 0, maxOccurs = 1
+     * grantorタグを出力する
      *
-     * @param string $strGrantor
-     * @return string
+     * @param string $strGrantor grantor grantor
+     * @return string The output string 出力文字列
      */
     private function outputGrantor($strGrantor)
     {

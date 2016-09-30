@@ -1,43 +1,79 @@
 <?php
+
+/**
+ * Load item type metadata
+ * アイテムタイプ情報ロードクラス
+ *
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Load.class.php 3 2010-02-02 05:07:44Z atsushi_suzuki $
+// $Id: Load.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
-// Copyright (c) 2007 - 2008, National Institute of Informatics, 
+// Copyright (c) 2007 - 2008, National Institute of Informatics,
 // Research and Development Center for Scientific Information Resources
 //
 // This program is licensed under a Creative Commons BSD Licence
 // http://creativecommons.org/licenses/BSD/
 //
 // --------------------------------------------------------------------
-
-/*vim:setexpandtabtabstop=4shiftwidth=4softtabstop=4:*/
-require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
 /**
-*Load item type metadata
-*
-*@package	NetCommons
-*@author	S.Kawasaki(IVIS)
-*@copyright2006-2008NetCommonsProject
-*@license	http://www.netcommons.org/license.txtNetCommonsLicense
-*@project	NetCommonsProject,supportedbyNationalInstituteofInformatics
-*@access	public
-*/
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
+require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
+
+/**
+ * Load item type metadata
+ * アイテムタイプ情報ロードクラス
+ *
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
+ */
 class Repository_Action_Edit_Itemtype_Load extends RepositoryAction
 {
 	// Get component
+	/**
+	 * Session management objects
+	 * Session管理オブジェクト
+	 *
+	 * @var Session
+	 */
 	var $Session = null;
+	/**
+	 * DB object
+	 * DBオブジェクト
+	 *
+	 * @var DbObjectAdodb
+	 */
 	var $Db = null;
 	
 	// Request parameter
+	/**
+	 * Item type name
+	 * アイテムタイプ名
+	 *
+	 * @var string
+	 */
 	var $item_type_name = null;
+	/**
+	 * Item type ID
+	 * アイテムタイプID
+	 *
+	 * @var int
+	 */
 	var $item_type_id = null;
 	
 	/**
-	*[[機能説明]]
-	*
-	*@access public
-	*/
+	 * Execute
+	 * 実行
+	 *
+	 * @return string "success"/"error" success/failed 成功/失敗
+	 * @throws RepositoryException
+	 */
 	function execute()
 	{
 		try{

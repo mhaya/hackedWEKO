@@ -1,7 +1,15 @@
 <?php
+
+/**
+ * Action class for WEKO uninstall
+ * WEKOアンインストール用アクションクラス
+ * 
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Uninstall.class.php 38124 2014-07-01 06:56:02Z rei_matsuura $
+// $Id: Uninstall.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -12,11 +20,36 @@
 // --------------------------------------------------------------------
 
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
+
+/**
+ * ZIP file manipulation library
+ * ZIPファイル操作ライブラリ
+ */
 include_once MAPLE_DIR.'/includes/pear/File/Archive.php';
+
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
 
+/**
+ * Action class for WEKO uninstall
+ * WEKOアンインストール用アクションクラス
+ * 
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
+ */
 class Repository_Action_main_Uninstall extends RepositoryAction
 {
+    /**
+     * Uninstall WEKO
+     * WEKOをアンインストールする
+     *
+     * @return boolean Execution result 実行結果
+     */
 	function execute()
 	{
 		// init action
@@ -107,7 +140,7 @@ class Repository_Action_main_Uninstall extends RepositoryAction
 		// Add private tree 2013/06/27 --end--
 		// end action
 		$this->exitAction();
-		
+		$this->finalize();
 		return true;
 	}
 }

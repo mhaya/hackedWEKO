@@ -1,6 +1,6 @@
 <!--// ---------------------------------------------------------------------->
 <!--//                                                                     -->
-<!--// $Id: item_detail.html 53594 2015-05-28 05:25:53Z kaede_matsushita $        -->
+<!--// $Id: item_detail.html 69090 2016-06-20 07:59:58Z tatsuya_koyasu $        -->
 <!--//                                                                     -->
 <!--// Copyright (c) 2007 - 2008, National Institute of Informatics,        -->
 <!--// Research and Development Center for Scientific Information Resources -->
@@ -178,6 +178,56 @@
 					<ul>
 						<li>自動再生には対応しません。</li>
 					</ul>
+					<br/>
+				</div>
+				<br/>
+                <h3><a name="history">更新履歴表示</a></h3>
+				<div class="page_list">
+					ファイルの更新履歴を表示することができます。<br/>
+					更新履歴はファイルの差替えを行った際に作成されます。<br/>
+					更新履歴を表示する場合はrepository/config/define.inc.phpの_REPOSITORY_SHOW_FILE_UPDATE_HISTORY_LISTをtrueにする必要があります。<br/>
+					なお、デフォルトは非表示となっています。<br/>
+					<br/>
+					また、更新履歴から過去のファイルをダウンロードすることもできます。<br/>
+					デフォルトではファイル差替え時に過去のファイルは保存されません。<br/>
+					過去のファイルを保存する場合は、repository/config/define.inc.phpの_REPOSITORY_MANAGE_PHYSICAL_FILE_VERSIONをtrueにする必要があります。<br/>
+					<br/>
+					<center><img src="./img/item_detail_update_history01.png" alt="詳細画面_更新履歴表示"></center><br/>
+					<center><img src="./img/item_detail_update_history02.png" alt="更新履歴"></center><br/>
+				</div>
+                <h3><a name="author">著者表示</a></h3>
+                <div class="page_list">
+                    <h4><a name="authorName">著者名検索</a></h4>
+                    <div class="page_list">
+                        著者名のリンクをクリックすることで、「著者名検索」または「WEKO著者ID検索」を行うことができます。<br/>
+                        どちらの検索を実施するかはWEKO管理画面にて設定することができます。<br/>
+                        検索の設定方法については<a href="./setting.html#default_search_setting">WEKO管理</a>をご覧ください。<br/>
+                    </div>
+                    <h4><a name="authorName">メールアドレス表示設定</a></h4>
+                    <div class="page_list">
+                        著者に登録したメールアドレスの非表示・表示を設定することができます。<br/>
+                        メールアドレスを表示する場合はrepository/config/define.inc.phpの_REPOSITORY_SHOW_AUTHOR_MAIL_ADDRESSをtrueにする必要があります。<br/>
+                        なお、デフォルトは非表示となっています。<br/>
+                    </div>
+                    <h4><a name="externalLink">著者ID外部リンク</a></h4>
+                    <div class="page_list">
+                        管理画面で外部著者IDのURLを設定している場合、外部著者IDを押下することで、外部著者IDに設定したURLへアクセスすることができます。<br/>
+                        外部著者IDへのURL設定については<a href="./setting.html#author_id">WEKO管理</a>をご覧ください。<br/>
+                        <br/>
+                        <center><img src="./img/author_id_external_link.png" alt="著者ID外部リンク"></center><br/>
+                        <br/>
+                    </div>
+                </div>
+                
+				<h3><a name="link">リンク表示</a></h3>
+				<div class="page_list">
+					メタデータ属性がリンクの場合、登録した表示名に登録したURLのリンクを付加できます。<br/>
+					登録したURLの末尾が「.jpg」に完全一致する場合、画像を表示できます。<br/>
+					登録した表示名が「iframe」で完全一致する場合、登録したURLをiframeで表示できます。<br/>
+					画像の表示、iframeの表示をするには、repository/config/define.inc.phpの__REPOSITORY_SHOW_IMAGE_URL_OF_LINKをtrueにする必要があります。<br/>
+					メタデータ属性については<a href="./itemtype_metadata.html#itemtype_edit_metadata">アイテムタイプ管理(作成/編集)</a>をご覧ください。<br/>
+					<br/>
+					<center><img src="./img/link_show.png" alt="リンク表示"></center><br/>
 					<br/>
 				</div>
 				<br/>

@@ -1,37 +1,82 @@
 <?php
+
+/**
+ * Item registration: input processing action class from the confirmation screen
+ * アイテム登録：確認画面からの入力処理アクションクラス
+ *
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Confirm.class.php 56999 2015-08-24 12:32:56Z tomohiro_ichikawa $
+// $Id: Confirm.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
-// Copyright (c) 2007 - 2008, National Institute of Informatics, 
+// Copyright (c) 2007 - 2008, National Institute of Informatics,
 // Research and Development Center for Scientific Information Resources
 //
 // This program is licensed under a Creative Commons BSD Licence
 // http://creativecommons.org/licenses/BSD/
 //
 // --------------------------------------------------------------------
-
-/* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
+/**
+ * ID server connect class
+ * IDサーバー連携クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/IDServer.class.php';
+/**
+ * Item register manager class
+ * アイテム登録管理クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/ItemRegister.class.php';
+/**
+ * Search table manager class
+ * 検索テーブル管理クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositorySearchTableProcessing.class.php';
+/**
+ * Check file type utility class
+ * ファイルタイプチェックユーティリティークラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryCheckFileTypeUtility.class.php';
+/**
+ * Handle manager class
+ * ハンドル管理クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryHandleManager.class.php';
+/**
+ * Operate files system class
+ * ファイルシステム操作クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/util/OperateFileSystem.class.php';
 
 /**
- * アイテム登録：リンク設定画面からの入力処理アクション
+ * Item registration: input processing action class from the confirmation screen
+ * アイテム登録：確認画面からの入力処理アクションクラス
  * 
- * @access      public
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class Repository_Action_Main_Item_Confirm extends RepositoryAction
 {
     // 使用コンポーネントを受け取るため
+    /**
+     * Mail management objects
+     * メール管理オブジェクト
+     *
+     * @var Mail_Main
+     */
     public $mailMain = null;
     
     // リクエストパラメーター
     /**
+     * Process mode
      * 処理モード
      *   'selecttype'   : アイテムタイプ選択画面
      *   'files'        : ファイル選択画面
@@ -46,11 +91,19 @@ class Repository_Action_Main_Item_Confirm extends RepositoryAction
     public $save_mode = null;
     
     // メンバ変数
+    /**
+     * Warning message
+     * 警告メッセージ
+     *
+     * @var array
+     */
     private $warningMsg = array();  // 警告メッセージ
     
     /**
-     * 実行処理
-     * @see RepositoryAction::executeApp()
+     * Execute
+     * 実行
+     *
+     * @throws AppException
      */
     protected function executeApp()
     {
@@ -286,8 +339,12 @@ class Repository_Action_Main_Item_Confirm extends RepositoryAction
             
             // Add PDF flash 2010/02/04 A.Suzuki --start--
             $ItemRegister = new ItemRegister($this->Session, $this->Db);
-            $ItemRegister->setInsUserId($contributorUserId);
             $flash_error_flg = "";
+            
+            $businessWorkdirectory = BusinessFactory::getFactory()->getBusiness("businessWorkdirectory");
+            
+            $businessContents = BusinessFactory::getFactory()->getBusiness("businessContentfiletransaction");
+            
             for($ii=0; $ii<count($item_attr_type); $ii++) {
                 for($jj=0; $jj<$item_num_attr[$ii]; $jj++) {
                     // アップロード済みファイルのライセンス設定
@@ -301,8 +358,6 @@ class Repository_Action_Main_Item_Confirm extends RepositoryAction
                         {
                             // 作業用ディレクトリ作成
                             $tmpDirPath = "";
-                            $this->infoLog("businessWorkdirectory", __FILE__, __CLASS__, __LINE__);
-                            $businessWorkdirectory = BusinessFactory::getFactory()->getBusiness("businessWorkdirectory");
                             $tmpDirPath = $businessWorkdirectory->create();
                             
                             // PDFカバーページ削除
@@ -315,15 +370,7 @@ class Repository_Action_Main_Item_Confirm extends RepositoryAction
                                                               $item_attr_session[$ii][$jj]["file_no"],
                                                               $tmpDirPath,
                                                               $deletedFile);
-                            if(strlen($deletedFile) > 0) {
-                                // Delete this file's flash
-                                $flashFolder = $this->getFlashFolder($item_attr_session[$ii][$jj]["item_id"],
-                                                                     $item_attr_session[$ii][$jj]["attribute_id"],
-                                                                     $item_attr_session[$ii][$jj]["file_no"]);
-                                if(strlen($flashFolder) > 0) {
-                                    Repository_Components_Util_OperateFileSystem::removeDirectory($flashFolder);
-                                }
-                            } else {
+                            if(strlen($deletedFile) === 0) {
                                 $cover_error_flg = "true";
                                 $cover_error = $pdfCover->getErrorMsg();
                             }
@@ -331,112 +378,59 @@ class Repository_Action_Main_Item_Confirm extends RepositoryAction
                         // Mod PDF Cover page timing 2015/01/26 K.Matsushita --end--
                         // Add PDF Cover page 2012/06/15 A.Suzuki --end--
                         
-                        // check flash save directory exists
-                        $flashDir = $this->getFlashFolder(  $item_attr_session[$ii][$jj]["item_id"],
-                                                            $item_attr_session[$ii][$jj]["attribute_id"],
-                                                            $item_attr_session[$ii][$jj]["file_no"]);
                         // check flash file exists
-                        // すでに該当するフラッシュファイルがある場合は作成しない。
-                        if( $item_attr_session[$ii][$jj]['display_type'] == 2 &&
-                            (strlen($flashDir) == 0 || 
-                                (!(file_exists($flashDir)) || 
-                                    (
-                                        !(file_exists($flashDir.'/weko.swf')) && 
-                                        !(file_exists($flashDir.'/weko1.swf')) && 
-                                        // Mod multimedia support 2012/10/09 T.Koyasu -start-
-                                        // if exists multimedia file, is not execute pdf convert to flash
-                                        !(file_exists($flashDir.'/weko.flv'))
-                                        // Mod multimedia support 2012/10/09 T.Koyasu -end-
-                                    )
-                                )
-                            )
-                        ){
-                            if($this->isMultimediaFile(
-                                    $item_attr_session[$ii][$jj]["upload"]["mimetype"],
-                                    strtolower($item_attr_session[$ii][$jj]["upload"]["extension"])))
-                            {
-                                if(strtolower($item_attr_session[$ii][$jj]["upload"]["extension"])=="swf" ||
-                                   strtolower($item_attr_session[$ii][$jj]["upload"]["extension"])=="flv")
-                                {
-                                    // swf, flv のファイルはそのままコピー
-                                    // check flash save directory exists
-                                    $flashDir = $this->makeFlashFolder( $item_attr_session[$ii][$jj]["item_id"],
-                                                                        $item_attr_session[$ii][$jj]["attribute_id"],
-                                                                        $item_attr_session[$ii][$jj]["file_no"]);
-                                    if(strlen($flashDir) > 0){
-                                        $flashContentsPath = $flashDir."/weko.".strtolower($item_attr_session[$ii][$jj]["upload"]["extension"]);
-                                        
-                                        // コピー元ファイル取得
-                                        $fileContentsPath = $this->getFileSavePath("file");
-                                        if(strlen($fileContentsPath) == 0){
-                                            // default directory
-                                            $fileContentsPath = BASE_DIR.'/webapp/uploads/repository/files';
-                                        }
-                                        $fileContentsPath .= "/".$item_attr_session[$ii][$jj]["item_id"];
-                                        $fileContentsPath .= "_".$item_attr_session[$ii][$jj]["attribute_id"];
-                                        $fileContentsPath .= "_".$item_attr_session[$ii][$jj]["file_no"];
-                                        $fileContentsPath .= ".".$item_attr_session[$ii][$jj]['upload']['extension'];
-                                        if( file_exists($fileContentsPath) ){
-                                            // file copy
-                                            copy($fileContentsPath, $flashContentsPath);
-                                        } else {
-                                            // Not found file
-                                            $item_attr_session[$ii][$jj]['display_type'] = 0;
-                                            $result = $ItemRegister->updateFileLicense($item_attr_session[$ii][$jj], $error);
-                                        }
-                                    }
-                                }
-                                else
-                                {
-                                    // マルチメディアファイルを flv へ変換
-                                    // 変換元ファイル取得
-                                    $fileContentsPath = $this->getFileSavePath("file");
-                                    if(strlen($fileContentsPath) == 0){
-                                    // default directory
-                                        $fileContentsPath = BASE_DIR.'/webapp/uploads/repository/files';
-                                    }
-                                    $fileContentsPath .= "/".$item_attr_session[$ii][$jj]["item_id"];
-                                    $fileContentsPath .= "_".$item_attr_session[$ii][$jj]["attribute_id"];
-                                    $fileContentsPath .= "_".$item_attr_session[$ii][$jj]["file_no"];
-                                    $fileContentsPath .= ".".$item_attr_session[$ii][$jj]['upload']['extension'];
-                                    $result = $ItemRegister->convertFileToFlv($item_attr_session[$ii][$jj], $error, $fileContentsPath);
-                                    if($result == false)
-                                    {
-                                        // Convert failed
-                                        $item_attr_session[$ii][$jj]['display_type'] = 0;
-                                        $result = $ItemRegister->updateFileLicense($item_attr_session[$ii][$jj], $error);
-                                    }
-                                }
+                        // ファイルの差し替えが実施できるようになったため、
+                        // 表示形式がflash表示である場合、常にflashファイルへの変換を行う
+                        if( $item_attr_session[$ii][$jj]['display_type'] == 2){
+                            $error = "";
+                            
+                            // 一時ディレクトリを作成する
+                            $tmpDir = $businessWorkdirectory->create();
+                            // 本文ファイルをコピーする
+                            $fileContentsPath = $tmpDir. 
+                                                $item_attr_session[$ii][$jj]["item_id"]. 
+                                                "_".$item_attr_session[$ii][$jj]["attribute_id"]. 
+                                                "_".$item_attr_session[$ii][$jj]["file_no"]. 
+                                                ".".$item_attr_session[$ii][$jj]['upload']['extension'];
+                            try{
+                                $businessContents->copyTo($item_attr_session[$ii][$jj]["item_id"],
+                                                          $item_attr_session[$ii][$jj]["attribute_id"],
+                                                          $item_attr_session[$ii][$jj]["file_no"], 
+                                                          0, 
+                                                          $fileContentsPath);
+                            } catch(AppException $ex){
+                                // ファイルのコピーに失敗した場合、エラーとせず、
+                                // 表示形式を詳細表示に変更し、次のファイルの処理を行う
+                                $item_attr_session[$ii][$jj]['display_type'] = 0;
+                                $result = $ItemRegister->updateFileLicense($item_attr_session[$ii][$jj], $error);
+                                continue;
                             }
-                            else if(!RepositoryCheckFileTypeUtility::isImageFile(
-                                    $item_attr_session[$ii][$jj]["upload"]["mimetype"],
-                                    strtolower($item_attr_session[$ii][$jj]["upload"]["extension"])))
-                            {
-                                if(strlen($prefix_id) > 0){
-                                    // IDサーバと連携している
-                                    // PDFのフラッシュ化処理
-                                    $flash_error = "";
-                                    $url = BASE_URL . "/?action=repository_uri&item_id=".$item_id;
-                                    $id_server = new IDServer($this->Session, $this->Db);
-                                    $result = $id_server->convertToFlash($item_attr_session[$ii][$jj], $url, $flash_error);
-                                    if($result === "true"){
-                                        // フラッシュ化成功
-                                        //$item_attr_session[$ii][$jj]['display_type'] = 2;
-                                    } else {
-                                        // フラッシュ化失敗
-                                        $item_attr_session[$ii][$jj]['display_type'] = 0;
-                                        $result = $ItemRegister->updateFileLicense($item_attr_session[$ii][$jj], $error);
-                                        $flash_error_flg = "true";
-                                        $flash_error = "\"".$item_attr_session[$ii][$jj]['upload']['file_name']."\"";
-                                    }
-                                } else {
-                                    // IDサーバと連携していないためフラッシュ作成不可
-                                    $item_attr_session[$ii][$jj]['display_type'] = 0;
-                                    $result = $ItemRegister->updateFileLicense($item_attr_session[$ii][$jj], $error);
-                                    $flash_error_flg = "true";
-                                    $flash_error = "\"".$item_attr_session[$ii][$jj]['upload']['file_name']."\"";
-                                }
+                            
+                            // flashパス一覧をnullで設定しておく
+                            $flashList = null;
+                            
+                            $convertToFlash = BusinessFactory::getFactory()->getBusiness("businessConverttoflash");
+                            $isConvertedFlash = $convertToFlash->convertFileToFlash($item_id, 
+                                                                                    $fileContentsPath, 
+                                                                                    $item_attr_session[$ii][$jj]["upload"]["mimetype"], 
+                                                                                    $item_attr_session[$ii][$jj]["upload"]["extension"], 
+                                                                                    $flashList, 
+                                                                                    $error_msg);
+                            if(!$isConvertedFlash){
+                                $item_attr_session[$ii][$jj]['display_type'] = 0;
+                                $result = $ItemRegister->updateFileLicense($item_attr_session[$ii][$jj], $error);
+                                $flash_error_flg = "true";
+                                $flash_error = "\"".$item_attr_session[$ii][$jj]['upload']['file_name']."\"";
+                                continue;
                             }
+                            
+                            // flashの更新
+                            $businessContents->update($item_attr_session[$ii][$jj]["item_id"],
+                                                      $item_attr_session[$ii][$jj]["attribute_id"],
+                                                      $item_attr_session[$ii][$jj]["file_no"], 
+                                                      null, 
+                                                      null,
+                                                      $flashList);
                         }
                     }
                 }
@@ -774,8 +768,13 @@ class Repository_Action_Main_Item_Confirm extends RepositoryAction
     }
     
     /**
-     * [[機能説明]]
+     * Convert date int to string
      * 年月日のデータ(int)を日付文字列にして返す
+     *
+     * @param int $year year 年
+     * @param int $month month 月
+     * @param int $day day 日
+     * @return string date 日付文字列
      */
     private function generateDateStr($year, $month, $day){
         $str_year = strval($year);

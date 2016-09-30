@@ -1,7 +1,15 @@
 <?php
+
+/**
+ * Fixed logging action class
+ * 定型ログ作成アクションクラス
+ *
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Logreport.class.php 57652 2015-09-03 10:28:00Z keiya_sugimoto $
+// $Id: Logreport.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -10,88 +18,242 @@
 // http://creativecommons.org/licenses/BSD/
 //
 // --------------------------------------------------------------------
+/**
+ * ZIP file manipulation library
+ * ZIPファイル操作ライブラリ
+ */
 include_once MAPLE_DIR.'/includes/pear/File/Archive.php';
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
+/**
+ * Handle management common classes
+ * ハンドル管理共通クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryDownload.class.php';
+
+/**
+ * Action base class for WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/common/WekoAction.class.php';
 
 /**
- * Make log report
+ * Fixed logging action class
+ * 定型ログ作成アクションクラス
  *
- * @package  NetCommons
- * @author    Y.Nakao(IVIS)
- * @copyright   2006-2009 NetCommons Project
- * @license  http://www.netcommons.org/license.txt  NetCommons License
- * @project  NetCommons Project, supported by National Institute of Informatics
- * @access    public
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class Repository_Logreport extends WekoAction
 {
     // const
+    /**
+     * Report name
+     * 定型レポート名称
+     *
+     * @var string
+     */
     const FILE_NAME_SITE_ACCESS = "logReport_SiteAccess_";
+    /**
+     * Report name
+     * 定型レポート名称
+     *
+     * @var string
+     */
     const FILE_NAME_FILE_DOWNLOAD = "logReport_FileView_";
+    /**
+     * Report name
+     * 定型レポート名称
+     *
+     * @var string
+     */
     const FILE_NAME_PAY_PER_VIEW = "logReport_PayPerView_";
+    /**
+     * Report name
+     * 定型レポート名称
+     *
+     * @var string
+     */
     const FILE_NAME_INDEX_ACCESS = "logReport_IndexAccess_";
+    /**
+     * Report name
+     * 定型レポート名称
+     *
+     * @var string
+     */
     const FILE_NAME_SUPPLE_ACCESS = "logReport_SuppleAccess_";
+    /**
+     * Report name
+     * 定型レポート名称
+     *
+     * @var string
+     */
     const FILE_NAME_HOST_ACCESS = "logReport_HostAccess_";
+    /**
+     * Report name
+     * 定型レポート名称
+     *
+     * @var string
+     */
     const FILE_NAME_DETAIL_VIEW = "logReport_DetailView_";
+    /**
+     * Report name
+     * 定型レポート名称
+     *
+     * @var string
+     */
     const FILE_NAME_USER_AFFILIATE = "logReport_UserAffiliate_";
+    /**
+     * Report name
+     * 定型レポート名称
+     *
+     * @var string
+     */
     const FILE_NAME_DOWNLOAD_PER_USER = "logReport_FileViewPerUser_";
+    /**
+     * Report name
+     * 定型レポート名称
+     *
+     * @var string
+     */
     const FILE_NAME_SEARCH_COUNT = "logReport_SearchCount_";
     
+    /**
+     * Key name(Is site license access)
+     * キー名(サイトライセンスアクセスである)
+     *
+     * @var string
+     */
     const IS_SITELICENSE = "is_sitelicense";
+    /**
+     * Ley name(Is not site license access)
+     * キー名(サイトライセンスアクセスでない)
+     *
+     * @var string
+     */
     const IS_NOT_SITELICENSE = "is_not_sitelicense";
     
     // start date
+    /**
+     * Aggregate start year
+     * 集計開始年
+     *
+     * @var int
+     */
     public $sy_log = null;
+    /**
+     * Aggregate start month
+     * 集計開始月
+     *
+     * @var int
+     */
     public $sm_log = null;
+    /**
+     * Aggregate start day
+     * 集計開始日
+     *
+     * @var int
+     */
     public $sd_log = 01;
+    /**
+     * Aggregate start date
+     * 集計開始日時
+     *
+     * @var string
+     */
     public $start_date = '';
+    /**
+     * Aggregate start date(for display)
+     * 集計開始年月(表示用)
+     *
+     * @var string
+     */
     public $disp_start_date = '';
     // end date
+    /**
+     * Aggregate end year
+     * 集計開始年
+     *
+     * @var int
+     */
     public $ey_log = "";
+    /**
+     * Aggregate end month
+     * 集計開始月
+     *
+     * @var int
+     */
     public $em_log = "";
+    /**
+     * Aggregate end day
+     * 集計開始日
+     *
+     * @var int
+     */
     public $ed_log = 31;
+    /**
+     * Aggregate end date
+     * 集計終了日時
+     *
+     * @var string
+     */
     public $end_date = '';
+    /**
+     * Aggregate end date(for display)
+     * 集計終了年月(表示用)
+     *
+     * @var string
+     */
     public $disp_end_date = '';
     
     /**
      * If this value is true, send mail with log report
+     * メール送信フラグ
      *
      * @var boolean
      */
     public $mail = null;
     
     /**
-     * send mail object
+     * Mail management objects
+     * メール管理オブジェクト
      *
-     * @var object
+     * @var Mail_Main
      */
     public $mailMain = null;
     
     /**
-     * nc2 login id with admin authority
+     * Administrator login ID
+     * 管理者ログインID
      *
      * @var string
      */
     public $login_id = null;
     
     /**
-     * nc login password with admin authority
+     * Administrator password
+     * 管理者パスワード
      *
      * @var string
      */
     public $password = null;
     
     /**
-     * language resource
+     * Language Resource Management object
+     * 言語リソース管理オブジェクト
      *
-     * @var object
+     * @var Smarty
      */
     private $smartyAssign = null;
     
     /**
      * display language by Session
+     * 表示言語
      *
      * @var string
      */
@@ -99,14 +261,15 @@ class Repository_Logreport extends WekoAction
     
     /**
      * NC2 group list for write log report
+     * NC2に登録されているグループ一覧
      *
-     * @var array
+     * @var array[$ii]["page_id"|"room_id"]
      */
     private $groupList = null;
     
     /**
      * create log report(download or send mail)
-     *
+     * 定型レポート作成
      */
     protected function executeApp()
     {
@@ -192,8 +355,9 @@ class Repository_Logreport extends WekoAction
     
     /**
      * access num as site lisence
+     * サイトライセンスとそれ以外のアクセス数を集計し、レポートを作成する
      *
-     * @return string log report 
+     * @return string log report ログ内容
      */
     private function makeAccessLogReport(){
         $this->infoLog("businessLogreport", __FILE__, __CLASS__, __LINE__);
@@ -255,8 +419,9 @@ class Repository_Logreport extends WekoAction
     
     /**
      * detail view per index
+     * インデックスごとの詳細画面アクセス数を集計し、レポートを作成する
      *
-     * @return string log report 
+     * @return string log report ログ内容
      */
     private function makeIndexLogReport(){
         $this->infoLog("businessLogreport", __FILE__, __CLASS__, __LINE__);
@@ -293,11 +458,14 @@ class Repository_Logreport extends WekoAction
     
     /**
      * output detail view num per each indexes in recursive
+     * インデックスごとの詳細画面表示数を再帰的に出力する
      *
-     * @param array $all_index
-     * @param array $index
-     * @param string $parent_name : parent indexes path
-     * @param string $str : output data
+     * @param array $all_index All index information 全インデックス情報
+     *                         array[$ii]["name"|"id"]
+     * @param array $index Index information インデックス情報
+     *                     array[$ii]["name"|"id"]
+     * @param string $parent_name parent indexes path 親インデックス一覧
+     * @param string $str The output string 出力文字列
      */
     function outputDetailViewPerIndexes(&$all_index, $index, $parent_name, &$str){
         foreach ($index as $key => $val){
@@ -314,10 +482,10 @@ class Repository_Logreport extends WekoAction
     
     /**
      * create file view download report / pay per view download report
+     * ダウンロード数に関わるレポートを作成する
      * 
-     * @param string $fileReport
-     * @param string $priceReport
-     * @return boolean process result
+     * @param string $fileLogPath FileView report path FileViewレポートパス
+     * @param string $priceLogPath PayPerView report path PayPerViewレポートパス
      */
     private function makeFileDownloadLogReport($fileLogPath, $priceLogPath)
     {
@@ -334,8 +502,9 @@ class Repository_Logreport extends WekoAction
     
     /**
      * create detail view and download file num per supple items
+     * サプリログを作成する
      *
-     * @return string log report 
+     * @return string log report The output string 出力文字列
      */
     function makeSuppleLogReport(){
         $this->infoLog("businessLogreport", __FILE__, __CLASS__, __LINE__);
@@ -365,13 +534,14 @@ class Repository_Logreport extends WekoAction
     /**
      * create index tree infomation by recursive processing
      * calculate supplemental contents detail view and download in each index
-     * 
+     * インデックス情報を作成し、サプリのアクセス数とダウンロード数を算出する
      *
-     * @param string $pid_name parent index name
-     * @param string $pid_id parent index id
-     * @param array $supple_data 
-     * @return bool true  : success
-     *              false : error
+     * @param string $pid_name parent index name 親インデックス名
+     * @param string $pid_id parent index id 親インデックスID
+     * @param array $supple_data Supplemental contents data サプリデータ
+     *                           array[$ii]["title"|"title_en"|"supple_title"|"supple_title_en"|"supple_weko_item_id"|"log_view"|"log_download"]
+     * @param string $str_log Log message ログメッセージ
+     * @return boolean Result 結果
      */
     function getIndexAndItemInfoForSuppleLog($pid_name, $pid_id, $supple_data, &$str_log){
         // -----------------------------------------------
@@ -490,8 +660,10 @@ class Repository_Logreport extends WekoAction
     
     /**
      * send mail for log report
+     * 定型レポートメールを送付する
      *
-     * @param string $zip_file zip file path
+     * @param string $file_path zip file path ZIPファイルパス
+     * @param unknown_type $file_name zip file name ZIPファイル名
      */
     function sendMailLogReport($file_path, $file_name){
         // get report year and month
@@ -573,8 +745,11 @@ class Repository_Logreport extends WekoAction
     
     /**
      * get send users for log report
+     * メール送信先を取得する
      *
-     * @param array $users
+     * @param array $users Mail address list メールアドレス一覧
+     *                     array[$ii]
+     * @return boolean Result 結果
      */
     function getLogReportMailInfo(&$users){
         $users = array();       // メール送信先
@@ -608,8 +783,9 @@ class Repository_Logreport extends WekoAction
     
     /**
      * host access log report
+     * ホスト毎のアクセス数を集計する
      *
-     * @return string log report text
+     * @return string log report text ホスト毎のアクセスレポート
      */
     private function makeHostLogReport(){
         // -----------------------------------------------
@@ -644,7 +820,9 @@ class Repository_Logreport extends WekoAction
     
     /**
      * make detail view log 
-     *
+     * 詳細画面アクセス数レポート作成
+     * 
+     * @return string detail view log 詳細画面アクセス数レポート
      */
     private function makeDetailViewLogReport(){
         $this->infoLog("businessLogreport", __FILE__, __CLASS__, __LINE__);
@@ -711,8 +889,9 @@ class Repository_Logreport extends WekoAction
     
     /**
      * get user num per authority and user num per group
+     * 権限毎のユーザ数とグループごとのユーザ数を作成する
      *
-     * @return string logReport by user text
+     * @return string logReport by user text 権限毎のユーザ数とグループごとのユーザ数
      */
     private function makeUserLogReport(){
         // -----------------------------------------------
@@ -762,8 +941,9 @@ class Repository_Logreport extends WekoAction
     
     /**
      * The download log output character string classified by user is acquired.
+     * ユーザごとのダウンロード数を算出する
      * 
-     * @return string downloadLog by user text
+     * @return string downloadLog by user text ユーザごとのダウンロード数
      */
     private function makeUsersDLLogReport(){
         // -----------------------------------------------
@@ -809,9 +989,10 @@ class Repository_Logreport extends WekoAction
     
     /**
      * The list of affiliation group names is acquired to the user who specified.
+     * ユーザの所属グループ一覧を作成する
      *
-     * @param string $user_id
-     * @return string UserGroupNameList 
+     * @param string $user_id User id ユーザID
+     * @return string Group list 所属グループ一覧
      */
     private function getUserGroupNameList($user_id){
         // ---------------------------------------------
@@ -850,9 +1031,11 @@ class Repository_Logreport extends WekoAction
     
     /**
      * Create file download report
+     * ダウンロードレポート作成
      *
-     * @param string filePath : logReport_FileView
-     * @param array() $fileViewReport
+     * @param string $logFilePath file path ファイルパス
+     * @param array $fileViewReport Download number list ダウンロード数一覧
+     *                              array[$ii]["file_name"|"index_name"|"total"|"not_login"|"login"|"site_license"|"admin"|"register"]
      */
     private function makeFileView($logFilePath, $fileViewReport)
     {
@@ -888,9 +1071,11 @@ class Repository_Logreport extends WekoAction
     
     /**
      * Create file price download report
+     * 課金ファイルダウンロードレポート作成
      *
-     * @param string $logFilePath : PayPerView
-     * @param array() $payPerViewReport
+     * @param string $logFilePath File path ファイルパス
+     * @param array $payPerViewReport Download number list ダウンロード数一覧
+     *                                array[$ii]["file_name"|"index_name"|"total"|"not_login"|"login"|"site_license"|"admin"|"register"|"group"]
      */
     private function makePayPerView($logFilePath, $payPerViewReport)
     {
@@ -926,7 +1111,9 @@ class Repository_Logreport extends WekoAction
     
     /**
      * create search log report
+     * 検索キーワードレポート作成
      * 
+     * @return string Search keyword report 検索キーワードレポート
      */
     private function makeSearchLogReport(){
         $this->infoLog("businessLogreport", __FILE__, __CLASS__, __LINE__);
@@ -955,7 +1142,7 @@ class Repository_Logreport extends WekoAction
     
     /**
      * set start date - now date to table
-     *
+     * 開始年月を設定する
      */
     private function setStartDateByCurrentDate()
     {
@@ -976,7 +1163,9 @@ class Repository_Logreport extends WekoAction
     
     /**
      * is exist moved log report?
-     *
+     * 定型レポートが既に存在するか否か
+     * 
+     * @return boolean Is exist 実在するか
      */
     private function isExistLogReportFileAndDownload()
     {
@@ -990,9 +1179,10 @@ class Repository_Logreport extends WekoAction
     }
     
     /**
-     * Ecreate temporary directory and return path
+     * Create temporary directory and return path
+     * 一時ディレクトリ作成
      *
-     * @return string
+     * @return string Temporary directory path 一時ディレクトリパス
      */
     private function createTempDirectory()
     {
@@ -1005,8 +1195,9 @@ class Repository_Logreport extends WekoAction
     
     /**
      * return start date string(YYYYMM)
+     * 開始日の形式変更
      *
-     * @return string
+     * @return string Date 年月
      */
     private function getStrOfJoinedStartYearAndStartMonth()
     {
@@ -1015,9 +1206,10 @@ class Repository_Logreport extends WekoAction
     
     /**
      * write log report add bom
+     * BOMありのレポート書込み
      *
-     * @param string $logStr
-     * @param string $logFileName
+     * @param string $logStr Write string 書込み文字列
+     * @param string $logFileName Report file pat レポートファイルパス
      */
     private function writeLogReport($logStr, $logFileName)
     {
@@ -1030,9 +1222,11 @@ class Repository_Logreport extends WekoAction
     
     /**
      * create each log report
+     * 各種ログレポートを作成する
      *
-     * @param string $tmp_dir
-     * @return array
+     * @param string $tmp_dir Temporary directory path 一時ディレクトリパス
+     * @return array File list ファイル一覧
+     *               array[$ii]
      */
     public function createLogReport($tmp_dir)
     {
@@ -1135,8 +1329,9 @@ class Repository_Logreport extends WekoAction
 
     /**
      * check be able to login or not and login user has authority of administrator
+     * ログインユーザが管理者であるかを確認
      *
-     * @return : is admin login
+     * @return boolean Is admin login 管理者であるか
      */
     private function isLoginAdministrator()
     {
@@ -1182,7 +1377,7 @@ class Repository_Logreport extends WekoAction
     
     /**
      * initialize member value for logReport
-     *
+     * 初期化
      */
     private function initForLogreport()
     {
@@ -1220,7 +1415,7 @@ class Repository_Logreport extends WekoAction
     
     /**
      * set language resource for execute by other action(repository_edit_log_move)
-     *
+     * 言語リソースオブジェクト初期化
      */
     public function setupLanguageResourceForOtherAction()
     {
@@ -1232,7 +1427,7 @@ class Repository_Logreport extends WekoAction
     
     /**
      * set group list
-     *
+     * グループ一覧作成
      */
     public function setupGroupList()
     {
@@ -1249,9 +1444,11 @@ class Repository_Logreport extends WekoAction
     
     /**
      * write close file access report
+     * 非公開ファイルのダウンロードレポート作成
      *
-     * @param handle $fp
-     * @param array() $fileViewReport
+     * @param resource $fp write to resource 書込み先resource
+     * @param array $fileViewReport Download number list ダウンロード数一覧
+     *                              array[$ii]["file_name"|"index_name"|"total"|"not_login"|"login"|"site_license"|"admin"|"register"]
      */
     private function writeCloseFileAccessReport($fp, $fileViewReport)
     {
@@ -1292,9 +1489,11 @@ class Repository_Logreport extends WekoAction
     
     /**
      * write open file access report
+     * 公開ファイルのダウンロードレポートを作成
      *
-     * @param handle $fp
-     * @param array() $fileViewReport
+     * @param resource $fp write to resource 書込み先resource
+     * @param array $fileViewReport Download number list ダウンロード数一覧
+     *                              array[$ii]["file_name"|"index_name"|"total"|"not_login"|"login"|"site_license"|"admin"|"register"]
      */
     private function writeOpenFileAccessReport($fp, $fileViewReport)
     {
@@ -1328,9 +1527,11 @@ class Repository_Logreport extends WekoAction
     
     /**
      * make par per view report for close file
+     * 非公開ファイルのダウンロードレポート作成
      *
-     * @param handle $fp
-     * @param array() $payPerViewReport
+     * @param resource $fp write to resource 書込み先resource
+     * @param array $payPerViewReport Download number list ダウンロード数一覧
+     *                                array[$ii]["file_name"|"index_name"|"total"|"not_login"|"login"|"site_license"|"admin"|"register"|"group"]
      */
     private function writeClosePriceFileAccessReport($fp, $payPerViewReport)
     {
@@ -1423,9 +1624,11 @@ class Repository_Logreport extends WekoAction
     
     /**
      * make payper view report for open file
+     * 公開ファイルのダウンロードレポート作成
      *
-     * @param handle $fp
-     * @param array() $payPerViewReport
+     * @param resource $fp write to resource 書込み先resource
+     * @param array() $payPerViewReport Download number list ダウンロード数一覧
+     *                                array[$ii]["file_name"|"index_name"|"total"|"not_login"|"login"|"site_license"|"admin"|"register"|"group"]
      */
     private function writeOpenPriceFileAccessReport($fp, $payPerViewReport)
     {
@@ -1505,10 +1708,11 @@ class Repository_Logreport extends WekoAction
     
     /**
      * write report files
+     * レポートファイルへの書き込み
      *
-     * @param handle $fp
-     * @param string $line
-     * @return int write bytes
+     * @param resource $fp Write to resource 書込み先resource
+     * @param string $line Write string 書込み行
+     * @return int write bytes 書き込んだバイト数
      */
     private function writeReport($fp, $line)
     {

@@ -1,4 +1,12 @@
 <?php
+
+/**
+ * Action class for printing
+ * 印刷用アクションクラス
+ * 
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
 // $Id: Print.class.php 3131 2011-01-28 11:36:33Z haruka_goto $
@@ -10,24 +18,89 @@
 // http://creativecommons.org/licenses/BSD/
 //
 // --------------------------------------------------------------------
+
+/**
+ * Common class file download
+ * ファイルダウンロード共通クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryDownload.class.php';
+/**
+ * Search common classes
+ * 検索共通クラス
+ * 
+ * @package WEKO
+ */
 require_once WEBAPP_DIR.'/modules/repository/components/RepositorySearch.class.php';
+
+/**
+ * Item authority common classes
+ * アイテム権限共通クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryItemAuthorityManager.class.php';
 
+/**
+ * Action class for printing
+ * 印刷用アクションクラス
+ * 
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
+ */
 class Repository_Action_Main_Print extends RepositoryAction
 {
     // components
+    /**
+     * Data upload objects
+     * データアップロードオブジェクト
+     *
+     * @var Uploads_View
+     */
     var $uploadView = null;
+    /**
+     * Session management objects
+     * Session管理オブジェクト
+     *
+     * @var Session
+     */
     var $Session = null;
+    /**
+     * Database management objects
+     * データベース管理オブジェクト
+     *
+     * @var DbObject
+     */
     var $Db = null;
     
     // request parameter
+    /**
+     * All Items print flag ( "true": all items)
+     * 全アイテム印刷フラグ("true"：全アイテム)
+     *
+     * @var string
+     */
     var $all_print = null;
     
     // member
+    /**
+     * Minimum icon width
+     * 最少アイコン幅
+     *
+     * @var int
+     */
     var $_DOWNLOAD_ICON_WIDTH_MIN = "";
+    /**
+     * Maximum icon width
+     * 最大アイコン幅
+     *
+     * @var unknown_type
+     */
     var $_DOWNLOAD_ICON_WIDTH_MAX = "";
     
+    /**
+     * Print run
+     * 印刷実行
+     */
     function execute() {
         // Add all print 2010/07/21 A.Suzuki --start--
         if($this->all_print == "true"){
@@ -474,9 +547,11 @@ class Repository_Action_Main_Print extends RepositoryAction
     }
     
     /**
-     * [[ラベルの表記を最大文字数/最小文字数に合わせて調整する]]
+     * To adjust the display of the label to the maximum number of characters / minimum number of characters
+     * ラベルの表記を最大文字数/最小文字数に合わせて調整する
      *
-     * @access  private
+     * @param int $original Original size 元サイズ
+     * @param int $adjusted Adjusted size 調整後サイズ
      */
     private function AdjustLabelWidth($original, &$adjusted)
     {
@@ -548,16 +623,23 @@ class Repository_Action_Main_Print extends RepositoryAction
     
     // Add show thumbnail in search result 2012/02/13 T.Koyasu -start-
     /**
-     * get thumbnail data
+     * Get thumbnail data
+     * サムネイル取得
      *
-     * @param array $ResultList : has all item data
-     * @param int $nCntAttrType : 2nd key of ResultList
-     * @return array : array[thumbnail_no][item_id]
-     *                                    [item_no]
-     *                                    [attribute_id]
-     *                                    [file_no]
-     *                                    [width]
-     *                                    [height]
+     * @param array $ResultList Item data アイテムデータ
+     *                          array["item"][$ii]["item_id"|"item_no"|"revision_no"|"item_type_id"|"prev_revision_no"|"title"|"title_english"|"language"|"review_status"|"review_date"|"shown_status"|"shown_date"|"reject_status"|"reject_date"|"reject_reason"|"serch_key"|"serch_key_english"|"remark"|"uri"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                          array["item_type"][$ii]["item_type_id"|"item_type_name"|"item_type_short_name"|"explanation"|"mapping_info"|"icon_name"|"icon_mime_type"|"icon_extension"|"icon"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                          array["item_attr_type"]["item_type_id"|"attribute_id"|"show_order"|"attribute_name"|"attribute_short_name"|"input_type"|"is_required"|"plural_enable"|"line_feed_enable"|"list_view_enable"|"hidden"|"junii2_mapping"|"dublin_core_mapping"|"lom_mapping"|"lido_mapping"|"spase_mapping"|"display_lang_type"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                          array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"personal_name_no"|"family"|"name"|"family_ruby"|"name_ruby"|"e_mail_address"|"item_type_id"|"author_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                          array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"show_order"|"mime_type"|"extension"|"file"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                          array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"display_name"|"display_type"|"show_order"|"mime_type"|"extension"|"prev_id"|"file_prev"|"file_prev_name"|"license_id"|"license_notation"|"pub_date"|"flash_pub_date"|"item_type_id"|"browsing_flag"|"cover_created_flag"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                          array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"biblio_no"|"biblio_name"|"biblio_name_english"|"volume"|"issue"|"start_page"|"end_page"|"date_of_issued"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                          array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"display_name"|"display_type"|"show_order"|"mime_type"|"extension"|"prev_id"|"file_prev"|"file_prev_name"|"license_id"|"license_notation"|"pub_date"|"flash_pub_date"|"item_type_id"|"browsing_flag"|"cover_created_flag"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"|"price"]
+     *                          array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"supple_no"|"item_type_id"|"supple_weko_item_id"|"supple_title"|"supple_title_en"|"uri"|"supple_item_type_name"|"mime_type"|"file_id"|"supple_review_status"|"supple_review_date"|"supple_reject_status"|"supple_reject_date"|"supple_reject_reason"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                          array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"attribute_no"|"attribute_value"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     * @param int $nCntAttrType Attribute ID 属性ID
+     * @return array Thumbnail data サムネイルデータ
+     *               array[$ii]["item_id"|"item_no"|"attribute_id"|"file_no"|"width"|"height"]
      */
     private function getThumbnailInfo($ResultList, $nCntAttrType)
     {

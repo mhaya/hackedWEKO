@@ -41,6 +41,7 @@
 				var itemNo = parseInt(fileInfoArray[1]);
 				var attributeId = parseInt(fileInfoArray[2]);
 				var fileNo = parseInt(fileInfoArray[3]);
+				var version = parseInt(fileInfoArray[4]);
 				if('<{$smarty.session._mobile_flag}>'==1)
 				{
 					alert(errorArray[2]);
@@ -143,6 +144,7 @@
                 var itemNo = parseInt(fileInfoArray[1]);
                 var attributeId = parseInt(fileInfoArray[2]);
                 var fileNo = parseInt(fileInfoArray[3]);
+                var version = parseInt(fileInfoArray[4]);
                 if(itemPubFlg==1){
                     location.href='<{$smarty.const.BASE_URL}>/?action=pages_view_main&active_action=repository_view_main_item_detail&page_id='+pageId+
                                     '&block_id='+blockId+'&item_id='+itemId+'&item_no='+itemNo;
@@ -186,6 +188,7 @@
 				var itemNo = parseInt(fileInfoArray[1]);
 				var attributeId = parseInt(fileInfoArray[2]);
 				var fileNo = parseInt(fileInfoArray[3]);
+				var version = parseInt(fileInfoArray[4]);
 				if(itemPubFlg==1){
 					location.href='<{$smarty.const.BASE_URL}>/?action=pages_view_main&active_action=repository_view_main_item_detail&page_id='+pageId+
 									'&block_id='+blockId+'&item_id='+itemId+'&item_no='+itemNo;
@@ -203,9 +206,10 @@
 				var itemNo = parseInt(fileInfoArray[1]);
 				var attributeId = parseInt(fileInfoArray[2]);
 				var fileNo = parseInt(fileInfoArray[3]);
+				var version = parseInt(fileInfoArray[4]);
 				if(confirm('<{$smarty.session.money_unit_conf}>'+errorArray[3]+errorArray[4])){
 					location.href='<{$smarty.const.BASE_URL}>/?action=pages_view_main&active_action=repository_action_common_download&page_id='+pageId+
-							         '&block_id='+blockId+'&item_id='+itemId+'&item_no='+itemNo+'&attribute_id='+attributeId+'&file_no='+fileNo+'&pay=true';
+							         '&block_id='+blockId+'&item_id='+itemId+'&item_no='+itemNo+'&attribute_id='+attributeId+'&file_no='+fileNo+'&ver='+version+'&pay=true';
 				} else {
 					 location.href='<{$smarty.const.BASE_URL}>/?action=pages_view_main&active_action=repository_view_main_item_detail&page_id='+pageId+
 								'&block_id='+blockId+'&item_id='+itemId+'&item_no='+itemNo;

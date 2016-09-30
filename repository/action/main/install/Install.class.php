@@ -1,7 +1,15 @@
 <?php
+
+/**
+ * Action class for WEKO installation
+ * WEKOインストール用アクションクラス
+ * 
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Install.class.php 54835 2015-06-25 04:10:46Z keiya_sugimoto $
+// $Id: Install.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -12,12 +20,44 @@
 // --------------------------------------------------------------------
 
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
+/**
+ * ZIP file manipulation library
+ * ZIPファイル操作ライブラリ
+ */
 include_once MAPLE_DIR.'/includes/pear/File/Archive.php';
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
+/**
+ * Handle management common classes
+ * ハンドル管理共通クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryHandleManager.class.php';
+/**
+ * WEKO business factory class
+ * WEKO用ビジネスファクトリークラス
+ */
+require_once WEBAPP_DIR. '/modules/repository/components/FW/WekoBusinessFactory.class.php';
 
+/**
+ * Action class for WEKO installation
+ * WEKOインストール用アクションクラス
+ * 
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
+ */
 class Repository_Action_main_Install extends RepositoryAction
 {
+    /**
+     * Installation execution
+     * インストール実行
+     *
+     * @return boolean Result 結果
+     */
     function execute()
     {
         try { 
@@ -184,6 +224,12 @@ class Repository_Action_main_Install extends RepositoryAction
             chmod(BASE_DIR."/htdocs/weko/multimedia/WekoViewerForMultimedia.swf", 0600);
             // Add multimedia support 2012/08/27 T.Koyasu -end-
             
+            ///////////////////////////////
+            // KBART Open Directory
+            ///////////////////////////////
+            $this->makeKbartDirectory();
+            $this->makeBatchLogDirectory();
+            
             //////////////////////////////
             // DB update
             //////////////////////////////
@@ -338,6 +384,9 @@ class Repository_Action_main_Install extends RepositoryAction
             $this->addRobotListData();
             // Improve Log 2015/06/22 K.Sugimoto --end--
             
+            // 異体字マスタデータ作成
+            $this->createVariantMasterData();
+            
             //////////////////////////////
             // Prefix
             //////////////////////////////
@@ -361,6 +410,11 @@ class Repository_Action_main_Install extends RepositoryAction
                 }
                 chmod($contents_path, 0777 );
             }
+            //////////////////////////////
+            // make file version directory
+            //////////////////////////////
+            $this->makeFileVarsionDirectory();
+            
             // check directory exists 
             $pointer = fopen(WEBAPP_DIR.'/logs/weko/install_log.txt', "w");
             fputs($pointer, 'config : '.$contents_path."\n");
@@ -502,7 +556,7 @@ class Repository_Action_main_Install extends RepositoryAction
             
             // end action
             $this->exitAction();
-            
+            $this->finalize();
             return true;
         
         } catch ( RepositoryException $Exception) {
@@ -520,9 +574,10 @@ class Repository_Action_main_Install extends RepositoryAction
     
     /**
      * copy directory
+     * ディレクトリコピー
      *
-     * @param string $copy_dir to copy
-     * @param string $org_dir from copy
+     * @param string $copy_dir to copy コピー先
+     * @param string $org_dir from copy コピー元
      */
     function copyDirectory($copy_dir, $org_dir){
         if( file_exists($copy_dir) ){
@@ -554,8 +609,9 @@ class Repository_Action_main_Install extends RepositoryAction
     
     /**
      * set mroonga engine
+     * Mroongaエンジンの設定
      *
-     * @param string $tableName
+     * @param string $tableName Table name テーブル名
      */
     private function setMroongaEngine($tableName)
     {
@@ -569,7 +625,7 @@ class Repository_Action_main_Install extends RepositoryAction
     // Improve Log 2015/06/22 K.Sugimoto --start--
     /**
      * add robotlist data
-     *
+     * 共有ロボットリストデータ追加
      */
     private function addRobotListData()
     {
@@ -591,5 +647,50 @@ class Repository_Action_main_Install extends RepositoryAction
         RepositoryProcessUtility::callAsyncProcess($nextRequest);
     }
     // Improve Log 2015/06/22 K.Sugimoto --end--
+    
+    /**
+     * To create a version control directory
+     * バージョン管理ディレクトリを作成する
+     */
+    private function makeFileVarsionDirectory()
+    {
+        $filePath = WEBAPP_DIR. DIRECTORY_SEPARATOR. "uploads/repository/versionFiles";
+        if(!file_exists($filePath)){
+            Repository_Components_Util_OperateFileSystem::makeSystemDirectory($filePath, 0777);
+        }
+    }
+
+    /**
+     * To create a kbart public directory
+     * KBART公開ディレクトリを作成する
+     */
+    private function makeKbartDirectory() {
+        // KBART公開ディレクトリ
+        if(!file_exists(BASE_DIR."/htdocs/weko/kbart/")){
+            Repository_Components_Util_OperateFileSystem::makeSystemDirectory(BASE_DIR."/htdocs/weko/kbart/", 0777);
+        }
+    }
+    
+    /**
+     * Create variant master table in order to search variants
+     * 異体字を検索するため、異体字マスタデータを作成する
+     */
+    private function createVariantMasterData()
+    {
+        $filePath = WEBAPP_DIR. '/modules/repository/files/variants/variants.csv';
+        $createVariantMaster = BusinessFactory::getFactory()->getBusiness("businessCreatevariantmaster");
+        // 異体字マスタデータの作成
+        $createVariantMaster->createVariantMasterFromVariantsFile($filePath);
+    }
+    
+    /**
+     * Create directory for batch log
+     * バッチログ用ディレクトリを作成する
+     */
+    private function makeBatchLogDirectory() {
+        if(!file_exists(WEBAPP_DIR."/logs/weko/batch/")){
+            Repository_Components_Util_OperateFileSystem::makeSystemDirectory(WEBAPP_DIR."/logs/weko/batch/", 0777);
+        }
+    }
 }
 ?>

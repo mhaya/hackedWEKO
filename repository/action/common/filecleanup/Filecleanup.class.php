@@ -1,7 +1,15 @@
 <?php
+
+/**
+ * Garbage file Delete action class
+ * ゴミファイル削除アクションクラス
+ * 
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Filecleanup.class.php 56959 2015-08-24 04:53:10Z tomohiro_ichikawa $
+// $Id: Filecleanup.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -12,31 +20,78 @@
 // --------------------------------------------------------------------
 
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
 
 /**
- * File clean-up
+ * Garbage file Delete action class
+ * ゴミファイル削除アクションクラス
  *
- * @package     NetCommons
- * @author      H.Goto(IVIS)
- * @project     NetCommons Project, supported by National Institute of Informatics
- * @access      public
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class Repository_Action_Common_Filecleanup extends RepositoryAction
 {
-    // 削除実行を許可する更新時間(TimeStanp)
+    /**
+     * Update time to allow the deletion execution
+     * 削除実行を許可する更新時間
+     *
+     * @var int
+     */
     const TIME_LAG = 86400;
     
-    // リクエストパラメータを受け取るため
+    /**
+     * Administrator login ID
+     * 管理者ログインID
+     *
+     * @var string
+     */
     var $login_id = null;
+    
+    /**
+     * Administrator password
+     * 管理者パスワード
+     *
+     * @var string
+     */
     var $password = null;
     
-    // ユーザの権限レベル
+    /**
+     * User of the base level of authority
+     * ユーザのベース権限レベル
+     *
+     * @var string
+     */
     var $user_authority_id = "";
+    
+    /**
+     * User of room privilege level
+     * ユーザのルーム権限レベル
+     *
+     * @var string
+     */
     var $authority_id = '';
 
+    /**
+     * File cleanup final implementation date and time
+     * ファイルクリーンアップ最終実施日時
+     *
+     * @var string
+     */
     var $file_clean_up_last_date = "";
     
+    /**
+     * When accessed with an administrator account, remove the garbage file the last update date and time has passed more than one day
+     * 管理者アカウントでアクセスされたとき、最終更新日時が1日以上経過したゴミファイルを削除する
+     *
+     * @return string|boolean string Execution result 実行結果
+     *                        boolean Unauthorized access 不正アクセス
+     */
     function execute()
     {
         try {
@@ -73,7 +128,7 @@ class Repository_Action_Common_Filecleanup extends RepositoryAction
             if ($handle = opendir("$dirPath")) {
                 while (false !== ($item = readdir($handle))) {
                     // "files" "flash" "カレント" "親ディレクトリ" 以外かつ ファイル更新日が1時間以上前だったら削除を実行する
-                    if (($item != "flash" && $item != "files" && $item != "." && $item != "..") &&
+                    if (($item != "flash" && $item != "files" && $item != "versionFiles" && $item != "." && $item != "..") &&
                         ($nowTimeStanp - filemtime($dirPath."/".$item)) > self::TIME_LAG) {
                           if (is_dir("$dirPath/$item")) {
                             $this->removeDirectory("$dirPath/$item");
@@ -102,7 +157,7 @@ class Repository_Action_Common_Filecleanup extends RepositoryAction
             $result = $this->updateParamTableData($params, $Error_Msg);
             if ($result === false) {
                 $errMsg = $this->Db->ErrorMsg();
-                $tmpstr = sprintf("fulltextindex_starttime update failed : %s", $errMsg ); 
+                $tmpstr = sprintf("file_clean_up_last_date update failed : %s", $errMsg ); 
                 $this->Session->setParameter("error_msg", $tmpstr);
                 $this->failTrans();     //トランザクション失敗を設定(ROLLBACK)
                 return 'error';
@@ -110,6 +165,7 @@ class Repository_Action_Common_Filecleanup extends RepositoryAction
             
             // finalize
             $result = $this->exitAction();  // If Transaction is success, it is committed
+            $this->finalize();
             print("Successfully updated.\n");
             return 'success';
         }

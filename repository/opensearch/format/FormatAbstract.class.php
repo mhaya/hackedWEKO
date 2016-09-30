@@ -1,7 +1,15 @@
 <?php
+
+/**
+ * Opensearch common format base class
+ * Opensearch共通形式基底クラス
+ * 
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: FormatAbstract.class.php 53594 2015-05-28 05:25:53Z kaede_matsushita $
+// $Id: FormatAbstract.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -10,97 +18,408 @@
 // http://creativecommons.org/licenses/BSD/
 //
 // --------------------------------------------------------------------
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
+/**
+ * String format conversion common classes
+ * 文字列形式変換共通クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryOutputFilter.class.php';
+/**
+ * Handle management common classes
+ * ハンドル管理共通クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryHandleManager.class.php';
-require_once WEBAPP_DIR.'/modules/repository/components/FW/BusinessFactory.class.php';
+/**
+ * WEKO business factory class
+ * WEKO用ビジネスファクトリークラス
+ */
+require_once WEBAPP_DIR.'/modules/repository/components/FW/WekoBusinessFactory.class.php';
 
+/**
+ * Opensearch common format base class
+ * Opensearch共通形式基底クラス
+ * 
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
+ */
 class Repository_Opensearch_FormatAbstract
 {
     // new line
+    /**
+     * Line feed
+     * 改行
+     *
+     * @var string
+     */
     const LF = "\n";
     
     // get item data key
+    /**
+     * Item key name
+     * アイテムキー名
+     *
+     * @var string
+     */
     const DATA_TITLE = "title";
+    /**
+     * Item key name
+     * アイテムキー名
+     *
+     * @var string
+     */
     const DATA_ALTERNATIVE = "alternative";
+    /**
+     * Item key name
+     * アイテムキー名
+     *
+     * @var string
+     */
     const DATA_URI = "uri";
+    /**
+     * Item key name
+     * アイテムキー名
+     *
+     * @var string
+     */
     const DATA_SWRC = "swrc";
+    /**
+     * Item key name
+     * アイテムキー名
+     *
+     * @var string
+     */
     const DATA_OAIORE = "oai-ore";
+    /**
+     * Item key name
+     * アイテムキー名
+     *
+     * @var string
+     */
     const DATA_WEKO_ID = "weko_id";
+    /**
+     * Item key name
+     * アイテムキー名
+     *
+     * @var string
+     */
     const DATA_MAPPING_INFO = "mapping_info";
+    /**
+     * Item key name
+     * アイテムキー名
+     *
+     * @var string
+     */
     const DATA_ITEM_TYPE_NAME = "item_type_name";
+    /**
+     * Item key name
+     * アイテムキー名
+     *
+     * @var string
+     */
     const DATA_MIME_TYPE = "mime_type";
+    /**
+     * Item key name
+     * アイテムキー名
+     *
+     * @var string
+     */
     const DATA_FILE_URI = "file_uri";
     // start mhaya
     const DATA_FILE_NAME = "file_name";
     // end mhaya
+
+    /**
+     * Item key name
+     * アイテムキー名
+     *
+     * @var string
+     */
     const DATA_CREATOR = "creator";
+    /**
+     * Item key name
+     * アイテムキー名
+     *
+     * @var string
+     */
     const DATA_PUBLISHER = "publisher";
+    /**
+     * Item key name
+     * アイテムキー名
+     *
+     * @var string
+     */
     const DATA_INDEX_PATH = "index_path";
+    /**
+     * Item key name
+     * アイテムキー名
+     *
+     * @var string
+     */
     const DATA_JTITLE = "jtitle";
+    /**
+     * Item key name
+     * アイテムキー名
+     *
+     * @var string
+     */
     const DATA_ISSN = "issn";
+    /**
+     * Item key name
+     * アイテムキー名
+     *
+     * @var string
+     */
     const DATA_VOLUME = "volume";
+    /**
+     * Item key name
+     * アイテムキー名
+     *
+     * @var string
+     */
     const DATA_ISSUE = "issue";
+    /**
+     * Item key name
+     * アイテムキー名
+     *
+     * @var string
+     */
     const DATA_SPAGE = "spage";
+    /**
+     * Item key name
+     * アイテムキー名
+     *
+     * @var string
+     */
     const DATA_EPAGE = "epage";
+    /**
+     * Item key name
+     * アイテムキー名
+     *
+     * @var string
+     */
     const DATA_URL = "url";
+    /**
+     * Item key name
+     * アイテムキー名
+     *
+     * @var string
+     */
     const DATA_DATE_OF_ISSUED = "date_of_issued";
+    /**
+     * Item key name
+     * アイテムキー名
+     *
+     * @var string
+     */
     const DATA_DESCRIPTION = "description";
+    /**
+     * Item key name
+     * アイテムキー名
+     *
+     * @var string
+     */
     const DATA_PUB_DATE = "pub_date";
+    /**
+     * Item key name
+     * アイテムキー名
+     *
+     * @var string
+     */
     const DATA_INS_DATE = "ins_date";
+    /**
+     * Item key name
+     * アイテムキー名
+     *
+     * @var string
+     */
     const DATA_MOD_DATE = "mod_date";
+    /**
+     * Item key name
+     * アイテムキー名
+     *
+     * @var string
+     */
     const DATA_WEKO_LOG_TERM = "log_term";
+    /**
+     * Item key name
+     * アイテムキー名
+     *
+     * @var string
+     */
     const DATA_WEKO_LOG_VIEW = "log_view";
+    /**
+     * Item key name
+     * アイテムキー名
+     *
+     * @var string
+     */
     const DATA_WEKO_LOG_DOWNLOAD = "log_download";
     
     // request parameter key for RepositorySearch
+    /**
+     * Request parameter name
+     * リクエストパラメータ名
+     *
+     * @var string
+     */
     const REQUEST_KEYWORD = "keyword";
+    /**
+     * Request parameter name
+     * リクエストパラメータ名
+     *
+     * @var string
+     */
     const REQUEST_INDEX_ID = "index_id";
+    /**
+     * Request parameter name
+     * リクエストパラメータ名
+     *
+     * @var string
+     */
     const REQUEST_WEKO_ID = "weko_id";
+    /**
+     * Request parameter name
+     * リクエストパラメータ名
+     *
+     * @var string
+     */
     const REQUEST_PAGE_NO = "page_no";
+    /**
+     * Request parameter name
+     * リクエストパラメータ名
+     *
+     * @var string
+     */
     const REQUEST_LIST_VIEW_NUM = "list_view_num";
+    /**
+     * Request parameter name
+     * リクエストパラメータ名
+     *
+     * @var string
+     */
     const REQUEST_SORT_ORDER = "sort_order";
+    /**
+     * Request parameter name
+     * リクエストパラメータ名
+     *
+     * @var string
+     */
     const REQUEST_SEARCH_TYPE = "search_type";
+    /**
+     * Request parameter name
+     * リクエストパラメータ名
+     *
+     * @var string
+     */
     const REQUEST_ANDOR = "andor";
+    /**
+     * Request parameter name
+     * リクエストパラメータ名
+     *
+     * @var string
+     */
     const REQUEST_FORMAT = "format";
+    /**
+     * Request parameter name
+     * リクエストパラメータ名
+     *
+     * @var string
+     */
     const REQUEST_ITEM_IDS = "item_ids";
+    /**
+     * Request parameter name
+     * リクエストパラメータ名
+     *
+     * @var string
+     */
     const REQUEST_LANG = "lang";
     
     // request parameter key for Repository_Opensearch
+    /**
+     * Opensearch request parameter name
+     * Opensearchリクエストパラメータ名
+     *
+     * @var string
+     */
     const REQUEST_LOG_TERM = "log_term";
+    /**
+     * Opensearch request parameter name
+     * Opensearchリクエストパラメータ名
+     *
+     * @var string
+     */
     const REQUEST_DATA_FILTER = "dataFilter";
+    /**
+     * Opensearch request parameter name
+     * Opensearchリクエストパラメータ名
+     *
+     * @var string
+     */
     const REQUEST_PREFIX = "prefix";
     
+    /**
+     * Data filter name
+     * データフィルタ名
+     *
+     * @var string
+     */
     const DATA_FILTER_SIMPLE = "simple";
     
     // mapping language value
+    /**
+     * Creator language
+     * 著者言語
+     *
+     * @var string
+     */
     const DATA_CREATOR_LANG = "creator_lang";
+    /**
+     * Publisher language
+     * 公開者言語
+     *
+     * @var string
+     */
     const DATA_PUBLISHER_LANG = "publisher_lang";
+    /**
+     * Description language
+     * 概要言語
+     *
+     * @var string
+     */
     const DATA_DESCRIPTION_LANG = "description_lang";
     
     /**
-     * Session object
+     * Session management objects
+     * Session管理オブジェクト
      *
-     * @var object
+     * @var Session
      */
     protected $Session = null;
-    
     /**
-     * Database object
+     * Database management objects
+     * データベース管理オブジェクト
      *
-     * @var object
+     * @var DbObject
      */
     protected $Db = null;
     
     /**
      * repository action class object
+     * RepositoryActionオブジェクト
      *
-     * @var onject
+     * @var RepositoryAction
      */
     protected $RepositoryAction = null;
     
     /**
      * search result total
+     * 総件数
      *
      * @var int
      */
@@ -108,6 +427,7 @@ class Repository_Opensearch_FormatAbstract
     
     /**
      * start page 
+     * 開始番号
      *
      * @var int
      */
@@ -115,17 +435,18 @@ class Repository_Opensearch_FormatAbstract
     
     /**
      * RepositoryHandleManager Object
+     * RepositoryHandleManagerオブジェクト
      * 
      * @var RepositoryHandleManager
      */
     protected $repositoryHandleManager = null;
     
     /**
-     * Const
+     * Constructor
+     * コンストラクタ
      *
-     * @param object $sesssion
-     * @param object $db
-     * @return Repository_Oaipmh_LearningObjectMetadata
+     * @param Session $session Session management objects Session管理オブジェクト
+     * @param Dbobject $db Database management objects データベース管理オブジェクト
      */
     public function __construct($session, $db)
     {
@@ -159,6 +480,7 @@ class Repository_Opensearch_FormatAbstract
     
     /**
      * individual initialize
+     * 初期化
      */
     private function initialize()
     {
@@ -166,12 +488,23 @@ class Repository_Opensearch_FormatAbstract
     
     /**
      * make XML for open search 
+     * XML作成
      * 
-     * @param array $result RepositorySearch $searchResult
-     * @param int $total total hit num
-     * @param int sIdx start index num
-     * @param array $searchResult search result
-     * @return string
+     * @param array $request Request parameter リクエストパラメータ
+     * @param int $total total hit num HIT件数
+     * @param int sIdx start index num 開始番号
+     * @param array $searchResult Search result 検索結果
+     *                            array["item"][$ii]["item_id"|"item_no"|"revision_no"|"item_type_id"|"prev_revision_no"|"title"|"title_english"|"language"|"review_status"|"review_date"|"shown_status"|"shown_date"|"reject_status"|"reject_date"|"reject_reason"|"serch_key"|"serch_key_english"|"remark"|"uri"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                            array["item_type"][$ii]["item_type_id"|"item_type_name"|"item_type_short_name"|"explanation"|"mapping_info"|"icon_name"|"icon_mime_type"|"icon_extension"|"icon"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                            array["item_attr_type"][$ii]["item_type_id"|"attribute_id"|"show_order"|"attribute_name"|"attribute_short_name"|"input_type"|"is_required"|"plural_enable"|"line_feed_enable"|"list_view_enable"|"hidden"|"junii2_mapping"|"dublin_core_mapping"|"lom_mapping"|"lido_mapping"|"spase_mapping"|"display_lang_type"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                            array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"personal_name_no"|"family"|"name"|"family_ruby"|"name_ruby"|"e_mail_address"|"item_type_id"|"author_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                            array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"show_order"|"mime_type"|"extension"|"file"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                            array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"display_name"|"display_type"|"show_order"|"mime_type"|"extension"|"prev_id"|"file_prev"|"file_prev_name"|"license_id"|"license_notation"|"pub_date"|"flash_pub_date"|"item_type_id"|"browsing_flag"|"cover_created_flag"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                            array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"biblio_no"|"biblio_name"|"biblio_name_english"|"volume"|"issue"|"start_page"|"end_page"|"date_of_issued"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                            array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"display_name"|"display_type"|"show_order"|"mime_type"|"extension"|"prev_id"|"file_prev"|"file_prev_name"|"license_id"|"license_notation"|"pub_date"|"flash_pub_date"|"item_type_id"|"browsing_flag"|"cover_created_flag"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"|"price"]
+     *                            array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"supple_no"|"item_type_id"|"supple_weko_item_id"|"supple_title"|"supple_title_en"|"uri"|"supple_item_type_name"|"mime_type"|"file_id"|"supple_review_status"|"supple_review_date"|"supple_reject_status"|"supple_reject_date"|"supple_reject_reason"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                            array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"attribute_no"|"attribute_value"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     * @return string Output string 出力文字列
      */
     public function outputXml($request, $total, $sIdx, $searchResult)
     {
@@ -184,8 +517,12 @@ class Repository_Opensearch_FormatAbstract
     
     /**
      * get index pankuzu list
+     * インデックス階層構造取得
      *
-     * @param int $indexId
+     * @param int $indexId Index id インデックスID
+     * @param string $del delimiter 区切り文字
+     * @param string $lang Language 言語
+     * @return string Output string 出力文字列
      */
     protected function getIndexPath($indexId, $del="/", $lang=RepositoryConst::ITEM_ATTR_TYPE_LANG_JA)
     {
@@ -227,11 +564,14 @@ class Repository_Opensearch_FormatAbstract
     }
     
     /**
-     * get item data.
+     * Get output date
+     * 出力データ取得
      *
-     * @param int $itemId
-     * @param int $itemNo
-     * @return array
+     * @param string $request Request リクエスト
+     * @param int $itemId Item id アイテムID
+     * @param int $itemNo Item serial number アイテム通番
+     * @return array Item information アイテム情報
+     *               array["title"|"alternative"|"url"|"swrc"|"oaiore"|"weko_id"|"mapping_info"|"mime_type"|"file_uri"....]
      */
     protected function getOutputData($request, $itemId, $itemNo)
     {
@@ -248,7 +588,7 @@ class Repository_Opensearch_FormatAbstract
                         // start mhaya
                         self::DATA_FILE_NAME => array(),
                         // end mhaya
-                        self::DATA_URL => array(),
+			self::DATA_URL => array(),
                         self::DATA_CREATOR => array(),
                         self::DATA_CREATOR_LANG => array(),
                         self::DATA_PUBLISHER => array(),
@@ -312,7 +652,7 @@ class Repository_Opensearch_FormatAbstract
                 $itemData[self::DATA_TITLE] = $item[RepositoryConst::DBCOL_REPOSITORY_ITEM_TITLE_ENGLISH];
             }
         }
-
+        
         ///// setting uri /////
         //if(strlen($item[RepositoryConst::DBCOL_REPOSITORY_ITEM_URI]) > 0)
         //{
@@ -382,7 +722,7 @@ class Repository_Opensearch_FormatAbstract
                     $filePrevName = $itemAttr[$ii][$jj][RepositoryConst::DBCOL_REPOSITORY_FILE_FILE_PREV_NAME];
                     $isImage = preg_match("/^image/", $mimeType);
                     
-                    if (($extension == "pdf" || $mimeType == "application/pdf" || $isImage == 1) && $filePrevName != "") {
+                    if ((strtolower($extension) == "pdf" || $mimeType == "application/pdf" || $isImage == 1) && $filePrevName != "") {
                         $file = Array(
                             RepositoryConst::DBCOL_REPOSITORY_FILE_ITEM_ID => $itemAttr[$ii][$jj][RepositoryConst::DBCOL_REPOSITORY_FILE_ITEM_ID],
                             RepositoryConst::DBCOL_REPOSITORY_FILE_ITEM_NO => $itemAttr[$ii][$jj][RepositoryConst::DBCOL_REPOSITORY_FILE_ITEM_NO],
@@ -519,6 +859,7 @@ class Repository_Opensearch_FormatAbstract
                     }
                 }
                 // Add link rel="enclosure" element 2015/11/30 mhaya end
+
             }
         }
 
@@ -535,10 +876,21 @@ class Repository_Opensearch_FormatAbstract
     }
     
     /**
+     * Get the browsing information and the number of downloads from the item log
      * アイテムログから閲覧情報とダウンロード回数を取得
      *
-     * @param array $item_data
-     * @return array
+     * @param array $request Request parameter リクエストパラメータ
+     * @param array $searchResult Search result 検索結果
+     *                            array["item"][$ii]["item_id"|"item_no"|"revision_no"|"item_type_id"|"prev_revision_no"|"title"|"title_english"|"language"|"review_status"|"review_date"|"shown_status"|"shown_date"|"reject_status"|"reject_date"|"reject_reason"|"serch_key"|"serch_key_english"|"remark"|"uri"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                            array["item_type"][$ii]["item_type_id"|"item_type_name"|"item_type_short_name"|"explanation"|"mapping_info"|"icon_name"|"icon_mime_type"|"icon_extension"|"icon"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                            array["item_attr_type"][$ii]["item_type_id"|"attribute_id"|"show_order"|"attribute_name"|"attribute_short_name"|"input_type"|"is_required"|"plural_enable"|"line_feed_enable"|"list_view_enable"|"hidden"|"junii2_mapping"|"dublin_core_mapping"|"lom_mapping"|"lido_mapping"|"spase_mapping"|"display_lang_type"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                            array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"personal_name_no"|"family"|"name"|"family_ruby"|"name_ruby"|"e_mail_address"|"item_type_id"|"author_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                            array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"show_order"|"mime_type"|"extension"|"file"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                            array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"display_name"|"display_type"|"show_order"|"mime_type"|"extension"|"prev_id"|"file_prev"|"file_prev_name"|"license_id"|"license_notation"|"pub_date"|"flash_pub_date"|"item_type_id"|"browsing_flag"|"cover_created_flag"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                            array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"biblio_no"|"biblio_name"|"biblio_name_english"|"volume"|"issue"|"start_page"|"end_page"|"date_of_issued"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                            array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"display_name"|"display_type"|"show_order"|"mime_type"|"extension"|"prev_id"|"file_prev"|"file_prev_name"|"license_id"|"license_notation"|"pub_date"|"flash_pub_date"|"item_type_id"|"browsing_flag"|"cover_created_flag"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"|"price"]
+     *                            array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"supple_no"|"item_type_id"|"supple_weko_item_id"|"supple_title"|"supple_title_en"|"uri"|"supple_item_type_name"|"mime_type"|"file_id"|"supple_review_status"|"supple_review_date"|"supple_reject_status"|"supple_reject_date"|"supple_reject_reason"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                            array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"attribute_no"|"attribute_value"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
      */
     protected function getItemLogData($request, &$item_data)
     {
@@ -549,7 +901,7 @@ class Repository_Opensearch_FormatAbstract
             
             // ビジネスクラスを呼ぶ
             $transStartDate = $this->getNowDate();
-            BusinessFactory::initialize($this->Session, $this->Db, $transStartDate);
+            WekoBusinessFactory::initialize($this->Session, $this->Db, $transStartDate);
             $usagestatistics = BusinessFactory::getFactory()->getBusiness("businessUsagestatistics");
             
             for($ii=0; $ii<count($item_data); $ii++){
@@ -575,15 +927,22 @@ class Repository_Opensearch_FormatAbstract
     
     /**
      * Get now date
+     * 現在日時取得
      * 
-     * @return string
+     * @return string Now date 現在日時
      */
-    private function getNowDate()
+    protected function getNowDate()
     {
         $DATE = new Date();
         return $DATE->getDate().".000";
     }
     
+    /**
+     * Set RepositoryHandleManager object
+     * RepositoryHandleManagerオブジェクト設定
+     *
+     * @return RepositoryHandleManager Handle management common classes ハンドル管理共通クラス
+     */
     protected function getRepositoryHandleManager()
     {
         if(!isset($this->repositoryHandleManager))
@@ -603,8 +962,10 @@ class Repository_Opensearch_FormatAbstract
     
     /**
      * Get other language display setting
+     * 他言語取得
      * 
-     * @return array
+     * @return array Other language information 他言語情報
+     *               array["japanese"|"english"]
      */
     protected function getAlternativeLanguage()
     {
@@ -622,6 +983,43 @@ class Repository_Opensearch_FormatAbstract
         $lang_display_params["english"] = $english[1];
         
         return $lang_display_params;
+    }
+    
+    /**
+     * Load size of file preview image
+     * ファイルのプレビュー画像のサイズを取得する
+     *
+     * @param int $item_id Item ID
+     *                     アイテムID
+     * @param int $item_no Item No
+     *                     アイテム通番
+     * @param int $attribute_id Item attribute ID
+     *                          アイテム属性ID
+     * @param int $file_no File No
+     *                     ファイル通番
+     *
+     * @return int Size of file preview image
+     *             ファイルのプレビュー画像のサイズ
+     */
+    protected function loadFilePreviewSize($item_id, $item_no, $attribute_id, $file_no)
+    {
+        $query = "SELECT length(file_prev) AS size FROM ". DATABASE_PREFIX. "repository_file ".
+                 "WHERE item_id = ? ".
+                 "AND item_no = ? ".
+                 "AND attribute_id = ? ".
+                 "AND file_no = ?;";
+        $params = array();
+        $params[] = $item_id;
+        $params[] = $item_no;
+        $params[] = $attribute_id;
+        $params[] = $file_no;
+        $result = $this->Db->execute($query, $params);
+        if($result == false || count($result) == 0)
+        {
+            return 0;
+        }
+        
+        return $result[0]["size"];
     }
 }
 

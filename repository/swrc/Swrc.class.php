@@ -1,7 +1,15 @@
 <?php
+
+/**
+ * Action class for SWRC output
+ * SWRC出力用アクションクラス
+ *
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Swrc.class.php 48455 2015-02-16 10:53:40Z atsushi_suzuki $
+// $Id: Swrc.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -13,42 +21,104 @@
 
 
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
-
+/**
+ * ZIP file manipulation library
+ * ZIPファイル操作ライブラリ
+ */
 include_once MAPLE_DIR.'/includes/pear/File/Archive.php';
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
+/**
+ * Item export processing common classes
+ * アイテムエクスポート処理共通クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/action/main/export/ExportCommon.class.php';
+/**
+ * Item authority common classes
+ * アイテム権限共通クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryItemAuthorityManager.class.php';
+
+/**
+ * String format conversion common classes
+ * 文字列形式変換共通クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryOutputFilter.class.php';
 
 /**
- * [[機能説明]]
+ * Action class for SWRC output
+ * SWRC出力用アクションクラス
  *
- * @package     [[package名]]
- * @access      public
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class Repository_Swrc extends RepositoryAction
 {
 	// リクエストパラメータを受け取るため
+    /**
+     * Item id
+     * アイテムID
+     *
+     * @var int
+     */
 	var $itemId = null;
+    /**
+     * Item serial number
+     * アイテム通番
+     *
+     * @var int
+     */
 	var $itemNo = null;
 	
 	// ダウンロード用メンバ
+    /**
+     * Data upload objects
+     * データアップロードオブジェクト
+     *
+     * @var Uploads_View
+     */
 	var $uploadsView = null;
 
-	// 改行
+	/**
+	 * Line feed
+	 * 改行
+	 *
+	 * @var string
+	 */
 	var $LF = "\n";
 	
-	// タブシフト
+	/**
+	 * Tab character
+	 * タブシフト
+	 *
+	 * @var unknown_type
+	 */
 	var $TAB_SHIFT = "\t";
 	
-	// 出力文字列
+	/**
+	 * Output string
+	 * 出力文字列
+	 *
+	 * @var string
+	 */
 	var $xml = '';
 	
-	// エラーメッセージ
+	/**
+	 * Error message
+	 * エラーメッセージ
+	 *
+	 * @var string
+	 */
 	var $errorMsg = "";
 	
     /**
-     * [[機能説明]]
+     * Output SWRC
+     * SWRC出力
      *
      * @access  public
      */
@@ -77,12 +147,18 @@ class Repository_Swrc extends RepositoryAction
 		
        	// 終了処理
 		$this->exitAction();
-       	
+       	$this->finalize();
 		// XML書き出し終了後にexit関数を呼び出す
     	exit();
 
     }
 	
+    /**
+     * Feed character string acquisition
+     * フィード文字列取得
+     *
+     * @return string Output string 出力文字列
+     */
     function outputSwrc()
     {
     	// アイテム情報の取得
@@ -393,7 +469,11 @@ class Repository_Swrc extends RepositoryAction
     				break;
     			case 'source':
     				// LIDO 2014/06/03 S.Suzuki --start--
-					$values = $retAttr[$ii]['value'];
+    				if(isset($retAttr[$ii]['value'])){
+					   $values = $retAttr[$ii]['value'];
+    				} else {
+    				   $values = array();
+    				}
 	    			for ($jj = 0; $jj < count($values); $jj++) {
 	    				$links = explode("|", $values[$jj]);
 	    				for ($kk = 0; $kk < count($links); $kk++) {
@@ -568,6 +648,15 @@ class Repository_Swrc extends RepositoryAction
     	return $xml;
 	}
 
+	/**
+	 * And outputs the property
+	 * プロパティを出力する
+	 *
+	 * @param array $itemData Item information アイテム情報
+	 *                        array["input_type"|"display_lang_type"|""]
+	 * @param string $propertyName Property name プロパティ名
+	 * @return string Output string 出力文字列
+	 */
 	function outputProperty ($itemData, $propertyName) {
 		$rtnXml = '';
 		if($itemData['input_type'] == 'name'){
@@ -608,6 +697,14 @@ class Repository_Swrc extends RepositoryAction
 	    return $rtnXml;
 	}
 	
+	/**
+	 * Get author name
+	 * 著者名を取得
+	 *
+	 * @param int $attribute_id Attribute id 属性ID
+	 * @return array Author list 著者名一覧
+	 *               array[$ii]
+	 */
 	function getName ($attribute_id) {
 		// 氏名を取得
         $query = 'SELECT family, '.

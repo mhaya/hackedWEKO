@@ -1,50 +1,120 @@
 <?php
+
+/**
+ * View class for the item type of mapping setting screen display
+ * アイテムタイプのマッピング設定画面表示用ビュークラス
+ *
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Mapping.class.php 53594 2015-05-28 05:25:53Z kaede_matsushita $
+// $Id: Mapping.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
-// Copyright (c) 2007 - 2008, National Institute of Informatics, 
+// Copyright (c) 2007 - 2008, National Institute of Informatics,
 // Research and Development Center for Scientific Information Resources
 //
 // This program is licensed under a Creative Commons BSD Licence
 // http://creativecommons.org/licenses/BSD/
 //
 // --------------------------------------------------------------------
-
-/* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
-// Set help icon setting 2010/02/10 K.Ando --start--
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
-// Set help icon setting 2010/02/10 K.Ando --end--
+/**
+ * Space mapping const class
+ * SPASEマッピング定数クラス
+ */
+require_once WEBAPP_DIR. '/modules/repository/components/business/oaipmh/SpaseMappingConst.class.php';
 
 /**
- * [[機能説明]]
+ * View class for the item type of mapping setting screen display
+ * アイテムタイプのマッピング設定画面表示用ビュークラス
  *
- * @package     [[package名]]
- * @access      public
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class Repository_View_Edit_Itemtype_Mapping extends RepositoryAction 
 {
     // 使用コンポーネントを受け取るため
+    /**
+     * Session management objects
+     * Session管理オブジェクト
+     *
+     * @var Session
+     */
     var $Session = null;
+    /**
+     * Database management objects
+     * データベース管理オブジェクト
+     *
+     * @var DbObjectAdodb
+     */
     var $Db = null;
     
     // メンバ変数
-    var $typeArray = null;				// type選択肢
-    var $dublinCoreArray = null;		// 1.Dublin Core
-    var $junii2Array = null;			// 2.JuNii2
-//  var $junii2ChildArray = null;		// 3.JuNii2(子)=>廃止
-    var $lomArray = null;				// 3.LOM
-    
-    public $lidoArray = null;   // 4.LIDO
-    
-    // Set help icon setting 2010/02/10 K.Ando --start--
-    var $help_icon_display =  null;
-    // Set help icon setting 2010/02/10 K.Ando --end--
+    /**
+     * Array of set NII type
+     * NIIタイプ選択肢
+     *
+     * @var array
+     */
+    var $typeArray = null;
+    /**
+     * Array of set Dublin Core mapping
+     * DublinCoreマッピング選択肢
+     *
+     * @var array
+     */
+    var $dublinCoreArray = null;
+    /**
+     * Array of set JuNii2 mapping
+     * JuNii2マッピング選択肢
+     *
+     * @var array
+     */
+    var $junii2Array = null;
+    /**
+     * Array of set LoM mapping
+     * LOMマッピング選択肢
+     *
+     * @var array
+     */
+    var $lomArray = null;
+    /**
+     * Array of set LIDO mapping
+     * LIDOマッピング選択肢
+     *
+     * @var array
+     */
+    public $lidoArray = null;
     
     /**
-     * [[機能説明]]
+     * Space mapping choices
+     * Spaseマッピング選択肢
      *
-     * @access  public
+     * @var array array[$ii]["displayName"|"selectFlag"]
+     */
+    public $spaseArray = null;
+
+    /**
+     * Help icon dispplay flag
+     * ヘルプアイコン表示フラグ
+     *
+     * @var bool
+     */
+    var $help_icon_display =  null;
+    
+    /**
+     * Execute
+     * 実行
+     *
+     * @return string "success"/"error" success/failed 成功/失敗
+     * @throws RepositoryException
      */
     function executeApp()
     {
@@ -78,7 +148,11 @@ class Repository_View_Edit_Itemtype_Mapping extends RepositoryAction
         // Add LIDO R.Matsuura -- start --
         $this->setLido($this->lidoArray);
         // Add LIDO R.Matsuura -- end --
-        
+
+        // Add SPASE -- start --
+        $this->setSpase($this->spaseArray);
+        // Add SPASE -- end --
+
         // 4.表示言語
         $this->disp_lang_array = array(
             // '未設定', 'japanese', 'english'
@@ -104,8 +178,10 @@ class Repository_View_Edit_Itemtype_Mapping extends RepositoryAction
     
     /**
      * set Nii type
+     * NIIタイプを設定する
      *
-     * @param array $niiTypeCandidateArray
+     * @param array $niiTypeCandidateArray NII type candidate array NIIタイプ選択肢配列
+     * @return string "success" success 成功
      */
     private function setNiitype(&$niiTypeCandidateArray)
     {
@@ -144,8 +220,10 @@ class Repository_View_Edit_Itemtype_Mapping extends RepositoryAction
     
     /**
      * set Dublin Core type
+     * DublinCoreマッピング選択肢を設定する
      *
-     * @param array $dublinCoreCandidateArray
+     * @param array $dublinCoreCandidateArray Dublin Core candidate array DublinCoreマッピング選択肢配列
+     * @return string "success" success 成功
      */
     private function setDublinCore(&$dublinCoreCandidateArray)
     {
@@ -185,8 +263,10 @@ class Repository_View_Edit_Itemtype_Mapping extends RepositoryAction
     
     /**
      * set JuNii2 type
+     * JuNii2マッピング選択肢を設定する
      *
-     * @param array $junii2CandidateArray
+     * @param array $junii2CandidateArray JuNii2 candidate array JuNii2マッピング選択肢配列
+     * @return string "success" success 成功
      */
     private function setJunii2(&$junii2CandidateArray)
     {
@@ -282,8 +362,10 @@ class Repository_View_Edit_Itemtype_Mapping extends RepositoryAction
     
     /**
      * set Learning Object Material
+     * LOMマッピング選択肢を設定する
      *
-     * @param array $lomCandidateArray
+     * @param array $lomCandidateArray LOM candidate array LOMマッピング選択肢配列
+     * @return string "success" success 成功
      */
     private function setLom(&$lomCandidateArray)
     {
@@ -375,8 +457,10 @@ class Repository_View_Edit_Itemtype_Mapping extends RepositoryAction
     
     /**
      * set LIDO
+     * LIDOマッピング選択肢を設定する
      *
-     * @param array $lomCandidateArray
+     * @param array $lidoCandidateArray LIDO candidate array LIDOマッピング選択肢配列
+     * @return string "success" success 成功
      */
     private function setLido(&$lidoCandidateArray)
     {
@@ -423,7 +507,342 @@ class Repository_View_Edit_Itemtype_Mapping extends RepositoryAction
                 array('displayName' => RepositoryConst::LIDO_TAG_RESOURCE_SET.".".RepositoryConst::LIDO_TAG_RESOURCE_SOURCE.".".RepositoryConst::LIDO_TAG_LEGAL_BODY_NAME.".".RepositoryConst::LIDO_TAG_APPELLATION_VALUE, 'selectFlag' => 'true'),
                 array('displayName' => RepositoryConst::LIDO_TAG_RESOURCE_SET.".".RepositoryConst::LIDO_TAG_RIGHT_RESOURCE.".".RepositoryConst::LIDO_TAG_CREDIT_LINE, 'selectFlag' => 'true')
         );
-        
+
+    }
+
+    /**
+     * To set the choice of Space mapping
+     * Spaseマッピングの選択肢を設定する
+     *
+     * @param array $spaseCandidateArray Space mapping choices Spaseマッピング選択肢
+     *                                   array[$ii]["displayName"|"selectFlag"]
+     * @return string "success" success 成功
+     */
+    private function setSpase(&$spaseCandidateArray)
+    {
+        $spaseCandidateArray = array(
+                "0", // 未設定
+                array('displayName' => SpaseMappingConst::CATALOG_RESOURCEID, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::CATALOG_RESOURCEHEADER_RESOURCENAME, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::CATALOG_RESOURCEHEADER_RELEASEDATE, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::CATALOG_RESOURCEHEADER_DESCRIPTION, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::CATALOG_RESOURCEHEADER_ACKNOWLEDGEMENT, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::CATALOG_RESOURCEHEADER_CONTACT_PERSONID, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::CATALOG_RESOURCEHEADER_CONTACT_ROLE, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::CATALOG_RESOURCEHEADER_INFORMATIONURL_URL, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::CATALOG_RESOURCEHEADER_ASSOCIATION_ASSOCIATIONID, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::CATALOG_RESOURCEHEADER_ASSOCIATION_ASSOCIATIONTYPE, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::CATALOG_ACCESSINFORMATION_REPOSITORYID, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::CATALOG_ACCESSINFORMATION_AVAILABILITY, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::CATALOG_ACCESSINFORMATION_ACCESSRIGHTS, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::CATALOG_ACCESSINFORMATION_ACCESSURL_NAME, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::CATALOG_ACCESSINFORMATION_ACCESSURL_URL, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::CATALOG_ACCESSINFORMATION_ACCESSURL_DESCRIPTION, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::CATALOG_ACCESSINFORMATION_FORMAT, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::CATALOG_ACCESSINFORMATION_DATAEXTENT_QUANTITY, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::CATALOG_INSTRUMENTID, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::CATALOG_PHENOMENONTYPE, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::CATALOG_TIMESPAN_STARTDATE, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::CATALOG_TIMESPAN_STOPDATE, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::CATALOG_TIMESPAN_RELATIVESTOPDATE, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::CATALOG_KEYWORD, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::CATALOG_PARAMETER_NAME, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::CATALOG_PARAMETER_DESCRIPTION, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::CATALOG_PARAMETER_COORDINATESYSTEM_COORDINATEREPRESENTATION, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::CATALOG_PARAMETER_COORDINATESYSTEM_COORDINATESYSTEMNAME, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::CATALOG_PARAMETER_STRUCTURE_SIZE, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::CATALOG_PARAMETER_STRUCTURE_ELEMENT_NAME, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::CATALOG_PARAMETER_STRUCTURE_ELEMENT_INDEX, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::CATALOG_PARAMETER_FIELD_FIELDQUANTITY, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::CATALOG_PARAMETER_FIELD_FREQUENCYRANGE_LOW, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::CATALOG_PARAMETER_FIELD_FREQUENCYRANGE_HIGH, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::CATALOG_PARAMETER_FIELD_FREQUENCYRANGE_UNITS, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::CATALOG_PARAMETER_FIELD_FREQUENCYRANGE_BIN_LOW, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::CATALOG_PARAMETER_FIELD_FREQUENCYRANGE_BIN_HIGH, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::CATALOG_PARAMETER_PARTICLE_PARTICLETYPE, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::CATALOG_PARAMETER_PARTICLE_PARTICLEQUANTITY, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::CATALOG_PARAMETER_PARTICLE_ENERGYRANGE_LOW, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::CATALOG_PARAMETER_PARTICLE_ENERGYRANGE_HIGH, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::CATALOG_PARAMETER_PARTICLE_ENERGYRANGE_UNITS, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::CATALOG_PARAMETER_PARTICLE_ENERGYRANGE_BIN_LOW, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::CATALOG_PARAMETER_PARTICLE_ENERGYRANGE_BIN_HIGH, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::CATALOG_PARAMETER_PARTICLE_AZIMUTHALANGLERANGE_LOW, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::CATALOG_PARAMETER_PARTICLE_AZIMUTHALANGLERANGE_HIGH, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::CATALOG_PARAMETER_PARTICLE_AZIMUTHALANGLERANGE_UNITS, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::CATALOG_PARAMETER_PARTICLE_AZIMUTHALANGLERANGE_BIN_LOW, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::CATALOG_PARAMETER_PARTICLE_AZIMUTHALANGLERANGE_BIN_HIGH, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::CATALOG_PARAMETER_PARTICLE_POLARANGLERANGE_LOW, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::CATALOG_PARAMETER_PARTICLE_POLARANGLERANGE_HIGH, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::CATALOG_PARAMETER_PARTICLE_POLARANGLERANGE_UNITS, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::CATALOG_PARAMETER_PARTICLE_POLARANGLERANGE_BIN_LOW, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::CATALOG_PARAMETER_PARTICLE_POLARANGLERANGE_BIN_HIGH, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::CATALOG_PARAMETER_WAVE_WAVETYPE, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::CATALOG_PARAMETER_WAVE_WAVEQUANTITY, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::CATALOG_PARAMETER_WAVE_ENERGYRANGE_LOW, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::CATALOG_PARAMETER_WAVE_ENERGYRANGE_HIGH, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::CATALOG_PARAMETER_WAVE_ENERGYRANGE_UNITS, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::CATALOG_PARAMETER_WAVE_ENERGYRANGE_BIN_LOW, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::CATALOG_PARAMETER_WAVE_ENERGYRANGE_BIN_HIGH, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::CATALOG_PARAMETER_WAVE_FREQUENCYRANGE_LOW, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::CATALOG_PARAMETER_WAVE_FREQUENCYRANGE_HIGH, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::CATALOG_PARAMETER_WAVE_FREQUENCYRANGE_UNITS, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::CATALOG_PARAMETER_WAVE_FREQUENCYRANGE_BIN_LOW, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::CATALOG_PARAMETER_WAVE_FREQUENCYRANGE_BIN_HIGH, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::CATALOG_PARAMETER_WAVE_WAVELENGTHRANGE_LOW, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::CATALOG_PARAMETER_WAVE_WAVELENGTHRANGE_HIGH, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::CATALOG_PARAMETER_WAVE_WAVELENGTHRANGE_UNITS, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::CATALOG_PARAMETER_WAVE_WAVELENGTHRANGE_BIN_LOW, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::CATALOG_PARAMETER_WAVE_WAVELENGTHRANGE_BIN_HIGH, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::CATALOG_PARAMETER_MIXED_MIXEDQUANTITY, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::CATALOG_PARAMETER_SUPPORT_SUPPORTQUANTITY, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::DISPLAYDATA_RESOURCEID, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::DISPLAYDATA_RESOURCEHEADER_RESOURCENAME, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::DISPLAYDATA_RESOURCEHEADER_RELEASEDATE, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::DISPLAYDATA_RESOURCEHEADER_DESCRIPTION, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::DISPLAYDATA_RESOURCEHEADER_ACKNOWLEDGEMENT, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::DISPLAYDATA_RESOURCEHEADER_CONTACT_PERSONID, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::DISPLAYDATA_RESOURCEHEADER_CONTACT_ROLE, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::DISPLAYDATA_RESOURCEHEADER_INFORMATIONURL_URL, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::DISPLAYDATA_RESOURCEHEADER_ASSOCIATION_ASSOCIATIONID, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::DISPLAYDATA_RESOURCEHEADER_ASSOCIATION_ASSOCIATIONTYPE, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::DISPLAYDATA_ACCESSINFORMATION_REPOSITORYID, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::DISPLAYDATA_ACCESSINFORMATION_AVAILABILITY, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::DISPLAYDATA_ACCESSINFORMATION_ACCESSRIGHTS, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::DISPLAYDATA_ACCESSINFORMATION_ACCESSURL_NAME, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::DISPLAYDATA_ACCESSINFORMATION_ACCESSURL_URL, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::DISPLAYDATA_ACCESSINFORMATION_ACCESSURL_DESCRIPTION, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::DISPLAYDATA_ACCESSINFORMATION_FORMAT, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::DISPLAYDATA_ACCESSINFORMATION_DATAEXTENT_QUANTITY, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::DISPLAYDATA_INSTRUMENTID, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::DISPLAYDATA_MEASUREMENTTYPE, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::DISPLAYDATA_TEMPORALDESCRIPTION_TIMESPAN_STARTDATE, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::DISPLAYDATA_TEMPORALDESCRIPTION_TIMESPAN_STOPDATE, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::DISPLAYDATA_TEMPORALDESCRIPTION_TIMESPAN_RELATIVESTOPDATE, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::DISPLAYDATA_OBSERVEDREGION, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::DISPLAYDATA_KEYWORD, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::DISPLAYDATA_PARAMETER_NAME, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::DISPLAYDATA_PARAMETER_DESCRIPTION, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::DISPLAYDATA_PARAMETER_COORDINATESYSTEM_COORDINATEREPRESENTATION, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::DISPLAYDATA_PARAMETER_COORDINATESYSTEM_COORDINATESYSTEMNAME, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::DISPLAYDATA_PARAMETER_STRUCTURE_SIZE, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::DISPLAYDATA_PARAMETER_STRUCTURE_ELEMENT_NAME, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::DISPLAYDATA_PARAMETER_STRUCTURE_ELEMENT_INDEX, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::DISPLAYDATA_PARAMETER_FIELD_FIELDQUANTITY, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::DISPLAYDATA_PARAMETER_FIELD_FREQUENCYRANGE_LOW, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::DISPLAYDATA_PARAMETER_FIELD_FREQUENCYRANGE_HIGH, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::DISPLAYDATA_PARAMETER_FIELD_FREQUENCYRANGE_UNITS, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::DISPLAYDATA_PARAMETER_FIELD_FREQUENCYRANGE_BIN_LOW, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::DISPLAYDATA_PARAMETER_FIELD_FREQUENCYRANGE_BIN_HIGH, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::DISPLAYDATA_PARAMETER_PARTICLE_PARTICLETYPE, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::DISPLAYDATA_PARAMETER_PARTICLE_PARTICLEQUANTITY, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::DISPLAYDATA_PARAMETER_PARTICLE_ENERGYRANGE_LOW, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::DISPLAYDATA_PARAMETER_PARTICLE_ENERGYRANGE_HIGH, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::DISPLAYDATA_PARAMETER_PARTICLE_ENERGYRANGE_UNITS, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::DISPLAYDATA_PARAMETER_PARTICLE_ENERGYRANGE_BIN_LOW, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::DISPLAYDATA_PARAMETER_PARTICLE_ENERGYRANGE_BIN_HIGH, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::DISPLAYDATA_PARAMETER_PARTICLE_AZIMUTHALANGLERANGE_LOW, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::DISPLAYDATA_PARAMETER_PARTICLE_AZIMUTHALANGLERANGE_HIGH, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::DISPLAYDATA_PARAMETER_PARTICLE_AZIMUTHALANGLERANGE_UNITS, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::DISPLAYDATA_PARAMETER_PARTICLE_AZIMUTHALANGLERANGE_BIN_LOW, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::DISPLAYDATA_PARAMETER_PARTICLE_AZIMUTHALANGLERANGE_BIN_HIGH, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::DISPLAYDATA_PARAMETER_PARTICLE_POLARANGLERANGE_LOW, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::DISPLAYDATA_PARAMETER_PARTICLE_POLARANGLERANGE_HIGH, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::DISPLAYDATA_PARAMETER_PARTICLE_POLARANGLERANGE_UNITS, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::DISPLAYDATA_PARAMETER_PARTICLE_POLARANGLERANGE_BIN_LOW, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::DISPLAYDATA_PARAMETER_PARTICLE_POLARANGLERANGE_BIN_HIGH, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::DISPLAYDATA_PARAMETER_WAVE_WAVETYPE, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::DISPLAYDATA_PARAMETER_WAVE_WAVEQUANTITY, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::DISPLAYDATA_PARAMETER_WAVE_ENERGYRANGE_LOW, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::DISPLAYDATA_PARAMETER_WAVE_ENERGYRANGE_HIGH, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::DISPLAYDATA_PARAMETER_WAVE_ENERGYRANGE_UNITS, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::DISPLAYDATA_PARAMETER_WAVE_ENERGYRANGE_BIN_LOW, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::DISPLAYDATA_PARAMETER_WAVE_ENERGYRANGE_BIN_HIGH, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::DISPLAYDATA_PARAMETER_WAVE_FREQUENCYRANGE_LOW, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::DISPLAYDATA_PARAMETER_WAVE_FREQUENCYRANGE_HIGH, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::DISPLAYDATA_PARAMETER_WAVE_FREQUENCYRANGE_UNITS, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::DISPLAYDATA_PARAMETER_WAVE_FREQUENCYRANGE_BIN_LOW, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::DISPLAYDATA_PARAMETER_WAVE_FREQUENCYRANGE_BIN_HIGH, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::DISPLAYDATA_PARAMETER_WAVE_WAVELENGTHRANGE_LOW, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::DISPLAYDATA_PARAMETER_WAVE_WAVELENGTHRANGE_HIGH, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::DISPLAYDATA_PARAMETER_WAVE_WAVELENGTHRANGE_UNITS, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::DISPLAYDATA_PARAMETER_WAVE_WAVELENGTHRANGE_BIN_LOW, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::DISPLAYDATA_PARAMETER_WAVE_WAVELENGTHRANGE_BIN_HIGH, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::DISPLAYDATA_PARAMETER_MIXED_MIXEDQUANTITY, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::DISPLAYDATA_PARAMETER_SUPPORT_SUPPORTQUANTITY, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::NUMERICALDATA_RESOURCEID, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::NUMERICALDATA_RESOURCEHEADER_RESOURCENAME, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::NUMERICALDATA_RESOURCEHEADER_RELEASEDATE, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::NUMERICALDATA_RESOURCEHEADER_DESCRIPTION, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::NUMERICALDATA_RESOURCEHEADER_ACKNOWLEDGEMENT, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::NUMERICALDATA_RESOURCEHEADER_CONTACT_PERSONID, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::NUMERICALDATA_RESOURCEHEADER_CONTACT_ROLE, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::NUMERICALDATA_RESOURCEHEADER_INFORMATIONURL_URL, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::NUMERICALDATA_RESOURCEHEADER_ASSOCIATION_ASSOCIATIONID, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::NUMERICALDATA_RESOURCEHEADER_ASSOCIATION_ASSOCIATIONTYPE, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::NUMERICALDATA_ACCESSINFORMATION_REPOSITORYID, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::NUMERICALDATA_ACCESSINFORMATION_AVAILABILITY, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::NUMERICALDATA_ACCESSINFORMATION_ACCESSRIGHTS, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::NUMERICALDATA_ACCESSINFORMATION_ACCESSURL_NAME, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::NUMERICALDATA_ACCESSINFORMATION_ACCESSURL_URL, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::NUMERICALDATA_ACCESSINFORMATION_ACCESSURL_DESCRIPTION, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::NUMERICALDATA_ACCESSINFORMATION_FORMAT, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::NUMERICALDATA_ACCESSINFORMATION_DATAEXTENT_QUANTITY, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::NUMERICALDATA_INSTRUMENTID, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::NUMERICALDATA_MEASUREMENTTYPE, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::NUMERICALDATA_TEMPORALDESCRIPTION_TIMESPAN_STARTDATE, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::NUMERICALDATA_TEMPORALDESCRIPTION_TIMESPAN_STOPDATE, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::NUMERICALDATA_TEMPORALDESCRIPTION_TIMESPAN_RELATIVESTOPDATE, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::NUMERICALDATA_OBSERVEDREGION, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::NUMERICALDATA_KEYWORD, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::NUMERICALDATA_PARAMETER_NAME, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::NUMERICALDATA_PARAMETER_DESCRIPTION, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::NUMERICALDATA_PARAMETER_COORDINATESYSTEM_COORDINATEREPRESENTATION, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::NUMERICALDATA_PARAMETER_COORDINATESYSTEM_COORDINATESYSTEMNAME, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::NUMERICALDATA_PARAMETER_STRUCTURE_SIZE, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::NUMERICALDATA_PARAMETER_STRUCTURE_ELEMENT_NAME, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::NUMERICALDATA_PARAMETER_STRUCTURE_ELEMENT_INDEX, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::NUMERICALDATA_PARAMETER_FIELD_FIELDQUANTITY, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::NUMERICALDATA_PARAMETER_FIELD_FREQUENCYRANGE_LOW, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::NUMERICALDATA_PARAMETER_FIELD_FREQUENCYRANGE_HIGH, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::NUMERICALDATA_PARAMETER_FIELD_FREQUENCYRANGE_UNITS, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::NUMERICALDATA_PARAMETER_FIELD_FREQUENCYRANGE_BIN_LOW, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::NUMERICALDATA_PARAMETER_FIELD_FREQUENCYRANGE_BIN_HIGH, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::NUMERICALDATA_PARAMETER_PARTICLE_PARTICLETYPE, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::NUMERICALDATA_PARAMETER_PARTICLE_PARTICLEQUANTITY, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::NUMERICALDATA_PARAMETER_PARTICLE_ENERGYRANGE_LOW, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::NUMERICALDATA_PARAMETER_PARTICLE_ENERGYRANGE_HIGH, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::NUMERICALDATA_PARAMETER_PARTICLE_ENERGYRANGE_UNITS, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::NUMERICALDATA_PARAMETER_PARTICLE_ENERGYRANGE_BIN_LOW, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::NUMERICALDATA_PARAMETER_PARTICLE_ENERGYRANGE_BIN_HIGH, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::NUMERICALDATA_PARAMETER_PARTICLE_AZIMUTHALANGLERANGE_LOW, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::NUMERICALDATA_PARAMETER_PARTICLE_AZIMUTHALANGLERANGE_HIGH, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::NUMERICALDATA_PARAMETER_PARTICLE_AZIMUTHALANGLERANGE_UNITS, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::NUMERICALDATA_PARAMETER_PARTICLE_AZIMUTHALANGLERANGE_BIN_LOW, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::NUMERICALDATA_PARAMETER_PARTICLE_AZIMUTHALANGLERANGE_BIN_HIGH, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::NUMERICALDATA_PARAMETER_PARTICLE_POLARANGLERANGE_LOW, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::NUMERICALDATA_PARAMETER_PARTICLE_POLARANGLERANGE_HIGH, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::NUMERICALDATA_PARAMETER_PARTICLE_POLARANGLERANGE_UNITS, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::NUMERICALDATA_PARAMETER_PARTICLE_POLARANGLERANGE_BIN_LOW, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::NUMERICALDATA_PARAMETER_PARTICLE_POLARANGLERANGE_BIN_HIGH, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::NUMERICALDATA_PARAMETER_WAVE_WAVETYPE, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::NUMERICALDATA_PARAMETER_WAVE_WAVEQUANTITY, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::NUMERICALDATA_PARAMETER_WAVE_ENERGYRANGE_LOW, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::NUMERICALDATA_PARAMETER_WAVE_ENERGYRANGE_HIGH, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::NUMERICALDATA_PARAMETER_WAVE_ENERGYRANGE_UNITS, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::NUMERICALDATA_PARAMETER_WAVE_ENERGYRANGE_BIN_LOW, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::NUMERICALDATA_PARAMETER_WAVE_ENERGYRANGE_BIN_HIGH, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::NUMERICALDATA_PARAMETER_WAVE_FREQUENCYRANGE_LOW, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::NUMERICALDATA_PARAMETER_WAVE_FREQUENCYRANGE_HIGH, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::NUMERICALDATA_PARAMETER_WAVE_FREQUENCYRANGE_UNITS, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::NUMERICALDATA_PARAMETER_WAVE_FREQUENCYRANGE_BIN_LOW, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::NUMERICALDATA_PARAMETER_WAVE_FREQUENCYRANGE_BIN_HIGH, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::NUMERICALDATA_PARAMETER_WAVE_WAVELENGTHRANGE_LOW, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::NUMERICALDATA_PARAMETER_WAVE_WAVELENGTHRANGE_HIGH, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::NUMERICALDATA_PARAMETER_WAVE_WAVELENGTHRANGE_UNITS, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::NUMERICALDATA_PARAMETER_WAVE_WAVELENGTHRANGE_BIN_LOW, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::NUMERICALDATA_PARAMETER_WAVE_WAVELENGTHRANGE_BIN_HIGH, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::NUMERICALDATA_PARAMETER_MIXED_MIXEDQUANTITY, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::NUMERICALDATA_PARAMETER_SUPPORT_SUPPORTQUANTITY, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::DOCUMENT_RESOURCEID, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::DOCUMENT_RESOURCEHEADER_RESOURCENAME, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::DOCUMENT_RESOURCEHEADER_RELEASEDATE, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::DOCUMENT_RESOURCEHEADER_DESCRIPTION, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::DOCUMENT_RESOURCEHEADER_CONTACT_PERSONID, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::DOCUMENT_RESOURCEHEADER_CONTACT_ROLE, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::DOCUMENT_RESOURCEHEADER_INFORMATIONURL_URL, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::DOCUMENT_RESOURCEHEADER_ASSOCIATION_ASSOCIATIONID, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::DOCUMENT_RESOURCEHEADER_ASSOCIATION_ASSOCIATIONTYPE, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::DOCUMENT_ACCESSINFORMATION_REPOSITORYID, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::DOCUMENT_ACCESSINFORMATION_ACCESSURL_URL, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::DOCUMENT_ACCESSINFORMATION_FORMAT, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::DOCUMENT_ACCESSINFORMATION_DATAEXTENT_QUANTITY, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::DOCUMENT_DOCUMENTTYPE, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::DOCUMENT_MIMETYPE, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::GRANULE_RESOURCEID, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::GRANULE_RELEASEDATE, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::GRANULE_PARENTID, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::GRANULE_STARTDATE, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::GRANULE_STOPDATE, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::GRANULE_SOURCE_SOURCETYPE, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::GRANULE_SOURCE_URL, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::GRANULE_SOURCE_CHECKSUM_HASHVALUE, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::GRANULE_SOURCE_CHECKSUM_HASHFUNCTION, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::GRANULE_SOURCE_DATAEXTENT_QUANTITY, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::INSTRUMENT_RESOURCEID, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::INSTRUMENT_RESOURCEHEADER_RESOURCENAME, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::INSTRUMENT_RESOURCEHEADER_RELEASEDATE, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::INSTRUMENT_RESOURCEHEADER_DESCRIPTION, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::INSTRUMENT_RESOURCEHEADER_CONTACT_PERSONID, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::INSTRUMENT_RESOURCEHEADER_CONTACT_ROLE, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::INSTRUMENT_RESOURCEHEADER_INFORMATIONURL_URL, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::INSTRUMENT_RESOURCEHEADER_ASSOCIATION_ASSOCIATIONID, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::INSTRUMENT_RESOURCEHEADER_ASSOCIATION_ASSOCIATIONTYPE, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::INSTRUMENT_INSTRUMENTTYPE, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::INSTRUMENT_INVESTIGATIONNAME, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::INSTRUMENT_OPERATINGSPAN_STARTDATE, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::INSTRUMENT_OBSERVATORYID, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::OBSERVATORY_RESOURCEID, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::OBSERVATORY_RESOURCEHEADER_RESOURCENAME, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::OBSERVATORY_RESOURCEHEADER_RELEASEDATE, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::OBSERVATORY_RESOURCEHEADER_DESCRIPTION, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::OBSERVATORY_RESOURCEHEADER_CONTACT_PERSONID, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::OBSERVATORY_RESOURCEHEADER_CONTACT_ROLE, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::OBSERVATORY_RESOURCEHEADER_INFORMATIONURL_URL, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::OBSERVATORY_RESOURCEHEADER_ASSOCIATION_ASSOCIATIONID, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::OBSERVATORY_RESOURCEHEADER_ASSOCIATION_ASSOCIATIONTYPE, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::OBSERVATORY_LOCATION_OBSERVATORYREGION, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::OBSERVATORY_OPERATINGSPAN_STARTDATE, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::PERSON_RESOURCEID, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::PERSON_RELEASEDATE, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::PERSON_PERSONNAME, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::PERSON_ORGANIZATIONNAME, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::PERSON_EMAIL, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::REGISTRY_RESOURCEID, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::REGISTRY_RESOURCEHEADER_RESOURCENAME, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::REGISTRY_RESOURCEHEADER_RELEASEDATE, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::REGISTRY_RESOURCEHEADER_DESCRIPTION, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::REGISTRY_RESOURCEHEADER_CONTACT_PERSONID, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::REGISTRY_RESOURCEHEADER_CONTACT_ROLE, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::REGISTRY_RESOURCEHEADER_INFORMATIONURL_URL, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::REGISTRY_RESOURCEHEADER_ASSOCIATION_ASSOCIATIONID, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::REGISTRY_RESOURCEHEADER_ASSOCIATION_ASSOCIATIONTYPE, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::REGISTRY_ACCESSURL_URL, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::REPOSITORY_RESOURCEID, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::REPOSITORY_RESOURCEHEADER_RESOURCENAME, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::REPOSITORY_RESOURCEHEADER_RELEASEDATE, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::REPOSITORY_RESOURCEHEADER_DESCRIPTION, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::REPOSITORY_RESOURCEHEADER_CONTACT_PERSONID, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::REPOSITORY_RESOURCEHEADER_CONTACT_ROLE, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::REPOSITORY_RESOURCEHEADER_INFORMATIONURL_URL, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::REPOSITORY_RESOURCEHEADER_ASSOCIATION_ASSOCIATIONID, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::REPOSITORY_RESOURCEHEADER_ASSOCIATION_ASSOCIATIONTYPE, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::REPOSITORY_ACCESSURL_URL, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::SERVICE_RESOURCEID, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::SERVICE_RESOURCEHEADER_RESOURCENAME, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::SERVICE_RESOURCEHEADER_RELEASEDATE, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::SERVICE_RESOURCEHEADER_DESCRIPTION, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::SERVICE_RESOURCEHEADER_CONTACT_PERSONID, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::SERVICE_RESOURCEHEADER_CONTACT_ROLE, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::SERVICE_RESOURCEHEADER_INFORMATIONURL_URL, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::SERVICE_RESOURCEHEADER_ASSOCIATION_ASSOCIATIONID, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::SERVICE_RESOURCEHEADER_ASSOCIATION_ASSOCIATIONTYPE, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::SERVICE_ACCESSURL_URL, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::ANNOTATION_RESOURCEID, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::ANNOTATION_RESOURCEHEADER_RESOURCENAME, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::ANNOTATION_RESOURCEHEADER_RELEASEDATE, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::ANNOTATION_RESOURCEHEADER_DESCRIPTION, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::ANNOTATION_RESOURCEHEADER_CONTACT_PERSONID, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::ANNOTATION_RESOURCEHEADER_CONTACT_ROLE, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::ANNOTATION_RESOURCEHEADER_INFORMATIONURL_URL, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::ANNOTATION_RESOURCEHEADER_ASSOCIATION_ASSOCIATIONID, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::ANNOTATION_RESOURCEHEADER_ASSOCIATION_ASSOCIATIONTYPE, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::ANNOTATION_ANNOTATIONTYPE, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::ANNOTATION_TIMESPAN_STARTDATE, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::ANNOTATION_TIMESPAN_STOPDATE, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::ANNOTATION_TIMESPAN_RELATIVESTOPDATE, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::ANNOTATION_OBSERVATIONEXTENT_STARTLOCATION, 'selectFlag' => 'true'),
+                array('displayName' => SpaseMappingConst::ANNOTATION_OBSERVATIONEXTENT_STOPLOCATION, 'selectFlag' => 'true')
+        );
     }
 }
 ?>

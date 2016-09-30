@@ -1,15 +1,39 @@
 <?php
 /**
- * NetCommonsが提供するロガークラスを呼び出す。
- * 
- * simpleFile:ファイルへ書き出すロガー
- * :画面表示表示するロガー
- * 
- * @author      IVIS
+ * WEKO logger class
+ * WEKOロガークラス
+ *
+ * @package WEKO
+ */
+
+// --------------------------------------------------------------------
+//
+// $Id: AppLogger.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
+//
+// Copyright (c) 2007 - 2008, National Institute of Informatics,
+// Research and Development Center for Scientific Information Resources
+//
+// This program is licensed under a Creative Commons BSD Licence
+// http://creativecommons.org/licenses/BSD/
+//
+// --------------------------------------------------------------------
+
+/**
+ * WEKO logger class
+ * WEKOロガークラス
+ *
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class AppLogger
 {
-    private static function initialize()
+    /**
+     * Initialize
+     * 初期化
+     */
+    private function initialize()
     {
         // もともとnc2/maple/generate/script/generate.phpにLOG_LEVELは宣言されているが
         // NC2上でLogger_SimpleFileを利用するとUse of undefined constant LOG_LEVELとなる
@@ -29,16 +53,17 @@ class AppLogger
         }
     }
     /**
+     * Output fatal log
      * fatalレベル以上のログを出力
      *
-     * @param string $message エラーメッセージ
-     * @param string $filePath ファイルパス
-     * @param string $className クラス名
-     * @param string $lineNo 行数
+     * @param string $message error message エラーメッセージ
+     * @param string $filePath file path エラー発生ファイルパス
+     * @param string $className class name エラー発生クラス名
+     * @param string $lineNo line number エラー発生行数
      */
-    public static function fatalLog($message, $filePath, $className, $lineNo)
+    public function fatalLog($message, $filePath, $className, $lineNo)
     {
-        self::initialize();
+        $this->initialize();
         
         $log =& LogFactory::getLog("simpleFile");
         $log->fatal("$className,$lineNo,".session_id().",".$message);
@@ -48,16 +73,17 @@ class AppLogger
     }
     
     /**
+     * Output error log
      * errorレベル以上のログを出力
      *
-     * @param string $message エラーメッセージ
-     * @param string $filePath ファイルパス
-     * @param string $className クラス名
-     * @param string $lineNo 行数
+     * @param string $message error message エラーメッセージ
+     * @param string $filePath file path エラー発生ファイルパス
+     * @param string $className class name エラー発生クラス名
+     * @param string $lineNo line number エラー発生行数
      */
-    public static function errorLog($message, $filePath, $className, $lineNo)
+    public function errorLog($message, $filePath, $className, $lineNo)
     {
-        self::initialize();
+        $this->initialize();
         
         $log =& LogFactory::getLog("simpleFile");
         $log->error("$className,$lineNo,".session_id().",".$message);
@@ -67,16 +93,17 @@ class AppLogger
     }
     
     /**
+     * Output warning log
      * warnレベル以上のログを出力
      *
-     * @param string $message エラーメッセージ
-     * @param string $filePath ファイルパス
-     * @param string $className クラス名
-     * @param string $lineNo 行数
+     * @param string $message error message エラーメッセージ
+     * @param string $filePath file path エラー発生ファイルパス
+     * @param string $className class name エラー発生クラス名
+     * @param string $lineNo line number エラー発生行数
      */
-    public static function warnLog($message, $filePath, $className, $lineNo)
+    public function warnLog($message, $filePath, $className, $lineNo)
     {
-        self::initialize();
+        $this->initialize();
         
         $log =& LogFactory::getLog("simpleFile");
         $log->warn("$className,$lineNo,".session_id().",".$message);
@@ -86,16 +113,17 @@ class AppLogger
     }
     
     /**
+     * Output info log
      * infoレベル以上のログを出力
      *
-     * @param string $message エラーメッセージ
-     * @param string $filePath ファイルパス
-     * @param string $className クラス名
-     * @param string $lineNo 行数
+     * @param string $message error message エラーメッセージ
+     * @param string $filePath file path エラー発生ファイルパス
+     * @param string $className class name エラー発生クラス名
+     * @param string $lineNo line number エラー発生行数
      */
-    public static function infoLog($message, $filePath, $className, $lineNo)
+    public function infoLog($message, $filePath, $className, $lineNo)
     {
-        self::initialize();
+        $this->initialize();
         
         $log =& LogFactory::getLog("simpleFile");
         $log->info("$className,$lineNo,".session_id().",".$message);
@@ -105,16 +133,16 @@ class AppLogger
     }
     
     /**
-     * debugレベル以上のログを出力
+     * Output debug log
      *
-     * @param string $message エラーメッセージ
-     * @param string $filePath ファイルパス
-     * @param string $className クラス名
-     * @param string $lineNo 行数
+     * @param string $message error message エラーメッセージ
+     * @param string $filePath file path エラー発生ファイルパス
+     * @param string $className class name エラー発生クラス名
+     * @param string $lineNo line number エラー発生行数
      */
-    public static function debugLog($message, $filePath, $className, $lineNo)
+    public function debugLog($message, $filePath, $className, $lineNo)
     {
-        self::initialize();
+        $this->initialize();
         
         $log =& LogFactory::getLog("simpleFile");
         $log->debug("$className,$lineNo,".session_id().",".$message);
@@ -124,16 +152,17 @@ class AppLogger
     }
     
     /**
+     * Output trace log
      * traceレベル以上のログを出力
      *
-     * @param string $message エラーメッセージ
-     * @param string $filePath ファイルパス
-     * @param string $className クラス名
-     * @param string $lineNo 行数
+     * @param string $message error message エラーメッセージ
+     * @param string $filePath file path エラー発生ファイルパス
+     * @param string $className class name エラー発生クラス名
+     * @param string $lineNo line number エラー発生行数
      */
-    public static function traceLog($message, $filePath, $className, $lineNo)
+    public function traceLog($message, $filePath, $className, $lineNo)
     {
-        self::initialize();
+        $this->initialize();
         
         $log =& LogFactory::getLog("simpleFile");
         $log->trace("$className,$lineNo,".session_id().",".$message);

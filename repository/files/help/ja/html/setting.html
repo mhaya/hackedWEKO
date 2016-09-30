@@ -1,6 +1,6 @@
 <!--// ---------------------------------------------------------------------->
 <!--//                                                                     -->
-<!--// $Id: setting.html 54835 2015-06-25 04:10:46Z keiya_sugimoto $          -->
+<!--// $Id: setting.html 68946 2016-06-16 09:47:19Z tatsuya_koyasu $          -->
 <!--//                                                                     -->
 <!--// Copyright (c) 2007 - 2008, National Institute of Informatics,        -->
 <!--// Research and Development Center for Scientific Information Resources -->
@@ -262,14 +262,27 @@
 					
 					<h4><a name="default_search_setting">検索設定</a></h4>
 					<div class="page_list">
-						WEKOの簡易検索および詳細検索のデフォルトの検索タイプを「全文検索」または「キーワード検索」のどちらかに設定することができます。<br/>
-						<br/>
-						<center><img src="./img/setting_default_search_setting.png" alt="検索設定" border="0"/></center>
-						<br/>
-						下記のように設定した値がトップページの検索画面に反映されます。<br/>
-						<br/>
-						<center><img src="./img/setting_top_seartch_type.png" alt="トップページの検索タイプ設定" border="0"/></center>
-						<br/>
+						<b>デフォルト検索設定</b><br/>
+						<div class="page_list">
+							WEKOの簡易検索および詳細検索のデフォルトの検索タイプを「全文検索」または「キーワード検索」のどちらかに設定することができます。<br/>
+							<br/>
+							<center><img src="./img/setting_default_search_setting.png" alt="デフォルト検索設定" border="0"/></center>
+							<br/>
+							下記のように設定した値がトップページの検索画面に反映されます。<br/>
+							<br/>
+							<center><img src="./img/setting_top_seartch_type.png" alt="トップページの検索タイプ設定" border="0"/></center>
+							<br/>
+						</div>
+						<b>著者名検索</b><br/>
+						<div class="page_list">
+							<a href="./search.html#author">著者名検索</a>を著者の姓名で検索を実施する「著者名検索」、またはWEKOで発番している著者ごとのユニークなIDで検索を実施する「WEKO著者ID検索」のどちらかに設定することができます。<br/>
+							<br/>
+							<center><img src="./img/author_search_type_choose.png" alt="著者名検索" border="0"/></center>
+							<br/>
+							「著者名検索」による検索結果は、<a href="./search.html#author">著者名検索</a>をご覧ください。<br/>
+							「WEKO著者ID検索」による検索結果は、<a href="./search.html#wekoAuthorId">WEKO著者ID検索</a>をご覧ください。<br/>
+							<br/>
+						</div>
 					</div>
 					
 					<h4><a name="view_detail_search">詳細検索条件設定</a></h4>
@@ -491,7 +504,7 @@
 						サイトライセンスを認可するIPアドレスを設定することができます。<br/>
 						サイトライセンスを認可されたIPアドレスからのアクセスであれば、課金ファイルが無料でダウンロードできるようになります。<br/>
 						また、サイトライセンスが認可されているIPアドレスからのアクセスであってもアイテムタイプごとに無料ダウンロード対象から除外することが可能です。<br/>
-						サイトライセンスユーザーの利用状況をフィードバックする事が出来ます。<br/>
+						<a href="./log.html#sitelicense">レポート画面</a>にてサイトライセンスユーザーの利用状況をフィードバックする事が出来ます。<br/>
 						<br/>
 						<center><img src="./img/setting_73.png" alt="サイトライセンス認可" border="0"/></center>
 						<br/>
@@ -611,12 +624,18 @@
 						
 						<br/>
 						<br/>
-						■外部著者IDの追加<br/>追加したい著者IDを入力し、「追加」ボタンを押下します。<br/>
+						■外部著者IDの追加<br/>追加したい著者IDを「名称」に、アクセス先のURLを「外部WebページURL」に入力し、「追加」ボタンを押下します。<br/>
+						URLに「##」を入力することで、「##」に外部著者IDを設定したURLを指定することができます。<br/>
 						<br/>
-						<center><img src="./img/setting_81.png" alt="外部著者ID Prefix設定" border="0"/></center>
+						<center><img src="./img/external_author_id_add.png" alt="外部著者ID Prefix設定 追加" border="0"/></center>
 						<br/>
-						■外部著者IDの削除<br/>削除したい著者IDを選択し、「削除」ボタンを押下します。<br/>
-						<center><img src="./img/setting_82.png" alt="外部著者ID Prefix設定" border="0"/></center>
+						■外部著者IDの変更<br/>変更したい著者IDを「名称」に、変更したいURLを「外部WebページURL」に入力します。<br/>
+						CiNii ID、研究者リゾルバーID、科研費研究番号については「外部WebページURL」のみ変更することができます。<br/>
+						<br/>
+						<center><img src="./img/external_author_id_change.png" alt="外部著者ID Prefix設定 変更" border="0"/></center>
+						<br/>
+						■外部著者IDの削除<br/>削除したい著者IDの「×」ボタンを押下します。<br/>
+						<center><img src="./img/external_author_id_delete.png" alt="外部著者ID Prefix設定 削除" border="0"/></center>
 						<br/>
 					</div>
 					<h4><a name="feedback">フィードバック</a></h4>
@@ -659,7 +678,7 @@
 						<br/>
 						【注意事項】
 						<ul>
-							<li>「フィードバックメール送信機能設定」を有効にしている場合はメールは送付されません。</li>
+							<li>「フィードバックメール送信機能設定」を無効にしている場合、メールは送付されません。</li>
 							<li>Contributorのユーザー情報にメールアドレスが登録されていない場合はメールは送付されません。</li>
 							<li>複数のアイテムのContributorに対して、メールは1通のみ送付します。</li>
 							<li>閲覧回数、ダウンロード回数が共にゼロであるアイテムもメールに記述します。</li>

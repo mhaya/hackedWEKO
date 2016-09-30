@@ -1,7 +1,14 @@
 <?php
+/**
+ * Class for convert metadata to half size char
+ * メタデータ文字半角変換クラス
+ * 
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Twobytechartohalfsizechar.class.php 44575 2014-12-01 12:09:36Z tomohiro_ichikawa $
+// $Id: Twobytechartohalfsizechar.class.php 69174 2016-06-22 06:43:30Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -10,20 +17,35 @@
 // http://creativecommons.org/licenses/BSD/
 //
 // --------------------------------------------------------------------
+/**
+ * Search keyword converter abstract class
+ * 検索キーワード変換基底クラス
+ */
 require_once WEBAPP_DIR."/modules/repository/components/Searchkeywordconverter.class.php";
 
 /**
- * Convert Metadata to Half Size Char
+ * Class for convert metadata to half size char
+ * メタデータ文字半角変換クラス
  * 
+ * @package     WEKO
+ * @copyright   (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license     http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access      public
  */
 class Repository_Files_Plugin_Searchkeywordconverter_Twobytechartohalfsizechar extends Repository_Components_Searchkeywordconverter
 {
     
     /**
-     * メタデータ項目情報から渡されたメタデータ値を半角に変換
+     * Convert metadata to half size from metadata information
+     * メタデータ項目情報から渡されたメタデータ値を半角に変換する
      *
-     * @param string $metadata アイテムのメタデータ入力値
-     * @param ToSearchKey $metadataInfo メタデータ項目情報
+     * @param string $metadata Input metadata of item
+     *                         アイテムのメタデータ入力値
+     * @param ToSearchKey $metadataInfo Metadata information
+     *                                  メタデータ項目情報
+     *
+     * @return string Metadata converted to half size
+     *                半角に変換されたメタデータ値
      */
     public function toSearchKey($metadata, $metadataInfo)
     {
@@ -33,8 +55,13 @@ class Repository_Files_Plugin_Searchkeywordconverter_Twobytechartohalfsizechar e
     /**
      * 検索時に入力されたキーワードを半角に変換
      *
-     * @param string $searchKeyword 検索時に入力されたワード
-     * @param ToSearchCondition $searchCondition 検索条件情報
+     * @param string $searchKeyword Input keyword at search
+     *                              検索時に入力されたキーワード
+     * @param ToSearchCondition $searchCondition Search condition information
+     *                                           検索条件情報
+     *
+     * @return string Search keyword converted to half size
+     *                半角に変換された検索キーワード
      */
     public function toSearchCondition($searchKeyword, $searchCondition)
     {
@@ -42,9 +69,14 @@ class Repository_Files_Plugin_Searchkeywordconverter_Twobytechartohalfsizechar e
     }
     
     /**
-     * 文字列を半角に変換
+     * Convert string to half size
+     * 文字列を半角に変換する
      *
-     * @param string $keyword 文字列
+     * @param string $keyword Converted string
+     *                        変換する文字列
+     *
+     * @return string String converted to half size
+     *                半角に変換された文字列
      */
     private function convertToHalfByte($keyword)
     {

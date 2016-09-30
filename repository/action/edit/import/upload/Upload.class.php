@@ -1,7 +1,15 @@
 <?php
+
+/**
+ * Import action class
+ * インポートアクションクラス
+ *
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Upload.class.php 3 2010-02-02 05:07:44Z atsushi_suzuki $
+// $Id: Upload.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -14,23 +22,42 @@
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
 //require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
 
-/**
- * [[機能説明]]
- *
- * @package     [[package名]]
- * @access      public
- */
 //class Repository_Action_Edit_Import_Upload extends RepositoryAction
+/**
+ * Import file upload action class
+ * インポートファイルアップロードアクションクラス
+ *
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
+ */
 class Repository_Action_Edit_Import_Upload
 {
-
+    /**
+     * Session management objects
+     * Session管理オブジェクト
+     *
+     * @var Session
+     */
 	var $Session = null;
+    /**
+     * Database management objects
+     * データベース管理オブジェクト
+     *
+     * @var DbObject
+     */
 	var $Db = null;
+    /**
+     * Upload file management objects
+     * アップロードファイル管理オブジェクト
+     *
+     * @var Uploads_Action
+     */
 	var $uploadsAction = null;
 	/**
-	 * [[機能説明]]
-	 *
-	 * @access  public
+	 * To upload a file by import
+	 * インポートによりファイルをアップロードする
 	 */
 	function execute()
 	{

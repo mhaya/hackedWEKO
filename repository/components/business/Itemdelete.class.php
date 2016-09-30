@@ -1,39 +1,76 @@
 <?php
+
+/**
+ * Item bulk delete common classes
+ * アイテム一括削除共通クラス
+ * 
+ * @package WEKO
+ */
+
+// --------------------------------------------------------------------
+//
+// $Id: Itemdelete.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
+//
+// Copyright (c) 2007 - 2008, National Institute of Informatics, 
+// Research and Development Center for Scientific Information Resources
+//
+// This program is licensed under a Creative Commons BSD Licence
+// http://creativecommons.org/licenses/BSD/
+//
+// --------------------------------------------------------------------
+
+/**
+ * Business logic abstract class
+ * ビジネスロジック基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/FW/BusinessBase.class.php';
 
 /**
- * $Id: Itemdelete.class.php 53594 2015-05-28 05:25:53Z kaede_matsushita $
+ * Item bulk delete common classes
+ * アイテム一括削除共通クラス
  * 
- * アイテム削除ビジネスクラス
- * 
- * @author IVIS
- * @sinse 2014/11/11
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class Repository_Components_Business_Itemdelete extends BusinessBase
 {
     /**
-     * 公開インデックスを探すクエリ
+     * Index ID list of published index in which the comma delimiters
+     * カンマを区切り文字とした公開インデックスのインデックスID一覧
+     * 
+     * @var string
      */
     public $publicIndexQuery = null;
     
     /**
-     * ベース権限
+     * Administrator-based authority level
+     * 管理者ベース権限レベル
+     *
+     * @var int
      */
     public $repository_admin_base = null;
     
     /**
-     * ルーム権限
+     * Administrator Room authority level
+     * 管理者ルーム権限レベル
+     *
+     * @var int
      */
     public $repository_admin_room = null;
     
     /**
-    * 指定されたアイテムを削除する
-    * 
-    * @param item_id アイテムID
-    * @param item_no アイテム通番
-    * @param session セッション
-    * @return bool 削除成否
-    */
+     * To delete the specified items
+     * 指定されたアイテムを削除する
+     *
+     * @param int item_id $item_id Item id アイテムID
+     * @param int item_no $item_no Item serial number アイテム通番
+     * @param Session $session Session management objects Session管理オブジェクト
+     * @param int $repository_admin_base Administrator-based authority level 管理者ベース権限レベル
+     * @param int $repository_admin_room Administrator Room authority level 管理者ルーム権限レベル
+     * @return boolean Delete success or failure 削除成否
+     */
     public function deleteItem($item_id, $item_no, $session, $repository_admin_base, $repository_admin_room)
     {
         if( $item_id === null || $item_no === null || $session === null ){
@@ -57,12 +94,14 @@ class Repository_Components_Business_Itemdelete extends BusinessBase
     }
     
     /**
-     * 指定されたアイテムを各テーブルから削除する
-     * @param item_id アイテムID
-     * @param item_no アイテム通番
-     * @param error_masg エラーメッセージ
-     * @param session セッション
-     * @return bool 削除成否
+     * To remove the metadata and file of items from each table or file system
+     * アイテムのメタデータおよびファイルを各テーブルまたはファイルシステムから削除する
+     * 
+     * @param int item_id $item_id Item id アイテムID
+     * @param int item_no $item_no Item serial number アイテム通番
+     * @param string $error_msg Error message エラーメッセージ
+     * @param Session $session Session management objects Session管理オブジェクト
+     * @return boolean Delete success or failure 削除成否
      */
     private function deleteItemData($item_id, $item_no, &$error_msg, $session){
         
@@ -125,10 +164,12 @@ class Repository_Components_Business_Itemdelete extends BusinessBase
     }
     
     /**
-     * [[削除されるアイテムの所属するインデックスのコンテンツ数、非公開コンテンツ数の更新]]
-     * @param $item_id アイテムID
-     * @param $item_no アイテム通番
-     * @param $session セッション
+     * The number of content belongs to the index of the item to be deleted, private content number of update
+     * 削除されるアイテムの所属するインデックスのコンテンツ数、非公開コンテンツ数の更新
+     * 
+     * @param int item_id $item_id Item id アイテムID
+     * @param int item_no $item_no Item serial number アイテム通番
+     * @param Session $session Session management objects Session管理オブジェクト
      */
     public function updateContentsOfIndex( $item_id, $item_no, $session ){
         
@@ -155,9 +196,11 @@ class Repository_Components_Business_Itemdelete extends BusinessBase
         }
     }
     /**
+     * A few minutes of the index belonging to perform the decrement of the number of content
      * 所属するインデックスの数分、コンテンツ数のデクリメントを行う
-     * @param $indexInfo
-     * @param $session
+     * @param $indexInfo Affiliation index information 所属インデックス情報
+     *                   array[$ii]["index_id"|"public_state"]
+     * @param Session $session Session management objects Session管理オブジェクト
      */
     private function reduceContentsNum( $indexInfo, $session ){
         
@@ -202,7 +245,13 @@ class Repository_Components_Business_Itemdelete extends BusinessBase
     }
     
     /**
+     * To get the public status of the item
      * アイテムの公開状況を取得する
+     * 
+     * @param int item_id $item_id Item id アイテムID
+     * @param int item_no $item_no Item serial number アイテム通番
+     * @param Session $session Session management objects Session管理オブジェクト
+     * @return int Public status 公開状況
      */
     private function getShowStatus( $item_id, $item_no, $session ){
         
@@ -229,11 +278,14 @@ class Repository_Components_Business_Itemdelete extends BusinessBase
     }
     
     /**
+     * To get the affiliation index information
      * 所属インデックス情報を取得する
-     * @param $item_id
-     * @param $item_no
-     * @param $session
-     * @return $result 所属するインデックスID
+     * 
+     * @param int item_id $item_id Item id アイテムID
+     * @param int item_no $item_no Item serial number アイテム通番
+     * @param Session $session Session management objects Session管理オブジェクト
+     * @return $result Index ID list belong 所属するインデックスID一覧
+     *                 array[$ii]["pos.index_id"|"idx.public_state"]
      */
     private function getIndexInfo( $item_id, $item_no, $session ){
         
@@ -264,10 +316,11 @@ class Repository_Components_Business_Itemdelete extends BusinessBase
     
     // ↓↓repo_action_main_treeから持ってきたメソッド。メンバ変数などを変更する
     /**
-     * Get public index query
+     * To create a public index search query
+     * 公開インデックス検索用クエリを作成する
      *
-     * @param $session セッション
-     * @return $this->publicIndexQuery 公開インデックス取得クエリ
+     * @param Session $session Session management objects Session管理オブジェクト
+     * @return string Public index acquisition query 公開インデックス取得クエリ
      */
     public function getPublicIndexQuery( $session )
     {
@@ -292,12 +345,12 @@ class Repository_Components_Business_Itemdelete extends BusinessBase
     
     
     /**
-     * checkParentPublicState
+     * The higher the index is checked or not private.
      * 上位インデックスが非公開でないか調べる。
      *
-     * @param  $index_id
-     * @return true:公開中
-     *         false:非公開である
+     * @param int $index_id Index id インデックスID
+     * @param Session $session Session management objects Session管理オブジェクト
+     * @return boolean Public situation (true: in public, false: it is private) 公開状況(true:公開中,false:非公開である)
      */
     public function checkParentPublicState($index_id, $session){
         
@@ -355,9 +408,11 @@ class Repository_Components_Business_Itemdelete extends BusinessBase
     }
     
     /**
-     * delete contents
+     * Decrements the number of public items that belong to the index
+     * インデックスに所属する公開アイテム数をデクリメントする
      *
-     * @param $index_id index ID
+     * @param int $index_id Index id インデックスID
+     * @param Session $session Session management objects Session管理オブジェクト
      */
     public function deleteContents($index_id, $session){
         // decrement contents
@@ -402,9 +457,11 @@ class Repository_Components_Business_Itemdelete extends BusinessBase
     }
     
     /**
-     * delete private_contents
+     * Decrements the number of private items that belong to the index
+     * インデックスに所属する非公開アイテム数をデクリメントする
      *
-     * @param $index_id index ID
+     * @param int $index_id Index id インデックスID
+     * @param Session $session Session management objects Session管理オブジェクト
      */
     public function deletePrivateContents($index_id, $session){
         // decrement contents
@@ -449,8 +506,15 @@ class Repository_Components_Business_Itemdelete extends BusinessBase
     }
     
     /**
-     * [[アイテムIDとアイテム通番にて指定されるアイテムテーブルデータを削除]]
+     * Delete an item table data to be specified by the item ID and the item serial number
+     * アイテムIDとアイテム通番にて指定されるアイテムテーブルデータを削除
      *
+     * @param int $Item_ID Item id アイテムID
+     * @param int $Item_No Item serial number アイテム通番
+     * @param string $user_ID Delete the execution of a user ID 削除実行ユーザID
+     * @param string $error_msg Error message エラーメッセージ
+     * @param Session $session Session management objects Session管理オブジェクト
+     * @return boolean Delete result 削除結果
      */
     private function deleteItemTableData($Item_ID,$Item_No,$user_ID,&$error_msg, $session){
         
@@ -513,7 +577,15 @@ class Repository_Components_Business_Itemdelete extends BusinessBase
     }
     
     /**
-     * [[アイテムIDとアイテム通番にて指定されるアイテム属性テーブルデータを削除]]
+     * Delete an item attribute table data to be specified by the item ID and the item serial number
+     * アイテムIDとアイテム通番にて指定されるアイテム属性テーブルデータを削除
+     *
+     * @param int $Item_ID Item id アイテムID
+     * @param int $Item_No Item serial number アイテム通番
+     * @param string $user_ID Delete the execution of a user ID 削除実行ユーザID
+     * @param string $error_msg Error message エラーメッセージ
+     * @param Session $session Session management objects Session管理オブジェクト
+     * @return boolean Delete result 削除結果
      */
     private function deleteItemAttrTableData($Item_ID,$Item_No,$user_ID,&$error_msg, $session){
         
@@ -578,7 +650,15 @@ class Repository_Components_Business_Itemdelete extends BusinessBase
     }
     
     /**
-     * [[アイテムIDとアイテム通番にて指定される氏名テーブルデータ削除]]
+     * Name table data deletion, which is specified by the item ID and the item serial number
+     * アイテムIDとアイテム通番にて指定される氏名テーブルデータ削除
+     * 
+     * @param int $Item_ID Item id アイテムID
+     * @param int $Item_No Item serial number アイテム通番
+     * @param string $user_ID Delete the execution of a user ID 削除実行ユーザID
+     * @param string $error_msg Error message エラーメッセージ
+     * @param Session $session Session management objects Session管理オブジェクト
+     * @return boolean Delete result 削除結果
      */
     private function deletePersonalNameTableData($Item_ID,$Item_No,$user_ID,&$error_msg, $session){
         
@@ -642,7 +722,15 @@ class Repository_Components_Business_Itemdelete extends BusinessBase
     }
     
     /**
-     * [[アイテムIDとアイテム通番にて指定されるサムネイルテーブルデータ削除]]
+     * Thumbnail table data deletion, which is specified by the item ID and the item serial number
+     * アイテムIDとアイテム通番にて指定されるサムネイルテーブルデータ削除
+     * 
+     * @param int $Item_ID Item id アイテムID
+     * @param int $Item_No Item serial number アイテム通番
+     * @param string $user_ID Delete the execution of a user ID 削除実行ユーザID
+     * @param string $error_msg Error message エラーメッセージ
+     * @param Session $session Session management objects Session管理オブジェクト
+     * @return boolean Delete result 削除結果
      */
     private function deleteThumbnailTableData($Item_ID,$Item_No,$user_ID,&$error_msg, $session){
         
@@ -705,8 +793,15 @@ class Repository_Components_Business_Itemdelete extends BusinessBase
     }
     
     /**
-     * [[アイテムIDとアイテム通番にて指定されるファイルテーブルデータ削除]]
-     *
+     * File table data deletion, which is specified by the item ID and the item serial number
+     * アイテムIDとアイテム通番にて指定されるファイルテーブルデータ削除
+     * 
+     * @param int $Item_ID Item id アイテムID
+     * @param int $Item_No Item serial number アイテム通番
+     * @param string $user_ID Delete the execution of a user ID 削除実行ユーザID
+     * @param string $error_msg Error message エラーメッセージ
+     * @param Session $session Session management objects Session管理オブジェクト
+     * @return boolean Delete result 削除結果
      */
     private function deleteFileTableData($Item_ID,$Item_No,$user_ID,&$error_msg, $session){
         
@@ -817,60 +912,25 @@ class Repository_Components_Business_Itemdelete extends BusinessBase
                 $delete_result = true;
             }
     
-            //実ファイルを削除する A.Jin --start--
-            for($index=0; $index<count($select_result);$index++){
-                $this->removePhysicalFileAndFlashDirectory($select_result[$index][RepositoryConst::DBCOL_REPOSITORY_FILE_ITEM_ID],       //item_id
-                        $select_result[$index][RepositoryConst::DBCOL_REPOSITORY_FILE_ATTRIBUTE_ID],  //attribute_id
-                        $select_result[$index][RepositoryConst::DBCOL_REPOSITORY_FILE_FILE_NO]);      //file_no
+            // Mod remove physical file T.Koyasu 2016/02/29 --start--
+            $businessName = "businessContentfiletransaction";
+            $business = BusinessFactory::getFactory()->getBusiness($businessName);
+            for($ii = 0; $ii < count($select_result); $ii++){
+                $itemId = $select_result[$ii][RepositoryConst::DBCOL_REPOSITORY_FILE_ITEM_ID];
+                $attrId = $select_result[$ii][RepositoryConst::DBCOL_REPOSITORY_FILE_ATTRIBUTE_ID];
+                $fileNo = $select_result[$ii][RepositoryConst::DBCOL_REPOSITORY_FILE_FILE_NO];
+                $business->delete($itemId, $attrId, $fileNo);
             }
-            //実ファイルを削除する A.Jin --end--
+            // Mod remove physical file T.Koyasu 2016/02/29 --end--
         }
         return $delete_result;
     }
     
-    //--実ファイルを削除する 2013/6/10 A.Jin Add--start--
     /**
-     * 実ファイルを削除
-     *
-     * @param int $item_id アイテムID
-     * @param int $attribute_id 属性ID
-     * @param int $file_no ファイルNO
-     * @return bool 処理成功失敗フラグ
-     */
-    private function removePhysicalFileAndFlashDirectory($item_id, $attribute_id, $file_no){
-        //1   Filesのファイル削除
-        //Filesのディレクトリを取得する。
-        $dir_path = $this->getFileSavePath("file");
-        if(strlen($dir_path) == 0){
-            // default directory
-            $dir_path = BASE_DIR.'/webapp/uploads/repository/files';
-        }
-
-        //ディレクトリが存在する場合
-        if(file_exists($dir_path)){
-            $pattern = $dir_path.'/'.$item_id.'_'.$attribute_id.'_'.$file_no.'.*';
-            //ディレクトリ以下のFilesファイルを削除する
-            foreach (glob($pattern) as $file_path) {
-                //ディレクトリでなかった場合実ファイルを削除する
-                if(!is_dir($file_path)){
-                    unlink($file_path);
-                }
-            }
-        }
-
-        //2   Flashのファイル&ディレクトリ削除
-        $flash_contents_path = $this->getFlashFolder($item_id,$attribute_id,$file_no);
-        //ディレクトリが存在する場合
-        if(strlen($flash_contents_path)>0){
-            //ディレクトリ以下のFlashファイル&ディレクトリを削除する
-            $this->removeDirectory($flash_contents_path);
-        }
-
-        return true;
-    }
-    
-    /*
+     * Delete the following specified directory
      * 指定したディレクトリ以下を削除
+     * 
+     * @param string $dir Delete the target directory path 削除対象ディレクトリパス
      */
     private function removeDirectory($dir) {
         if(strlen($dir) > 0)
@@ -903,50 +963,15 @@ class Repository_Components_Business_Itemdelete extends BusinessBase
     }
     
     /**
-     * Get file save path by config
-     *
-     * @param string "file" or "flash"
-     * @return string FileSavePath
-     */
-    private function getFileSavePath($mode){
-        $config = parse_ini_file(BASE_DIR.'/webapp/modules/repository/config/main.ini');
-        $path = "";
-        if($mode == "file"){
-            $path = $config["define:_REPOSITORY_FILE_SAVE_PATH"];
-        } else if($mode == "flash"){
-            $path = $config["define:_REPOSITORY_FLASH_SAVE_PATH"];
-        }
-        return $path;
-    }
-    
-    /**
-     * check exists flash save folder.
-     *
-     * @param int $itemId item_id default 0
-     * @param int $attrId attribute_id default 0
-     * @param int $fileNo file_no default 0
-     * @return string flash save folder path.
-     */
-    private function getFlashFolder($itemId=0, $attrId=0, $fileNo=0){
-        $flashDirPath = $this->getFileSavePath("flash");
-        if(strlen($flashDirPath) == 0){
-            // default directory
-            $flashDirPath = BASE_DIR.'/webapp/uploads/repository/flash';
-        }
-        if(!file_exists($flashDirPath)){
-            return '';
-        }
-        if(($itemId * $attrId * $fileNo) > 0){
-            $flashDirPath .= '/'.$itemId.'_'.$attrId.'_'.$fileNo;
-            if(!file_exists($flashDirPath)){
-                return '';
-            }
-        }
-        return $flashDirPath;
-    }
-    
-    /**
-     * [[アイテムIDとアイテム通番にて指定される書誌情報テーブルデータ削除]]
+     * Bibliographic information table data deletion, which is specified by the item ID and the item serial number
+     * アイテムIDとアイテム通番にて指定される書誌情報テーブルデータ削除
+     * 
+     * @param int $Item_ID Item id アイテムID
+     * @param int $Item_No Item serial number アイテム通番
+     * @param string $user_ID Delete the execution of a user ID 削除実行ユーザID
+     * @param string $error_msg Error message エラーメッセージ
+     * @param Session $session Session management objects Session管理オブジェクト
+     * @return boolean Delete result 削除結果
      */
     private function deleteBiblioInfoTableData($Item_ID,$Item_No,$user_ID,&$error_msg, $session){
         
@@ -1010,7 +1035,15 @@ class Repository_Components_Business_Itemdelete extends BusinessBase
     // Add biblio info 2008/08/11 Y.Nakao --end--
     
     /**
-     * [[アイテムIDとアイテム通番にて指定される添付ファイルデータ削除]]
+     * Attachment data deletion, which is specified by the item ID and the item serial number
+     * アイテムIDとアイテム通番にて指定される添付ファイルデータ削除
+     * 
+     * @param int $Item_ID Item id アイテムID
+     * @param int $Item_No Item serial number アイテム通番
+     * @param string $user_ID Delete the execution of a user ID 削除実行ユーザID
+     * @param string $error_msg Error message エラーメッセージ
+     * @param Session $session Session management objects Session管理オブジェクト
+     * @return boolean Delete result 削除結果
      */
     private function deleteAttachedFileTableData($Item_ID,$Item_No,$user_ID,&$error_msg, $session){
         
@@ -1073,7 +1106,15 @@ class Repository_Components_Business_Itemdelete extends BusinessBase
     }
     
     /**
-     * [[アイテムIDとアイテム通番にて指定される所属インデックスデータ削除]]
+     * Affiliation index data deletion, which is specified by the item ID and the item serial number
+     * アイテムIDとアイテム通番にて指定される所属インデックスデータ削除
+     * 
+     * @param int $Item_ID Item id アイテムID
+     * @param int $Item_No Item serial number アイテム通番
+     * @param string $user_ID Delete the execution of a user ID 削除実行ユーザID
+     * @param string $error_msg Error message エラーメッセージ
+     * @param Session $session Session management objects Session管理オブジェクト
+     * @return boolean Delete result 削除結果
      */
     private function deletePositionIndexTableData($Item_ID,$Item_No,$user_ID,&$error_msg, $session){
         
@@ -1136,7 +1177,15 @@ class Repository_Components_Business_Itemdelete extends BusinessBase
     }
     
     /**
-     * [[アイテムIDとアイテム通番にて指定される参照テーブルデータ削除]]
+     * Reference table data deletion, which is specified by the item ID and the item serial number
+     * アイテムIDとアイテム通番にて指定される参照テーブルデータ削除
+     * 
+     * @param int $Item_ID Item id アイテムID
+     * @param int $Item_No Item serial number アイテム通番
+     * @param string $user_ID Delete the execution of a user ID 削除実行ユーザID
+     * @param string $error_msg Error message エラーメッセージ
+     * @param Session $session Session management objects Session管理オブジェクト
+     * @return boolean Delete result 削除結果
      */
     private function deleteReference($Item_ID,$Item_No,$user_ID,&$error_msg, $session){
         
@@ -1196,9 +1245,12 @@ class Repository_Components_Business_Itemdelete extends BusinessBase
     }
     
     /**
-     * deleteWhatsnew
-     *
-     * @param $item_id
+     * To remove the What's New
+     * 新着情報を削除する
+     * 
+     * @param int $Item_ID Item id アイテムID
+     * @param Session $session Session management objects Session管理オブジェクト
+     * @return boolean Delete result 削除結果
      */
     private function deleteWhatsnew($item_id, $session){
         
@@ -1223,6 +1275,17 @@ class Repository_Components_Business_Itemdelete extends BusinessBase
     
     /**
      * [[アイテムIDとアイテム通番にて指定されるサプリテーブルデータ削除]]
+     */
+    /**
+     * Supplemental contents table data deletion, which is specified by the item ID and the item serial number
+     * アイテムIDとアイテム通番にて指定されるサプリテーブルデータ削除
+     * 
+     * @param int $Item_ID Item id アイテムID
+     * @param int $Item_No Item serial number アイテム通番
+     * @param string $user_ID Delete the execution of a user ID 削除実行ユーザID
+     * @param string $error_msg Error message エラーメッセージ
+     * @param Session $session Session management objects Session管理オブジェクト
+     * @return boolean Delete result 削除結果
      */
     private function deleteSuppleInfoTableData($Item_ID,$Item_No,$user_ID,&$error_msg, $session){
         
@@ -1286,7 +1349,14 @@ class Repository_Components_Business_Itemdelete extends BusinessBase
     // Add input type "supple" 2009/08/24 A.Suzuki --end--
     
     /**
-     * [[アイテムIDとアイテム通番にて指定されるサフィックスを削除]]
+     * Delete the suffix that is specified in the item ID and the item serial number
+     * アイテムIDとアイテム通番にて指定されるサフィックスを削除
+     * 
+     * @param int $Item_ID Item id アイテムID
+     * @param int $Item_No Item serial number アイテム通番
+     * @param string $user_ID Delete the execution of a user ID 削除実行ユーザID
+     * @param string $error_msg Error message エラーメッセージ
+     * @return boolean Delete result 削除結果
      */
     private function deleteItemSuffix($Item_ID,$Item_No,$user_ID,&$error_msg){
         

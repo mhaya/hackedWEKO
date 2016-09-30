@@ -1,0 +1,1 @@
+INSERT INTO %%DATABASE_PREFIX%%repository_target_search_item VALUE (26, 0, '1', '1', '', '2016-03-31 00:00:00.000', '2016-03-31 00:00:00.000', '', 0);

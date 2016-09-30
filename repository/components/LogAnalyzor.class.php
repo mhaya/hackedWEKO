@@ -1,7 +1,15 @@
 <?php
+
+/**
+ * Log aggregation subquery create a common class
+ * ログ集計サブクエリ作成共通クラス
+ *
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: LogAnalyzor.class.php 48595 2015-02-18 08:36:51Z tomohiro_ichikawa $
+// $Id: LogAnalyzor.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -11,16 +19,30 @@
 //
 // --------------------------------------------------------------------
 
+/**
+ * WEKO logic-based base class
+ * WEKOロジックベース基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryLogicBase.class.php';
 
+/**
+ * Log aggregation subquery create a common class
+ * ログ集計サブクエリ作成共通クラス
+ *
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
+ */
 class Repository_Components_Loganalyzor extends RepositoryLogicBase
 {
     /**
      * Constructor
+     * コンストラクタ
      *
-     * @param var $session
-     * @param var $dbAccess
-     * @param string $transStartDate
+     * @param Session $session Session management objects Session管理オブジェクト
+     * @param RepositoryDbAccess $dbAccess DB object wrapper Class DBオブジェクトラッパークラス
+     * @param string $transStartDate Transaction start date トランザクション開始日時
      */
     public function __construct($session, $dbAccess, $transStartDate)
     {
@@ -28,10 +50,11 @@ class Repository_Components_Loganalyzor extends RepositoryLogicBase
     }
 
     /**
-     * exclusive ip address
+     * Create a subquery that does not aggregate the excluded IP address
+     * 除外対象IPアドレスを集計しないサブクエリを作成
      * 
-     * @param string $abbreviation
-     * @return string
+     * @param string $abbreviation Table alias テーブル別名
+     * @return string Subquery サブクエリ
      */
     public function execlusiveIpAddressQuery($abbreviation) {
         $query = "SELECT param_value FROM ". DATABASE_PREFIX. "repository_parameter ".
@@ -56,10 +79,14 @@ class Repository_Components_Loganalyzor extends RepositoryLogicBase
     }
   
     /**
-     * exclusive double access
+     * Subqueries created for the double access removal
+     * 二重アクセス除去用のサブクエリ作成
      * 
-     * @param string $abbreviation
-     * @return string
+     * @param int $operation_id Operation id 操作ID
+     * @param string $abbreviation Table alias テーブル別名
+     * @param string $start_date Aggregate start date and time 集計開始日時
+     * @param string $finish_date Aggregate end date and time 集計終了日時
+     * @return string Subquery サブクエリ
      */
     public function execlusiveDoubleAccessSubQuery($operation_id, $abbreviation, $start_date, $finish_date) {
         $sub_query = "";
@@ -89,50 +116,11 @@ class Repository_Components_Loganalyzor extends RepositoryLogicBase
     }
     
     /**
-     * exclusive robot
-     * 
-     * @param string $abbreviation
-     * @return string
-     */
-    public function execlusiveRobotsQuery($abbreviation) {
-        $robots = "";
-        if(file_exists(WEBAPP_DIR.'/modules/repository/config/Robots_Exclusion')){
-            $fp = fopen(WEBAPP_DIR.'/modules/repository/config/Robots_Exclusion', "r");
-            while(!feof($fp)){
-                // read line
-                $file_line = fgets($fp);
-                $file_line = str_replace("\r\n", "", $file_line);
-                $file_line = str_replace("\n", "", $file_line);
-                // header '#' is coomment
-                $file_line = preg_replace("/^#.*/", "", $file_line);
-                if(strlen($file_line) == 0){
-                    continue;
-                }
-                if(strlen($robots) != 0){
-                    $robots .= " , ";
-                }
-                $robots .= "'". $file_line. "'";
-            }
-            fclose($fp);
-        }
-        
-        $robots_exclusion = "";
-        if(strlen($robots) > 0) {
-            if(strlen($abbreviation) == 0) {
-                $robots_exclusion = " AND (user_agent IS NULL OR user_agent NOT IN (". $robots. ")) ";
-            } else if(strlen($abbreviation) > 0) {
-                $robots_exclusion = " AND (".$abbreviation. ".user_agent IS NULL OR ".$abbreviation. ".user_agent NOT IN (". $robots. ")) ";
-            }
-        }
-        
-        return $robots_exclusion;
-    }
-    
-    /**
-     * format date of year
-     * 
-     * @param string $abbreviation
-     * @return string
+     * Creating a subquery to perform the rounding in the year
+     * 年で丸め込みを行うサブクエリを作成
+     *
+     * @param string $abbreviation Table alias テーブル別名
+     * @return string Subquery サブクエリ
      */
     public function dateformatYearQuery($abbreviation) {
         $year = "";
@@ -146,10 +134,11 @@ class Repository_Components_Loganalyzor extends RepositoryLogicBase
     }
     
     /**
-     * make query parts of year
+     * Subquery that grouping in year
+     * 年でグルーピングするサブクエリ
      * 
-     * @param string $abbreviation
-     * @return string
+     * @param string $abbreviation Table alias テーブル別名
+     * @return string Subquery サブクエリ
      */
     public function perYearQuery() {
         $group_year = " GROUP BY YEAR ";
@@ -158,10 +147,11 @@ class Repository_Components_Loganalyzor extends RepositoryLogicBase
     }
     
     /**
-     * format date of month
-     * 
-     * @param string $abbreviation
-     * @return string
+     * Creating a subquery to perform the rounding in the month
+     * 月で丸め込みを行うサブクエリを作成
+     *
+     * @param string $abbreviation Table alias テーブル別名
+     * @return string Subquery サブクエリ
      */
     public function dateformatMonthlyQuery($abbreviation) {
         $monthly = "";
@@ -175,10 +165,11 @@ class Repository_Components_Loganalyzor extends RepositoryLogicBase
     }
     
     /**
-     * format make query parts of month
+     * Subquery that grouping in month
+     * 月でグルーピングするサブクエリ
      * 
-     * @param string $abbreviation
-     * @return string
+     * @param string $abbreviation Table alias テーブル別名
+     * @return string Subquery サブクエリ
      */
     public function perMonthlyQuery() {
         $group_monthly = " GROUP BY MONTHLY ";
@@ -187,10 +178,11 @@ class Repository_Components_Loganalyzor extends RepositoryLogicBase
     }
     
     /**
-     * format date of week
-     * 
-     * @param string $abbreviation
-     * @return string
+     * Creating a subquery to perform the rounding in the week
+     * 週で丸め込みを行うサブクエリを作成
+     *
+     * @param string $abbreviation Table alias テーブル別名
+     * @return string Subquery サブクエリ
      */
     public function dateformatWeeklyQuery($abbreviation) {
         $weekly = "";
@@ -204,10 +196,11 @@ class Repository_Components_Loganalyzor extends RepositoryLogicBase
     }
     
     /**
-     * make query parts of week
+     * Subquery that grouping in week
+     * 週でグルーピングするサブクエリ
      * 
-     * @param string $abbreviation
-     * @return string
+     * @param string $abbreviation Table alias テーブル別名
+     * @return string Subquery サブクエリ
      */
     public function perWeeklyQuery() {
         $group_weekly = " GROUP BY WEEKLY ";
@@ -216,10 +209,11 @@ class Repository_Components_Loganalyzor extends RepositoryLogicBase
     }
     
     /**
-     * format date of day
-     * 
-     * @param string $abbreviation
-     * @return string
+     * Creating a subquery to perform the rounding in the day
+     * 日で丸め込みを行うサブクエリを作成
+     *
+     * @param string $abbreviation Table alias テーブル別名
+     * @return string Subquery サブクエリ
      */
     public function dateformatDailyQuery($abbreviation) {
         $daily = "";
@@ -233,10 +227,11 @@ class Repository_Components_Loganalyzor extends RepositoryLogicBase
     }
     
     /**
-     * make query parts of day
+     * Subquery that grouping in day
+     * 日でグルーピングするサブクエリ
      * 
-     * @param string $abbreviation
-     * @return string
+     * @param string $abbreviation Table alias テーブル別名
+     * @return string Subquery サブクエリ
      */
     public function perDailyQuery() {
         $group_daily = " GROUP BY DAILY ";
@@ -245,13 +240,14 @@ class Repository_Components_Loganalyzor extends RepositoryLogicBase
     }
     
     /**
-     * check site license
-     * 
-     * @param string $abbreviation
-     * @param array $start_ip
-     * @param array $finish_ip
-     * @param array $user_id
-     * @return string
+     * Site license access determination for subqueries created
+     * サイトライセンスアクセス判定用サブクエリ作成
+     *
+     * @param string $abbreviation Table alias テーブル別名
+     * @param array $start_ip Start IP address 開始IPアドレス
+     * @param array $finish_ip End IP address 終了IPアドレス
+     * @param array $user_id User id ユーザID
+     * @return string Subquery サブクエリ
      */
     public function checkSitelicenseQuery($abbreviation, $start_ip, $finish_ip, $user_id) {
         // カラム名の設定
@@ -320,11 +316,13 @@ class Repository_Components_Loganalyzor extends RepositoryLogicBase
     }
     
     /**
-     * check site license
-     * 
-     * @param string $abbreviation
-     * @param array $item_type_id
-     * @return string
+     * Site license subqueries created for exclusion item type removal
+     * サイトライセンス除外アイテムタイプ除去用サブクエリ作成
+     *
+     * @param string $abbreviation Table alias テーブル別名
+     * @param int $item_type_id Item type id アイテムタイプID
+     * @param array $user_id User id ユーザID
+     * @return string Subquery サブクエリ
      */
     public function exclusiveSitelicenseItemtypeQuery($abbreviation, $item_type_id) {
         // カラム名の設定

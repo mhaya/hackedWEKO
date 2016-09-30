@@ -1,7 +1,15 @@
 <?php
+
+/**
+ * Common classes for the index operation
+ * インデックス操作用共通クラス
+ *
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: RepositoryIndexManager.class.php 53594 2015-05-28 05:25:53Z kaede_matsushita $
+// $Id: RepositoryIndexManager.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics,
 // Research and Development Center for Scientific Information Resources
@@ -12,30 +20,94 @@
 // --------------------------------------------------------------------
 
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
-
+/**
+ * WEKO logic-based base class
+ * WEKOロジックベース基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryLogicBase.class.php';
+
+/**
+ * Index rights management common classes
+ * インデックス権限管理共通クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryIndexAuthorityManager.class.php';
+
+/**
+ * Common classes for user rights management
+ * ユーザ権限管理用共通クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryUserAuthorityManager.class.php';
 
+/**
+ * Common classes for the index operation
+ * インデックス操作用共通クラス
+ *
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
+ */
 class RepositoryIndexManager extends RepositoryLogicBase
 {
     // Add new prefix 2014/01/15 T.Ichikawa --start--
+    /**
+     * Update search table object
+     * 検索テーブル更新オブジェクト
+     *
+     * @var RepositorySearchTableProcessing
+     */
     private $repositorySearchTableProcessing = null;
     // Add new prefix 2014/01/15 T.Ichikawa --end--
-    
+    /**
+     * Default posting privileges
+     * デフォルト投稿権限
+     *
+     * @var string
+     */
     private $defaultAccessRoleIds_ = '';
+    /**
+     * Default posting privileges
+     * デフォルト投稿権限
+     *
+     * @var string
+     */
     private $defaultAccessRoleRoom_ = '';
+    /**
+     * Default posting privileges
+     * デフォルト投稿権限
+     *
+     * @var string
+     */
     private $defaultAccessGroups_ = '';
+    /**
+     * Default viewing rights
+     * デフォルト閲覧権限
+     *
+     * @var string
+     */
     private $defaultExclusiveAclRoleIds_ = '';
+    /**
+     * Default viewing rights
+     * デフォルト閲覧権限
+     *
+     * @var string
+     */
     private $defaultExclusiveAclRoleRoom_ = '';
+    /**
+     * Default viewing rights
+     * デフォルト閲覧権限
+     *
+     * @var string
+     */
     private $defaultExclusiveAclGroups_ = '';
     
     /**
+     * Constructor
      * コンストラクタ
      *
-     * @param var $session Session
-     * @param var $this->dbAccess dbAccess
-     * @param string $TransStartDate TransStartDate
+     * @param Session $Session Session セッション管理オブジェクト
+     * @param DbObjectAdodb $db DB object データベース管理オブジェクト
+     * @param string $TransStartDate Transaction start date トランザクション開始日時
      */
     public function __construct($session, $dbAccess, $transStartDate)
     {
@@ -43,9 +115,11 @@ class RepositoryIndexManager extends RepositoryLogicBase
     }
 
     /**
+     * Get new index id
      * 新規インデックスIDを発番する
      *
-     * @param var $logFh log handle file
+     * @param resource $logFh log handle file ログファイルリソース
+     * @return int Index id インデックスID
      */
     private function newIndexId($logFh=null)
     {
@@ -77,11 +151,12 @@ class RepositoryIndexManager extends RepositoryLogicBase
     }
 
     /**
+     * Get show order
      * 新規表示順番を発番する
      *
-     * @param var $indexId index id
-     * @param bool $isAddHead add position of index, head or tail
-     * @param var $logFh log handle file
+     * @param int $indexId index id インデックスID
+     * @param boolean $isAddHead add position of index, head or tail 先頭に追加するか
+     * @param resource $logFh log handle file ログファイルリソース
      */
     private function newShowOrder($indexId, $isAddHead,$logFh=null)
     {
@@ -136,8 +211,13 @@ class RepositoryIndexManager extends RepositoryLogicBase
     }
 
     /**
+     * To get a list of indexes that index display setting is set to "display"
      * インデックス表示設定が「表示する」になっているインデックスのリストを取得する
      *
+     * @param int $adminBaseAuth Base admin authority 管理者ベース権限
+     * @param int $adminRoomAuth Room admin authority 管理者ルーム権限
+     * @return array Index list インデックス一覧
+     *               array[$ii]
      */
     public function getDisplayIndexList($adminBaseAuth, $adminRoomAuth)
     {
@@ -213,10 +293,12 @@ class RepositoryIndexManager extends RepositoryLogicBase
     }
 
     /**
+     * To get a list to be displayed in the index link
      * インデックスリンクに表示する一覧を取得する
      *
-     * @param var $parentIndexId search index, 
-     * @param var $indexList the list of index list
+     * @param int $parentIndexId search index id 親インデックスID
+     * @param array $indexList the list of index list インデックス一覧
+     *                         array[$ii]["index_id"|"index_name"|"index_name_english"|"select_index_list_display"|"select_index_list_name"|"select_index_list_name_english"]
      */
     private function getIndexList($parentIndexId, &$indexLinkList)
     {
@@ -246,12 +328,14 @@ class RepositoryIndexManager extends RepositoryLogicBase
     }
 
     /**
+     * To register the data for the new index
      * 新規インデックスのデータを登録する
      *
-     * @param var $isAddHead position of new index, head or tail
-     * @param var $index_data a new index data
-     * @param var $errorMsg error message
-     * @param var $logFh log handle file
+     * @param boolean $isAddHead position of new index, head or tail
+     * @param array $index_data a new index data インデックス情報
+     *                         array[$ii]["index_name"|"index_name_english"|"parent_index_id"|"public_state"|"pub_date"|"access_role"|"access_group"|"exclusive_acl_id"|"exclusive_acl_room_auth"|"exclusive_acl_room_auth"|"exclusive_acl_group_id"|"comment"|"display_more"|"rss_display"|"repository_id"|"set_spec"|"create_cover_flag"|"owner_user_id"|"biblio_flag"|"online_issn"|"select_index_list_name"|"select_index_list_name_english"|"thumbnail"|"thumbnail_name"|"thumbnail_mime_type"|"harvest_public_state"]
+     * @param string $errorMsg error message エラーメッセージ
+     * @param resource $logFh log handle file ログファイルリソース
      */
     public function addIndex($isAddHead, &$index_data, &$errMsg, $logFh=null)
     {
@@ -587,10 +671,13 @@ class RepositoryIndexManager extends RepositoryLogicBase
     }
 
     /**
+     * Perform an update of the specified index parameters
+     * Inherit the permissions of the parent index at the time of renewal, to inherit the permissions after inherited by the child index
      * 指定したインデックスのパラメータの更新を行う
      * 更新時に親インデックスの権限を継承し、継承後の権限を子インデックスに継承する
      *
-     * @param array $index_data an update index data
+     * @param array $index_data an update index data インデックス情報
+     *                          array[$ii]["index_name"|"index_name_english"|"parent_index_id"|"public_state"|"pub_date"|"access_role"|"access_group"|"exclusive_acl_id"|"exclusive_acl_room_auth"|"exclusive_acl_room_auth"|"exclusive_acl_group_id"|"comment"|"display_more"|"rss_display"|"repository_id"|"set_spec"|"create_cover_flag"|"owner_user_id"|"biblio_flag"|"online_issn"|"select_index_list_name"|"select_index_list_name_english"|"thumbnail"|"thumbnail_name"|"thumbnail_mime_type"|"harvest_public_state"]
      */
     public function updateIndex($index_data)
     {
@@ -893,10 +980,12 @@ class RepositoryIndexManager extends RepositoryLogicBase
     }
 
     /**
+     * Perform a logical delete, including the specified index, also the index of the offspring
+     * If the private tree under the deleted index is present, to move the private tree under the root index
      * 指定したインデックスを、子孫のインデックスも含めて論理削除を行う
      * 削除したインデックスの下にプライベートツリーが存在する場合は、プライベートツリーをルートインデックスの下に移動する
      *
-     * @param var $index_data a delete index data
+     * @param int $index_id index id インデックスID
      */
     public function deleteIndex($index_id)
     {
@@ -926,9 +1015,10 @@ class RepositoryIndexManager extends RepositoryLogicBase
     }
 
     /**
+     * After performing a logical delete of the descendants of the index, perform a logical delete of the specified index
      * 子孫のインデックスの論理削除を行ったのち、指定したインデックスの論理削除を行う
      *
-     * @param var $index_data a delete index data
+     * @param int $index_id index id インデックスID
      */
     private function deleteAllChildIndex($indexId) {
         // 子インデックスを取得
@@ -957,18 +1047,25 @@ class RepositoryIndexManager extends RepositoryLogicBase
         // インデックスの権限を削除
         $repositoryIndexAuthorityManager = new RepositoryIndexAuthorityManager($this->Session, $this->dbAccess, $this->transStartDate);
         $repositoryIndexAuthorityManager->deleteBrowsingAuth($indexId);
+        
+        // インデックス付属データを削除
+        $indexAdditionalDataManager = BusinessFactory::getFactory()->getBusiness("businessIndexadditionaldatamanager");
+        $indexAdditionalDataManager->deleteAdditionalDataIdByIndexId($indexId);
     }
 
     /**
+     * Recursively inherit the setting from a parent to a child in the string Zukuko index to the parent index ID
      * 親インデックスIDに紐づく子インデックスに親から子に設定値を再帰的に継承する
      *
-     * @param var $parentIndexId a parent index data
-     * @param var $exclusiveBaseAuth a parent base auth
-     * @param var $exclusiveRoomAuth a parent room auth
-     * @param var $exclusiveGroup a parent groups
-     * @param var $publicState
-     * @param var $publicDate
-     * @param var $harvestPublicState
+     * @param int $parentIndexId a parent index data インデックスID
+     * @param string $exclusiveBaseAuth a parent base auth 閲覧できないベース権限
+     * @param string $exclusiveRoomAuth a parent room auth 閲覧できないルーム権限
+     * @param array $exclusiveGroup a parent groups 閲覧できないグループ
+     * @param int $publicState public state 公開状態
+     * @param string $publicDate public date 公開日
+     * @param int $harvestPublicState harvest public state ハーベスト公開フラグ
+     * @param int $biblioFlag biblio flag 雑誌フラグ
+     * @param string $onlineIssn ISSN ISSN
      */
     private function updateDependentIndexParam( $parentIndexId,
                                                 $exclusiveBaseAuth,
@@ -1027,9 +1124,10 @@ class RepositoryIndexManager extends RepositoryLogicBase
     }
 
     /**
+     * To get the authority information of the child index
      * 子インデックスの権限情報を取得する
      *
-     * @param var $parentIndexId a parent index data
+     * @param int $indexId index id インデックスID
      */
     private function getAllChildIndex($indexId) {
         // 子のインデックス情報を取得する
@@ -1082,6 +1180,8 @@ class RepositoryIndexManager extends RepositoryLogicBase
     }
 
     /**
+     * Gets the index viewing authority of the user input from the index table,
+     * Create a viewing rights for the search table, to register
      * インデックステーブルからユーザーが入力したインデックスの閲覧権限を取得し、
      * 検索テーブル用の閲覧権限を作成し、登録する
      *
@@ -1100,10 +1200,11 @@ class RepositoryIndexManager extends RepositoryLogicBase
     }
 
     /**
+     * To update the value of OnlineISSN of the index table
      * インデックステーブルのOnlineISSNの値を更新する
      * 
-     * @param string $onlineIssn
-     * @param int $indexId
+     * @param string $onlineIssn ISSN ISSN
+     * @param int $indexId index id インデックスID
      */
     private function updateIndexOnlineIssn($onlineIssn, $indexId)
     {
@@ -1121,10 +1222,11 @@ class RepositoryIndexManager extends RepositoryLogicBase
     }
 
     /**
+     * To update the value of BiblioFlag of the index table
      * インデックステーブルのBiblioFlagの値を更新する
      * 
-     * @param string $biblioFlag
-     * @param int $indexId
+     * @param int $biblioFlag biblio flag 雑誌フラグ
+     * @param int $indexId index id インデックスID
      */
     private function updateIndexBiblioFlag($biblioFlag, $indexId)
     {
@@ -1141,6 +1243,13 @@ class RepositoryIndexManager extends RepositoryLogicBase
         }
     }
     
+    /**
+     * ISSN format check
+     * ISSN形式チェック
+     *
+     * @param string $issn ISSN ISSN
+     * @return string Result 結果
+     */
     private function checkIssnFormat(&$issn)
     {
         $issn_flg = "";
@@ -1163,7 +1272,10 @@ class RepositoryIndexManager extends RepositoryLogicBase
     }
     
     /**
+     * To get the ISSN set value before the change
      * 変更前のISSN設定値を取得する
+     * 
+     * @param unknown_type $index_id index id インデックスID
      */
     private function checkOnlineIssnValue($index_id) {
         $query = "SELECT online_issn FROM ". DATABASE_PREFIX. "repository_index ".
@@ -1176,7 +1288,13 @@ class RepositoryIndexManager extends RepositoryLogicBase
     }
     
     /**
+     * It updates the value of the magazine information table
      * 雑誌情報テーブルの値を更新する
+     *
+     * @param string $online_issn ISSN ISSN
+     * @param int $index_id index id インデックスID
+     * @param string $index_name index name インデックス名
+     * @param string $index_name_english ndex name english インデックス英名
      */
      private function updateIssnTable($online_issn, $index_id, $index_name, $index_name_english) {
          //SetSpecの値を再帰的に取得する
@@ -1234,6 +1352,13 @@ class RepositoryIndexManager extends RepositoryLogicBase
          $result = $this->dbAccess->executeQuery($query, $params);
      }
     
+     /**
+      * To get including parent index SetSpec
+      * SetSpecを親インデックス含めて取得する
+      *
+      * @param int $index_id index id インデックスID
+      * @param string $specs SetSpec SetSpec
+      */
     public function strictlySetSpec($index_id, &$specs) {
         if($index_id != 0) {
              $query = "SELECT parent_index_id FROM ". DATABASE_PREFIX. "repository_index ".
@@ -1247,10 +1372,12 @@ class RepositoryIndexManager extends RepositoryLogicBase
     }
     
     /**
-     * $copyFrom を $copyToにコピーする
+     * Copy
+     * コピーする
      * 
-     * @param int $copyFrom
-     * @param int $copyTo
+     * @param string $copyFrom Original コピー元
+     * @param string $copyTo Copy to コピー先
+     * @return boolean Result 結果
      */
     public function copyIndexTree($copyFrom, $copyTo) {
         // 親インデックスを子インデックスにはコピーできない
@@ -1347,14 +1474,16 @@ class RepositoryIndexManager extends RepositoryLogicBase
     }
     
     /**
+     * To update the recursively index
      * 再帰的にインデックスを更新する
      * 
-     * @param array $parentRecord
-     * @param bool $pubdate
-     * @param bool $create_cover
-     * @param bool $aclRoleIds
-     * @param bool $aclRoomAuth
-     * @param bool $aclGroupIds
+     * @param array $parentRecord Index information インデックス情報
+     *                            array[$ii]["index_name"|"index_name_english"|"parent_index_id"|"public_state"|"pub_date"|"access_role"|"access_group"|"exclusive_acl_id"|"exclusive_acl_room_auth"|"exclusive_acl_room_auth"|"exclusive_acl_group_id"|"comment"|"display_more"|"rss_display"|"repository_id"|"set_spec"|"create_cover_flag"|"owner_user_id"|"biblio_flag"|"online_issn"|"select_index_list_name"|"select_index_list_name_english"|"thumbnail"|"thumbnail_name"|"thumbnail_mime_type"|"harvest_public_state"]
+     * @param boolean $pubdate Public date 公開日
+     * @param boolean $create_cover Cover page create flag カバーページ作成フラグ
+     * @param string $aclRoleIds Base authority ベース権限
+     * @param string $aclRoomAuth Room authority ルーム権限
+     * @param string $aclGroupIds Group グループ
      */
     public function recursiveUpdate($parentRecord, $pubdate, $create_cover, $aclRoleIds, $aclRoomAuth, $aclGroupIds){
         $indexList = array();
@@ -1499,10 +1628,13 @@ class RepositoryIndexManager extends RepositoryLogicBase
     }
     
     /**
-     * $index_id の子孫インデックス一覧を取得
+     * Get the child index list
+     * 子インデックス一覧を取得
      * 
-     * @param int $index_id
-     * @param array $indexList
+     * @param int $index_id index id インデックスID
+     * @param array $indexList child index list 子インデックス一覧
+     *                         array[$ii]
+     * @return boolean Result 結果
      */
     public function getDescendants($index_id, &$indexList){
         $query = "SELECT index_id FROM " . DATABASE_PREFIX . "repository_index " .
@@ -1527,6 +1659,7 @@ class RepositoryIndexManager extends RepositoryLogicBase
     // Add auto create private_tree K.matsuo 2013/4/5 --start--
     /**
      * Create PrivateTree automatically
+     * プライベートツリー作成
      *
      */
     public function createPrivateTree(){
@@ -1631,8 +1764,11 @@ class RepositoryIndexManager extends RepositoryLogicBase
     // Add OpenDepo Private Tree Composition K.Matsuo 2013/10/01 --start--
     
     /**
-     * Get user_authority_id by user ID
-     *
+     * Is create private tree
+     * プライベートツリーが作成されているか否か
+     * 
+     * @param int $parentIndexId index id インデックスID
+     * @return boolean Is create 作成されているか
      */
     private function isCreatePrivatetree($parentIndexId)
     {
@@ -1669,6 +1805,15 @@ class RepositoryIndexManager extends RepositoryLogicBase
         }
     }
     
+    /**
+     * To create a child index of private tree
+     * プライベートツリーの子インデックスを作成する
+     *
+     * @param string $privateTreeCompositionXML private tree composition xml 子インデックス構成XML
+     * @param int $parentIndexId index id インデックスID
+     * @param string $insUserId User id ユーザID
+     * @return boolean Result 結果
+     */
     private function createPrivateTreeChildIndex($privateTreeCompositionXML, $parentIndexId, $insUserId)
     {
         /////////////// XML perser ///////////////
@@ -1809,6 +1954,10 @@ class RepositoryIndexManager extends RepositoryLogicBase
     }
     // Add OpenDepo Private Tree Composition K.Matsuo 2013/10/01 --end--
     
+    /**
+     * Private tree default permission settings
+     * プライベートツリーデフォルト権限設定
+     */
     public function setPrivateTreeDefaultAccessControlList()
     {
         // Mod Bug fix No.55 2014/03/24 T.Koyasu --start--
@@ -1822,10 +1971,10 @@ class RepositoryIndexManager extends RepositoryLogicBase
     }
     
     /**
-     * 新規index_idを取得する
      * get new index id
+     * 新規index_idを取得する
      *
-     * @return new index id
+     * @return int index id インデックスID
      */
     function getNewIndexId(){
         // get new index id
@@ -1841,10 +1990,10 @@ class RepositoryIndexManager extends RepositoryLogicBase
     }
     
     /**
-     * $pid直下にあるindexの最大show_orderを取得する
      * get $pid bottom index max show order
+     * $pid直下にあるindexの最大show_orderを取得する
      *
-     * @param $pid
+     * @param int $pid index id インデックスID
      */ 
     function getShowOrder($pid){
         // get new parent index bottom's max show_order
@@ -1860,37 +2009,74 @@ class RepositoryIndexManager extends RepositoryLogicBase
         return $show_order;
     }
     
+    /**
+     * Authority acquisition
+     * 権限取得
+     *
+     * @return string
+     */
     public function getDefaultAccessRoleIds()
     {
         return $this->defaultAccessRoleIds_;
     }
+    /**
+     * Authority acquisition
+     * 権限取得
+     *
+     * @return string
+     */
     public function getDefaultAccessRoleRoom()
     {
         return $this->defaultAccessRoleRoom_;
     }
+    /**
+     * Authority acquisition
+     * 権限取得
+     *
+     * @return string
+     */
     public function getDefaultAccessGroups()
     {
         return $this->defaultAccessGroups_;
     }
+    /**
+     * Authority acquisition
+     * 権限取得
+     *
+     * @return string
+     */
     public function getDefaultExclusiveRoleIds()
     {
         return $this->defaultExclusiveAclRoleIds_;
     }
+    /**
+     * Authority acquisition
+     * 権限取得
+     *
+     * @return string
+     */
     public function getDefaultExclusiveAclRoleRoom()
     {
         return $this->defaultExclusiveAclRoleRoom_;
     }
+    /**
+     * Authority acquisition
+     * 権限取得
+     *
+     * @return string
+     */
     public function getDefaultExclusiveAclGroups()
     {
         return $this->defaultExclusiveAclGroups_;
     }
     
     /**
-     * indexの新規登録(プライベートツリーで使用)
      * insert index
+     * indexの新規登録(プライベートツリーで使用)
      *
-     * @param $index_data update index data
-     * @return true or false
+     * @param int $index_data index data インデックス情報
+     *                        array[$ii]["index_name"|"index_name_english"|"parent_index_id"|"public_state"|"pub_date"|"access_role"|"access_group"|"exclusive_acl_id"|"exclusive_acl_room_auth"|"exclusive_acl_room_auth"|"exclusive_acl_group_id"|"comment"|"display_more"|"rss_display"|"repository_id"|"set_spec"|"create_cover_flag"|"owner_user_id"|"biblio_flag"|"online_issn"|"select_index_list_name"|"select_index_list_name_english"|"thumbnail"|"thumbnail_name"|"thumbnail_mime_type"|"harvest_public_state"]
+     * @return boolean Result 結果
      */
     function insertIndex($index_data){
         // Fix index authority table. Y.Nakao --start--
@@ -1898,11 +2084,12 @@ class RepositoryIndexManager extends RepositoryLogicBase
     }
     
     /**
-     * indexの新規登録
      * insert index
+     * indexの新規登録
      *
-     * @param $index_data update index data
-     * @return true or false
+     * @param int $index_data index data インデックス情報
+     *                        array[$ii]["index_name"|"index_name_english"|"parent_index_id"|"public_state"|"pub_date"|"access_role"|"access_group"|"exclusive_acl_id"|"exclusive_acl_room_auth"|"exclusive_acl_room_auth"|"exclusive_acl_group_id"|"comment"|"display_more"|"rss_display"|"repository_id"|"set_spec"|"create_cover_flag"|"owner_user_id"|"biblio_flag"|"online_issn"|"select_index_list_name"|"select_index_list_name_english"|"thumbnail"|"thumbnail_name"|"thumbnail_mime_type"|"harvest_public_state"]
+     * @return boolean Result 結果
      */
     function insertMultiIndex($index_data_list){
         // Fix Not call indexAuthorityManager 2014/03/15 Y.Nakao --start--

@@ -1,4 +1,10 @@
 <?php
+/**
+ * Class for Harvest item registration (LIDO)
+ * ハーベストアイテム登録用クラス(LIDO)
+ * 
+ * @package WEKO
+ */
 // --------------------------------------------------------------------
 //
 // $Id: HarvestingOaipmhLido.class.php 36496 2014-05-30 01:08:48Z rei_matsuura $
@@ -11,64 +17,308 @@
 //
 // --------------------------------------------------------------------
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
+/**
+ * Harvest item registration base class
+ * ハーベストアイテム登録基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/action/common/harvesting/filter/HarvestingOaipmhAbstract.class.php';
 
 /**
- * Attribute ID for LOM harvesting itemtype
- *
- * @package repository
- * @access  public
+ * LIDO item type attribute ID constant class
+ * LIDOアイテムタイプ属性ID定数クラス
+ * 
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class AttrId
 {
+    /**
+     * Minimam id
+     * 最少ID
+     * 
+     * @var int
+     */
     const MIN_ID = 1;
+    /**
+     * Maximum id
+     * 最大ID
+     * 
+     * @var int
+     */
     const MAX_ID = 38;
     
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const LIDO_REC_ID = 1;
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const LIDO_OBJECT_WORK_CONCEPT_ID = 2;
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const LIDO_OBJECT_WORK_TERM = 3;
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const LIDO_CLASSIFICATION_CONCEPT_ID = 4;
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const LIDO_CLASSIFICATION_TERM = 5;
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const LIDO_TITLE_SET = 6;
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const LIDO_INSCRIPTION = 7;
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const LIDO_REPOSITORY_NAME_LEGAL_BODY_NAME = 8;
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const LIDO_REPOSITORY_NAME_LEGAL_BODY_WEB_LINK = 9;
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const LIDO_REPOSITORY_SET_WORK_ID = 10;
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const LIDO_DISPLAY_STATE = 11;
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const LIDO_DESCRIPTIVE_NOTE_VALUE = 12;
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const LIDO_DESPLAY_OBJECT_MEASUREMENTS = 13;
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const LIDO_DISPLAY_EVENT = 14;
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const LIDO_EVENT_TYPE = 15;
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const LIDO_EVENT_ACTOR = 16;
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const LIDO_EVENT_DATE_DISPLAY_DATE = 17;
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const LIDO_EVENT_DATE_EARLIEST = 18;
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const LIDO_EVENT_DATE_LATEST = 19;
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const LIDO_PERIOD_NAME = 20;
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const LIDO_EVENT_DISPLAY_PLACE = 21;
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const LIDO_EVENT_PLACE_GML = 22;
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const LIDO_EVENT_MATERIALS_TECH = 23;
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const LIDO_DISPLAY_SUBJECT = 24;
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const LIDO_RELATED_WORK = 25;
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const LIDO_RECORD_ID = 26;
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const LIDO_RECORD_TYPE = 27;
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const LIDO_RECORD_SOURCE = 28;
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const LIDO_RECORD_INFO_LINK = 29;
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const LIDO_RECORD_METADATA_DATE = 30;
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const LIDO_RESOURCE_REPRESENTATION = 31;
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const LIDO_RESOURCE_DESCRIPTION = 32;
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const LIDO_RESOURCE_SOURCE = 33;
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const LIDO_RIGHTS_RESOURCE = 34;
     
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const REPO_ID = 35;
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const IDENTIFIER = 36;
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const DATESTAMP = 37;
 }
 
 /**
- * Repository module OAI-PMH oai_lom harvesting class
- *
- * @package repository
- * @access  public
+ * Class for Harvest item registration (LIDO)
+ * ハーベストアイテム登録用クラス(LIDO)
+ * 
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class HarvestingOaipmhLido extends HarvestingOaipmhAbstract
 {
@@ -76,54 +326,318 @@ class HarvestingOaipmhLido extends HarvestingOaipmhAbstract
     // Const
     // ---------------------------------------------
     // Itemtype data
+    /**
+     * Item type id
+     * アイテムタイプID
+     * 
+     * @var int
+     */
     const ITEMTYPE_ID = 20017;
+    /**
+     * Error message
+     * エラーメッセージ
+     * 
+     * @var string
+     */
     const MSG_ER_GET_LIDO_REQUIRED_DATA = "repository_harvesting_error_get_required_data_for_lido";
     
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const LIDO_TAG_NOT_USED_CATEGORY_START = "<lido:category";
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const LIDO_TAG_NOT_USED_CATEGORY_END = "<\/lido:category>";
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const LIDO_TAG_NOT_USED_REPOSITORY_LOCATION_START = "<lido:repositoryLocation";
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const LIDO_TAG_NOT_USED_REPOSITORY_LOCATION_END = "<\/lido:repositoryLocation>";
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const LIDO_TAG_NOT_USED_RELATED_WORK_REL_TYPE_START = "<lido:relatedWorkRelType";
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const LIDO_TAG_NOT_USED_RELATED_WORK_REL_TYPE_END = "<\/lido:relatedWorkRelType>";
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const LIDO_TAG_NOT_USED_RELATED_WORK_OBJECT_ONE_START = "<lido:object ";
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const LIDO_TAG_NOT_USED_RELATED_WORK_OBJECT_TWO_START = "<lido:object>";
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const LIDO_TAG_NOT_USED_RELATED_WORK_OBJECT_END = "<\/lido:object>";
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const LIDO_TAG_NOT_USED_RESOURCE_ID_START = "<lido:resourceID";
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const LIDO_TAG_NOT_USED_RESOURCE_ID_END = "<\/lido:resourceID>";
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const LIDO_TAG_NOT_USED_RESOURCE_TYPE_START = "<lido:resourceType";
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const LIDO_TAG_NOT_USED_RESOURCE_TYPE_END = "<\/lido:resourceType>";
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const LIDO_TAG_NOT_USED_RESOURCE_REL_TYPE_START = "<lido:resourceRelType";
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const LIDO_TAG_NOT_USED_RESOURCE_REL_TYPE_END = "<\/lido:resourceRelType>";
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const LIDO_TAG_NOT_USED_RESOURCE_PERSPECTIVE_START = "<lido:resourcePerspective";
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const LIDO_TAG_NOT_USED_RESOURCE_PERSPECTIVE_END = "<\/lido:resourcePerspective>";
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const LIDO_TAG_NOT_USED_RESOURCE_DATE_TAKEN_START = "<lido:resourceDateTaken";
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const LIDO_TAG_NOT_USED_RESOURCE_DATE_TAKEN_END = "<\/lido:resourceDateTaken>";
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const LIDO_TAG_NOT_USED_ACTOR_IN_ROLE_START = "<lido:actorInRole";
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const LIDO_TAG_NOT_USED_ACTOR_IN_ROLE_END = "<\/lido:actorInRole>";
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const LIDO_TAG_NOT_USED_TERM_MATERIALS_TECH_START = "<lido:termMaterialsTech";
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const LIDO_TAG_NOT_USED_TERM_MATERIALS_TECH_END = "<\/lido:termMaterialsTech>";
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const LIDO_TAG_NOT_USED_NAME_PLACE_SET_START = "<lido:namePlaceSet";
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const LIDO_TAG_NOT_USED_NAME_PLACE_SET_END = "<\/lido:namePlaceSet>";
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const LIDO_TAG_NOT_USED_PART_OF_PLACE_START = "<lido:partOfPlace";
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const LIDO_TAG_NOT_USED_PART_OF_PLACE_END = "<\/lido:partOfPlace>";
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const LIDO_TAG_NOT_USED_MATERIAL_TECH_START = "<lido:materialsTech";
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const LIDO_TAG_NOT_USED_MATERIAL_TECH_END = "<\/lido:materialsTech>";
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const LIDO_TAG_NOT_USED_SUBJECT_ONE_START = "<lido:subject ";
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const LIDO_TAG_NOT_USED_SUBJECT_TWO_START = "<lido:subject>";
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const LIDO_TAG_NOT_USED_SUBJECT_END = "<\/lido:subject>";
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const LIDO_TAG_NOT_USED_RIGHTS_WORK_WRAP_START = "<lido:rightsWorkWrap";
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const LIDO_TAG_NOT_USED_RIGHTS_WORK_WRAP_END = "<\/lido:rightsWorkWrap>";
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const LIDO_TAG_NOT_USED_RECORD_RIGHTS_START = "<lido:recordRights";
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const LIDO_TAG_NOT_USED_RECORD_RIGHTS_END = "<\/lido:recordRights>";
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const LIDO_TAG_NOT_USED_OBJECT_PUBLISHED_ID_START = "<lido:objectPublishedID";
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const LIDO_TAG_NOT_USED_OBJECT_PUBLISHED_ID_END = "<\/lido:objectPublishedID>";
+    /**
+     * Pattern
+     * パターン
+     * 
+     * @var string
+     */
     const NOT_USED_CONTENT = ".*?";
+    /**
+     * Delimiter
+     * 分割文字
+     * 
+     * @var string
+     */
     const OR_STRING = "|";
     
     // ---------------------------------------------
     // Private member
     // ---------------------------------------------
+    /**
+     * Metadata count
+     * メタデータ数
+     * 
+     * @var array[$ii]
+     */
     protected $cntMetadata = array();
+    /**
+     * Blank required count
+     * 空文字必須一覧
+     * 
+     * @var array[$ii]
+     */
     private $cntBlankRequiredMetadata = array();
     
     // ---------------------------------------------
@@ -131,8 +645,10 @@ class HarvestingOaipmhLido extends HarvestingOaipmhAbstract
     // ---------------------------------------------
     /**
      * Constructor
+     * コンストラクタ
      *
-     * @return HarvestingOaipmh
+     * @param Session $Session Session object セッション管理オブジェクト
+     * @param DbObject $Db Database object データベース管理オブジェクト
      */
     public function __construct($Session, $Db){
         $this->Session = $Session;
@@ -147,7 +663,7 @@ class HarvestingOaipmhLido extends HarvestingOaipmhAbstract
     // ---------------------------------------------
     /**
      * Init data
-     *
+     * 初期化
      */
     private function initMember()
     {
@@ -163,12 +679,14 @@ class HarvestingOaipmhLido extends HarvestingOaipmhAbstract
     
     /**
      * Get metadata array from ListRecords(record)
+     * メタデータ取得
      *
-     * @param string $metadataXml
-     * @param int $repositoryId
-     * @param array $metadata metadata[TAGNAME][NUM]["value"]
-     *                                              ["attribute"][KEY]
-     * @return bool
+     * @param string $metadataXml Metadata XML XML文字列
+     * @param int $repositoryId Repository id リポジトリID
+     * @param array $metadata Metadata list メタデータ一覧
+     *                        array[TAGNAME][$ii]["value"]
+     *                                           ["attribute"][KEY]
+     * @return boolean Result 結果
      */
     public function setMetadataFromListRecords($metadataXml, $repositoryId, &$metadata)
     {
@@ -184,11 +702,14 @@ class HarvestingOaipmhLido extends HarvestingOaipmhAbstract
     
     /**
      * Set metadata to array
+     * メタデータ変換
      *
-     * @param string $metadataXml
-     * @param int $repositoryId
-     * @param string $metadata
-     * @return array
+     * @param string $metadataXml Metadata XML XML文字列
+     * @param int $repositoryId Repository id リポジトリID
+     * @param array $metadata Metadata list メタデータ一覧
+     *                        array[TAGNAME][$ii]["value"]
+     *                                           ["attribute"][KEY]
+     * @return boolean Result 結果
      */
     private function setMetadataToArray($metadataXml, $repositoryId, &$metadata)
     {
@@ -335,10 +856,12 @@ class HarvestingOaipmhLido extends HarvestingOaipmhAbstract
     /**
      * Set lidoRecId metadata to array
      * lidoRecID
+     * メタデータ変換
      *
-     * @param DOMNodeList $lidoRecIds
-     * @param array $metadata
-     * @return bool
+     * @param DOMNodeList $lidoRecIds XML Node list XMLNode一覧
+     * @param array $metadata Metadata list メタデータ一覧
+     *                        array[TAGNAME][$ii]["value"]
+     *                                           ["attribute"][KEY]
      */
     private function setLidoRecId(DOMNodeList $lidoRecIds, &$metadata)
     {
@@ -359,10 +882,12 @@ class HarvestingOaipmhLido extends HarvestingOaipmhAbstract
     /**
      * Set objectWorkType metadata to array
      * descriptiveMetadata.objectClassificationWrap.objectWorkTypeWrap.objectWorkType
+     * メタデータ変換
      *
-     * @param DOMNodeList $objectWorkTypes
-     * @param array $metadata
-     * @return bool
+     * @param DOMNodeList $objectWorkTypes XML Node list XMLNode一覧
+     * @param array $metadata Metadata list メタデータ一覧
+     *                        array[TAGNAME][$ii]["value"]
+     *                                           ["attribute"][KEY]
      */
     private function setObjectWorkType(DOMNodeList $objectWorkTypes, &$metadata)
     {
@@ -424,10 +949,12 @@ class HarvestingOaipmhLido extends HarvestingOaipmhAbstract
     /**
      * Set classification metadata to array
      * descriptiveMetadata.objectClassificationWrap.classificationWrap.classification
+     * メタデータ変換
      *
-     * @param DOMNodeList $classifications
-     * @param array $metadata
-     * @return bool
+     * @param DOMNodeList $classifications XML Node list XMLNode一覧
+     * @param array $metadata Metadata list メタデータ一覧
+     *                        array[TAGNAME][$ii]["value"]
+     *                                           ["attribute"][KEY]
      */
     private function setClassification(DOMNodeList $classifications, &$metadata)
     {
@@ -487,10 +1014,12 @@ class HarvestingOaipmhLido extends HarvestingOaipmhAbstract
     /**
      * Set titleSet metadata to array
      * descriptiveMetadata.objectIdentificationWrap.titleWrap.titleSet
+     * メタデータ変換
      *
-     * @param DOMNodeList $titleSets
-     * @param array $metadata
-     * @return bool
+     * @param DOMNodeList $titleSets XML Node list XMLNode一覧
+     * @param array $metadata Metadata list メタデータ一覧
+     *                        array[TAGNAME][$ii]["value"]
+     *                                           ["attribute"][KEY]
      */
     private function setTitleSet(DOMNodeList $titleSets, &$metadata)
     {
@@ -530,10 +1059,12 @@ class HarvestingOaipmhLido extends HarvestingOaipmhAbstract
     /**
      * Set inscriptionTranscription metadata to array
      * descriptiveMetadata.objectIdentificationWrap.inscriptionsWrap.inscriptions.inscriptionTranscription
+     * メタデータ変換
      *
-     * @param DOMNodeList $inscriptionTranscriptions
-     * @param array $metadata
-     * @return bool
+     * @param DOMNodeList $inscriptionTranscriptions XML Node list XMLNode一覧
+     * @param array $metadata Metadata list メタデータ一覧
+     *                        array[TAGNAME][$ii]["value"]
+     *                                           ["attribute"][KEY]
      */
     private function setInscriptionTranscription(DOMNodeList $inscriptionTranscriptions, &$metadata)
     {
@@ -555,10 +1086,12 @@ class HarvestingOaipmhLido extends HarvestingOaipmhAbstract
     /**
      * Set repositorySet metadata to array
      * descriptiveMetadata.objectIdentificationWrap.repositoryWrap.repositorySet
+     * メタデータ変換
      *
-     * @param DOMNodeList $repositorySets
-     * @param array $metadata
-     * @return bool
+     * @param DOMNodeList $repositorySets XML Node list XMLNode一覧
+     * @param array $metadata Metadata list メタデータ一覧
+     *                        array[TAGNAME][$ii]["value"]
+     *                                           ["attribute"][KEY]
      */
     private function setRepositorySet(DOMNodeList $repositorySets, &$metadata)
     {
@@ -627,10 +1160,12 @@ class HarvestingOaipmhLido extends HarvestingOaipmhAbstract
     /**
      * Set repositoryName metadata to array
      * descriptiveMetadata.objectIdentificationWrap.repositoryWrap.repositorySet.repositoryName
+     * メタデータ変換
      *
-     * @param DOMNode $repositoryName
-     * @param array $metadata
-     * @return bool
+     * @param DOMNodeList $repositoryName XML Node list XMLNode一覧
+     * @param array $metadata Metadata list メタデータ一覧
+     *                        array[TAGNAME][$ii]["value"]
+     *                                           ["attribute"][KEY]
      */
     private function setRepositoryName(DOMNode $repositoryName, &$metadata)
     {
@@ -694,10 +1229,12 @@ class HarvestingOaipmhLido extends HarvestingOaipmhAbstract
     /**
      * Set displayState metadata to array
      * descriptiveMetadata.objectIdentificationWrap.displayStateEditionWrap.displayState
+     * メタデータ変換
      *
-     * @param DOMNodeList $displayStates
-     * @param array $metadata
-     * @return bool
+     * @param DOMNodeList $displayStates XML Node list XMLNode一覧
+     * @param array $metadata Metadata list メタデータ一覧
+     *                        array[TAGNAME][$ii]["value"]
+     *                                           ["attribute"][KEY]
      */
     private function setDisplayState(DOMNodeList $displayStates, &$metadata)
     {
@@ -719,10 +1256,12 @@ class HarvestingOaipmhLido extends HarvestingOaipmhAbstract
     /**
      * Set descriptiveNoteValue metadata to array
      * descriptiveMetadata.objectIdentificationWrap.objectDescriptionWrap.objectDescriptionSet.descriptiveNoteValue
+     * メタデータ変換
      *
-     * @param DOMNodeList $descriptiveNoteValues
-     * @param array $metadata
-     * @return bool
+     * @param DOMNodeList $descriptiveNoteValues XML Node list XMLNode一覧
+     * @param array $metadata Metadata list メタデータ一覧
+     *                        array[TAGNAME][$ii]["value"]
+     *                                           ["attribute"][KEY]
      */
     private function setDescriptiveNoteValue(DOMNodeList $descriptiveNoteValues, &$metadata)
     {
@@ -744,10 +1283,12 @@ class HarvestingOaipmhLido extends HarvestingOaipmhAbstract
     /**
      * Set displayObjectMeasurements metadata to array
      * descriptiveMetadata.objectIdentificationWrap.objectMeasurementsWrap.objectMeasurementsSet.displayObjectMeasurements
+     * メタデータ変換
      *
-     * @param DOMNodeList $displayObjectMeasurementses
-     * @param array $metadata
-     * @return bool
+     * @param DOMNodeList $displayObjectMeasurementses XML Node list XMLNode一覧
+     * @param array $metadata Metadata list メタデータ一覧
+     *                        array[TAGNAME][$ii]["value"]
+     *                                           ["attribute"][KEY]
      */
     private function setDisplayObjectMeasurements(DOMNodeList $displayObjectMeasurementses, &$metadata)
     {
@@ -769,10 +1310,12 @@ class HarvestingOaipmhLido extends HarvestingOaipmhAbstract
     /**
      * Set eventSet metadata to array
      * descriptiveMetadata.eventWrap.eventSet
+     * メタデータ変換
      *
-     * @param DOMNodeList $eventSets
-     * @param array $metadata
-     * @return bool
+     * @param DOMNodeList $eventSets XML Node list XMLNode一覧
+     * @param array $metadata Metadata list メタデータ一覧
+     *                        array[TAGNAME][$ii]["value"]
+     *                                           ["attribute"][KEY]
      */
     private function setEventSet(DOMNodeList $eventSets, &$metadata)
     {
@@ -826,10 +1369,12 @@ class HarvestingOaipmhLido extends HarvestingOaipmhAbstract
     /**
      * Set event metadata to array
      * descriptiveMetadata.eventWrap.eventSet.eventWrap.eventSet.event
+     * メタデータ変換
      *
-     * @param DOMNode $event
-     * @param array $metadata
-     * @return bool
+     * @param DOMNodeList $event XML Node list XMLNode一覧
+     * @param array $metadata Metadata list メタデータ一覧
+     *                        array[TAGNAME][$ii]["value"]
+     *                                           ["attribute"][KEY]
      */
     private function setEvent(DOMNode $event, &$metadata)
     {
@@ -971,10 +1516,13 @@ class HarvestingOaipmhLido extends HarvestingOaipmhAbstract
     
     /**
      * set blank word
+     * 空文字設定
      *
-     * @param attrId $attrId
-     * @param string $inputType
-     * @param array $metadata
+     * @param int $attrId Attribute id 属性ID
+     * @param string $inputType Input type 入力タイプ
+     * @param array $metadata Metadata list メタデータ一覧
+     *                        array[TAGNAME][$ii]["value"]
+     *                                           ["attribute"][KEY]
      */
     private function setBlankWord($attrId, $inputType, &$metadata)
     {
@@ -985,6 +1533,11 @@ class HarvestingOaipmhLido extends HarvestingOaipmhAbstract
     /**
      * Set blank word for event metadata to array
      * descriptiveMetadata.eventWrap.eventSet.eventWrap.eventSet.event
+     * 空文字設定
+     *
+     * @param array $metadata Metadata list メタデータ一覧
+     *                        array[TAGNAME][$ii]["value"]
+     *                                           ["attribute"][KEY]
      */
     private function setBlankForEvent(&$metadata)
     {
@@ -1030,6 +1583,11 @@ class HarvestingOaipmhLido extends HarvestingOaipmhAbstract
     /**
      * Set Blank for eventDate metadata to array
      * descriptiveMetadata.event.eventDate
+     * 空文字設定
+     *
+     * @param array $metadata Metadata list メタデータ一覧
+     *                        array[TAGNAME][$ii]["value"]
+     *                                           ["attribute"][KEY]
      */
     private function setBlankForEventDate(&$metadata)
     {
@@ -1060,6 +1618,11 @@ class HarvestingOaipmhLido extends HarvestingOaipmhAbstract
     /**
      * Set blank for eventPlace metadata to array
      * descriptiveMetadata.event.eventPlace
+     * 空文字設定
+     *
+     * @param array $metadata Metadata list メタデータ一覧
+     *                        array[TAGNAME][$ii]["value"]
+     *                                           ["attribute"][KEY]
      */
     private function setBlankForEventPlace(&$metadata)
     {
@@ -1082,10 +1645,12 @@ class HarvestingOaipmhLido extends HarvestingOaipmhAbstract
     /**
      * Set eventDate metadata to array
      * descriptiveMetadata.event.eventDate
+     * メタデータ変換
      *
-     * @param DOMNode $eventDate
-     * @param array $metadata
-     * @return bool
+     * @param DOMNodeList $eventDate XML Node list XMLNode一覧
+     * @param array $metadata Metadata list メタデータ一覧
+     *                        array[TAGNAME][$ii]["value"]
+     *                                           ["attribute"][KEY]
      */
     private function setEventDate(DOMNode $eventDate, &$metadata)
     {
@@ -1176,10 +1741,12 @@ class HarvestingOaipmhLido extends HarvestingOaipmhAbstract
     /**
      * Set eventPlace metadata to array
      * descriptiveMetadata.event.eventPlace
+     * メタデータ変換
      *
-     * @param DOMNode $eventPlace
-     * @param array $metadata
-     * @return bool
+     * @param DOMNodeList $eventPlace XML Node list XMLNode一覧
+     * @param array $metadata Metadata list メタデータ一覧
+     *                        array[TAGNAME][$ii]["value"]
+     *                                           ["attribute"][KEY]
      */
     private function setEventPlace(DOMNode $eventPlace, &$metadata)
     {
@@ -1258,10 +1825,12 @@ class HarvestingOaipmhLido extends HarvestingOaipmhAbstract
     /**
      * Set displaySubject metadata to array
      * descriptiveMetadata.objectRelationWrap.subjectWrap.subjectSet.displaySubject
+     * メタデータ変換
      *
-     * @param DOMNodeList $displaySubjects
-     * @param array $metadata
-     * @return bool
+     * @param DOMNodeList $displaySubjects XML Node list XMLNode一覧
+     * @param array $metadata Metadata list メタデータ一覧
+     *                        array[TAGNAME][$ii]["value"]
+     *                                           ["attribute"][KEY]
      */
     private function setDisplaySubject(DOMNodeList $displaySubjects, &$metadata)
     {
@@ -1297,10 +1866,12 @@ class HarvestingOaipmhLido extends HarvestingOaipmhAbstract
     /**
      * Set displayObject metadata to array
      * descriptiveMetadata.objectRelationWrap.relatedWorksWrap.relatedWorkSet.relatedWork.displayObject
+     * メタデータ変換
      *
-     * @param DOMNodeList $displayObjects
-     * @param array $metadata
-     * @return bool
+     * @param DOMNodeList $displayObjects XML Node list XMLNode一覧
+     * @param array $metadata Metadata list メタデータ一覧
+     *                        array[TAGNAME][$ii]["value"]
+     *                                           ["attribute"][KEY]
      */
     private function setDisplayObject(DOMNodeList $displayObjects, &$metadata)
     {
@@ -1322,10 +1893,12 @@ class HarvestingOaipmhLido extends HarvestingOaipmhAbstract
     /**
      * Set recordID metadata to array
      * administrativeMetadata.recordWrap.recordID
+     * メタデータ変換
      *
-     * @param DOMNodeList $recordIDs
-     * @param array $metadata
-     * @return bool
+     * @param DOMNodeList $recordIDs XML Node list XMLNode一覧
+     * @param array $metadata Metadata list メタデータ一覧
+     *                        array[TAGNAME][$ii]["value"]
+     *                                           ["attribute"][KEY]
      */
     private function setRecordID(DOMNodeList $recordIDs, &$metadata)
     {
@@ -1347,10 +1920,12 @@ class HarvestingOaipmhLido extends HarvestingOaipmhAbstract
     /**
      * Set recordType metadata to array
      * administrativeMetadata.recordWrap.recordType
+     * メタデータ変換
      *
-     * @param DOMNodeList $recordTypes
-     * @param array $metadata
-     * @return bool
+     * @param DOMNodeList $recordTypes XML Node list XMLNode一覧
+     * @param array $metadata Metadata list メタデータ一覧
+     *                        array[TAGNAME][$ii]["value"]
+     *                                           ["attribute"][KEY]
      */
     private function setRecordType(DOMNodeList $recordTypes, &$metadata)
     {
@@ -1376,10 +1951,12 @@ class HarvestingOaipmhLido extends HarvestingOaipmhAbstract
     /**
      * Set recordSource metadata to array
      * administrativeMetadata.recordWrap.recordSource
+     * メタデータ変換
      *
-     * @param DOMNodeList $recordSources
-     * @param array $metadata
-     * @return bool
+     * @param DOMNodeList $recordSources XML Node list XMLNode一覧
+     * @param array $metadata Metadata list メタデータ一覧
+     *                        array[TAGNAME][$ii]["value"]
+     *                                           ["attribute"][KEY]
      */
     private function setRecordSource(DOMNodeList $recordSources, &$metadata)
     {
@@ -1409,10 +1986,12 @@ class HarvestingOaipmhLido extends HarvestingOaipmhAbstract
     /**
      * Set recordInfoSet metadata to array
      * administrativeMetadata.recordWrap.recordInfoSet
+     * メタデータ変換
      *
-     * @param DOMNodeList $recordInfoSets
-     * @param array $metadata
-     * @return bool
+     * @param DOMNodeList $recordInfoSets XML Node list XMLNode一覧
+     * @param array $metadata Metadata list メタデータ一覧
+     *                        array[TAGNAME][$ii]["value"]
+     *                                           ["attribute"][KEY]
      */
     private function setRecordInfoSet(DOMNodeList $recordInfoSets, &$metadata)
     {
@@ -1472,10 +2051,12 @@ class HarvestingOaipmhLido extends HarvestingOaipmhAbstract
     /**
      * Set resourceRepresentation metadata to array
      * administrativeMetadata.resourceWrap.resourceSet.resourceRepresentation
+     * メタデータ変換
      *
-     * @param DOMNodeList $resourceRepresentations
-     * @param array $metadata
-     * @return bool
+     * @param DOMNodeList $resourceRepresentations XML Node list XMLNode一覧
+     * @param array $metadata Metadata list メタデータ一覧
+     *                        array[TAGNAME][$ii]["value"]
+     *                                           ["attribute"][KEY]
      */
     private function setResourceRepresentation(DOMNodeList $resourceRepresentations, &$metadata)
     {
@@ -1501,10 +2082,12 @@ class HarvestingOaipmhLido extends HarvestingOaipmhAbstract
     /**
      * Set resourceDescription metadata to array
      * administrativeMetadata.resourceWrap.resourceSet.resourceDescription
+     * メタデータ変換
      *
-     * @param DOMNodeList $resourceDescriptions
-     * @param array $metadata
-     * @return bool
+     * @param DOMNodeList $resourceDescriptions XML Node list XMLNode一覧
+     * @param array $metadata Metadata list メタデータ一覧
+     *                        array[TAGNAME][$ii]["value"]
+     *                                           ["attribute"][KEY]
      */
     private function setResourceDescription(DOMNodeList $resourceDescriptions, &$metadata)
     {
@@ -1526,10 +2109,12 @@ class HarvestingOaipmhLido extends HarvestingOaipmhAbstract
     /**
      * Set resourceSource metadata to array
      * administrativeMetadata.resourceWrap.resourceSet.resourceSource
+     * メタデータ変換
      *
-     * @param DOMNodeList $resourceSources
-     * @param array $metadata
-     * @return bool
+     * @param DOMNodeList $resourceSources XML Node list XMLNode一覧
+     * @param array $metadata Metadata list メタデータ一覧
+     *                        array[TAGNAME][$ii]["value"]
+     *                                           ["attribute"][KEY]
      */
     private function setResourceSource(DOMNodeList $resourceSources, &$metadata)
     {
@@ -1559,10 +2144,12 @@ class HarvestingOaipmhLido extends HarvestingOaipmhAbstract
     /**
      * Set creditLine metadata to array
      * administrativeMetadata.resourceWrap.resourceSet.rightsResource.creditLine
+     * メタデータ変換
      *
-     * @param DOMNodeList $creditLines
-     * @param array $metadata
-     * @return bool
+     * @param DOMNodeList $creditLines XML Node list XMLNode一覧
+     * @param array $metadata Metadata list メタデータ一覧
+     *                        array[TAGNAME][$ii]["value"]
+     *                                           ["attribute"][KEY]
      */
     private function setCreditLine(DOMNodeList $creditLines, &$metadata)
     {
@@ -1582,12 +2169,15 @@ class HarvestingOaipmhLido extends HarvestingOaipmhAbstract
     }
     
     /**
+     * Set attribute data for ItemRegister
      * ItemRegister用のメタデータを作成し、メタデータ配列に追加する
      *
-     * @param int $attrId
-     * @param string $value
-     * @param string $inputType
-     * @param array $metadata
+     * @param int $attrId Attribute id 属性ID
+     * @param string $value Value 値
+     * @param string $inputType Input type 入力タイプ
+     * @param array $metadata Metadata list メタデータ一覧
+     *                        array[TAGNAME][$ii]["value"]
+     *                                           ["attribute"][KEY]
      */
     private function setAttributeData($attrId, $value, $inputType, &$metadata)
     {
@@ -1621,11 +2211,15 @@ class HarvestingOaipmhLido extends HarvestingOaipmhAbstract
     
     /**
      * Check metadata
+     * メタデータチェック
      *
-     * @param array $metadata
-     * @param int $logStatus
-     * @param array $logMsg
-     * @return bool
+     * @param array $metadata Metadata メタデータ
+     *                        array["HEARDER"][0]["attributes"]["STATUS"]
+     *                        array["TITLE"|"LANGUAGE"|"URI"|"NIITYPE"]
+     * @param int $logStatus Status 状態
+     * @param array $logMsg Log message ログメッセージ
+     *                      array[$ii]
+     * @return boolean Result 結果
      */
     public function checkMetadata($metadata, &$logStatus, &$logMsg)
     {
@@ -1665,8 +2259,9 @@ class HarvestingOaipmhLido extends HarvestingOaipmhAbstract
     
     /**
      * delete tag that is not used
+     * 利用しないタグの消去
      *
-     * @param string $metadataXML
+     * @param string $metadataXML Metadata XML メタデータXML
      */
     private function deleteTagNotUsed(&$metadataXml)
     {

@@ -1,4 +1,12 @@
 <?php
+
+/**
+ * SCfW metadata file output common classes
+ * SCfWメタデータファイル出力共通クラス
+ * 
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
 // $Id: RepositoryDownload.class.php 24001 2013-07-10 01:33:59Z yuko_nakao $
@@ -10,15 +18,40 @@
 // http://creativecommons.org/licenses/BSD/
 //
 // --------------------------------------------------------------------
-/* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
+/**
+ * Ecport common class
+ * エクスポート処理汎用クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/action/main/export/ExportCommon.class.php';
+/**
+ * Item authority manager class
+ * アイテム権限管理クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryItemAuthorityManager.class.php';
+/**
+ * Handle manager class
+ * ハンドル管理クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryHandleManager.class.php';
 
+/**
+ * SCfW metadata file output common classes
+ * SCfWメタデータファイル出力共通クラス
+ * 
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
+ */
 class RepositoryOutputTSV extends RepositoryAction
 {
     /**
+     * Author ID prefix count
      * ユーザーIDのプレフィックス数
      *
      * @var int
@@ -26,25 +59,35 @@ class RepositoryOutputTSV extends RepositoryAction
     private $authorPrefixNum = null;
     
     /**
+     * File pointer
      * ファイルポインタ
+     *
+     * @var resource
      */
     private $fp = null;
     /**
+     * Header array
      * ヘッダー配列
+     *
+     * @var array
      */
     private $headerArray = null;
     /**
+     * Header count
      * ヘッダ数
+     *
+     * @var int
      */
     private $headerNum = null;
     /**
-     * SettionのsmartyAssignを格納するオブジェクト
+     * Language Resource Management object
+     * 言語リソース管理オブジェクト
      *
-     * @var Object
+     * @var Smarty
      */
     private $smartyAssign = null;
-    
     /**
+     * Admin flag
      * ユーザーがAdminかのフラグ
      *
      * @var bool
@@ -53,68 +96,359 @@ class RepositoryOutputTSV extends RepositoryAction
     
     
     /**
+     * Donwload validator
      * ファイルダウンロードのvalidator
      *
+     * @var Repository_Validator_DownloadCheck
      */
     private $RepositoryValidator = null;
-    
+
+    /**
+     * Input type
+     * 入力タイプ
+     */
     const INPUT_TYPE = "input_type";
+    /**
+     * Attribute
+     * 属性
+     */
     const ATTR = "attr";
+    /**
+     * Author ID
+     * 著者ID
+     */
     const AUTHOR_ID = "ID";
+    /**
+     * Name
+     * 氏名
+     */
     const NAME = "name";
+    /**
+     * Thumbnail
+     * サムネイル
+     */
     const THUMBNAIL = "thumnail";
+    /**
+     * Biblio info
+     * 書誌情報
+     */
     const BIBLIO = "biblio";
+    /**
+     * File
+     * ファイル
+     */
     const FILE = "file";
+    /**
+     * file price
+     * 課金ファイル
+     */
     const FILE_PRICE = "file_price";
+    /**
+     * Supplemental contents
+     * サプリメンタルコンテンツ
+     */
+    const SUPPLE = "supple";
+    /**
+     * Header
+     * 見出し
+     */
     const HEADER = "header";
+    /**
+     * is insert user
+     * 登録者フラグ
+     */
     const IS_INSUSER = "is_insuser";
+    /**
+     * feedback mail
+     * フィードバックメール
+     */
     const FEEDBACK_MAIL = "feedback_mail";
+    /**
+     * RA self DOI
+     * RA self DOI
+     */
     const SELF_DOI_RA = "self_doi_ra";
+    /**
+     * self DOI
+     * self DOI
+     */
     const SELF_DOI = "self_doi";
-    
+
     // TSV 出力の名称
+    /**
+     * URL
+     * URL
+     * @var string
+     */
     private $header_weko_url = null;
+    /**
+     * Item type
+     * アイテムタイプ
+     *
+     * @var string
+     */
     private $header_item_type = null;
+    /**
+     * Title
+     * タイトル
+     *
+     * @var string
+     */
     private $header_title = null;
+    /**
+     * Title english
+     * タイトル(英)
+     *
+     * @var string
+     */
     private $header_title_english = null;
+    /**
+     * Language
+     * 言語
+     *
+     * @var string
+     */
     private $header_language = null;
+    /**
+     * Keyword
+     * キーワード
+     *
+     * @var string
+     */
     private $header_keyword = null;
+    /**
+     * Keyword english
+     * キーワード(英)
+     *
+     * @var string
+     */
     private $header_keyword_english = null;
+    /**
+     * Shown date
+     * 公開日
+     *
+     * @var string
+     */
     private $header_shown_date = null;
+    /**
+     * author name
+     * 著者名
+     *
+     * @var string
+     */
     private $header_author_name = null;
+    /**
+     * author name ruby
+     * 著者名ルビ
+     *
+     * @var string
+     */
     private $header_author_ruby = null;
+    /**
+     * author email address
+     * 著者メールアドレス
+     *
+     * @var string
+     */
     private $header_author_email = null;
+    /**
+     * author ID
+     * 著者ID
+     *
+     * @var string
+     */
     private $header_author_id = null;
+    /**
+     * biblio name
+     * 雑誌名
+     *
+     * @var string
+     */
     private $header_biblio_name = null;
+    /**
+     * biblio name english
+     * 書誌英名
+     *
+     * @var string
+     */
     private $header_biblio_name_english = null;
+    /**
+     * biblio volume
+     * 巻
+     *
+     * @var string
+     */
     private $header_biblio_volume = null;
+    /**
+     * biblio issue
+     * 号
+     *
+     * @var string
+     */
     private $header_biblio_issue = null;
+    /**
+     * biblio start page
+     * 開始ページ
+     *
+     * @var string
+     */
     private $header_biblio_startpage = null;
+    /**
+     * biblio end page
+     * 終了ページ
+     *
+     * @var string
+     */
     private $header_biblio_endpage = null;
+    /**
+     * biblio date of issued
+     * 雑誌発行年月日
+     *
+     * @var string
+     */
     private $header_biblio_date = null;
+    /**
+     * link display name
+     * リンク表示名
+     *
+     * @var string
+     */
     private $header_link_name = null;
+    /**
+     * link URL
+     * リンクURL
+     *
+     * @var string
+     */
     private $header_link_url = null;
+    /**
+     * file name
+     * ファイル名
+     *
+     * @var string
+     */
     private $header_file_name = null;
+    /**
+     * file display name
+     * ファイル表示名
+     *
+     * @var string
+     */
     private $header_file_display_name = null;
+    /**
+     * file public date
+     * ファイル公開日
+     *
+     * @var string
+     */
     private $header_file_date = null;
+    /**
+     * FLASH file public date
+     * FLASHファイル公開日
+     *
+     * @var string
+     */
     private $header_file_flash_pubdate = null;
+    /**
+     * file license CC
+     * CCライセンス
+     *
+     * @var string
+     */
     private $header_file_cc_license = null;
+    /**
+     * file license notation
+     * ライセンス表記法
+     *
+     * @var string
+     */
     private $header_file_notation = null;
+    /**
+     * file price non
+     * file price non
+     *
+     * @var string
+     */
     private $header_file_price_non = null;
+    /**
+     * file price member
+     * file price member
+     *
+     * @var string
+     */
     private $header_file_price_member = null;
+    /**
+     * heading
+     * 見出し
+     *
+     * @var string
+     */
     private $header_heading = null;
+    /**
+     * heading english
+     * 見出し(英)
+     *
+     * @var string
+     */
     private $header_heading_english = null;
+    /**
+     * subhead
+     * 小見出し
+     *
+     * @var string
+     */
     private $header_heading_small = null;
+    /**
+     * subhead english
+     * 小見出し(英)
+     *
+     * @var string
+     */
     private $header_heading_small_english = null;
     // Add e-person 2013/10/23 R.Matsura
+    /**
+     * feedback mail
+     * フィードバックメール
+     *
+     * @var string
+     */
     private $header_heading_feedback_mail = null;
     // bug fix 2013/10/25 R.Matsuura
-    private $header_heading_self_doi_ra = null;
-    private $header_heading_self_doi = null;
-    private $textareaCounter = 0;
-    private $authorPrefixCounter = 0;
     /**
-     * INIT
+     * self DOI RA
+     * self DOI RA
+     *
+     * @var string
+     */
+    private $header_heading_self_doi_ra = null;
+    /**
+     * self DOI
+     * self DOI
+     *
+     * @var string
+     */
+    private $header_heading_self_doi = null;
+    /**
+     * Textarea count
+     * テキストエリア要素の数
+     *
+     * @var int
+     */
+    private $textareaCounter = 0;
+    /**
+     * Author ID prefix count
+     * ユーザーIDのプレフィックス数
+     *
+     * @var int
+     */
+    private $authorPrefixCounter = 0;
+
+    /**
+     * RepositoryOutputTSV constructor.
+     * コンストラクタ
+     *
+     * @param DbObjectAdodb $Db DB object DBオブジェクト
+     * @param Session $Session Session セッションオブジェクト
      */
     public function RepositoryOutputTSV($Db, $Session) {
     
@@ -148,6 +482,7 @@ class RepositoryOutputTSV extends RepositoryAction
     }
     
     /**
+     * get language
      * smartyAssignから言語を取得
      */
     private function setLang(){
@@ -190,11 +525,15 @@ class RepositoryOutputTSV extends RepositoryAction
     }
     
     /**
+     * Output TSV
      * TSV出力処理
-     * @param filepath I TSVファイルの保存パス
-     * @param itemDataArray I アイテムIDとアイテムNOと登録ユーザーを要素に持つ配列
-     * @param rowCount
-     * @param row
+     *
+     * @param string $filepath output TSV path TSVファイルの保存パス
+     * @param array $itemDataArray item data array アイテムIDとアイテムNOと登録ユーザーを要素に持つ配列
+     *                              array["item"][$ii]["item_id"|"item_no"|"title"|...]
+     * @param int $rowCount row count 行数
+     * @param int $row row number 行番号
+     * @return bool true/false success/failed 成功/失敗
      */
     public function outputTsv($filepath, $itemDataArray=array(), $rowCount=0, $row=0){
 
@@ -240,9 +579,10 @@ class RepositoryOutputTSV extends RepositoryAction
             return false;
         } else {
             // TSVのデータの出力
+            $dirCountForFile = 1;
             for($ii = 0; $ii < count($exportDataArray); $ii++){
                 $this->outputTsvData( $exportDataArray[$ii][RepositoryConst::DBCOL_REPOSITORY_ITEM_ITEM_ID]
-                    , $exportDataArray[$ii][RepositoryConst::DBCOL_REPOSITORY_ITEM_ITEM_NO], $exportDataArray[$ii][self::IS_INSUSER]);
+                    , $exportDataArray[$ii][RepositoryConst::DBCOL_REPOSITORY_ITEM_ITEM_NO], $exportDataArray[$ii][self::IS_INSUSER], $dirCountForFile);
             }
             fclose($this->fp);
         }
@@ -250,10 +590,12 @@ class RepositoryOutputTSV extends RepositoryAction
     }
     
     /**
+     * Output TSV header
      * TSVヘッダー情報出力処理
-     * 
-     * @param itemDataArray
-     * @return bool
+     *
+     * @param array $itemDataArray item data array アイテムIDとアイテムNOと登録ユーザーを要素に持つ配列
+     *                              array["item"][$ii]["item_id"|"item_no"|"title"|...]
+     * @return bool true/false success/failed 成功/失敗
      */
     private function outputTsvHeader($itemDataArray=array()){
         if(count($itemDataArray) == 0)
@@ -303,9 +645,15 @@ class RepositoryOutputTSV extends RepositoryAction
     }
     
     /**
+     * Output TSV data
      * TSV登録データ情報出力処理
+     *
+     * @param int $item_id item ID アイテムID
+     * @param int $item_no item number アイテム通番
+     * @param bool $is_insUser insert user flag アイテム登録者かのフラグ
+     * @param int $dirCountForFile file count ファイル数
      */
-    private function outputTsvData($item_id, $item_no, $is_insUser){
+    private function outputTsvData($item_id, $item_no, $is_insUser, &$dirCountForFile){
         $tsvDataArray = array();
         for($ii = 0; $ii < $this->headerNum; $ii++){
             $tsvDataArray[$ii] = "";
@@ -314,6 +662,7 @@ class RepositoryOutputTSV extends RepositoryAction
         $this->getItemDataForTsv($item_id, 
                                  $item_no, 
                                  $itemData, 
+                                 $dirCountForFile, 
                                  $errMsg);
         // デフォルト部分の設定
         $this->setTsvDefaultData($this->headerArray, $itemData, $tsvDataArray);
@@ -327,8 +676,10 @@ class RepositoryOutputTSV extends RepositoryAction
         $this->setTsvFileData($this->headerArray, $itemData, $is_insUser, $tsvDataArray);
         // repository_file_priceテーブルの項目の設定
         $this->setTsvFilePriceData($this->headerArray, $itemData, $is_insUser, $tsvDataArray);
+        // repository_suppleテーブルの項目の設定
+        $this->setTsvSuppleData($this->headerArray, $itemData, $is_insUser, $tsvDataArray);
         // repository_send_feedback_author_id
-        $this->setTsvFeedbackMail($this->headerArray, $itemData, $tsvDataArray);
+        $this->setTsvFeedbackMail($this->headerArray, $itemData, $is_insUser, $tsvDataArray);
          // repository_self_DOI_RA
         $this->setTsvSelfDoiRa($this->headerArray, $itemData, $tsvDataArray);
         // repository_self_DOI
@@ -342,10 +693,12 @@ class RepositoryOutputTSV extends RepositoryAction
     }
     
     /**
+     * Create TSV header
      * TSVヘッダー情報作成処理
      *
-     * @param itemTypeArray I アイテムタイプの配列
-     * @param headerArray O ヘッダー情報配列  1次キー：項目名、2次キー：input_type
+     * @param array $itemTypeArray item type array アイテムタイプ配列
+     *                              array["item_type"][$ii]["item_type_id"|"item_type_name"|"item_type_short_name"|"explanation"|"mapping_info"|"icon_name"|"icon_mime_type"|"icon_extension"|"icon"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     * @param string $headerStr header string ヘッダー文字列
      */
     private function createTsvHeader($itemTypeArray, &$headerStr){
         $columnNo = 0;
@@ -359,6 +712,7 @@ class RepositoryOutputTSV extends RepositoryAction
         $baseHeaderNameArray[RepositoryConst::ITEM_ATTR_TYPE_HEADING] = array();
         $baseHeaderNameArray[RepositoryConst::ITEM_ATTR_TYPE_FILEPRICE] = array();
         $baseHeaderNameArray[RepositoryConst::ITEM_ATTR_TYPE_TEXTAREA] = array();
+        $baseHeaderNameArray[RepositoryConst::ITEM_ATTR_TYPE_SUPPLE] = array();
         $columnNo = 0;
         
         $this->createTsvDefaultHeader($this->headerArray, $headerStr, $baseHeaderNameArray, $columnNo);
@@ -420,10 +774,15 @@ class RepositoryOutputTSV extends RepositoryAction
     }
     
     /**
+     * check input data
      * 配列に入ってない要素にヘッダー名を修正
      *
-     * @param name I ヘッダー名
-     * @param array I ヘッダー名配列
+     * @param string $attribute_name attribute name 属性名
+     * @param int $attribute_id attribute ID 属性ID
+     * @param array $useNameArray user name array ユーザー名配列
+     *                             array[$ii]
+     * @param bool $isSetData set data flag データがセットされたかのフラグ
+     * @return string TSV abstract string TSVの共通部分の文字列
      */
     private function checkArrayDataInput($attribute_name, $attribute_id, &$useNameArray, &$isSetData)
     {
@@ -450,11 +809,15 @@ class RepositoryOutputTSV extends RepositoryAction
         }
         return $this->prepareforTSV($setName);
     }
+
     /**
+     * check input
      * 配列に入ってない要素にヘッダー名を修正
      *
-     * @param name I ヘッダー名
-     * @param array I ヘッダー名配列
+     * @param string $name header name ヘッダー名
+     * @param array $array header array ヘッダー名配列
+     *                      array[$ii]
+     * @return string name 名前
      */
     private function checkArrayInput($name, &$array)
     {
@@ -474,10 +837,11 @@ class RepositoryOutputTSV extends RepositoryAction
     }
     
     /**
+     * Validate for TSV
      * TSVに出力する形式に整形
      *
-     * @param name I ヘッダー名
-     * @param array I ヘッダー名配列
+     * @param string $value value 値
+     * @return string validated value 整形済値
      */
     private function prepareforTSV($value)
     {
@@ -488,13 +852,17 @@ class RepositoryOutputTSV extends RepositoryAction
         $value = str_replace("\n","\\n",$value);
         return $value;
     }
+
     /**
+     * Create TSV default header
      * TSVヘッダー情報デフォルト部分作成処理
      *
-     * @param headerArray I/O ヘッダー情報配列  1次キー：項目名、2次キー：input_type
-     * @param headerStr I/O ヘッダー文字列
-     * @param baseHeaderNameArray 使用されているヘッダー名リスト
-     * @param columnNo I/O 列番号
+     * @param array $headerArray header array ヘッダー情報配列
+     *                            array[$attributeName][$inputType]
+     * @param string $headerStr header string  ヘッダー文字列
+     * @param array $baseHeaderNameArray header name list 使用されているヘッダー名リスト
+     *                                    array[$ii]
+     * @param int $columnNo column number 列番号
      */
     private function createTsvDefaultHeader(&$headerArray, &$headerStr, &$baseHeaderNameArray, &$columnNo)
     {
@@ -555,17 +923,20 @@ class RepositoryOutputTSV extends RepositoryAction
         array_push($baseHeaderNameArray[self::HEADER], $this->header_shown_date);
         array_push($baseHeaderNameArray[RepositoryConst::ITEM_ATTR_TYPE_TEXT], $this->header_shown_date);
     }
-    
+
     /**
-     * TSVヘッダー情報メタデータ部分作成処理
+     * Create metadata
+     * メタデータ部分作成
      *
-     * @param attribute_name I/O ヘッダー名  
-     * @param input_type I/O メタデータタイプ  
-     * @param baseAttributeName I メタデータ項目名 
-     * @param headerArray I/O ヘッダー情報配列  1次キー：項目名、2次キー：input_type
-     * @param headerStr I/O ヘッダー文字列
-     * @param HeaderNameArray 使用されているヘッダー名リスト
-     * @param columnNo I/O 列番号
+     * @param string $attribute_name attribute name 属性名
+     * @param string $input_type input type 入力タイプ
+     * @param string $baseAttributeName base attribute name 属性名行のベース部分
+     * @param array $headerArray header array ヘッダー情報配列
+     *                            array[$attributeName][$inputType]
+     * @param string $headerStr header string  ヘッダー文字列
+     * @param array $HeaderNameArray header name list 使用されているヘッダー名リスト
+     *                                    array[$ii]
+     * @param int $columnNo column number 列番号
      */
     private function createTsvMetaDataHeader($attribute_name, $input_type, $baseAttributeName, &$headerArray, &$headerStr, &$HeaderNameArray, &$columnNo)
     {
@@ -597,18 +968,25 @@ class RepositoryOutputTSV extends RepositoryAction
         case RepositoryConst::ITEM_ATTR_TYPE_TEXTAREA:
             $this->createTsvTextareaHeader($attribute_name, $baseAttributeName, $headerArray, $headerStr, $HeaderNameArray, $columnNo);
             break;
+        case RepositoryConst::ITEM_ATTR_TYPE_SUPPLE:
+            $this->createTsvSuppleHeader($attribute_name, $headerArray, $headerStr, $HeaderNameArray, $columnNo);
+            break;
         default:
             break;
         }
     }
+
     /**
+     * Create text info
      * TSVヘッダーテキスト情報作成処理
      *
-     * @param attribute_name I/O ヘッダー名 
-     * @param headerArray I/O ヘッダー情報配列  1次キー：項目名、2次キー：input_type
-     * @param headerStr I/O ヘッダー文字列
-     * @param HeaderNameArray 使用されているヘッダー名リスト
-     * @param columnNo I/O 列番号
+     * @param string $attribute_name attribute name 属性名
+     * @param array $headerArray header array ヘッダー情報配列
+     *                            array[$attributeName][$inputType]
+     * @param string $headerStr header string  ヘッダー文字列
+     * @param array $HeaderNameArray header name list 使用されているヘッダー名リスト
+     *                                    array[$ii]
+     * @param int $columnNo column number 列番号
      */
     private function createTsvTextHeader($attribute_name, &$headerArray, &$headerStr, &$HeaderNameArray, &$columnNo)
     {
@@ -622,14 +1000,18 @@ class RepositoryOutputTSV extends RepositoryAction
         $headerStr .= $attribute_name."\t";
         array_push($HeaderNameArray[self::HEADER], $attribute_name);
     }
+
     /**
+     * Create name info
      * TSVヘッダー氏名情報作成処理
      *
-     * @param attribute_name I/O ヘッダー名 
-     * @param headerArray I/O ヘッダー情報配列  1次キー：項目名、2次キー：input_type
-     * @param headerStr I/O ヘッダー文字列
-     * @param HeaderNameArray 使用されているヘッダー名リスト
-     * @param columnNo I/O 列番号
+     * @param string $attribute_name attribute name 属性名
+     * @param array $headerArray header array ヘッダー情報配列
+     *                            array[$attributeName][$inputType]
+     * @param string $headerStr header string  ヘッダー文字列
+     * @param array $HeaderNameArray header name list 使用されているヘッダー名リスト
+     *                                    array[$ii]
+     * @param int $columnNo column number 列番号
      */
     private function createTsvNameHeader($attribute_name, &$headerArray, &$headerStr, &$HeaderNameArray, &$columnNo)
     {
@@ -671,14 +1053,18 @@ class RepositoryOutputTSV extends RepositoryAction
         $this->authorPrefixCounter--;
         array_push($HeaderNameArray[self::HEADER], $setName);
     }
+
     /**
+     * Create biblio info
      * TSVヘッダー書誌情報作成処理
      *
-     * @param attribute_name I/O ヘッダー名 
-     * @param headerArray I/O ヘッダー情報配列  1次キー：項目名、2次キー：input_type
-     * @param headerStr I/O ヘッダー文字列
-     * @param HeaderNameArray 使用されているヘッダー名リスト
-     * @param columnNo I/O 列番号
+     * @param string $attribute_name attribute name 属性名
+     * @param array $headerArray header array ヘッダー情報配列
+     *                            array[$attributeName][$inputType]
+     * @param string $headerStr header string  ヘッダー文字列
+     * @param array $HeaderNameArray header name list 使用されているヘッダー名リスト
+     *                                    array[$ii]
+     * @param int $columnNo column number 列番号
      */
     private function createTsvBiblioHeader($attribute_name, &$headerArray, &$headerStr, &$HeaderNameArray, &$columnNo)
     {
@@ -717,14 +1103,18 @@ class RepositoryOutputTSV extends RepositoryAction
         $headerStr .= $setName."\t";
         array_push($HeaderNameArray[self::HEADER], $setName);
     }
+
     /**
+     * Create link info
      * TSVヘッダーリンク情報作成処理
      *
-     * @param attribute_name I/O ヘッダー名 
-     * @param headerArray I/O ヘッダー情報配列  1次キー：項目名、2次キー：input_type
-     * @param headerStr I/O ヘッダー文字列
-     * @param HeaderNameArray 使用されているヘッダー名リスト
-     * @param columnNo I/O 列番号
+     * @param string $attribute_name attribute name 属性名
+     * @param array $headerArray header array ヘッダー情報配列
+     *                            array[$attributeName][$inputType]
+     * @param string $headerStr header string  ヘッダー文字列
+     * @param array $HeaderNameArray header name list 使用されているヘッダー名リスト
+     *                                    array[$ii]
+     * @param int $columnNo column number 列番号
      */
     private function createTsvLinkHeader($attribute_name, &$headerArray, &$headerStr, &$HeaderNameArray, &$columnNo)
     {
@@ -743,14 +1133,18 @@ class RepositoryOutputTSV extends RepositoryAction
         $headerStr .= $setName."\t";
         array_push($HeaderNameArray[self::HEADER], $setName);
     }
+
     /**
+     * Create file info
      * TSVヘッダーファイル情報作成処理
      *
-     * @param attribute_name I/O ヘッダー名 
-     * @param headerArray I/O ヘッダー情報配列  1次キー：項目名、2次キー：input_type
-     * @param headerStr I/O ヘッダー文字列
-     * @param HeaderNameArray 使用されているヘッダー名リスト
-     * @param columnNo I/O 列番号
+     * @param string $attribute_name attribute name 属性名
+     * @param array $headerArray header array ヘッダー情報配列
+     *                            array[$attributeName][$inputType]
+     * @param string $headerStr header string  ヘッダー文字列
+     * @param array $HeaderNameArray header name list 使用されているヘッダー名リスト
+     *                                    array[$ii]
+     * @param int $columnNo column number 列番号
      */
     private function createTsvFileHeader($attribute_name, &$headerArray, &$headerStr, &$HeaderNameArray, &$columnNo)
     {
@@ -785,14 +1179,18 @@ class RepositoryOutputTSV extends RepositoryAction
         $headerStr .= $setName."\t";
         array_push($HeaderNameArray[self::HEADER], $setName);
     }
+
     /**
+     * Create heading info
      * TSVヘッダー見出し情報作成処理
      *
-     * @param attribute_name I/O ヘッダー名 
-     * @param headerArray I/O ヘッダー情報配列  1次キー：項目名、2次キー：input_type
-     * @param headerStr I/O ヘッダー文字列
-     * @param HeaderNameArray 使用されているヘッダー名リスト
-     * @param columnNo I/O 列番号
+     * @param string $attribute_name attribute name 属性名
+     * @param array $headerArray header array ヘッダー情報配列
+     *                            array[$attributeName][$inputType]
+     * @param string $headerStr header string  ヘッダー文字列
+     * @param array $HeaderNameArray header name list 使用されているヘッダー名リスト
+     *                                    array[$ii]
+     * @param int $columnNo column number 列番号
      */
     private function createTsvHeadingHeader($attribute_name, &$headerArray, &$headerStr, &$HeaderNameArray, &$columnNo)
     {
@@ -819,14 +1217,18 @@ class RepositoryOutputTSV extends RepositoryAction
         $headerStr .= $setName."\t";
         array_push($HeaderNameArray[self::HEADER], $setName);
     }
+
     /**
+     * Create file price info
      * TSVヘッダー課金ファイル情報作成処理
      *
-     * @param attribute_name I/O ヘッダー名 
-     * @param headerArray I/O ヘッダー情報配列  1次キー：項目名、2次キー：input_type
-     * @param headerStr I/O ヘッダー文字列
-     * @param HeaderNameArray 使用されているヘッダー名リスト
-     * @param columnNo I/O 列番号
+     * @param string $attribute_name attribute name 属性名
+     * @param array $headerArray header array ヘッダー情報配列
+     *                            array[$attributeName][$inputType]
+     * @param string $headerStr header string  ヘッダー文字列
+     * @param array $HeaderNameArray header name list 使用されているヘッダー名リスト
+     *                                    array[$ii]
+     * @param int $columnNo column number 列番号
      */
     private function createTsvFilePriceHeader($attribute_name, &$headerArray, &$headerStr, &$HeaderNameArray, &$columnNo)
     {
@@ -869,15 +1271,19 @@ class RepositoryOutputTSV extends RepositoryAction
         $headerStr .= $setName."\t";
         array_push($HeaderNameArray[self::HEADER], $setName);
     }
+
     /**
+     * Create texarea info
      * TSVヘッダーテキストエリア情報作成処理
      *
-     * @param attribute_name I ヘッダー名 
-     * @param baseAttributeName I メタデータ項目名 
-     * @param headerArray I/O ヘッダー情報配列  1次キー：項目名、2次キー：input_type
-     * @param headerStr I/O ヘッダー文字列
-     * @param HeaderNameArray 使用されているヘッダー名リスト
-     * @param columnNo I/O 列番号
+     * @param string $attribute_name attribute name 属性名
+     * @param string $baseAttributeName base attribute name 属性名行のベース部分
+     * @param array $headerArray header array ヘッダー情報配列
+     *                            array[$attributeName][$inputType]
+     * @param string $headerStr header string  ヘッダー文字列
+     * @param array $HeaderNameArray header name list 使用されているヘッダー名リスト
+     *                                    array[$ii]
+     * @param int $columnNo column number 列番号
      */
     private function createTsvTextareaHeader($attribute_name, $baseAttributeName, &$headerArray, &$headerStr, &$HeaderNameArray, &$columnNo)
     {
@@ -919,12 +1325,42 @@ class RepositoryOutputTSV extends RepositoryAction
         array_push($HeaderNameArray[self::HEADER], $attribute_name);
         $this->textareaCounter--;
     }
+
+    /**
+     * Create supple info
+     * TSVヘッダーサプリ情報作成処理
+     *
+     * @param string $attribute_name attribute name 属性名
+     * @param array $headerArray header array ヘッダー情報配列
+     *                            array[$attributeName][$inputType]
+     * @param string $headerStr header string  ヘッダー文字列
+     * @param array $HeaderNameArray header name list 使用されているヘッダー名リスト
+     *                                    array[$ii]
+     * @param int $columnNo column number 列番号
+     */
+    private function createTsvSuppleHeader($attribute_name, &$headerArray, &$headerStr, &$HeaderNameArray, &$columnNo)
+    {
+        if(!array_key_exists($attribute_name, $headerArray)){
+            $headerArray[$attribute_name] = array();
+        }
+        $headerArray[$attribute_name][RepositoryConst::ITEM_ATTR_TYPE_SUPPLE] = $columnNo;
+        array_push($HeaderNameArray[RepositoryConst::ITEM_ATTR_TYPE_SUPPLE], $attribute_name);
+        $columnNo++;
+        $attribute_name = $this->checkArrayInput($attribute_name, $HeaderNameArray[self::HEADER]);
+        $headerStr .= $attribute_name."\t";
+        array_push($HeaderNameArray[self::HEADER], $attribute_name);
+    }
     
     /**
+     * Set default data
      * TSVヘッダー情報デフォルト部分作成処理
      *
-     * @param headerArray I ヘッダー情報配列  1次キー：項目名、2次キー：input_type
-     * @param tsvStr I/O 出力文字列
+     * @param array $headerArray header array ヘッダー情報配列
+     *                            array[$attributeName][$inputType]
+     * @param array $itemData item data array アイテムIDとアイテムNOと登録ユーザーを要素に持つ配列
+     *                         array["item"][$ii]["item_id"|"item_no"|"title"|...]
+     * @param array $tsvDataArray TSV data TSVデータ
+     *                         array[$ii]
      */
     private function setTsvDefaultData($headerArray, $itemData, &$tsvDataArray){
         // WEKO_URLを設定
@@ -952,12 +1388,18 @@ class RepositoryOutputTSV extends RepositoryAction
         $value = $this->prepareforTSV($itemData['item'][0][RepositoryConst::DBCOL_REPOSITORY_ITEM_SHOWN_DATE]);
         $tsvDataArray[$headerArray[$this->header_shown_date][RepositoryConst::ITEM_ATTR_TYPE_TEXT]] = substr($value, 0, 10);
     }
+
     /**
+     * Set attribute type
      * TSVテキスト情報登録処理
      *
-     * @param headerArray I ヘッダー情報配列  1次キー：項目名、2次キー：input_type
-     * @param itemData I 登録アイテムデータ
-     * @param tsvDataArray I/O TSV出力情報
+     * @param array $headerArray header array ヘッダー情報配列
+     *                            array[$attributeName][$inputType]
+     * @param array $itemData item data array アイテムIDとアイテムNOと登録ユーザーを要素に持つ配列
+     *                         array["item"][$ii]["item_id"|"item_no"|"title"|...]
+     * @param bool $is_insUser insert user flag アイテム登録者かのフラグ
+     * @param array $tsvDataArray TSV data TSVデータ
+     *                         array[$ii]
      */
     private function setTsvAttrTypeData($headerArray, $itemData, $is_insUser, &$tsvDataArray)
     {
@@ -1057,12 +1499,18 @@ class RepositoryOutputTSV extends RepositoryAction
             }
         }
     }
+
     /**
+     * Set name data
      * TSV氏名情報登録処理
      *
-     * @param headerArray I ヘッダー情報配列  1次キー：項目名、2次キー：input_type
-     * @param itemData I 登録アイテムデータ
-     * @param tsvDataArray I/O TSV出力情報
+     * @param array $headerArray header array ヘッダー情報配列
+     *                            array[$attributeName][$inputType]
+     * @param array $itemData item data array アイテムIDとアイテムNOと登録ユーザーを要素に持つ配列
+     *                         array["item"][$ii]["item_id"|"item_no"|"title"|...]
+     * @param bool $is_insUser insert user flag アイテム登録者かのフラグ
+     * @param array $tsvDataArray TSV data TSVデータ
+     *                         array[$ii]
      */
     private function setTsvNameData($headerArray, $itemData, $is_insUser, &$tsvDataArray)
     {
@@ -1092,7 +1540,12 @@ class RepositoryOutputTSV extends RepositoryAction
                 $tsvDataArray[$columnNo] .= "|".$value;
             }
             $columnNo++;
-            $value = $itemData[self::NAME][$ii][RepositoryConst::DBCOL_REPOSITORY_PERSONAL_NAME_E_MAIL_ADDRESS];
+            $value = "";
+            // 管理者または投稿者の場合のみ著者メールアドレスを出力
+            if((defined("_REPOSITORY_SHOW_EXPORT_MAIL_ADDRESS") && _REPOSITORY_SHOW_EXPORT_MAIL_ADDRESS) || $this->isAdminUser || $is_insUser)
+            {
+                $value = $itemData[self::NAME][$ii][RepositoryConst::DBCOL_REPOSITORY_PERSONAL_NAME_E_MAIL_ADDRESS];
+            }
             $value = $this->prepareforTSV($value);
             if(!$isSetData){
                 $tsvDataArray[$columnNo] = $value;
@@ -1117,12 +1570,18 @@ class RepositoryOutputTSV extends RepositoryAction
             }
         }
     }
+
     /**
+     * Set biblio data
      * TSV書誌情報登録処理
      *
-     * @param headerArray I ヘッダー情報配列  1次キー：項目名、2次キー：input_type
-     * @param itemData I 登録アイテムデータ
-     * @param tsvDataArray I/O TSV出力情報
+     * @param array $headerArray header array ヘッダー情報配列
+     *                            array[$attributeName][$inputType]
+     * @param array $itemData item data array アイテムIDとアイテムNOと登録ユーザーを要素に持つ配列
+     *                         array["item"][$ii]["item_id"|"item_no"|"title"|...]
+     * @param bool $is_insUser insert user flag アイテム登録者かのフラグ
+     * @param array $tsvDataArray TSV data TSVデータ
+     *                         array[$ii]
      */
     private function setTsvBiblioData($headerArray, $itemData, $is_insUser, &$tsvDataArray)
     {
@@ -1196,12 +1655,15 @@ class RepositoryOutputTSV extends RepositoryAction
     }
     
     /**
+     * Set license
      * TSVファイルライセンス情報登録処理
      *
-     * @param itemData I 登録アイテムデータ
-     * @param isSetData I 既にデータがセットされているかのフラグ
-     * @param columnNo I/O カラム番号
-     * @param tsvDataArray I/O TSV出力情報
+     * @param array $fileData file data ファイル情報
+     *                         array[$ii]
+     * @param bool $isSetData set data flag データがセットされたかどうかのフラグ
+     * @param int $columnNo column number 列番号
+     * @param array $tsvDataArray TSV data TSVデータ
+     *                         array[$ii]
      */
     private function setLicense($fileData, $isSetData, &$columnNo, &$tsvDataArray)
     {
@@ -1274,12 +1736,18 @@ class RepositoryOutputTSV extends RepositoryAction
         }
         $columnNo += 2;
     }
+
     /**
+     * Set file data
      * TSVファイル情報登録処理
      *
-     * @param headerArray I ヘッダー情報配列  1次キー：項目名、2次キー：input_type
-     * @param itemData I 登録アイテムデータ
-     * @param tsvDataArray I/O TSV出力情報
+     * @param array $headerArray header array ヘッダー情報配列
+     *                            array[$attributeName][$inputType]
+     * @param array $itemData item data array アイテムIDとアイテムNOと登録ユーザーを要素に持つ配列
+     *                         array["item"][$ii]["item_id"|"item_no"|"title"|...]
+     * @param bool $is_insUser insert user flag アイテム登録者かのフラグ
+     * @param array $tsvDataArray TSV data TSVデータ
+     *                         array[$ii]
      */
     private function setTsvFileData($headerArray, $itemData, $is_insUser, &$tsvDataArray)
     {
@@ -1337,11 +1805,16 @@ class RepositoryOutputTSV extends RepositoryAction
     }
         
     /**
+     * Set file price
      * TSV課金ファイル情報登録処理
      *
-     * @param headerArray I ヘッダー情報配列  1次キー：項目名、2次キー：input_type
-     * @param itemData I 登録アイテムデータ
-     * @param tsvDataArray I/O TSV出力情報
+     * @param array $headerArray header array ヘッダー情報配列
+     *                            array[$attributeName][$inputType]
+     * @param array $itemData item data array アイテムIDとアイテムNOと登録ユーザーを要素に持つ配列
+     *                         array["item"][$ii]["item_id"|"item_no"|"title"|...]
+     * @param bool $is_insUser insert user flag アイテム登録者かのフラグ
+     * @param array $tsvDataArray TSV data TSVデータ
+     *                         array[$ii]
      */
     private function setTsvFilePriceData($headerArray, $itemData, $is_insUser, &$tsvDataArray)
     {
@@ -1420,21 +1893,59 @@ class RepositoryOutputTSV extends RepositoryAction
             }
         }
     }
-       
+
     /**
-     * [[アイテムID,アイテム通番で指定されるアイテムのデータをすべて取得する]]
-     * @access public
-     * @return true:正常終了
-     *          →$Result_Listにレコード
-     *         false:異常終了
-     *          →$Error_MsgにエラーメッセージorSessionにエラーコード
-     *          →途中で落ちた場合、$Result_Listにはそれまでのデータが入っている
+     * Set supple
+     * TSVサプリ情報登録処理
+     *
+     * @param array $headerArray header array ヘッダー情報配列
+     *                            array[$attributeName][$inputType]
+     * @param array $itemData item data array アイテムIDとアイテムNOと登録ユーザーを要素に持つ配列
+     *                         array["item"][$ii]["item_id"|"item_no"|"title"|...]
+     * @param bool $is_insUser insert user flag アイテム登録者かのフラグ
+     * @param array $tsvDataArray TSV data TSVデータ
+     *                            array[$ii]
+     */
+    private function setTsvSuppleData($headerArray, $itemData, $is_insUser, &$tsvDataArray)
+    {
+        $useNameArray = array();
+        $useNameArray[RepositoryConst::ITEM_ATTR_TYPE_SUPPLE] = array();
+        for($ii = 0; $ii < count($itemData[self::SUPPLE]); $ii++){
+            if($itemData[self::SUPPLE][$ii][RepositoryConst::DBCOL_REPOSITORY_ITEM_ATTR_TYPE_HIDDEN] == 1){
+                if(!$this->isAdminUser && !$is_insUser){
+                    continue;
+                }
+            }
+            $attribute_name = $this->checkArrayDataInput($itemData[self::SUPPLE][$ii][RepositoryConst::DBCOL_REPOSITORY_ITEM_ATTR_TYPE_ATTRIBUTE_NAME]
+                , $itemData[self::SUPPLE][$ii][RepositoryConst::DBCOL_REPOSITORY_ITEM_ATTR_TYPE_ATTRIBUTE_ID], $useNameArray[RepositoryConst::ITEM_ATTR_TYPE_SUPPLE], $isSetData);
+            $columnNo = $headerArray[$attribute_name][RepositoryConst::ITEM_ATTR_TYPE_SUPPLE];
+            $value = $this->prepareforTSV($itemData[self::SUPPLE][$ii]["uri"]);
+            if(!$isSetData){
+                $tsvDataArray[$columnNo] = $value;
+            } else {
+                $tsvDataArray[$columnNo] .= "|".$value;
+            }
+        }
+    }
+
+    /**
+     * Get item data
+     * アイテム情報取得
+     *
+     * @param int $Item_ID item ID アイテムID
+     * @param int $Item_No item number アイテム通番
+     * @param array $Result_List item data アイテムデータ
+     *                            array["item"][$ii]["item_id"|"item_no"|"revision_no"|"item_type_id"|"prev_revision_no"|"title"|"title_english"|"language"|"review_status"|"review_date"|"shown_status"|"shown_date"|"reject_status"|"reject_date"|"reject_reason"|"serch_key"|"serch_key_english"|"remark"|"uri"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     * @param int &$dirCountForFile Number of directory for file and thumbnail ファイルおよびサムネイル格納用ディレクトリ数
+     * @param string $Error_Msg error message エラーメッセージ
+     * @return bool true/false get success/get failed 取得成功/取得失敗
      */
     private function getItemDataForTsv(
-        $Item_ID,         // アイテムID
-        $Item_No,         // アイテム通番
-        &$Result_List,    // DBから取得したレコードの集合
-        &$Error_Msg      // エラーメッセージ
+        $Item_ID,          // アイテムID
+        $Item_No,          // アイテム通番
+        &$Result_List,     // DBから取得したレコードの集合
+        &$dirCountForFile, // ファイル配置用ディレクトリ数
+        &$Error_Msg        // エラーメッセージ
         )
     {
         // アイテムIDとアイテム通番からアイテムテーブルのデータを取得 $Result_List["item"]
@@ -1652,6 +2163,15 @@ class RepositoryOutputTSV extends RepositoryAction
         // レコード格納
         $Result_List[self::FILE_PRICE] = $result_File_Price_Table;
         
+        // サプリ情報を取得、レコード格納
+        $Result_List[self::SUPPLE] = $this->showSuppleTableData($Item_ID, $Item_No);
+        if($Result_List[self::SUPPLE] === false)
+        {
+            return false;
+        }
+        
+        $this->addRelativePathToFile($Result_List, $dirCountForFile);
+        
         // Add e-person R.Matsuura  2013/10/24 --start--
         // feedback mail address 
         $exportCommon = new ExportCommon($this->Db, $this->Session, $this->TransStartDate);
@@ -1712,17 +2232,119 @@ class RepositoryOutputTSV extends RepositoryAction
     }
     
     /**
-     * TSV feedbackmail Information Regist
+     *  Show supple table data
+     *  サプリテーブルのデータを表示する
      *
-     * @param headerArray
-     * @param itemData
-     * @param tsvdataArray
+     * @param int $Item_ID Item ID アイテムID
+     * @param int $Item_No Item No アイテム通番
      */
-    private function setTsvFeedbackMail($headerArray, $itemData, &$tsvDataArray){
+    private function showSuppleTableData($Item_ID, $Item_No)
+    {
+        $query = "SELECT SUPPLE.uri AS uri, TYPE.attribute_id AS attribute_id, attribute_name, TYPE.hidden AS hidden ". 
+                 "FROM ". DATABASE_PREFIX ."repository_supple AS SUPPLE ".
+                 ", ". DATABASE_PREFIX ."repository_item_attr_type AS TYPE ".
+                 "WHERE SUPPLE.item_id = ? AND ".
+                 "SUPPLE.item_no = ? AND ".
+                 "SUPPLE.item_type_id = TYPE.item_type_id AND ".
+                 "SUPPLE.attribute_id = TYPE.attribute_id AND ".
+                 "SUPPLE.is_delete = ? AND ".
+                 "TYPE.is_delete = ? ".
+                 "ORDER BY TYPE.attribute_id ASC;";
+        // $queryの?を置き換える配列
+        $params = array();
+        $params[] = $Item_ID;
+        $params[] = $Item_No;
+        $params[] = 0;
+        $params[] = 0;
+        // SELECT実行
+        $result_supple_table = $this->Db->execute($query, $params);
+        if($result_supple_table === false){
+            $Error_Msg = $this->Db->ErrorMsg();
+            $this->Session->setParameter("error_cord",-1);
+            return false;
+        }
+        
+        return $result_supple_table;
+    }
+    
+    /**
+     *  Add relative path to file and thumbnail
+     *  ファイルおよびサムネイルに相対パスを追加する
+     *
+     * @param array &$itemData Item data アイテムデータ
+     *                         array['item'|'item_type'|'item_attr_type'|...][$ii]['item_type_id'|'attribute_id'|'show_order'|...]
+     * @param int &$dirCountForFile Number of directory for file and thumbnail ファイルおよびサムネイル格納用ディレクトリ数
+     */
+    private function addRelativePathToFile(&$itemData, &$dirCountForFile)
+    {
+        for($ii = 0; $ii < count($itemData['item_attr_type']); $ii++)
+        {
+            switch($itemData['item_attr_type'][$ii][self::INPUT_TYPE])
+            {
+                case 'thumbnail':
+                    $this->addRelativePathToFileName($itemData[self::THUMBNAIL], $itemData['item_attr_type'][$ii]['attribute_id'], RepositoryConst::DBCOL_REPOSITORY_THUMB_FILE_NAME, $dirCountForFile);
+                    break;
+                case 'file':
+                    $this->addRelativePathToFileName($itemData[self::FILE], $itemData['item_attr_type'][$ii]['attribute_id'], RepositoryConst::DBCOL_REPOSITORY_FILE_FILE_NAME, $dirCountForFile);
+                    break;
+                case 'file_price':
+                    $this->addRelativePathToFileName($itemData[self::FILE_PRICE], $itemData['item_attr_type'][$ii]['attribute_id'], RepositoryConst::DBCOL_REPOSITORY_FILE_FILE_NAME, $dirCountForFile);
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+    
+    /**
+     *  Add relative path to file name
+     *  ファイル名に相対パスを追加する
+     *
+     * @param array &$fileData File data
+     *                         ファイルデータ
+     *                         array[$ii]['item_id'|'attribute_id'|'file_name'|...]
+     * @param int $attribute_id Attribute ID
+     *                          属性ID
+     * @param string $column_name Column name
+     *                            カラム名
+     * @param int &$dirCountForFile Number of directory for file and thumbnail
+     *                              ファイルおよびサムネイル格納用ディレクトリ数
+     */
+    private function addRelativePathToFileName(&$fileData, $attribute_id, $column_name, &$dirCountForFile)
+    {
+        for($ii = 0; $ii < count($fileData); $ii++)
+        {
+            if($attribute_id == $fileData[$ii]['attribute_id'])
+            {
+                $fileData[$ii][$column_name] = ExportCommon::generateRelativePathForFile($fileData[$ii][$column_name], $dirCountForFile);
+                $dirCountForFile++;
+            }
+        }
+    }
+    
+    /**
+     * TSV feedbackmail Information Regist
+     * フィードバックメール情報登録処理
+     *
+     * @param array $headerArray header array ヘッダー情報配列
+     *                            array[$attributeName][$inputType]
+     * @param array $itemData item data array アイテムIDとアイテムNOと登録ユーザーを要素に持つ配列
+     *                         array["item"][$ii]["item_id"|"item_no"|"title"|...]
+     * @param boolean $is_insUser Whether or not item register user
+     *                            アイテム投稿者かどうか
+     * @param array $tsvDataArray TSV data TSVデータ
+     *                         array[$ii]
+     */
+    private function setTsvFeedbackMail($headerArray, $itemData, $is_insUser, &$tsvDataArray){
         $columnNo = $headerArray[$this->header_heading_feedback_mail][RepositoryConst::ITEM_ATTR_TYPE_TEXT];
         $tmpValue = "";
         for($ii = 0; $ii < count($itemData[self::FEEDBACK_MAIL]); $ii++){
-            $value = $itemData[self::FEEDBACK_MAIL][$ii]['suffix'];
+            $value = "";
+            // 管理者または投稿者の場合のみフィードバックメールアドレスを出力
+            if((defined("_REPOSITORY_SHOW_EXPORT_MAIL_ADDRESS") && _REPOSITORY_SHOW_EXPORT_MAIL_ADDRESS) || $this->isAdminUser || $is_insUser)
+            {
+                $value = $itemData[self::FEEDBACK_MAIL][$ii]['suffix'];
+            }
             $value = $this->prepareforTSV($value);
             if($ii > 0 && strlen($value) > 0){
                 $tmpValue .= "|";
@@ -1734,10 +2356,14 @@ class RepositoryOutputTSV extends RepositoryAction
     
     /**
      * TSV self DOI RA Information Regist
+     * self DOI RA情報登録処理
      *
-     * @param headerArray
-     * @param itemData
-     * @param tsvdataArray
+     * @param array $headerArray header array ヘッダー情報配列
+     *                            array[$attributeName][$inputType]
+     * @param array $itemData item data array アイテムIDとアイテムNOと登録ユーザーを要素に持つ配列
+     *                         array["item"][$ii]["item_id"|"item_no"|"title"|...]
+     * @param array $tsvDataArray TSV data TSVデータ
+     *                         array[$ii]
      */
     private function setTsvSelfDoiRa($headerArray, $itemData, &$tsvDataArray){
         $columnNo = $headerArray[$this->header_heading_self_doi_ra][RepositoryConst::ITEM_ATTR_TYPE_TEXT];
@@ -1750,10 +2376,14 @@ class RepositoryOutputTSV extends RepositoryAction
     
     /**
      * TSV self DOI Information Regist
+     * self DOI情報登録処理
      *
-     * @param headerArray
-     * @param itemData
-     * @param tsvdataArray
+     * @param array $headerArray header array ヘッダー情報配列
+     *                            array[$attributeName][$inputType]
+     * @param array $itemData item data array アイテムIDとアイテムNOと登録ユーザーを要素に持つ配列
+     *                         array["item"][$ii]["item_id"|"item_no"|"title"|...]
+     * @param array $tsvDataArray TSV data TSVデータ
+     *                         array[$ii]
      */
     private function setTsvSelfDoi($headerArray, $itemData, &$tsvDataArray){
         $columnNo = $headerArray[$this->header_heading_self_doi][RepositoryConst::ITEM_ATTR_TYPE_TEXT];
@@ -1766,9 +2396,12 @@ class RepositoryOutputTSV extends RepositoryAction
     
     /**
      * check authority
+     * 権限チェック
      *
-     * @param itemDataArray
-     * @return exportDataArray
+     * @param array $itemDataArray item data array アイテムIDとアイテムNOと登録ユーザーを要素に持つ配列
+     *                              array["item"][$ii]["item_id"|"item_no"|"title"|...]
+     * @return array exportDataArray export data エクスポートデータ
+     *                                array[$ii]
      */
      private function checkAuthority($itemDataArray)
      {
@@ -1808,11 +2441,13 @@ class RepositoryOutputTSV extends RepositoryAction
      }
      
      // add filter update 2014/02/18 R.Matsuura --start--
+
      /**
-     * output tsv header
+     * Get tsv header
+      * ヘッダー情報取得
      *
-     * @param itemTypeId
-     * @return tsv_header_info
+     * @param int $itemTypeId item type ID アイテムタイプID
+     * @return string TSV header info TSVヘッダー
      */
      public function getTsvHeader($itemTypeId)
      {

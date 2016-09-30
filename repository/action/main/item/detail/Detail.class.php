@@ -1,48 +1,135 @@
 <?php
+
+/**
+ * Action class for details screen
+ * 詳細画面用アクションクラス
+ *
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Detail.class.php 58676 2015-10-10 12:33:17Z tatsuya_koyasu $
+// $Id: Detail.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
-// Copyright (c) 2007 - 2008, National Institute of Informatics, 
+// Copyright (c) 2007 - 2008, National Institute of Informatics,
 // Research and Development Center for Scientific Information Resources
 //
 // This program is licensed under a Creative Commons BSD Licence
 // http://creativecommons.org/licenses/BSD/
 //
 // --------------------------------------------------------------------
-
-/* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
+/**
+ * ID server connect class
+ * IDサーバー連携クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/IDServer.class.php';
+/**
+ * Search table manager class
+ * 検索テーブル管理クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositorySearchTableProcessing.class.php';
+/**
+ * Handle manager class
+ * ハンドル管理クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryHandleManager.class.php';
 
 /**
- * [[機能説明]]
- *
- * @package     [[package名]]
- * @access      public
+ * Action class for details screen
+ * 詳細画面用アクションクラス
+ * 
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class Repository_Action_Main_Item_Detail extends RepositoryAction
 {
     // 使用コンポーネントを受け取るため
+    /**
+     * Session management objects
+     * Session管理オブジェクト
+     *
+     * @var Session
+     */
     var $Session = null;
+    /**
+     * Database management objects
+     * データベース管理オブジェクト
+     *
+     * @var DbObject
+     */
     var $Db = null;
     
     // リクエストパラメタ
+    /**
+     * Item ID and number provided "_"
+     * アンダーバー繋ぎのアイテムID・通番文字列
+     *
+     * @var string
+     */
     var $item_id_no = null;             // 詳細表示するアイテムID
+    /**
+     * Shown status
+     * 表示状態
+     *
+     * @var int
+     */
     var $shown_status = null;           // 表示非表示切り替え
+    /**
+     * Item ID
+     * アイテムID
+     *
+     * @var int
+     */
     var $item_id = null;                // 削除対象のアイテムタイプID
+    /**
+     * Item number
+     * アイテム通番
+     *
+     * @var int
+     */
     var $item_no = null;                // 削除対象のアイテムタイプID
+    /**
+     * Item updated date
+     * アイテム更新日時
+     *
+     * @var string
+     */
     var $item_update_date = null;       // DBの更新時間
+    /**
+     * Of determining whether the flag is a transition from the workflow
+     * ワークフローからの遷移であるかの判定フラグ
+     *
+     * @var int
+     */
     var $workflow_flag = null;          // ワークフローからの遷移を示す
+    /**
+     * Workflow selecting tab number
+     * ワークフロー画面で選択中のタブ
+     *
+     * @var int
+     */
     var $workflow_active_tab = null;    // ワークフローの選択中のタブ
+    /**
+     * Get suffix ID flag
+     * サフィックスID取得フラグ
+     *
+     * @var bool
+     */
     var $get_id_flag = null;            // suffixID取得用フラグ
     
     /**
-     * [[機能説明]]
+     * Execute
+     * 実行
      *
-     * @access  public
+     * @return string "success"/"delete_success"/"error"/"error_update"/"work_flow"/"change_status" success/delete success/failed/update failed/return workflow/only change status 成功/削除成功/失敗/更新失敗/ワークフロー画面へ戻る/状態変更のみ
+     * @throws RepositoryException
      */
     function execute()
     {
@@ -98,7 +185,7 @@ class Repository_Action_Main_Item_Detail extends RepositoryAction
                     //$exception->setDetailMsg( $DetailMsg );             //詳細メッセージ設定
                     throw $exception;
                 }
-                
+                $this->finalize();
                 return 'success';
                 
             } else {
@@ -180,6 +267,7 @@ class Repository_Action_Main_Item_Detail extends RepositoryAction
                     }
                     //アクション終了処理
                     $result = $this->exitAction();     //トランザクションが成功していればCOMMITされる
+                    $this->finalize();
                     if($this->workflow_flag === "true"){
                         return 'workflow';
                     } else {
@@ -216,6 +304,7 @@ class Repository_Action_Main_Item_Detail extends RepositoryAction
                     
                     //アクション終了処理
                     $result = $this->exitAction();     //トランザクションが成功していればCOMMITされる
+                    $this->finalize();
                     return 'change_status';
                 }
                 // Add get suffixID button for detail page 2009/09/03 A.Suzuki --end--
@@ -224,7 +313,7 @@ class Repository_Action_Main_Item_Detail extends RepositoryAction
                 
                 // Fix contents num of index 2015/05/15 K.Matsushita --start --
                 $this->infoLog("businessItemdelete", __FILE__, __CLASS__, __LINE__);
-                BusinessFactory::initialize($this->Session, $this->Db, $this->TransStartDate);
+                WekoBusinessFactory::initialize($this->Session, $this->Db, $this->TransStartDate);
                 $itemDelete = BusinessFactory::getFactory()->getBusiness("businessItemdelete");
                 
                 // 公開インデックス取得クエリ
@@ -267,6 +356,7 @@ class Repository_Action_Main_Item_Detail extends RepositoryAction
                 
                 // ワークフローに戻る
                 if($this->workflow_flag === "true"){
+                    $this->finalize();
                     return 'workflow';
                 }
                 
@@ -275,6 +365,7 @@ class Repository_Action_Main_Item_Detail extends RepositoryAction
                 
                 //アクション終了処理
                 $result = $this->exitAction();     //トランザクションが成功していればCOMMITされる
+                $this->finalize();
                 return 'delete_success';
             }
             
@@ -296,7 +387,13 @@ class Repository_Action_Main_Item_Detail extends RepositoryAction
             return "error";
         }
     }
-    
+
+    /**
+     * Change item shown status
+     * アイテムの表示・非表示を切り替える
+     *
+     * @return bool true/false success/failed 成功/失敗
+     */
     function change_Show_Flg(){
         // 公開／非公開切り替え
         $query = "UPDATE ". DATABASE_PREFIX ."repository_item ".
@@ -347,7 +444,7 @@ class Repository_Action_Main_Item_Detail extends RepositoryAction
         // Add check browsing rights of index K.Matsushita 2015/05/15 --start--
         // ビジネスクラスのアイテム削除処理のインスタンス生成
         $this->infoLog("businessItemdelete", __FILE__, __CLASS__, __LINE__);
-        BusinessFactory::initialize($this->Session, $this->Db, $this->TransStartDate);
+        WekoBusinessFactory::initialize($this->Session, $this->Db, $this->TransStartDate);
         $itemDelete = BusinessFactory::getFactory()->getBusiness("businessItemdelete");
         
         $itemDelete->repository_admin_base = $this->repository_admin_base;
@@ -412,9 +509,12 @@ class Repository_Action_Main_Item_Detail extends RepositoryAction
     }
     
     /**
+     * Based authority, Room authority, including such as the group authority to make sure the public status of the index
      * ベース権限、ルーム権限、グループ権限なども含めてインデックスの公開状況を確認する
-     * @param $index_id インデックスID
-     * @return $result クエリ実行結果
+     * @param int $index_id index IDインデックスID
+     * @param string $publicIndexQuery public indexes ID string 公開インデックスID文字列
+     * @return array query result クエリ実行結果
+     *                array[$ii]["index_id"]
      */
     private function checkIndexStatus( $index_id, $publicIndexQuery ){
         

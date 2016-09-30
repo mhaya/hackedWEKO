@@ -1,44 +1,77 @@
 <?php
+
+/**
+ * Action class for the item type copy
+ * アイテムタイプコピー用アクションクラス
+ *
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Copy.class.php 53594 2015-05-28 05:25:53Z kaede_matsushita $
+// $Id: Copy.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
-// Copyright (c) 2007 - 2008, National Institute of Informatics, 
+// Copyright (c) 2007 - 2008, National Institute of Informatics,
 // Research and Development Center for Scientific Information Resources
 //
 // This program is licensed under a Creative Commons BSD Licence
 // http://creativecommons.org/licenses/BSD/
 //
 // --------------------------------------------------------------------
-
-/*vim:setexpandtabtabstop=4shiftwidth=4softtabstop=4:*/
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
+/**
+ * Item type manager class
+ * アイテムタイプ管理クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/ItemtypeManager.class.php';
 
 /**
-*Load item type metadata
-*
-*@package	NetCommons
-*@author	S.Kawasaki(IVIS)
-*@copyright2006-2008NetCommonsProject
-*@license	http://www.netcommons.org/license.txtNetCommonsLicense
-*@project	NetCommonsProject,supportedbyNationalInstituteofInformatics
-*@access	public
-*/
+ * Action class for the item type copy
+ * アイテムタイプコピー用アクションクラス
+ * 
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
+ */
 class Repository_Action_Edit_Itemtype_Copy extends RepositoryAction
 {
 	// Get component
+	/**
+	 * Session management objects
+	 * Session管理オブジェクト
+	 *
+	 * @var Session
+	 */
 	var $Session = null;
+	/**
+	 * DB object
+	 * DBオブジェクト
+	 *
+	 * @var DbObjectAdodb
+	 */
 	var $Db = null;
 	
 	// Request parameter
+	/**
+	 * Item type ID
+	 * アイテムタイプID
+	 *
+	 * @var int
+	 */
 	var $item_type_id = null;
 	
 	/**
-	*[[機能説明]]
-	*
-	*@access public
-	*/
+	 * Execute
+	 * 実行
+	 *
+	 * @return string "success"/"error" success/failed 成功/失敗
+	 * @throws RepositoryException
+	 */
 	function execute()
 	{
 		try{
@@ -260,10 +293,10 @@ class Repository_Action_Edit_Itemtype_Copy extends RepositoryAction
 		    			 "(item_type_id, attribute_id, show_order, ".
 		    			 " attribute_name, attribute_short_name, input_type, is_required, ".
 		    			 " plural_enable, line_feed_enable, list_view_enable, hidden, ".
-		    			 " junii2_mapping, dublin_core_mapping, lom_mapping, lido_mapping, display_lang_type, ".
+		    			 " junii2_mapping, dublin_core_mapping, lom_mapping, lido_mapping, spase_mapping, display_lang_type, ".
 		    			 " ins_user_id, mod_user_id, del_user_id, ".
 		    			 " ins_date, mod_date, del_date, is_delete) ".
-                		 "VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?); ";
+                		 "VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?); ";
 				$params = null;
 	            $params[] = $item_type_id;	// item_type_id
 	            $params[] = $item_attr_type[$ii]['attribute_id'];			// attribute_id
@@ -279,7 +312,8 @@ class Repository_Action_Edit_Itemtype_Copy extends RepositoryAction
 	            $params[] = $item_attr_type[$ii]['junii2_mapping'];			// junii2_mapping
 	            $params[] = $item_attr_type[$ii]['dublin_core_mapping'];	// dublin_core_mapping
 	            $params[] = $item_attr_type[$ii]['lom_mapping'];            // lom_mapping
-	            $params[] = $item_attr_type[$ii]['lido_mapping'];           // lido_mapping
+                $params[] = $item_attr_type[$ii]['lido_mapping'];           // lido_mapping
+                $params[] = $item_attr_type[$ii]['spase_mapping'];          // spase_mapping
 	            $params[] = $item_attr_type[$ii]['display_lang_type'];      // display_lang_type
 	            $params[] = $user_id;						// ins_user_id
 	            $params[] = $user_id;						// mod_user_id
@@ -368,7 +402,7 @@ class Repository_Action_Edit_Itemtype_Copy extends RepositoryAction
 			
 			// succsess
 			$this->Session->removeParameter("error_code");
-			
+			$this->finalize();
 			return'success';
 			
 		}

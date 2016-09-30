@@ -1,7 +1,15 @@
 <?php
+
+/**
+ * Action class for peer review notification e-mail transmission confirmation
+ * 査読通知メール送信確認用アクションクラス
+ * 
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Mailtest.class.php 38124 2014-07-01 06:56:02Z rei_matsuura $
+// $Id: Mailtest.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -12,31 +20,66 @@
 // --------------------------------------------------------------------
 
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
+
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
 
 /**
- * repository module admin action
- *
- * @package	 NetCommons
- * @author	  IVIS
- * @copyright   2006-2009 NetCommons Project
- * @license	 http://www.netcommons.org/license.txt  NetCommons License
- * @project	 NetCommons Project, supported by National Institute of Informatics
- * @access	  public
+ * Action class for peer review notification e-mail transmission confirmation
+ * 査読通知メール送信確認用アクションクラス
+ * 
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class Repository_Action_Edit_Mailtest extends RepositoryAction
 {
 	// component
+    /**
+     * Session management objects
+     * Session管理オブジェクト
+     *
+     * @var Session
+     */
 	var $Session = null;
+	/**
+	 * Database management objects
+	 * データベース管理オブジェクト
+	 *
+	 * @var DbObject
+	 */
 	var $Db = null;
+	/**
+     * Mail management objects
+     * メール管理オブジェクト
+     *
+     * @var Mail_Main
+     */
 	var $mailMain = null;
 	
 	// member
+	/**
+	 * Language Resource Management object
+	 * 言語リソース管理オブジェクト
+	 *
+	 * @var Smarty
+	 */
 	var $smartyAssign = null;
+	/**
+	 * Mail addoress list
+	 * メールアドレス一覧
+	 *
+	 * @var string
+	 */
 	var $review_mail = null;
 	
 	/**
-	 * @access  public
+	 * E-Mail test implementation
+	 * メール送信テスト実施
 	 */
 	function execute()
 	{
@@ -185,6 +228,7 @@ class Repository_Action_Edit_Mailtest extends RepositoryAction
 				//$exception->setDetailMsg( $DetailMsg );			 //詳細メッセージ設定
 				throw $exception;
 			}
+			$this->finalize();
 			
 			return true;
 			

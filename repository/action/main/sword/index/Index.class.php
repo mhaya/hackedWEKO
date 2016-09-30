@@ -1,58 +1,153 @@
 <?php
+
+/**
+ * Action class for indexing by the SWORD protocol
+ * SWORDプロトコルによるインデックス登録用アクションクラス
+ *
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Index.class.php 53594 2015-05-28 05:25:53Z kaede_matsushita $
+// $Id: Index.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
-// Copyright (c) 2007 - 2008, National Institute of Informatics, 
+// Copyright (c) 2007 - 2008, National Institute of Informatics,
 // Research and Development Center for Scientific Information Resources
 //
 // This program is licensed under a Creative Commons BSD Licence
 // http://creativecommons.org/licenses/BSD/
 //
 // --------------------------------------------------------------------
-
-/* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
-
+/**
+ * File archive class
+ * ファイルアーカイブクラス
+ */
 include_once MAPLE_DIR.'/includes/pear/File/Archive.php';
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
+/**
+ * Import common class
+ * ファイルインポート汎用クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/action/edit/import/ImportCommon.class.php';
+/**
+ * Mailer class
+ * メーラークラス
+ */
 require_once WEBAPP_DIR. '/components/mail/Main.class.php';
+/**
+ * Index manager class
+ * インデックス管理クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryIndexManager.class.php';
+/**
+ * Output filter class
+ * 出力用フィルタークラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryOutputFilter.class.php';
 
 /**
- * **********************************************
- * this action is called by outside
- * this action make for SWORD action
- * so on WEKO action must not call this action
- * **********************************************
+ * Action class for indexing by the SWORD protocol
+ * SWORDプロトコルによるインデックス登録用アクションクラス
+ * 
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class Repository_Action_Main_Sword_Index extends RepositoryAction
 {
     // component
+    /**
+     * Session management objects
+     * Session管理オブジェクト
+     *
+     * @var Session
+     */
     var $Session = null;
+    /**
+     * Database management objects
+     * データベース管理オブジェクト
+     *
+     * @var DbObjectAdodb
+     */
     var $Db = null;
 
     // request param
+    /**
+     * Checked indexes in SCfW
+     * SCfWで登録先として選択されたインデックス
+     *
+     * @var string
+     */
     var $checkedIds = null;     // check parent index, set only
+    /**
+     * Upload XML file name
+     * アップロードされたXMLファイル名
+     *
+     * @var string
+     */
     var $filename = null;       // upload XML file name
+    /**
+     * Insert user
+     * 登録ユーザー
+     *
+     * @var string
+     */
     var $insert_user = null;    // login_id of insert user
     
-    public $login_id = null;   // login id
-    public $password = null;   // password
-    
-    private $logFh = null;                  // File handle for log 
-    private $isCreateLog = true;            // default: true
-    private $isAddDateToLogName = false;    // default: false
-    private $deleteUploadFile = true;       // default: true
+    /**
+     * NC2 Login ID
+     * NC2ログインID
+     *
+     * @var string
+     */
+    public $login_id = null;    // login_id
+    /**
+     * NC2 login password
+     * NC2ログインパスワード
+     *
+     * @var string
+     */
+    public $password = null;    // password
     
     /**
-     * return 'error' any error
-     *        'index_error' create index error
-     *        'requestparam_error' request parameter error
-     *        'upload_error' upload file error
-     *        'warning' insert item warning
-     *        'success' success
+     * Log file handle
+     * ログファイルハンドラ
+     *
+     * @var resource
+     */
+    private $logFh = null;                  // File handle for log
+    /**
+     * create log flag
+     * ログファイル作成フラグ
+     *
+     * @var bool
+     */
+    private $isCreateLog = true;            // default: true
+    /**
+     * Add date to log name flag
+     * ログ名に実行日時を付けるかのフラグ
+     *
+     * @var bool
+     */
+    private $isAddDateToLogName = false;    // default: false
+    /**
+     * Upload file delete after process flag
+     * アップロードファイルを処理後に削除するフラグ
+     *
+     * @var bool
+     */
+    private $deleteUploadFile = true;       // default: true
+
+    /**
+     * Execute
+     * 実行
+     *
+     * @return string "success"/"error" success/failed 成功/失敗
      */
     function execute()
     {
@@ -622,7 +717,7 @@ class Repository_Action_Main_Sword_Index extends RepositoryAction
                 fwrite($this->logFh, "\nSWORD index import completed. (".date("Y/m/d H:i:s").")\n");
                 fclose($this->logFh);
             }
-            
+            $this->finalize();
             exit();
             
         } catch (Exception $ex){
@@ -638,9 +733,9 @@ class Repository_Action_Main_Sword_Index extends RepositoryAction
 
     /**
      * get New Index ID
-     * 
-     * transplant from getNewId function in tree_repository.js 
+     * 新規インデックスIDを取得する
      *
+     * @return int new index ID 新規インデックスID
      */
     function getNewIndexID(){
         if(isset($this->logFh))
@@ -696,6 +791,10 @@ class Repository_Action_Main_Sword_Index extends RepositoryAction
     
     /**
      * output error xml
+     * エラーをXML出力する
+     *
+     * @param string $error_msg error message エラーメッセージ
+     * @param string $summary error summary エラーサマリー
      */
     function outputError($error_msg, $summary){
         // header

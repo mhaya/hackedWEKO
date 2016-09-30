@@ -1,7 +1,15 @@
 <?php
+
+/**
+ * View for the item type setting
+ * アイテムタイプ選択表示クラス
+ *
+ * @package     WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Setting.class.php 53594 2015-05-28 05:25:53Z kaede_matsushita $
+// $Id: Setting.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics,
 // Research and Development Center for Scientific Information Resources
@@ -10,36 +18,74 @@
 // http://creativecommons.org/licenses/BSD/
 //
 // --------------------------------------------------------------------
-
-/* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
-
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
+/**
+ * DI Container class
+ * DIコンテナクラス
+ */
 require_once MAPLE_DIR.'/core/DIContainer.class.php';
 
 /**
- * [[機能説明]]
+ * View for the item type setting
+ * アイテムタイプ選択表示クラス
  *
- * @package     [[package名]]
+ * @package     WEKO
+ * @copyright   (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license     http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
  * @access      public
  */
 class Repository_View_Edit_Itemtype_Setting extends RepositoryAction
 {
 	// get component
+	/**
+	 * Session management objects
+	 * Session管理オブジェクト
+	 *
+	 * @var Session
+	 */
 	var $Session = null;
+	/**
+	 * Database management objects
+	 * データベース管理オブジェクト
+	 *
+	 * @var DbObjectAdodb
+	 */
 	var $Db = null;
 
 	// Member variable
+	/**
+	 * Item type data
+	 * アイテムタイプ情報配列
+	 *
+	 * @var array
+	 */
 	var $itemtype_data= null;
+	/**
+	 * Error message
+	 * エラーメッセージ
+	 *
+	 * @var string
+	 */
 	var $error_msg = "";
 
-	// Set help icon setting 2010/02/10 K.Ando --start--
+	/**
+	 * Help icon dispplay flag
+	 * ヘルプアイコン表示フラグ
+	 *
+	 * @var bool
+	 */
 	var $help_icon_display =  null;
-	// Set help icon setting 2010/02/10 K.Ando --end--
 
 	/**
-	 * [[機能説明]]
+	 * Execute
+	 * 実行
 	 *
-	 * @access  public
+	 * @return string "success"/"error" success/failed 成功/失敗
+	 * @throws RepositoryException
 	 */
 	function executeApp()
 	{

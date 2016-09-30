@@ -1,31 +1,64 @@
 <?php
+
+/**
+ * Repository Components Business Work Directory Class
+ * 作業ディレクトリ管理ビジネスクラス
+ *
+ * @package     WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Workdirectory.class.php 56989 2015-08-24 11:02:11Z keiya_sugimoto $
+// $Id: Workdirectory.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
-// Copyright (c) 2007 - 2008, National Institute of Informatics, 
+// Copyright (c) 2007 - 2008, National Institute of Informatics,
 // Research and Development Center for Scientific Information Resources
 //
 // This program is licensed under a Creative Commons BSD Licence
 // http://creativecommons.org/licenses/BSD/
 //
 // --------------------------------------------------------------------
+/**
+ * Business logic abstract class
+ * ビジネスロジック基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/FW/BusinessBase.class.php';
+/**
+ * Operate the file system
+ * ファイルシステムの操作を行う
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/util/OperateFileSystem.class.php';
+/**
+ * Repository Components Util Create Work Directory Class
+ * 作業ディレクトリ作成クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/util/CreateWorkDirectory.class.php';
 
+/**
+ * Repository Components Business Work Directory Class
+ * 作業ディレクトリ管理ビジネスクラス
+ *
+ * @package     WEKO
+ * @copyright   (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license     http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access      public
+ */
 class Repository_Components_business_Workdirectory extends BusinessBase
 {
     /**
+     * Temporary directory list created
      * 作成した一時ディレクトリリスト
+     *
+     * @var array
      */
     private $tmpDirectoryList = array();
-    
+
     /**
-     * create temporary directory
+     * Create work directory
+     * 作業ディレクトリ作成
      *
-     * @return temporary directory path
-     * 
+     * @return string temporary directory path 作成した作業ディレクトリのパス
+     * @throws AppException
      */
     public function create()
     {
@@ -50,8 +83,8 @@ class Repository_Components_business_Workdirectory extends BusinessBase
     }
     
     /**
-     * 最終処理
-     * 
+     * Delete all the working directory you created
+     * 作成した作業ディレクトリを全て削除する
      */
     protected function onFinalize() {
         $this->debugLog("[".__FUNCTION__."]"." Start Remove Work Directory", __FILE__, __CLASS__, __LINE__);

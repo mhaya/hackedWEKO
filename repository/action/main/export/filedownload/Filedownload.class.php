@@ -1,7 +1,15 @@
 <?php
+
+/**
+ * Action class for bulk download of string attached file to an item
+ * アイテムに紐付くファイルの一括ダウンロード用アクションクラス
+ * 
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Filedownload.class.php 57127 2015-08-26 05:00:10Z tatsuya_koyasu $
+// $Id: Filedownload.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -11,40 +19,95 @@
 //
 // --------------------------------------------------------------------
 
+/**
+ * ZIP file manipulation library
+ * ZIPファイル操作ライブラリ
+ */
 include_once MAPLE_DIR.'/includes/pear/File/Archive.php';
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
+/**
+ * Item export processing common classes
+ * アイテムエクスポート処理共通クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/action/main/export/ExportCommon.class.php';
+/**
+ * Common class file download
+ * ファイルダウンロード共通クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryDownload.class.php';
 
 /**
- * call from repository_uri for download any files.
- * this function can't download file_price.
- * @package     [[package名]]
- * @access      public
+ * Action class for bulk download of string attached file to an item
+ * アイテムに紐付くファイルの一括ダウンロード用アクションクラス
+ * 
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class Repository_Action_Main_Export_Filedownload extends RepositoryAction
 {
+    /**
+     * Session management objects
+     * Session管理オブジェクト
+     *
+     * @var Session
+     */
     var $Session = null;
+    /**
+     * Database management objects
+     * データベース管理オブジェクト
+     *
+     * @var DbObject
+     */
     var $Db = null;
     
     // リクエストパラメータを受け取るため
     //var $item_type_id = null;     //前画面で選択したアイテムタイプID(編集時)
+    /**
+     * Item id
+     * アイテムID
+     *
+     * @var int
+     */
     var $item_id = null;
+    /**
+     * Item serial number
+     * アイテム通番
+     *
+     * @var int
+     */
     var $item_no = null;
+    /**
+     * Attribute id
+     * 属性ID
+     *
+     * @var int
+     */
     var $attribute_id = null;
+    /**
+     * File only flag
+     * ファイルのみフラグ
+     *
+     * @var string
+     */
     var $file_only = null;
     
     /**
-     * [[機能説明]]
+     * To download the string attached file to an item
+     * アイテムに紐付くファイルをダウンロードする
      *
      * @access  public
+     * @return string Result 結果
      */
     function execute()
     {
         try {
-            
-            // $this->license_checkを「_」で分割
-            $license_agree_file_no = explode("_", $this->license_check);
+            $this->exitFlag = true;
             
             // 共通の初期処理
             $result = $this->initAction();
@@ -181,7 +244,8 @@ class Repository_Action_Main_Export_Filedownload extends RepositoryAction
             
             $buf = '';
             $output_files = array();
-            $result = $export_common->getFileXMLData($buf, $Result_List['item_attr'][$idx], $tmp_dir, $output_files, true, '', true, $ii);
+            $dirCountForFile = 1;
+            $result = $export_common->getFileXMLData($buf, $Result_List['item_attr'][$idx], $tmp_dir, $output_files, true, '', true, $ii, $dirCountForFile);
             if($result === false){
                 
             }
@@ -193,18 +257,21 @@ class Repository_Action_Main_Export_Filedownload extends RepositoryAction
                 $zip_file = "export.zip";
             }
             
+            // zip用の一時ディレクトリを作成
+            $tmp_dir_zip = $businessWorkdirectory->create();
+            
             File_Archive::extract(
-                $output_files,
-                File_Archive::toArchive($zip_file, File_Archive::toFiles( $tmp_dir ))
+                File_Archive::read($tmp_dir),
+                File_Archive::toArchive($zip_file, File_Archive::toFiles( $tmp_dir_zip ))
             );
             
             //ダウンロードアクション処理
             // Add RepositoryDownload action 2010/03/30 A.Suzuki --start--
             $repositoryDownload = new RepositoryDownload();
             if($this->file_only == "true"){
-                $repositoryDownload->downloadFile($tmp_dir.$zip_file, "contents.zip");
+                $repositoryDownload->downloadFile($tmp_dir_zip.$zip_file, "contents.zip");
             } else {
-                $repositoryDownload->downloadFile($tmp_dir.$zip_file, "export.zip"); 
+                $repositoryDownload->downloadFile($tmp_dir_zip.$zip_file, "export.zip"); 
             }
             // Add RepositoryDownload action 2010/03/30 A.Suzuki --start--
             
@@ -212,10 +279,6 @@ class Repository_Action_Main_Export_Filedownload extends RepositoryAction
             // finalize処理を実施するべきだが、
             // コミットによる影響があるため、finalize処理のみを実施
             $this->finalize();
-            
-            // zipファイル損傷対応 2008/08/25 Y.Nakao --start--
-            exit();
-            // zipファイル損傷対応 2008/08/25 Y.Nakao --end--
             
         } catch ( RepositoryException $exception){
             // 未実装

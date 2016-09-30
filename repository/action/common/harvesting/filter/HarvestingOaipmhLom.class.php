@@ -1,7 +1,14 @@
 <?php
+/**
+ * Class for Harvest item registration (LOM)
+ * ハーベストアイテム登録用クラス(LOM)
+ * 
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: HarvestingOaipmhLom.class.php 36217 2014-05-26 04:22:11Z satoshi_arata $
+// $Id: HarvestingOaipmhLom.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -11,123 +18,671 @@
 //
 // --------------------------------------------------------------------
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
+/**
+ * String format conversion common classes
+ * 文字列形式変換共通クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryOutputFilter.class.php';
 
 /**
- * Attribute ID for LOM harvesting itemtype
- *
- * @package repository
- * @access  public
+ * LOM item type attribute ID constant class
+ * LOMアイテムタイプ属性ID定数クラス
+ * 
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class AttrId
 {
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const GEN_ID_URI = 1;
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const GEN_ID_ISSN = 2;
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const GEN_ID_NCID = 3;
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const GEN_ID_BIBINFO = 4;
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const GEN_ID_TEXTVERSION = 5;
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const GEN_IDENTIFIER = 6;
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const GEN_LANGUAGE = 7;
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const GEN_DESCRIPTION = 8;
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const GEN_COVERGE = 9;
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const GEN_STRUCTURE = 10;
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const GEN_AGGLEVEL = 11;
     
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const LC_VERSION = 12;
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const LC_STATUS = 13;
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const LC_CON_CREATOR = 14;
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const LC_CON_PUBLISHER = 15;
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const LC_CON_PUB_DATE = 16;
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const LC_CON_INITIATOR = 17;
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const LC_CON_TERMINATOR = 18;
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const LC_CON_VALIDATOR = 19;
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const LC_CON_EDITOR = 20;
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const LC_CON_GRA_DESIGNER = 21;
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const LC_CON_TEC_IMPLEMENTER = 22;
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const LC_CON_CNT_PROVIDER = 23;
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const LC_CON_TEC_VALIDATOR = 24;
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const LC_CON_EDU_VALIDATOR = 25;
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const LC_CON_SCRIPT_WRITER = 26;
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const LC_CON_INST_DESIGNER = 27;
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const LC_CON_SUBJ_MATTER_EXPERT = 28;
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const LC_CON_UNKNOWN = 29;
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const LC_CONTRIBUTE = 30;
     
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const MM_IDENTIFIER = 31;
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const MM_CON_CREATOR = 32;
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const MM_CON_VALIDATOR = 33;
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const MM_CONTRIBUTE = 34;
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const MM_META_SCHEMA = 35;
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const MM_LANGUAGE = 36;
     
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const TEC_FORMAT = 37;
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const TEC_SIZE = 38;
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const TEC_LOCATION = 39;
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const TEC_REQ_ORCOMP_TYPE = 40;
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const TEC_REQ_ORCOMP_NAME = 41;
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const TEC_REQ_ORCOMP_MINVERSION = 42;
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const TEC_REQ_ORCOMP_MAXVERSION = 43;
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const TEC_INSTALL_REMARKS = 44;
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const TEC_OTHER_PLATFORM_REQ = 45;
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const TEC_DURATION = 46;
     
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const EDU_INTERACTIVITY_TYPE = 47;
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const EDU_LEARN_RESOURCE_TYPE = 48;
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const EDU_INTERACTIVITY_LEVEL = 49;
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const EDU_SEMANTIC_DENSITY = 50;
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const EDU_INT_END_USER_ROLE = 51;
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const EDU_CONTEXT = 52;
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const EDU_TYP_AGE_RANGE = 53;
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const EDU_DIFFICULTY = 54;
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const EDU_TYP_LEARN_TIME = 55;
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const EDU_DESCRIPTION = 56;
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const EDU_LANGUAGE = 57;
     
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const RIT_COST = 58;
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const RIT_CPRIT_OTHRER_REST = 59;
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const RIT_DESCRIPTION = 60;
     
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const REL_PMID = 61;
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const REL_DOI = 62;
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const REL_ISVERSIONOF = 63;
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const REL_HASVERSION = 64;
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const REL_ISREQUIREDBY = 65;
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const REL_REQUIRES = 66;
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const REL_ISPARTOF = 67;
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const REL_HASPART = 68;
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const REL_ISREFERENCEDBY = 69;
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const REL_REFERENCES = 70;
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const REL_ISFORMATOF = 71;
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const REL_HASFORMAT = 72;
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const REL_ISBASISFOR = 73;
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const REL_ISBASEDON = 74;
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const REL_RELATION = 75;
     
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const ANO_ENTITY = 76;
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const ANO_DATE = 77;
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const ANO_DESCRIPTION = 78;
     
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const CLS_PURPOSE = 79;
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const CLS_TAXONPATH_SOURCE = 80;
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const CLS_TAXONPATH_TAXON = 81;
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const CLS_DESCRIPTION = 82;
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const CLS_KEYWORD = 83;
     
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const REPO_ID = 84;
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const IDENTIFIER = 85;
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const DATESTAMP = 86;
     
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const MIN_ID = self::GEN_ID_URI;
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const MAX_ID = self::DATESTAMP;
+    /**
+     * Attribute id
+     * 属性ID
+     * 
+     * @var int
+     */
     const MAX_ATTR_ID = 87;
 }
 
 /**
- * Repository module OAI-PMH oai_lom harvesting class
- *
- * @package repository
- * @access  public
+ * Class for Harvest item registration (LOM)
+ * ハーベストアイテム登録用クラス(LOM)
+ * 
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class HarvestingOaipmhLom extends RepositoryAction
 {
@@ -135,233 +690,1403 @@ class HarvestingOaipmhLom extends RepositoryAction
     // Const
     // ---------------------------------------------
     // Itemtype data
+    /**
+     * Item type id
+     * アイテムタイプID
+     * 
+     * @var int
+     */
     const ITEMTYPE_ID = 20016;
+    /**
+     * Input type
+     * 入力タイプ
+     * 
+     * @var string
+     */
     const INPUT_TYPE_LINK = RepositoryConst::ITEM_ATTR_TYPE_LINK;
+    /**
+     * Input type
+     * 入力タイプ
+     * 
+     * @var string
+     */
     const INPUT_TYPE_TEXT = RepositoryConst::ITEM_ATTR_TYPE_TEXT;
+    /**
+     * Input type
+     * 入力タイプ
+     * 
+     * @var string
+     */
     const INPUT_TYPE_BIBLIOINFO = RepositoryConst::ITEM_ATTR_TYPE_BIBLIOINFO;
+    /**
+     * Input type
+     * 入力タイプ
+     * 
+     * @var string
+     */
     const INPUT_TYPE_SELECT = RepositoryConst::ITEM_ATTR_TYPE_SELECT;
+    /**
+     * Input type
+     * 入力タイプ
+     * 
+     * @var string
+     */
     const INPUT_TYPE_TEXTAREA = RepositoryConst::ITEM_ATTR_TYPE_TEXTAREA;
+    /**
+     * Input type
+     * 入力タイプ
+     * 
+     * @var string
+     */
     const INPUT_TYPE_NAME = RepositoryConst::ITEM_ATTR_TYPE_NAME;
+    /**
+     * Input type
+     * 入力タイプ
+     * 
+     * @var string
+     */
     const INPUT_TYPE_DATE = RepositoryConst::ITEM_ATTR_TYPE_DATE;
+    /**
+     * Input type
+     * 入力タイプ
+     * 
+     * @var string
+     */
     const INPUT_TYPE_CHECKBOX = RepositoryConst::ITEM_ATTR_TYPE_CHECKBOX;
     
     // Tags
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const TAG_GENERAL = RepositoryConst::LOM_TAG_GENERAL;
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const TAG_LIFE_CYCLE = RepositoryConst::LOM_TAG_LIFE_CYCLE;
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const TAG_META_METADATA = RepositoryConst::LOM_TAG_META_METADATA;
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const TAG_TECHNICAL = RepositoryConst::LOM_TAG_TECHNICAL;
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const TAG_EDUCATIONAL = RepositoryConst::LOM_TAG_EDUCATIONAL;
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const TAG_RIGHTS = RepositoryConst::LOM_TAG_RIGHTS;
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const TAG_RELATION = RepositoryConst::LOM_TAG_RELATION;
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const TAG_ANNOTAION = RepositoryConst::LOM_TAG_ANNOTAION;
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const TAG_CLASSIFICATION = RepositoryConst::LOM_TAG_CLASSIFICATION;
     
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const TAG_IDENTIFIER = RepositoryConst::LOM_TAG_IDENTIFIER;
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const TAG_CATALOG = RepositoryConst::LOM_TAG_CATALOG;
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const TAG_ENTRY = RepositoryConst::LOM_TAG_ENTRY;
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const TAG_TITLE = RepositoryConst::LOM_TAG_TITLE;
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const TAG_LANGUAGE = RepositoryConst::LOM_TAG_LANGUAGE;
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const TAG_DESCRIPTION = RepositoryConst::LOM_TAG_DESCRIPTION;
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const TAG_KEYWORD = RepositoryConst::LOM_TAG_KEYWORD;
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const TAG_COVERAGE = RepositoryConst::LOM_TAG_COVERAGE;
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const TAG_STRUCTURE = RepositoryConst::LOM_TAG_STRUCTURE;
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const TAG_AGGREGATION_LEVEL = RepositoryConst::LOM_TAG_AGGREGATION_LEVEL;
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const TAG_VERSION = RepositoryConst::LOM_TAG_VERSION;
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const TAG_STATUS = RepositoryConst::LOM_TAG_STATUS;
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const TAG_CONTRIBUTE = RepositoryConst::LOM_TAG_CONTRIBUTE;
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const TAG_ROLE = RepositoryConst::LOM_TAG_ROLE;
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const TAG_ENTITY = RepositoryConst::LOM_TAG_ENTITY;
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const TAG_DATE = RepositoryConst::LOM_TAG_DATE;
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const TAG_METADATA_SCHEMA = RepositoryConst::LOM_TAG_METADATA_SCHEMA;
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const TAG_FORMAT = RepositoryConst::LOM_TAG_FORMAT;
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const TAG_SIZE = RepositoryConst::LOM_TAG_SIZE;
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const TAG_LOCATION = RepositoryConst::LOM_TAG_LOCATION;
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const TAG_REQUIREMENT = RepositoryConst::LOM_TAG_REQUIREMENT;
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const TAG_OR_COMPOSITE = RepositoryConst::LOM_TAG_OR_COMPOSITE;
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const TAG_TYPE = RepositoryConst::LOM_TAG_TYPE;
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const TAG_NAME = RepositoryConst::LOM_TAG_NAME;
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const TAG_MINIMUM_VERSION = RepositoryConst::LOM_TAG_MINIMUM_VERSION;
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const TAG_MAXIMUM_VERSION = RepositoryConst::LOM_TAG_MAXIMUM_VERSION;
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const TAG_INSTALLATION_REMARKS = RepositoryConst::LOM_TAG_INSTALLATION_REMARKS;
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const TAG_OTHER_PLATFORM_REQIREMENTS = RepositoryConst::LOM_TAG_OTHER_PLATFORM_REQIREMENTS;
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const TAG_DURATION = RepositoryConst::LOM_TAG_DURATION;
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const TAG_INTERACTIVITY_TYPE = RepositoryConst::LOM_TAG_INTERACTIVITY_TYPE;
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const TAG_LEARNING_RESOURCE_TYPE = RepositoryConst::LOM_TAG_LEARNING_RESOURCE_TYPE;
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const TAG_INTERACTIVITY_LEVEL = RepositoryConst::LOM_TAG_INTERACTIVITY_LEVEL;
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const TAG_SEMANTIC_DENSITY = RepositoryConst::LOM_TAG_SEMANTIC_DENSITY;
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const TAG_INTENDED_END_USER_ROLE = RepositoryConst::LOM_TAG_INTENDED_END_USER_ROLE;
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const TAG_CONTEXT = RepositoryConst::LOM_TAG_CONTEXT;
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const TAG_TYPICAL_AGE_RANGE = RepositoryConst::LOM_TAG_TYPICAL_AGE_RANGE;
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const TAG_DIFFICULTY = RepositoryConst::LOM_TAG_DIFFICULTY;
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const TAG_TYPICAL_LEARNING_TIME = RepositoryConst::LOM_TAG_TYPICAL_LEARNING_TIME;
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const TAG_COST = RepositoryConst::LOM_TAG_COST;
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const TAG_COPYRIGHT_AND_OTHER_RESTRICTIONS = RepositoryConst::LOM_TAG_COPYRIGHT_AND_OTHER_RESTRICTIONS;
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const TAG_KIND = RepositoryConst::LOM_TAG_KIND;
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const TAG_RESOURCE = RepositoryConst::LOM_TAG_RESOURCE;
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const TAG_PURPOSE = RepositoryConst::LOM_TAG_PURPOSE;
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const TAG_TAXON_PATH = RepositoryConst::LOM_TAG_TAXON_PATH;
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const TAG_SOURCE = RepositoryConst::LOM_TAG_SOURCE;
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const TAG_TAXON = RepositoryConst::LOM_TAG_TAXON;
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const TAG_ID = RepositoryConst::LOM_TAG_ID;
     
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const TAG_LANGSTR_LANG = RepositoryConst::LOM_TAG_LANGUAGE;
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const TAG_LANGSTR_STR = RepositoryConst::LOM_TAG_STRING;
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const TAG_VOCAB_SRC = RepositoryConst::LOM_TAG_SOURCE;
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const TAG_VOCAB_VAL = RepositoryConst::LOM_TAG_VALUE;
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const TAG_DATE_TIME = RepositoryConst::LOM_TAG_DATE_TIME;
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const TAG_DUR_DURATION = RepositoryConst::LOM_TAG_DURATION;
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const TAG_DUR_DESCRIPTION = RepositoryConst::LOM_TAG_DESCRIPTION;
     
     // Error / Warning message
+    /**
+     * Error message
+     * エラーメッセージ
+     * 
+     * @var string
+     */
     const MSG_ER_GET_TITLE = "repository_harvesting_error_get_title";
+    /**
+     * Warning message
+     * 警告メッセージ
+     * 
+     * @var string
+     */
     const MSG_WN_MISS_LANGAGE = "repository_harvesting_warning_miss_language";
     
     // Log status
+    /**
+     * Status
+     * 状態
+     * 
+     * @var int
+     */
     const LOG_STATUS_OK = RepositoryConst::HARVESTING_LOG_STATUS_OK;
+    /**
+     * Status
+     * 状態
+     * 
+     * @var int
+     */
     const LOG_STATUS_WARNING = RepositoryConst::HARVESTING_LOG_STATUS_WARNING;
+    /**
+     * Status
+     * 状態
+     * 
+     * @var int
+     */
     const LOG_STATUS_ERROR = RepositoryConst::HARVESTING_LOG_STATUS_ERROR;
     
     // Metadata array for ItemRegister
+    /**
+     * Key name
+     * キー名
+     * 
+     * @var string
+     */
     const KEY_IR_BASIC = "irBasic";
+    /**
+     * Key name
+     * キー名
+     * 
+     * @var string
+     */
     const KEY_IR_METADATA = "irMetadata";
+    /**
+     * Key name
+     * キー名
+     * 
+     * @var string
+     */
     const KEY_ITEM_ID = "item_id";
+    /**
+     * Key name
+     * キー名
+     * 
+     * @var string
+     */
     const KEY_ITEM_NO = "item_no";
+    /**
+     * Key name
+     * キー名
+     * 
+     * @var string
+     */
     const KEY_ITEM_TYPE_ID = "item_type_id";
+    /**
+     * Key name
+     * キー名
+     * 
+     * @var string
+     */
     const KEY_TITLE = "title";
+    /**
+     * Key name
+     * キー名
+     * 
+     * @var string
+     */
     const KEY_TITLE_EN = "title_english";
+    /**
+     * Key name
+     * キー名
+     * 
+     * @var string
+     */
     const KEY_LANGUAGE = "language";
+    /**
+     * Key name
+     * キー名
+     * 
+     * @var string
+     */
     const KEY_PUB_YEAR = "pub_year";
+    /**
+     * Key name
+     * キー名
+     * 
+     * @var string
+     */
     const KEY_PUB_MONTH = "pub_month";
+    /**
+     * Key name
+     * キー名
+     * 
+     * @var string
+     */
     const KEY_PUB_DAY = "pub_day";
+    /**
+     * Key name
+     * キー名
+     * 
+     * @var string
+     */
     const KEY_SEARCH_KEY = "serch_key";
+    /**
+     * Key name
+     * キー名
+     * 
+     * @var string
+     */
     const KEY_SEARCH_KEY_EN = "serch_key_english";
+    /**
+     * Key name
+     * キー名
+     * 
+     * @var string
+     */
     const KEY_ATTR_ID = "attribute_id";
+    /**
+     * Key name
+     * キー名
+     * 
+     * @var string
+     */
     const KEY_ATTR_NO = "attribute_no";
+    /**
+     * Key name
+     * キー名
+     * 
+     * @var string
+     */
     const KEY_INPUT_TYPE = "input_type";
+    /**
+     * Key name
+     * キー名
+     * 
+     * @var string
+     */
     const KEY_ATTR_VALUE = "attribute_value";
+    /**
+     * Key name
+     * キー名
+     * 
+     * @var string
+     */
     const KEY_FAMILY = "family";
+    /**
+     * Key name
+     * キー名
+     * 
+     * @var string
+     */
     const KEY_NAME = "name";
+    /**
+     * Key name
+     * キー名
+     * 
+     * @var string
+     */
     const KEY_FAMILY_RUBY = "family_ruby";
+    /**
+     * Key name
+     * キー名
+     * 
+     * @var string
+     */
     const KEY_NAME_RUBY = "name_ruby";
+    /**
+     * Key name
+     * キー名
+     * 
+     * @var string
+     */
     const KEY_EMAIL = "e_mail_address";
+    /**
+     * Key name
+     * キー名
+     * 
+     * @var string
+     */
     const KEY_AUTHOR_ID = "author_id";
+    /**
+     * Key name
+     * キー名
+     * 
+     * @var string
+     */
     const KEY_NAME_NO = "personal_name_no";
+    /**
+     * Key name
+     * キー名
+     * 
+     * @var string
+     */
     const KEY_BIBLIO_NAME = "biblio_name";
+    /**
+     * Key name
+     * キー名
+     * 
+     * @var string
+     */
     const KEY_BIBLIO_NAME_EN = "biblio_name_english";
+    /**
+     * Key name
+     * キー名
+     * 
+     * @var string
+     */
     const KEY_VOLUME = "volume";
+    /**
+     * Key name
+     * キー名
+     * 
+     * @var string
+     */
     const KEY_ISSUE = "issue";
+    /**
+     * Key name
+     * キー名
+     * 
+     * @var string
+     */
     const KEY_SPAGE = "start_page";
+    /**
+     * Key name
+     * キー名
+     * 
+     * @var string
+     */
     const KEY_EPAGE = "end_page";
+    /**
+     * Key name
+     * キー名
+     * 
+     * @var string
+     */
     const KEY_DATE_OF_ISSUED = "date_of_issued";
+    /**
+     * Key name
+     * キー名
+     * 
+     * @var string
+     */
     const KEY_BIBLIO_NO = "biblio_no";
     
     // For General identifier catalog
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const CATALOG_URI = RepositoryConst::LOM_URI;
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const CATALOG_ISSN = RepositoryConst::LOM_ISSN;
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const CATALOG_NCID = RepositoryConst::LOM_NCID;
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const CATALOG_JTITLE = RepositoryConst::LOM_JTITLE;
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const CATALOG_VOLUME = RepositoryConst::LOM_VOLUME;
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const CATALOG_ISSUE = RepositoryConst::LOM_ISSUE;
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const CATALOG_SPAGE = RepositoryConst::LOM_SPAGE;
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const CATALOG_EPAGE = RepositoryConst::LOM_EPAGE;
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const CATALOG_DATEOFISSUED = RepositoryConst::LOM_DATE_OF_ISSUED;
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const CATALOG_TEXTVERSION = RepositoryConst::LOM_TEXTVERSION;
     
     // For General identifier textversion value
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const TEXTVERSION_AUTHOR = "author";
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const TEXTVERSION_PUBLISHER = "publisher";
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const TEXTVERSION_NONE = "none";
     
     // For LifeCycle role value
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const ROLE_LC_AUTHOR = "author";
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const ROLE_LC_PUBLISHER = "publisher";
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const ROLE_LC_INITIATOR = "initiator";
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const ROLE_LC_TERMINATOR = "terminator";
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const ROLE_LC_VALIDATOR = "validator";
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const ROLE_LC_EDITOR = "editor";
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const ROLE_LC_GRA_DESIGNER = "graphical designer";
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const ROLE_LC_TEC_IMPLEMENTER = "technical implementer";
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const ROLE_LC_CNT_PROVIDER = "content provider";
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const ROLE_LC_TEC_VALIDATOR = "technical validator";
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const ROLE_LC_EDU_VALIDATOR = "educational validator";
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const ROLE_LC_SCRIPT_WRITER = "script writer";
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const ROLE_LC_INST_DESIGNER = "instructional designer";
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const ROLE_LC_SUBJ_MATTER_EXPERT = "subject matter expert";
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const ROLE_LC_UNKNOWN = "unknown";
     
     // For Meta-Metadata role value
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const ROLE_MM_CREATOR = "creator";
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const ROLE_MM_VALIDATOR = "validator";
     
     // For Technical requirement orComposite type value
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const TYPE_OPERATING_SYSTEM = "operating system";
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const TYPE_BROWSER = "browser";
     
     // For Relation kind value
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const KIND_ISPARTOF = RepositoryConst::LOM_IS_PART_OF;
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const KIND_HASPART = RepositoryConst::LOM_HAS_PART;
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const KIND_ISVERSIONOF = RepositoryConst::LOM_IS_VERSION_OF;
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const KIND_HASVERSION = RepositoryConst::LOM_HAS_VERSION;
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const KIND_ISFORMATOF = RepositoryConst::LOM_IS_FORMAT_OF;
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const KIND_HASFORMAT = RepositoryConst::LOM_HAS_FORMAT;
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const KIND_REFERENCES = RepositoryConst::LOM_REFERENCES;
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const KIND_ISREFERENCEDBY = RepositoryConst::LOM_IS_REFERENCED_BY;
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const KIND_ISBASEDON = RepositoryConst::LOM_IS_BASED_ON;
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const KIND_ISBASISFOR = RepositoryConst::LOM_IS_BASIS_FOR;
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const KIND_REQUIRES = RepositoryConst::LOM_REQUIRES;
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const KIND_ISREQUIREDBY = RepositoryConst::LOM_IS_REQUIRESD_BY;
     
     // For Relation resource identifier catalog
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const CATALOG_PMID = RepositoryConst::LOM_PMID;
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const CATALOG_DOI = RepositoryConst::LOM_DOI;
     
     // Others
+    /**
+     * Delimiter
+     * 区切り文字
+     * 
+     * @var string
+     */
     const IDENTIFIER_DELIMITER = ":";
+    /**
+     * Delimiter
+     * 区切り文字
+     * 
+     * @var string
+     */
     const TAXON_DELIMITER = ":";
+    /**
+     * Delimiter
+     * 区切り文字
+     * 
+     * @var string
+     */
     const NAME_DELIMITER = " ";
+    /**
+     * Language
+     * 言語
+     * 
+     * @var string
+     */
     const ITEM_LANG_JA = RepositoryConst::ITEM_LANG_JA;
+    /**
+     * Language
+     * 言語
+     * 
+     * @var string
+     */
     const ITEM_LANG_EN = RepositoryConst::ITEM_LANG_EN;
+    /**
+     * Language
+     * 言語
+     * 
+     * @var string
+     */
     const DEFAULT_LANGUAGE = RepositoryConst::ITEM_LANG_OTHER;
     
     // Database
+    /**
+     * Table name
+     * テーブル名
+     * 
+     * @var string
+     */
     const DB_ITEM = RepositoryConst::DBTABLE_REPOSITORY_ITEM;
+    /**
+     * Column name
+     * カラム名
+     * 
+     * @var string
+     */
     const DB_ITEM_ITEM_ID = RepositoryConst::DBCOL_REPOSITORY_ITEM_ITEM_ID;
+    /**
+     * Column name
+     * カラム名
+     * 
+     * @var string
+     */
     const DB_ITEM_ITEM_NO = RepositoryConst::DBCOL_REPOSITORY_ITEM_ITEM_NO;
+    /**
+     * Column name
+     * カラム名
+     * 
+     * @var string
+     */
     const DB_ITEM_IS_DELETE = RepositoryConst::DBCOL_COMMON_IS_DELETE;
+    /**
+     * Table name
+     * テーブル名
+     * 
+     * @var string
+     */
     const DB_ITEM_ATTR = RepositoryConst::DBTABLE_REPOSITORY_ITEM_ATTR;
+    /**
+     * Column name
+     * カラム名
+     * 
+     * @var string
+     */
     const DB_ITEM_ATTR_ITEM_ID = RepositoryConst::DBCOL_REPOSITORY_ITEM_ATTR_ITEM_ID;
+    /**
+     * Column name
+     * カラム名
+     * 
+     * @var string
+     */
     const DB_ITEM_ATTR_ITEM_NO = RepositoryConst::DBCOL_REPOSITORY_ITEM_ATTR_ITEM_NO;
+    /**
+     * Column name
+     * カラム名
+     * 
+     * @var string
+     */
     const DB_ITEM_ATTR_ATTR_ID = RepositoryConst::DBCOL_REPOSITORY_ITEM_ATTR_ATTRIBUTE_ID;
+    /**
+     * Column name
+     * カラム名
+     * 
+     * @var string
+     */
     const DB_ITEM_ATTR_ATTR_NO = RepositoryConst::DBCOL_REPOSITORY_ITEM_ATTR_ATTRIBUTE_NO;
+    /**
+     * Column name
+     * カラム名
+     * 
+     * @var string
+     */
     const DB_ITEM_ATTR_ATTR_VAL = RepositoryConst::DBCOL_REPOSITORY_ITEM_ATTR_ATTRIBUTE_VALUE;
+    /**
+     * Column name
+     * カラム名
+     * 
+     * @var string
+     */
     const DB_ITEM_ATTR_ITEM_TYPE_ID = RepositoryConst::DBCOL_REPOSITORY_ITEM_ATTR_ITEM_TYPE_ID;
+    /**
+     * Table name
+     * テーブル名
+     * 
+     * @var string
+     */
     const DB_PERSONAL_NAME = RepositoryConst::DBTABLE_REPOSITORY_PERSONAL_NAME;
+    /**
+     * Column name
+     * カラム名
+     * 
+     * @var string
+     */
     const DB_PERSONAL_NAME_ITEM_ID = RepositoryConst::DBCOL_REPOSITORY_PERSONAL_NAME_ITEM_ID;
+    /**
+     * Column name
+     * カラム名
+     * 
+     * @var string
+     */
     const DB_PERSONAL_NAME_ITEM_NO = RepositoryConst::DBCOL_REPOSITORY_PERSONAL_NAME_ITEM_NO;
+    /**
+     * Column name
+     * カラム名
+     * 
+     * @var string
+     */
     const DB_PERSONAL_NAME_ATTR_ID = RepositoryConst::DBCOL_REPOSITORY_PERSONAL_NAME_ATTRIBUTE_ID;
+    /**
+     * Column name
+     * カラム名
+     * 
+     * @var string
+     */
     const DB_PERSONAL_NAME_NAME_NO = RepositoryConst::DBCOL_REPOSITORY_PERSONAL_NAME_PERSONAL_NAME_NO;
+    /**
+     * Column name
+     * カラム名
+     * 
+     * @var string
+     */
     const DB_PERSONAL_NAME_FAMILY = RepositoryConst::DBCOL_REPOSITORY_PERSONAL_NAME_FAMILY;
+    /**
+     * Column name
+     * カラム名
+     * 
+     * @var string
+     */
     const DB_PERSONAL_NAME_NAME = RepositoryConst::DBCOL_REPOSITORY_PERSONAL_NAME_NAME;
+    /**
+     * Column name
+     * カラム名
+     * 
+     * @var string
+     */
     const DB_PERSONAL_NAME_FAMILY_RUBY = RepositoryConst::DBCOL_REPOSITORY_PERSONAL_NAME_FAMILY_RUBY;
+    /**
+     * Column name
+     * カラム名
+     * 
+     * @var string
+     */
     const DB_PERSONAL_NAME_NAME_RUBY = RepositoryConst::DBCOL_REPOSITORY_PERSONAL_NAME_NAME_RUBY;
+    /**
+     * Column name
+     * カラム名
+     * 
+     * @var string
+     */
     const DB_PERSONAL_NAME_EMAIL_ADDRES = RepositoryConst::DBCOL_REPOSITORY_PERSONAL_NAME_E_MAIL_ADDRESS;
+    /**
+     * Column name
+     * カラム名
+     * 
+     * @var string
+     */
     const DB_PERSONAL_NAME_ITEM_TYPE_ID = RepositoryConst::DBCOL_REPOSITORY_PERSONAL_NAME_ITEM_TYPE_ID;
+    /**
+     * Column name
+     * カラム名
+     * 
+     * @var string
+     */
     const DB_PERSONAL_NAME_AUTHOR_ID = RepositoryConst::DBCOL_REPOSITORY_PERSONAL_NAME_AUTHOR_ID;
     
     
     // ---------------------------------------------
     // Private member
     // ---------------------------------------------
+    /**
+     * Value list
+     * XML文字列一覧
+     * 
+     * @var array[$ii]
+     */
     private $generalXmlStrArray = array();
+    /**
+     * Value list
+     * XML文字列一覧
+     * 
+     * @var array[$ii]
+     */
     private $lifeCycleXmlStrArray = array();
+    /**
+     * Value list
+     * XML文字列一覧
+     * 
+     * @var array[$ii]
+     */
     private $metaMetadataXmlStrArray = array();
+    /**
+     * Value list
+     * XML文字列一覧
+     * 
+     * @var array[$ii]
+     */
     private $technicalXmlStrArray = array();
+    /**
+     * Value list
+     * XML文字列一覧
+     * 
+     * @var array[$ii]
+     */
     private $educationalXmlStrArray = array();
+    /**
+     * Value list
+     * XML文字列一覧
+     * 
+     * @var array[$ii]
+     */
     private $rightsXmlStrArray = array();
+    /**
+     * Value list
+     * XML文字列一覧
+     * 
+     * @var array[$ii]
+     */
     private $relationXmlStrArray = array();
+    /**
+     * Value list
+     * XML文字列一覧
+     * 
+     * @var array[$ii]
+     */
     private $annotationXmlStrArray = array();
+    /**
+     * Value list
+     * XML文字列一覧
+     * 
+     * @var array[$ii]
+     */
     private $classificationXmlStrArray = array();
+    /**
+     * Metadata count list
+     * メタデータ数一覧
+     * 
+     * @var array[$ii]
+     */
     private $cntMetadata = array();
+    /**
+     * Duplicate check list
+     * 競合一覧
+     * 
+     * @var array[$ii]
+     */
     private $chkDuplication = array();
     
     // ---------------------------------------------
@@ -369,8 +2094,10 @@ class HarvestingOaipmhLom extends RepositoryAction
     // ---------------------------------------------
     /**
      * Constructor
+     * コンストラクタ
      *
-     * @return HarvestingOaipmh
+     * @param Session $Session Session object セッション管理オブジェクト
+     * @param DbObject $Db Database object データベース管理オブジェクト
      */
     public function HarvestingOaipmhLom($Session, $Db){
         $this->Session = $Session;
@@ -383,7 +2110,7 @@ class HarvestingOaipmhLom extends RepositoryAction
     // ---------------------------------------------
     /**
      * Init data
-     *
+     * 初期化
      */
     private function initMember()
     {
@@ -416,10 +2143,12 @@ class HarvestingOaipmhLom extends RepositoryAction
     
     /**
      * Parse xml
+     * XMLパース
      *
-     * @param string $xml
-     * @param array $vals
-     * @return bool
+     * @param string $xml XML XML
+     * @param array $vals Value list 値一覧
+     *                    array[$ii]
+     * @return boolean Result 結果
      */
     private function parseXml($xml, &$vals)
     {
@@ -445,10 +2174,11 @@ class HarvestingOaipmhLom extends RepositoryAction
     
     /**
      * Get xml tag value
+     * XMLタグ名取得
      *
-     * @param string $xml
-     * @param string $tagName
-     * @return array
+     * @param string $xml XML XML
+     * @param string $tagName Tag name
+     * @return string Tag name タグ名
      */
     private function getXmlTagValue($xml, $tagName)
     {
@@ -459,10 +2189,10 @@ class HarvestingOaipmhLom extends RepositoryAction
     
     /**
      * Set basic metadata xml string
+     * アイテム基本情報設定
      *
-     * @param string $xml
-     * @param string $tagName
-     * @return array
+     * @param string $xml XML XML
+     * @param string $tagName Tag name
      */
     private function setBasicMetadataXmlStr($xml)
     {
@@ -479,10 +2209,13 @@ class HarvestingOaipmhLom extends RepositoryAction
     
     /**
      * Set metadata to array
+     * メタデータ設定
      *
-     * @param int $repositoryId
-     * @param string $metadata
-     * @return array
+     * @param int $repositoryId Repository id リポジトリID
+     * @param array $metadata Metadata list メタデータ一覧
+     *                        array[TAGNAME][$ii]["value"]
+     *                                           ["attribute"][KEY]
+     * @return boolean Result 結果
      */
     private function setMetadataToArray($repositoryId, &$metadata)
     {
@@ -547,9 +2280,12 @@ class HarvestingOaipmhLom extends RepositoryAction
     
     /**
      * Set general metadata to array
+     * メタデータ設定
      *
-     * @param string $metadata
-     * @return array
+     * @param array $metadata Metadata list メタデータ一覧
+     *                        array[TAGNAME][$ii]["value"]
+     *                                           ["attribute"][KEY]
+     * @return boolean Result 結果
      */
     private function setGeneralToArray(&$metadata)
     {
@@ -767,11 +2503,15 @@ class HarvestingOaipmhLom extends RepositoryAction
     
     /**
      * Set General identifier metadata
+     * メタデータ設定
      *
-     * @param string $catalog
-     * @param string $entry
-     * @param array $metadata
-     * @param array $biblioData
+     * @param string $catalog Catalog Catalog
+     * @param string $entry Entry Entry
+     * @param array $metadata Metadata list メタデータ一覧
+     *                        array[TAGNAME][$ii]["value"]
+     *                                           ["attribute"][KEY]
+     * @param array $biblioData Biblio data 書誌情報
+     *                          array["biblio_name"|"biblio_name_english"|"vokume"|"issue"|"spage"|"epage"|"date_of_issued"] 
      */
     private function setGeneralIdentifier($catalog, $entry, &$metadata, &$biblioData)
     {
@@ -899,11 +2639,13 @@ class HarvestingOaipmhLom extends RepositoryAction
     
     /**
      * Set identifier metadata
+     * Identifier設定
      *
-     * @param int $attrId
-     * @param string $catalog
-     * @param string $entry
-     * @return array
+     * @param int $attrId Attribute id 属性ID
+     * @param string $catalog Catalog Catalog
+     * @param string $entry Entry Entry
+     * @return array Metadata list メタデータ一覧
+     *               array["item_id"|"item_no"|"item_type_id"|"attribute_id"|"attribute_no"|"input_type"|"attribute_value"]
      */
     private function setIdentifier($attrId, $catalog, $entry)
     {
@@ -925,10 +2667,11 @@ class HarvestingOaipmhLom extends RepositoryAction
     }
     
     /**
-     * Set lifeCycle metadata to array
+     * Set identifier metadata
+     * メタデータ設定
      *
-     * @param string $metadata
-     * @return array
+     * @param array Metadata list メタデータ一覧
+     *              array["irMetadata"][$ii]["item_id"|"item_no"|"item_type_id"|"attribute_id"|"attribute_no"|"input_type"|"attribute_value"]
      */
     private function setLifeCycleToArray(&$metadata)
     {
@@ -1122,9 +2865,10 @@ class HarvestingOaipmhLom extends RepositoryAction
     
     /**
      * Set Meta-Metadata metadata to array
+     * メタデータ設定
      *
-     * @param string $metadata
-     * @return array
+     * @param array Metadata list メタデータ一覧
+     *              array["irMetadata"][$ii]["item_id"|"item_no"|"item_type_id"|"attribute_id"|"attribute_no"|"input_type"|"attribute_value"]
      */
     private function setMetaMetadataToArray(&$metadata)
     {
@@ -1246,9 +2990,10 @@ class HarvestingOaipmhLom extends RepositoryAction
     
     /**
      * Set Technical metadata to array
+     * メタデータ設定
      *
-     * @param string $metadata
-     * @return array
+     * @param array Metadata list メタデータ一覧
+     *              array["irMetadata"][$ii]["item_id"|"item_no"|"item_type_id"|"attribute_id"|"attribute_no"|"input_type"|"attribute_value"]
      */
     private function setTechnicalToArray(&$metadata)
     {
@@ -1399,9 +3144,12 @@ class HarvestingOaipmhLom extends RepositoryAction
     
     /**
      * Set Technical requirement
+     * メタデータ設定
      *
-     * @param array $vals
-     * @param string $metadata
+     * @param array $vals Value list 値一覧
+     *                    array[$ii]["type"|"tag"|"value"]
+     * @param array Metadata list メタデータ一覧
+     *              array["irMetadata"][$ii]["item_id"|"item_no"|"item_type_id"|"attribute_id"|"attribute_no"|"input_type"|"attribute_value"]
      */
     private function setTechnicalRequirement($vals, &$metadata)
     {
@@ -1482,9 +3230,10 @@ class HarvestingOaipmhLom extends RepositoryAction
     
     /**
      * Set Educational metadata to array
+     * メタデータ設定
      *
-     * @param string $metadata
-     * @return array
+     * @param array Metadata list メタデータ一覧
+     *              array["irMetadata"][$ii]["item_id"|"item_no"|"item_type_id"|"attribute_id"|"attribute_no"|"input_type"|"attribute_value"]
      */
     private function setEducationalToArray(&$metadata)
     {
@@ -1674,9 +3423,10 @@ class HarvestingOaipmhLom extends RepositoryAction
     
     /**
      * Set Rights metadata to array
+     * メタデータ設定
      *
-     * @param string $metadata
-     * @return array
+     * @param array Metadata list メタデータ一覧
+     *              array["irMetadata"][$ii]["item_id"|"item_no"|"item_type_id"|"attribute_id"|"attribute_no"|"input_type"|"attribute_value"]
      */
     private function setRightsToArray(&$metadata)
     {
@@ -1776,9 +3526,10 @@ class HarvestingOaipmhLom extends RepositoryAction
     
     /**
      * Set Relation metadata to array
+     * メタデータ設定
      *
-     * @param string $metadata
-     * @return array
+     * @param array Metadata list メタデータ一覧
+     *              array["irMetadata"][$ii]["item_id"|"item_no"|"item_type_id"|"attribute_id"|"attribute_no"|"input_type"|"attribute_value"]
      */
     private function setRelationToArray(&$metadata)
     {
@@ -1922,9 +3673,10 @@ class HarvestingOaipmhLom extends RepositoryAction
     
     /**
      * Set Annotation metadata to array
+     * メタデータ設定
      *
-     * @param string $metadata
-     * @return array
+     * @param array Metadata list メタデータ一覧
+     *              array["irMetadata"][$ii]["item_id"|"item_no"|"item_type_id"|"attribute_id"|"attribute_no"|"input_type"|"attribute_value"]
      */
     private function setAnnotationToArray(&$metadata)
     {
@@ -2028,9 +3780,10 @@ class HarvestingOaipmhLom extends RepositoryAction
     
     /**
      * Set Classification metadata to array
+     * メタデータ設定
      *
-     * @param string $metadata
-     * @return array
+     * @param array Metadata list メタデータ一覧
+     *              array["irMetadata"][$ii]["item_id"|"item_no"|"item_type_id"|"attribute_id"|"attribute_no"|"input_type"|"attribute_value"]
      */
     private function setClassificationToArray(&$metadata)
     {
@@ -2144,9 +3897,12 @@ class HarvestingOaipmhLom extends RepositoryAction
     
     /**
      * Set Classification taxonPath
+     * メタデータ設定
      *
-     * @param array $vals
-     * @param string $metadata
+     * @param array $vals Value list 値一覧
+     *                    array[$ii]["type"|"tag"|"value"]
+     * @param array Metadata list メタデータ一覧
+     *              array["irMetadata"][$ii]["item_id"|"item_no"|"item_type_id"|"attribute_id"|"attribute_no"|"input_type"|"attribute_value"]
      */
     private function setClassificationTaxonPath($vals, &$metadata)
     {
@@ -2226,8 +3982,10 @@ class HarvestingOaipmhLom extends RepositoryAction
     
     /**
      * Get identifer
+     * メタデータ取得
      *
-     * @param array $vals
+     * @param array $vals Value list 値一覧
+     *                    array[$ii]["type"|"tag"|"value"]
      * @param string $catalog
      * @param string $entry
      */
@@ -2253,11 +4011,16 @@ class HarvestingOaipmhLom extends RepositoryAction
     
     /**
      * Get contribute
+     * メタデータ取得
      *
-     * @param array $vals
-     * @param array $role
-     * @param array $entity
-     * @param array $date
+     * @param array $vals Value list 値一覧
+     *                    array[$ii]["type"|"tag"|"value"]
+     * @param array $role Role Role
+     *                    aray["vocab_src"|"vocab_val"]
+     * @param array $entity Entity Entity
+     *                    aray[$ii]
+     * @param array $date Date 日時
+     *                    aray["date_time"|"description"]
      */
     private function getContribute($vals, &$role, &$entity, &$date)
     {
@@ -2323,13 +4086,17 @@ class HarvestingOaipmhLom extends RepositoryAction
     
     /**
      * Get Technical orComposite
+     * メタデータ取得
      *
-     * @param array $vals
-     * @param array $type
-     * @param array $name
-     * @param string $minVersion
-     * @param string $maxVersion
-     * @return bool
+     * @param array $vals Value list 値一覧
+     *                    array[$ii]["type"|"tag"|"value"]
+     * @param array $type Type Type
+     *                    aray["vocab_src"|"vocab_val"]
+     * @param array $name Name 名前
+     *                    aray["vocab_src"|"vocab_val"]
+     * @param string $minVersion Minimum version 最少バージョン
+     * @param string $maxVersion Maximum version 最大バージョン
+     * @return boolean Result 結果
      */
     private function getTechnicalOrComposite($vals, &$type, &$name, &$minVersion, &$maxVersion)
     {
@@ -2423,10 +4190,14 @@ class HarvestingOaipmhLom extends RepositoryAction
     
     /**
      * Get Relation resource
+     * メタデータ取得
      *
-     * @param array $vals
-     * @param array $identifier
-     * @param array $description
+     * @param array $vals Value list 値一覧
+     *                    array[$ii]["type"|"tag"|"value"]
+     * @param array $identifier Identifier Identifier
+     *                    aray[$ii]
+     * @param array $description Description Description
+     *                    aray[$ii]
      */
     private function getRelationResource($vals, &$identifierArray, &$descriptionArray)
     {
@@ -2481,10 +4252,13 @@ class HarvestingOaipmhLom extends RepositoryAction
     
     /**
      * Get Classification taxon
+     * メタデータ取得
      *
-     * @param array $vals
-     * @param string $id
-     * @param array $entry
+     * @param array $vals Value list 値一覧
+     *                    array[$ii]["type"|"tag"|"value"]
+     * @param string $id ID ID
+     * @param array $entry Entry Entry
+     *                     array["lang"|"str"]
      */
     private function getClassificationTaxon($vals, &$id, &$entry)
     {
@@ -2537,10 +4311,12 @@ class HarvestingOaipmhLom extends RepositoryAction
     
     /**
      * Get langString
+     * メタデータ取得
      *
-     * @param array $vals
-     * @param string $language
-     * @param string $string
+     * @param array $vals Value list 値一覧
+     *                    array[$ii]["type"|"tag"|"value"]
+     * @param string $language Language 言語
+     * @param string $string String 文字列
      */
     private function getLangString($vals, &$language, &$string)
     {
@@ -2564,10 +4340,12 @@ class HarvestingOaipmhLom extends RepositoryAction
     
     /**
      * Get vocabulary
+     * メタデータ取得
      *
-     * @param array $vals
-     * @param string $source
-     * @param string $value
+     * @param array $vals Value list 値一覧
+     *                    array[$ii]["type"|"tag"|"value"]
+     * @param string $source Source Source
+     * @param string $value Value Value
      */
     private function getVocabulary($vals, &$source, &$value)
     {
@@ -2591,10 +4369,13 @@ class HarvestingOaipmhLom extends RepositoryAction
     
     /**
      * Get dateTime
+     * メタデータ取得
      *
-     * @param array $vals
-     * @param string $dateTime
-     * @param array $discription
+     * @param array $vals Value list 値一覧
+     *                    array[$ii]["type"|"tag"|"value"]
+     * @param string $dateTime Date time 日時
+     * @param array $discription Description Desription
+     *                           array["lang"|"str"]
      */
     private function getDateTime($vals, &$dateTime, &$discription)
     {
@@ -2641,10 +4422,13 @@ class HarvestingOaipmhLom extends RepositoryAction
     
     /**
      * Get duration
+     * メタデータ取得
      *
-     * @param array $vals
-     * @param string $duration
-     * @param array $discription
+     * @param array $vals Value list 値一覧
+     *                    array[$ii]["type"|"tag"|"value"]
+     * @param string $duration Duration Duration
+     * @param array $discription Discription Discription
+     *                           array["lang"|"str"]
      */
     private function getDuration($vals, &$duration, &$discription)
     {
@@ -2691,9 +4475,10 @@ class HarvestingOaipmhLom extends RepositoryAction
     
     /**
      * Explode name string
+     * 名前分割
      *
-     * @param $str
-     * @return array
+     * @param string $str String 文字列
+     * @return array["family"|"name"] Name 名前
      */
     private function explodeNameStr($str)
     {
@@ -2716,8 +4501,10 @@ class HarvestingOaipmhLom extends RepositoryAction
     
     /**
      * Init irBasic array
+     * アイテム基本情報初期化
      *
-     * @return array
+     * @return array Basic item information list アイテム基本情報
+     *               array["item_id"|"item_no"|"item_type_id"|"title"|"title_english"|"language"|"pub_year"|"pub_month"|"pub_day"|"serch_key"|"serch_key_english"]
      */
     private function initIrBasic()
     {
@@ -2739,8 +4526,13 @@ class HarvestingOaipmhLom extends RepositoryAction
     
     /**
      * Create irMetadata array
+     * メタデータ一覧作成
      *
-     * @return array
+     * @param int $attrId Attribute id 属性ID
+     * @param string $inputType Input type 入力タイプ
+     * @param string $data Value 値
+     * @return array Metadata list メタデータ一覧
+     *               array["item_id"|"item_no"|"item_type_id"|"attribute_id"|"attribute_no"|"input_type"|"attribute_value"]
      */
     private function createIrMetadata($attrId, $inputType, $data)
     {
@@ -2806,8 +4598,10 @@ class HarvestingOaipmhLom extends RepositoryAction
     
     /**
      * Init irMetadata array
+     * メタデータ一覧初期化
      *
-     * @return array
+     * @return array Metadata list メタデータ一覧
+     *               array["item_id"|"item_no"|"item_type_id"|"attribute_id"|"attribute_no"|"input_type"|"attribute_value"]
      */
     private function initIrMetadata()
     {
@@ -2825,8 +4619,10 @@ class HarvestingOaipmhLom extends RepositoryAction
     
     /**
      * Init irMetadata array for name
+     * メタデータ一覧初期化
      *
-     * @return array
+     * @return array Metadata list メタデータ一覧
+     *               array["item_id"|"item_no"|"item_type_id"|"attribute_id"|"name_no"|"input_type"|"family"|"name"|"family_ruby"|"name_ruby"|"email"|"author_id"|"language"]
      */
     private function initIrNameMetadata()
     {
@@ -2850,8 +4646,10 @@ class HarvestingOaipmhLom extends RepositoryAction
     
     /**
      * Init irMetadata array for biblio_info
+     * メタデータ一覧初期化
      *
-     * @return array
+     * @return array Metadata list メタデータ一覧
+     *               array["item_id"|"item_no"|"item_type_id"|"attribute_id"|"biblio_name"|"biblio_name_en"|"volume"|"issue"|"spage"|"epage"|"date_of_issued"|"biblio_no"]
      */
     private function initIrBiblioMetadata()
     {
@@ -2875,10 +4673,11 @@ class HarvestingOaipmhLom extends RepositoryAction
     
     /**
      * Set require metadata to array
+     * 必須オプション設定
      *
-     * @param int $repositoryId
-     * @param string $metadata
-     * @return array
+     * @param int $repositoryId Repository id リポジトリID
+     * @param string $metadata Metadata メタデータ
+     *                         array["irMetadata"][$ii]["item_id"|"item_no"|"item_type_id"|"attribute_id"|"attribute_no"|"input_type"|"attribute_value"]
      */
     private function setRequireMetadataToArray($repositoryId, &$metadata)
     {
@@ -2918,8 +4717,9 @@ class HarvestingOaipmhLom extends RepositoryAction
     // ---------------------------------------------
     /**
      * Set TransStartDate
+     * トランザクション開始日時設定
      *
-     * @param string $transStartDate
+     * @param string $transStartDate Transaction start date トランザクション開始日時
      */
     public function setTransStartDate($transStartDate)
     {
@@ -2928,12 +4728,14 @@ class HarvestingOaipmhLom extends RepositoryAction
     
     /**
      * Get metadata array from ListRecords(record)
+     * メタデータ取得
      *
-     * @param string $metadataXml
-     * @param int $repositoryId
-     * @param array $metadata metadata[TAGNAME][NUM]["value"]
-     *                                              ["attribute"][KEY]
-     * @return bool
+     * @param string $metadataXml Metadata XML XML文字列
+     * @param int $repositoryId Repository id リポジトリID
+     * @param array $metadata Metadata list メタデータ一覧
+     *                        array[TAGNAME][$ii]["value"]
+     *                                           ["attribute"][KEY]
+     * @return boolean Result 結果
      */
     public function setMetadataFromListRecords($metadataXml, $repositoryId, &$metadata)
     {
@@ -2955,11 +4757,15 @@ class HarvestingOaipmhLom extends RepositoryAction
     
     /**
      * Check metadata
+     * メタデータチェック
      *
-     * @param array $metadata
-     * @param int $logStatus
-     * @param array $logMsg
-     * @return bool
+     * @param array $metadata Metadata メタデータ
+     *                        array["HEARDER"][0]["attributes"]["STATUS"]
+     *                        array["TITLE"|"LANGUAGE"|"URI"|"NIITYPE"]
+     * @param int $logStatus Status 状態
+     * @param array $logMsg Log message ログメッセージ
+     *                      array[$ii]
+     * @return boolean Result 結果
      */
     public function checkMetadata($metadata, &$logStatus, &$logMsg)
     {
@@ -2986,13 +4792,15 @@ class HarvestingOaipmhLom extends RepositoryAction
     
     /**
      * Check item exists
-     *
-     * @param array $metadata
-     * @param int $repositoryId
-     * @param int $itemId
-     * @param int $itemNo
-     * @param string $datestamp
-     * @param string $isDelete
+     * アイテム存在確認
+     * 
+     * @param array $metadata Metadata メタデータ
+     *                        array[KEYNAME]
+     * @param int $repositoryId Repository id リポジトリID
+     * @param int $itemId Item id アイテムID
+     * @param int $itemNo Item serial number アイテム通番
+     * @param string $datestamp Date stamp Date stamp
+     * @param string $isDelete Is delete 削除済みか
      * @return bool true: Exists / false: No exists
      */
     public function isItemExists($metadata, $repositoryId, &$itemId, &$itemNo, &$datestamp, &$isDelete)
@@ -3073,11 +4881,17 @@ class HarvestingOaipmhLom extends RepositoryAction
     
     /**
      * Set item_id and item_no to irBasic and irMetadata
+     * アイテムID、アイテム通番設定
      *
-     * @param int $itemId
-     * @param int $itemNo
-     * @param array $metadata
-     * @return bool
+     * @param int $itemId Item id アイテムID
+     * @param int $itemNo Item serial number アイテム通番
+     * @param array $metadata Metadata メタデータ
+     *                        array[KEYNAME]
+     * @param array $irBasic Basic item information list アイテム基本情報
+     *                       array["item_id"|"item_no"|"item_type_id"|"title"|"title_english"|"language"|"pub_year"|"pub_month"|"pub_day"|"serch_key"|"serch_key_english"]
+     * @param array $irMetadata Metadata list メタデータ一覧
+     *                          array["item_id"|"item_no"|"item_type_id"|"attribute_id"|"attribute_no"|"input_type"|"attribute_value"]
+     * @return boolean Result 結果
      */
     public function setItemIdForIrData($itemId, $itemNo, &$metadata, &$irBasic, &$irMetadataArray)
     {
@@ -3124,13 +4938,16 @@ class HarvestingOaipmhLom extends RepositoryAction
     }
     
     /**
-     * makeNameMetadataArray
+     * Get author id
+     * 著者ID取得
      * 
-     * @param int $itemId
-     * @param int $itemNo
-     * @param int $attrId
-     * @param int $nameNo
-     * @return int
+     * @param int $itemId Item id アイテムID
+     * @param int $itemNo Item serial number アイテム通番
+     * @param int $attrId Attribute id 属性ID
+     * @param int $nameNo Name number 名前通番
+     * @param int $family Family 姓
+     * @param int $name Name 名
+     * @return int Author id 著者ID
      */
     private function getAuthorIdForIrMetadata($itemId, $itemNo, $attrId, $nameNo, $family, $name)
     {
@@ -3164,11 +4981,13 @@ class HarvestingOaipmhLom extends RepositoryAction
     
     /**
      * Set additional metadata
+     * 追加メタデータ設定
      * 
-     * @param int $itemId
-     * @param int $itemNo
-     * @param array &$metadataArray
-     * @return int
+     * @param int $itemId Item id アイテムID
+     * @param int $itemNo Item serial number アイテム通番
+     * @param array $metadataArray Metadata list メタデータ一覧
+     *                             array["item_id"|"item_no"|"item_type_id"|"attribute_id"|"attribute_no"|"input_type"|"attribute_value"]
+     * @return boolean Result 結果
      */
     private function setAdditionalMetadata($itemId, $itemNo, &$metadataArray)
     {
@@ -3225,13 +5044,15 @@ class HarvestingOaipmhLom extends RepositoryAction
     
     /**
      * Set additional biblioInfo
+     * 追加メタデータ設定
      * 
-     * @param int $itemId
-     * @param int $itemNo
-     * @param int $attrId
-     * @param int $itemTypeId
-     * @param array &$metadataArray
-     * @return int
+     * @param int $itemId Item id アイテムID
+     * @param int $itemNo Item serial number アイテム通番
+     * @param int $attrId Attribute id 属性ID
+     * @param int $itemTypeId Item type id アイテムタイプID
+     * @param array $metadataArray Metadata list メタデータ一覧
+     *                             array["item_id"|"item_no"|"item_type_id"|"attribute_id"|"attribute_no"|"input_type"|"attribute_value"]
+     * @return boolean Result 結果
      */
     private function setAdditionalBiblioInfo($itemId, $itemNo, $attrId, $itemTypeId, &$metadataArray)
     {
@@ -3264,14 +5085,16 @@ class HarvestingOaipmhLom extends RepositoryAction
     
     /**
      * Set additional name
+     * 追加メタデータ設定
      * 
-     * @param int $itemId
-     * @param int $itemNo
-     * @param int $attrId
-     * @param int $itemTypeId
-     * @param string $language
-     * @param array &$metadataArray
-     * @return int
+     * @param int $itemId Item id アイテムID
+     * @param int $itemNo Item serial number アイテム通番
+     * @param int $attrId Attribute id 属性ID
+     * @param int $itemTypeId Item type id アイテムタイプID
+     * @param string $language Language 言語
+     * @param array $metadataArray Metadata list メタデータ一覧
+     *                             array["item_id"|"item_no"|"item_type_id"|"attribute_id"|"attribute_no"|"input_type"|"attribute_value"]
+     * @return boolean Result 結果
      */
     private function setAdditionalName($itemId, $itemNo, $attrId, $itemTypeId, $language, &$metadataArray)
     {
@@ -3305,13 +5128,16 @@ class HarvestingOaipmhLom extends RepositoryAction
     
     /**
      * Set additional attribute
+     * 追加メタデータ設定
      * 
-     * @param int $itemId
-     * @param int $itemNo
-     * @param int $attrId
-     * @param int $itemTypeId
-     * @param array &$metadataArray
-     * @return int
+     * @param int $itemId Item id アイテムID
+     * @param int $itemNo Item serial number アイテム通番
+     * @param int $attrId Attribute id 属性ID
+     * @param int $itemTypeId Item type id アイテムタイプID
+     * @param string $inputType Input type 入力タイプ
+     * @param array $metadataArray Metadata list メタデータ一覧
+     *                             array["item_id"|"item_no"|"item_type_id"|"attribute_id"|"attribute_no"|"input_type"|"attribute_value"]
+     * @return boolean Result 結果
      */
     private function setAdditionalAttribute($itemId, $itemNo, $attrId, $itemTypeId, $inputType, &$metadataArray)
     {

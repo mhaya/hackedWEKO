@@ -1,7 +1,15 @@
 <?php
+
+/**
+ * View class for supplemental content workflow screen display
+ * サプリメンタルコンテンツワークフロー画面表示用ビュークラス
+ *
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Suppleworkflow.class.php 53594 2015-05-28 05:25:53Z kaede_matsushita $
+// $Id: Suppleworkflow.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -12,60 +20,178 @@
 // --------------------------------------------------------------------
 
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
 
 /**
- * [[機能説明]]
+ * View class for supplemental content workflow screen display
+ * サプリメンタルコンテンツワークフロー画面表示用ビュークラス
  *
- * @package	 [[package名]]
- * @access	  public
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class Repository_View_Main_Suppleworkflow extends RepositoryAction
 {
 	// 使用コンポーネントを受け取るため
+    /**
+     * Session management objects
+     * Session管理オブジェクト
+     *
+     * @var Session
+     */
 	var $Session = null;
+    /**
+     * Database management objects
+     * データベース管理オブジェクト
+     *
+     * @var DbObject
+     */
 	var $Db = null;
 	//var $request = null;
 	
 	// html表示用
 	// 表示アイテム情報 item info for display
+    /**
+     * Registered in the item
+     * 登録中アイテム
+     *
+     * @var array[$ii][$jj]["SUPPLE.item_id"|"SUPPLE.item_no"|"SUPPLE.attribute_id"|"SUPPLE.supple_no"|"SUPPLE.supple_weko_item_id"|"SUPPLE.supple_title"|"SUPPLE.supple_title_en"|"SUPPLE.uri"|"SUPPLE.supple_item_type_name"|"SUPPLE.supple_reject_reason"|"ITEM.title"|"ITEM.title_english"|"supple_reject_reason"]
+     */
 	var $item_unregistered = array();	// unregistered
+    /**
+     * Review item
+     * レビューアイテム
+     *
+     * @var array[$ii][$jj]["SUPPLE.item_id"|"SUPPLE.item_no"|"SUPPLE.attribute_id"|"SUPPLE.supple_no"|"SUPPLE.supple_weko_item_id"|"SUPPLE.supple_title"|"SUPPLE.supple_title_en"|"SUPPLE.uri"|"SUPPLE.supple_item_type_name"|"SUPPLE.supple_reject_reason"|"ITEM.title"|"ITEM.title_english"|"supple_reject_reason"]
+     */
 	var $item_review	   = array();	// review
+    /**
+     * Approval items
+     * 承認アイテム
+     *
+     * @var array[$ii][$jj]["SUPPLE.item_id"|"SUPPLE.item_no"|"SUPPLE.attribute_id"|"SUPPLE.supple_no"|"SUPPLE.supple_weko_item_id"|"SUPPLE.supple_title"|"SUPPLE.supple_title_en"|"SUPPLE.uri"|"SUPPLE.supple_item_type_name"|"SUPPLE.supple_reject_reason"|"ITEM.title"|"ITEM.title_english"|"supple_reject_reason"]
+     */
 	var $item_accepted	 = array();	// accepted
 	//var $item_reject	   = null;	// reject
 	
 	// 選択されているタブ情報 active tab info
+    /**
+     * active tab info
+     * 選択されているタブ情報
+     *
+     * @var int
+     */
 	var $supple_workflow_active_tab	= null;
 	
 	// 1ページに表示するアイテムの数 item number for display 1 page
+    /**
+     * item number for display 1 page
+     * 1ページに表示するアイテムの数 
+     *
+     * @var int
+     */
 	var $page_item		 = 20;
 	
 	// 各タブのページ数 all page number
+    /**
+     * Page number(Registration in)
+     * ページ番号(登録中)
+     *
+     * @var int
+     */
 	var $page_num_unregistered = 0;
+    /**
+     * Page number(Reviewers waiting)
+     * ページ番号(査読待ち)
+     *
+     * @var int
+     */
 	var $page_num_review	   = 0;
+    /**
+     * Page number(Approval)
+     * ページ番号(承認)
+     *
+     * @var int
+     */
 	var $page_num_accepted	   = 0;
 	//var $page_num_reject	   = null;
 	
 	// 表示しているページ番号 display page number
+    /**
+     * display page number(Registration in)
+     * 表示しているページ番号(登録中)
+     *
+     * @var int
+     */
 	var $page_disp_unregistered = null;
+    /**
+     * display page number(Reviewers waiting)
+     * 表示しているページ番号(査読待ち)
+     *
+     * @var int
+     */
 	var $page_disp_review	    = null;
+    /**
+     * display page number(Approval)
+     * 表示しているページ番号(承認)
+     *
+     * @var int
+     */
 	var $page_disp_accepted	    = null;
 	//var $page_disp_reject	    = null;
 	
 	// error_msg
+    /**
+     * Error message
+     * エラーメッセージ
+     *
+     * @var string
+     */
 	var $error_msg		 = "";
 	
+	/**
+	 * Base URL of supplemental contents WEKO
+	 * サプリWEKOのベースURL
+	 *
+	 * @var string
+	 */
 	var $supple_weko_url = "";
+	
+    /**
+     * Review mail transmission flag
+     * レビューメール送信フラグ
+     *
+     * @var int
+     */
 	var $review_mail_flg_supple = 0;
+    /**
+     * Notification mail reception flag
+     * 通知メール受信フラグ
+     *
+     * @var int
+     */
 	var $review_result_mail_supple = 0;
 	
     // Set help icon setting 2010/02/10 K.Ando --start--
+    /**
+     * Help icon display flag
+     * ヘルプアイコン表示フラグ
+     *
+     * @var int
+     */
     var $help_icon_display =  "";
     // Set help icon setting 2010/02/10 K.Ando --end--
 	
 	/**
-	 * [[ワークフロー表示用処理]]
+	 * Display the supple workflow screen
+	 * サプリワークフロー画面を表示
 	 * @access  public
+     * @return strgin Result 結果
 	 */
 	function execute()
 	{
@@ -266,22 +392,23 @@ class Repository_View_Main_Suppleworkflow extends RepositoryAction
 			//$exception->setDetailMsg( $DetailMsg );			 //詳細メッセージ設定
 			throw $exception;
 		}
-
+        $this->finalize();
 		return 'success';
 	}
 	
 	/**
 	 * $user_idのユーザが作成したアイテムの情報を取得する
 	 *
-	 * @param $user_id ユーザID userID
-	 * @param $s_num 開始番号 start number
-	 * @param $review_status 査読状況 review status
-	 * 						  0 : 承認待 wating review
-	 * 						  1 : 承認済 accepted
-	 * @param reject_status 却下状況 reject status
-	 * 						0 : 却下されていない
-	 * 						1 : 却下
-	 * @return item data
+	 * @param string $user_id user ID ユーザID
+	 * @param int $s_num start number 開始番号
+	 * @param int $review_status review status 査読状況
+	 * 						  0 : wating review 承認待
+	 * 						  1 : accepted 承認済
+	 * @param int reject_status 却下状況 reject status
+	 * 						0 : not been dismissed 却下されていない
+	 * 						1 : dismissal 却下
+	 * @return array Item data アイテム情報
+	 *               array[$ii]["SUPPLE.item_id"|"SUPPLE.item_no"|"SUPPLE.attribute_id"|"SUPPLE.supple_no"|"SUPPLE.supple_weko_item_id"|"SUPPLE.supple_title"|"SUPPLE.supple_title_en"|"SUPPLE.uri"|"SUPPLE.supple_item_type_name"|"SUPPLE.supple_reject_reason"|"ITEM.title"|"ITEM.title_english"|"supple_reject_reason"]
 	 */
 	function getUserItemData($user_id, $review_status, $reject_status){
 		$query = "SELECT  SUPPLE.item_id, ".				// item_id
@@ -407,6 +534,7 @@ class Repository_View_Main_Suppleworkflow extends RepositoryAction
 	 * set user mail setting
 	 * ユーザのメール設定状況を取得する
 	 *
+     * @return string Result 結果
 	 */
 	function setUserMailSetting(){
 		// get user id

@@ -1,7 +1,14 @@
 <?php
+/**
+ * Action class for rankings update
+ * ランキング更新用アクションクラス
+ *
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Ranking.class.php 57108 2015-08-26 01:03:29Z keiya_sugimoto $
+// $Id: Ranking.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -12,36 +19,81 @@
 // --------------------------------------------------------------------
 
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
-
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
+/**
+ * Action base class for WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/common/WekoAction.class.php';
+/**
+ * Class for ranking screen display
+ * ランキング画面表示用クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/view/main/ranking/Ranking.class.php';
 
 /**
- * [[機能説明]]
+ * Action class for rankings update
+ * ランキング更新用アクションクラス
  *
- * @package     [[package名]]
- * @access      public
+ * @package WEKO
+ * @copyright (c) 2007 - 2008, National Institute of Informatics, Research and Development Center for Scientific Information Resources.
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class Repository_Action_Common_Ranking extends WekoAction
 {
 	// リクエストパラメータを受け取るため
+    /**
+     * Administrator login ID
+     * 管理者ログインID
+     *
+     * @var string
+     */
 	var $login_id = null;
+    /**
+     * Administrator password
+     * 管理者パスワード
+     *
+     * @var string
+     */
 	var $password = null;
 	
 	// ユーザの権限レベル
+    /**
+     * User of the base level of authority
+     * ユーザのベース権限レベル
+     *
+     * @var string
+     */
 	var $user_authority_id = "";
 	
 	// Add log reset ranking refer 2010/02/18 K.Ando --start--
+	/**
+	 * Ranking number
+	 * ランキング数
+	 *
+	 * @var int
+	 */
 	private $rank_num = 5;
 	// Add log reset ranking refer 2010/02/18 K.Ando --end--
 	
 	// Add config management authority 2010/02/23 Y.Nakao --start--
+    /**
+     * User of room privilege level
+     * ユーザのルーム権限レベル
+     *
+     * @var string
+     */
 	var $authority_id = "";
 	// Add config management authority 2010/02/23 Y.Nakao --end--
 	
     /**
-     * [[機能説明]]
+     * Create ranking
+     * ランキング作成
      *
      * @access  public
      */
@@ -86,14 +138,20 @@ class Repository_Action_Common_Ranking extends WekoAction
         $this->recentRanking($viewRanking);
         
         $this->debugLog("successfully update", __FILE__, __CLASS__, __LINE__);
+        
+        // update repository_ranking_count_period table
+        $viewRanking->updateRankingCountPeriod();
+        
         print("Successfully updated.\n");
         
         return 'success';
     }
 
     /**
+     * Views ranking calculation
      * 閲覧回数ランキング計算
      *
+     * @param Respotiry_View_Main_Ranking $viewRanking　Ranking object ランキングオブジェクト
      */
     private function referRanking($viewRanking)
     {
@@ -170,8 +228,10 @@ class Repository_Action_Common_Ranking extends WekoAction
     }
 
     /**
+     * Download ranking calculation
      * ダウンロードランキング計算
      *
+     * @param Respotiry_View_Main_Ranking $viewRanking　Ranking object ランキングオブジェクト
      */
     private function downloadRanking($viewRanking)
     {
@@ -264,8 +324,10 @@ class Repository_Action_Common_Ranking extends WekoAction
     }
 
     /**
+     * User Ranking calculation
      * ユーザランキング計算
      *
+     * @param Respotiry_View_Main_Ranking $viewRanking　Ranking object ランキングオブジェクト
      */
     private function userRanking($viewRanking)
     {
@@ -339,8 +401,10 @@ class Repository_Action_Common_Ranking extends WekoAction
     }
     
     /**
+     * Search word ranking calculation
      * 検索ワードランキング計算
      *
+     * @param Respotiry_View_Main_Ranking $viewRanking　Ranking object ランキングオブジェクト
      */
     function keywordRanking($viewRanking)
     {
@@ -413,8 +477,10 @@ class Repository_Action_Common_Ranking extends WekoAction
     }
 
     /**
+     * New items calculation
      * 新着アイテム計算
      *
+     * @param Respotiry_View_Main_Ranking $viewRanking　Ranking object ランキングオブジェクト
      */
     function recentRanking($viewRanking)
     {
@@ -498,6 +564,7 @@ class Repository_Action_Common_Ranking extends WekoAction
     
     /**
      * check be able to login or not and login user has authority
+     * 管理者権限チェック
      * 
      */
     private function isLoginAdministrator()

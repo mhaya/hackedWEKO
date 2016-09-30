@@ -1,7 +1,15 @@
 <?php
+
+/**
+ * Action class download name authority template file
+ * 著者名典拠テンプレートファイルダウンロードアクションクラス
+ * 
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Download.class.php 57144 2015-08-26 06:55:05Z tatsuya_koyasu $
+// $Id: Download.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -12,26 +20,52 @@
 // --------------------------------------------------------------------
 
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
-
+/**
+ * ZIP file manipulation library
+ * ZIPファイル操作ライブラリ
+ */
 include_once MAPLE_DIR.'/includes/pear/File/Archive.php';
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
+/**
+ * Common class file download
+ * ファイルダウンロード共通クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryDownload.class.php';
 
+/**
+ * Action class download name authority template file
+ * 著者名典拠テンプレートファイルダウンロードアクションクラス
+ * 
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
+ */
 class Repository_Action_Edit_Importauthority_Download extends RepositoryAction
 {
     /**
+     * Work directory path
      * 作業用ディレクトリ
      *
      * @var string
      */
     private $tmp_dir = null;
     
+    /**
+     * File name
+     * ファイル名
+     *
+     * @var string
+     */
     const FILE_NAME = "templateTSV.tsv";
     
     /**
-     * [[機能説明]]
-     *
-     * @access  public
+     * Download name authority template file
+     * 著者名典拠テンプレートファイルダウンロード
      */
     function executeApp()
     {
@@ -53,7 +87,9 @@ class Repository_Action_Edit_Importauthority_Download extends RepositoryAction
     
     /**
      * export NameAuthority Data
-     *
+     * 著者名典拠データエクスポート
+     * 
+     * @return boolean Result 結果
      */
     private function downloadNameAuthorityTSV()
     {
@@ -118,9 +154,13 @@ class Repository_Action_Edit_Importauthority_Download extends RepositoryAction
     
     /**
      * get Name Authority Data
+     * 著者名典拠データ取得
      *
-     * @param array $prefix I/O ($prefix[N][prefix_id], $prefix[N][prefix_name])
-     * @param array $authority I/O ($authority[N][author_id], ..., $authority[N][family_ruby], $authority[N][suffix_0], $authority[N][suffix_1], ...)
+     * @param array $prefix Prefix name and id Prefix名とID
+     *                      array[$ii]["prefix"|"prefix_name"]
+     * @param array $authority Name authority data 著者名典拠データ
+     *                         array[$ii]["author_id"|"family_ruby"|"suffix_0"|"suffix_1"]
+     * @return boolean Result 結果
      */
     private function getNameAuthorityData(&$prefix, &$authority)
     {

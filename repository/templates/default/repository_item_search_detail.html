@@ -1,6 +1,6 @@
 <!--// ---------------------------------------------------------------------->
 <!--//                                                                     -->
-<!--// $Id: repository_item_search_detail.html 41035 2014-09-05 06:06:29Z tomohiro_ichikawa $          -->
+<!--// $Id: repository_item_search_detail.html 65776 2016-04-11 09:56:19Z keiya_sugimoto $          -->
 <!--//                                                                     -->
 <!--// Copyright (c) 2007 - 2008, National Institute of Informatics,        -->
 <!--// Research and Development Center for Scientific Information Resources -->
@@ -79,6 +79,8 @@
 										<option value="grantor"><{$lang.repository_detail_search_show_name_grantor}></option>
 									<{elseif $action.detail_search_usable_item[option_loops].type_id == 24}>
 										<option value="idx"><{$lang.repository_detail_search_show_name_index}></option>
+									<{elseif $action.detail_search_usable_item[option_loops].type_id == 25}>
+										<option value="wekoAuthorId"><{$lang.repository_detail_search_show_name_wekoAuthorId}></option>
 									<{/if}>
 								<{/section}>
 							</select>
@@ -629,6 +631,9 @@
 				<{elseif $action.detail_search_usable_item[option_loops].type_id == 24}>
 					new_options_value.push("idx");
 					new_options_text.push("<{$lang.repository_detail_search_show_name_index}>");
+				<{elseif $action.detail_search_usable_item[option_loops].type_id == 25}>
+					new_options_value.push("wekoAuthorId");
+					new_options_text.push("<{$lang.repository_detail_search_show_name_wekoAuthorId}>");
 				<{/if}>
 			<{/section}>
 		<{* 現在選択されていない要素の配列を作成する *}>

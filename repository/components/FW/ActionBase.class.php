@@ -1,23 +1,65 @@
 <?php
-require_once WEBAPP_DIR.'/modules/repository/components/FW/AppLogger.class.php';
-require_once WEBAPP_DIR.'/modules/repository/components/FW/AppException.class.php';
-require_once WEBAPP_DIR.'/modules/repository/components/FW/BusinessFactory.class.php';
+
 /**
- * $Id: ActionBase.class.php 53594 2015-05-28 05:25:53Z kaede_matsushita $
- * 
+ * Action base class for NetCommons
+ * NetCommons用アクション基底クラス
+ *
+ * @package WEKO
+ */
+
+// --------------------------------------------------------------------
+//
+// $Id: ActionBase.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
+//
+// Copyright (c) 2007 - 2008, National Institute of Informatics, 
+// Research and Development Center for Scientific Information Resources
+//
+// This program is licensed under a Creative Commons BSD Licence
+// http://creativecommons.org/licenses/BSD/
+//
+// --------------------------------------------------------------------
+
+/**
+ * Exception class
+ * 拡張例外クラス
+ */
+require_once WEBAPP_DIR.'/modules/repository/components/FW/AppException.class.php';
+/**
+ * Business factory implementation class
+ * ビジネスロジックインスタンス生成抽象クラス
+ */
+require_once WEBAPP_DIR.'/modules/repository/components/FW/WekoBusinessFactory.class.php';
+
+/**
+ * Action base class for NetCommons
  * NetCommons用アクション基底クラス
  * 
- * @author IVIS
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 abstract class ActionBase extends Action
 {
     /**
-     * Sessionコンポーネントを受け取る
-     * @var SessionExtra
+     * Logger object
+     * ロガーコンポーネントを受け取る
+     *
+     * @var AppLogger
+     */
+    public $Logger = null;
+
+    /**
+     * Session management object
+     * Session管理オブジェクト
+     *
+     * @var Session
      */
     public $Session = null;
     /**
+     * DB object
      * Dbコンポーネントを受け取る
+     *
      * @var DbObjectAdodb
      */
     public $Db = null;
@@ -25,25 +67,29 @@ abstract class ActionBase extends Action
     /**
      * アクセス日時
      * 
-     * @var 
+     * @var string
      */
     protected $accessDate = null;
     
     /**
-     * リクエストパラメーター：エラーメッセージ
+     * Request parameter
+     * リクエストパラメーター
+     *
      * @var array
      */
     public $errMsg = null;
     
     /**
+     * "exit()" flag
      * 処理を exit() で終了させるフラグ
+     *
      * @var bool
      */
     protected $exitFlag = false;
     
     /**
+     * Initialize
      * 初期化処理
-     *
      */
     protected function initialize()
     {
@@ -56,23 +102,28 @@ abstract class ActionBase extends Action
         }
         
         // ビジネスロジック生成クラス初期化
-        BusinessFactory::initialize($this->Session, $this->Db, $this->accessDate);
+        WekoBusinessFactory::initialize($this->Session, $this->Db, $this->accessDate);
+        $this->Logger = WekoBusinessFactory::getFactory()->logger;
     }
     
     /**
+     * Finalize
      * 終了処理
-     *
      */
     protected function finalize()
     {
         // ビジネスロジック生成クラス終了処理
-        BusinessFactory::uninitialize();
+        $businessFactory = BusinessFactory::getFactory();
+        if(isset($businessFactory)) {
+            $businessFactory->uninitialize();
+        }
     }
     
     /**
+     * Execute
      * 実行処理
      * 
-     * @return string
+     * @return string "success" or "error" 成功/失敗
      */
     public function execute()
     {
@@ -107,12 +158,8 @@ abstract class ActionBase extends Action
             // トランザクション内後処理呼び出し
             $this->postExecute();
             
-            $this->infoLog("Commit SQL.", __FILE__, __CLASS__, __LINE__);
-            if($this->Db->CompleteTrans() === false)
-            {
-                $this->infoLog("Failed commit trance.", __FILE__, __CLASS__, __LINE__);
-                throw new AppException("Failed commit trance.");
-            }
+            // トランザクションコミット処理
+            $this->completeTrans();
             
             // トランザクション外後処理
             $this->afterTrans();
@@ -154,7 +201,10 @@ abstract class ActionBase extends Action
             }
             
             // ビジネスロジック生成クラス終了処理
-            BusinessFactory::uninitialize();
+            $businessFactory = BusinessFactory::getFactory();
+            if(isset($businessFactory)) {
+                $businessFactory->uninitialize();
+            }
             
             if($this->exitFlag) {
                 if(is_array($this->errMsg)){
@@ -181,17 +231,21 @@ abstract class ActionBase extends Action
             $this->addErrMsg("予期せぬエラーが発生しました");
             
             // ビジネスロジック生成クラス終了処理
-            BusinessFactory::uninitialize();
+            $businessFactory = BusinessFactory::getFactory();
+            if(isset($businessFactory)) {
+                $businessFactory->uninitialize();
+            }
             
             return "error";
         }
     }
     
     /**
+     * Add error message
      * エラーメッセージを追加
      * 
-     * @param string $langKey
-     * @param array $params
+     * @param string $key language key 言語表示キー
+     * @param array $params messages エラーメッセージ
      */
     final protected function addErrMsg($key, $params=array())
     {
@@ -218,117 +272,150 @@ abstract class ActionBase extends Action
     /**
      * 各アクションは下記メソッドをオーバーライドすること
      */
-    abstract protected function executeApp();
-    
+
     /**
-     * トランザクション外前処理：各アクションは下記メソッドをオーバーライドすること
+     * Execute application
+     * 処理実行関数
      */
-    abstract protected function beforeTrans();
+    protected function executeApp(){}
     
     /**
-     * トランザクション外後処理：各アクションは下記メソッドをオーバーライドすること
+     * Process before transaction
+     * トランザクション開始前処理
      */
-    abstract protected function afterTrans();
+    protected function beforeTrans(){}
     
     /**
-     * トランザクション内前処理：各アクションは下記メソッドをオーバーライドすること
+     * Process after transaction
+     * トランザクション終了後処理
      */
-    abstract protected function preExecute();
+    protected function afterTrans(){}
     
     /**
-     * トランザクション内後処理：各アクションは下記メソッドをオーバーライドすること
+     * Process before execute
+     * 前処理
      */
-    abstract protected function postExecute();
+    protected function preExecute(){}
     
     /**
-     * Exeption時のログ出力
+     * Process after execute
+     * 後処理
+     */
+    protected function postExecute(){}
+    
+    /**
+     * Transaction commit processing: Called at the time the transaction is complete, by default is carried out only commit processing of the database.
+     *                                If you want to add the processing at the time of transaction completion, and overridden in a derived class side, to add a processing
+     * トランザクションのコミット処理：トランザクション完了時に呼び出され、デフォルトではデータベースのコミット処理のみ実施する。
+     *                      トランザクション完了時の処理を追加したい場合、派生クラス側でオーバーライドし、処理を追加する
+     * @throws AppException
+     */
+    protected function completeTrans(){
+        $this->infoLog("Commit SQL.", __FILE__, __CLASS__, __LINE__);
+        $this->Db->CompleteTrans();
+        if($this->Db->HasFailedTrans())
+        {
+            $this->infoLog("Failed commit trance.", __FILE__, __CLASS__, __LINE__);
+            throw new AppException("Failed commit trance.");
+        }
+    }
+    
+    /**
+     * Output exception log
+     * Exception時のログ出力
      * 
-     * @param Exception $e エクセプションクラス
-     * @param string $filePath ファイルパス
-     * @param string $className クラス名
-     * @param string $lineNo 行数
+     * @param Exception $e exception object エクセプションクラス
+     * @param string $filePath file path エラー発生ファイルパス
+     * @param string $className class name エラー発生クラス名
+     * @param string $lineNo line number エラー発生行数
      */
     final function exeptionLog(Exception $e, $filePath, $className, $lineNo)
     {
-        AppLogger::errorLog($e->__toString(), $filePath, $className, $lineNo);
+        $this->Logger->errorLog($e->__toString(), $filePath, $className, $lineNo);
     }
     
     /**
+     * Output fatal log
      * fatalレベル以上のログを出力
      * 
-     * @param string $message エラーメッセージ
-     * @param string $filePath ファイルパス
-     * @param string $className クラス名
-     * @param string $lineNo 行数
+     * @param string $message error message エラーメッセージ
+     * @param string $filePath file path エラー発生ファイルパス
+     * @param string $className class name エラー発生クラス名
+     * @param string $lineNo line number エラー発生行数
      */
     final function fatalLog($message, $filePath, $className, $lineNo)
     {
-        AppLogger::fatalLog($message, $filePath, $className, $lineNo);
+        $this->Logger->fatalLog($message, $filePath, $className, $lineNo);
     }
     
     /**
+     * Output error log
      * errorレベル以上のログを出力
      *
-     * @param string $message エラーメッセージ
-     * @param string $filePath ファイルパス
-     * @param string $className クラス名
-     * @param string $lineNo 行数
+     * @param string $message error message エラーメッセージ
+     * @param string $filePath file path エラー発生ファイルパス
+     * @param string $className class name エラー発生クラス名
+     * @param string $lineNo line number エラー発生行数
      */
     final function errorLog($message, $filePath, $className, $lineNo)
     {
-        AppLogger::errorLog($message, $filePath, $className, $lineNo);
+        $this->Logger->errorLog($message, $filePath, $className, $lineNo);
     }
     
     /**
+     * Output warning log
      * warnレベル以上のログを出力
      *
-     * @param string $message エラーメッセージ
-     * @param string $filePath ファイルパス
-     * @param string $className クラス名
-     * @param string $lineNo 行数
+     * @param string $message error message エラーメッセージ
+     * @param string $filePath file path エラー発生ファイルパス
+     * @param string $className class name エラー発生クラス名
+     * @param string $lineNo line number エラー発生行数
      */
     final function warnLog($message, $filePath, $className, $lineNo)
     {
-        AppLogger::warnLog($message, $filePath, $className, $lineNo);
+        $this->Logger->warnLog($message, $filePath, $className, $lineNo);
     }
     
     /**
+     * Output info log
      * infoレベル以上のログを出力
      *
-     * @param string $message エラーメッセージ
-     * @param string $filePath ファイルパス
-     * @param string $className クラス名
-     * @param string $lineNo 行数
+     * @param string $message error message エラーメッセージ
+     * @param string $filePath file path エラー発生ファイルパス
+     * @param string $className class name エラー発生クラス名
+     * @param string $lineNo line number エラー発生行数
      */
     final function infoLog($message, $filePath, $className, $lineNo)
     {
-        AppLogger::infoLog($message, $filePath, $className, $lineNo);
+        $this->Logger->infoLog($message, $filePath, $className, $lineNo);
     }
     
     /**
+     * Output debug log
      * debugレベル以上のログを出力
      *
-     * @param string $message エラーメッセージ
-     * @param string $filePath ファイルパス
-     * @param string $className クラス名
-     * @param string $lineNo 行数
+     * @param string $message error message エラーメッセージ
+     * @param string $filePath file path エラー発生ファイルパス
+     * @param string $className class name エラー発生クラス名
+     * @param string $lineNo line number エラー発生行数
      */
     final function debugLog($message, $filePath, $className, $lineNo)
     {
-        AppLogger::debugLog($message, $filePath, $className, $lineNo);
+        $this->Logger->debugLog($message, $filePath, $className, $lineNo);
     }
     
     /**
+     * Output trace log
      * traceレベル以上のログを出力
      *
-     * @param string $message エラーメッセージ
-     * @param string $filePath ファイルパス
-     * @param string $className クラス名
-     * @param string $lineNo 行数
+     * @param string $message error message エラーメッセージ
+     * @param string $filePath file path エラー発生ファイルパス
+     * @param string $className class name エラー発生クラス名
+     * @param string $lineNo line number エラー発生行数
      */
     final function traceLog($message, $filePath, $className, $lineNo)
     {
-        AppLogger::traceLog($message, $filePath, $className, $lineNo);
+        $this->Logger->traceLog($message, $filePath, $className, $lineNo);
     }
 }
 ?>

@@ -1,7 +1,15 @@
 <?php
+
+/**
+ * Actual file Delete action class already logical delete
+ * 論理削除済み実ファイル削除アクションクラス
+ * 
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Update.class.php 32789 2014-03-13 08:46:25Z rei_matsuura $
+// $Id: Update.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -12,26 +20,48 @@
 // --------------------------------------------------------------------
 
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
+/**
+ * Base class for carrying out asynchronously and recursively possibility is the ability to process a long period of time
+ * 長時間処理する可能性がある機能を非同期かつ再帰的に実施するための基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/BackgroundProcess.class.php';
 
 /**
- * Delete deleted file in background process
- *
- * @package     NetCommons
- * @author      R.Matsuura(IVIS)
- * @project     NetCommons Project, supported by National Institute of Informatics
- * @access      public
+ * Actual file Delete action class already logical delete
+ * 論理削除済み実ファイル削除アクションクラス
+ * 
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class Repository_Action_Common_Filecleanup_Update extends BackgroundProcess
 {
     // all metadata key
+    /**
+     * 1 processing number of each request
+     * 1リクエスト毎の処理件数
+     *
+     * @var int
+     */
     const MAX_RECORDS = "50";
     // all metadata table name
+    /**
+     * Process name
+     * プロセス名
+     *
+     * @var string
+     */
     const PARAM_NAME = "Repository_Action_Common_Filecleanup_Update";
     
     /**
-     * constructer
+     * Constructer
+     * コンストラクタ
      */
     public function __construct()
     {
@@ -39,9 +69,11 @@ class Repository_Action_Common_Filecleanup_Update extends BackgroundProcess
     }
     
     /**
-     * get renewal item of a search table 
+     * To get the information of the file to be deleted
+     * 削除するファイルの情報を取得する
      *
-     * @param fileList deleted file
+     * @param array $fileList Delete File List 削除ファイル一覧
+     *                        array[$ii]["item_id"|"attribute_id"|"file_no"|"extension"]
      */
     protected function prepareBackgroundProcess(&$fileList)
     {
@@ -58,9 +90,11 @@ class Repository_Action_Common_Filecleanup_Update extends BackgroundProcess
     }
     
     /**
-     * update search table of a processing data item 
+     * Removes the specified actual files, exclude deleted files from the file list of deleted plans
+     * 指定された実ファイルを削除し、削除したファイルを削除予定のファイルリストから除外する
      *
-     * @param fileList deleted file
+     * @param array $fileList Delete File List 削除ファイル一覧
+     *                        array[$ii]["item_id"|"attribute_id"|"file_no"|"extension"]
      */
     protected function executeBackgroundProcess($fileList)
     {

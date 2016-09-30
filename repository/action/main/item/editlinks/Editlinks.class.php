@@ -1,30 +1,63 @@
 <?php
+
+/**
+ * Item registration: input processing action class from the link input screen
+ * アイテム登録：リンク設定画面からの入力処理アクション
+ *
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Editlinks.class.php 53594 2015-05-28 05:25:53Z kaede_matsushita $
+// $Id: Editlinks.class.php 70936 2016-08-09 09:53:57Z keiya_sugimoto $
 //
-// Copyright (c) 2007 - 2008, National Institute of Informatics, 
+// Copyright (c) 2007 - 2008, National Institute of Informatics,
 // Research and Development Center for Scientific Information Resources
 //
 // This program is licensed under a Creative Commons BSD Licence
 // http://creativecommons.org/licenses/BSD/
 //
 // --------------------------------------------------------------------
-
-/* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
+/**
+ * Item register manager class
+ * アイテム登録管理クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/ItemRegister.class.php';
+/**
+ * Handle manager class
+ * ハンドル管理クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryHandleManager.class.php';
+/**
+ * String operator utility class
+ * 文字列操作ユーティリティークラス
+ */
+require_once WEBAPP_DIR. '/modules/repository/components/util/StringOperator.class.php';
+/**
+ * Const for WEKO class
+ * WEKO用定数クラス
+ */
+require_once WEBAPP_DIR. '/modules/repository/components/RepositoryConst.class.php';
 
 /**
+ * Item registration: input processing action class from the link input screen
  * アイテム登録：リンク設定画面からの入力処理アクション
- * 
- * @access      public
+ *
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class Repository_Action_Main_Item_Editlinks extends RepositoryAction
 {
     // リクエストパラメーター
     /**
+     * Process mode
      * 処理モード
      *   'selecttype'   : アイテムタイプ選択画面
      *   'files'        : ファイル選択画面
@@ -39,38 +72,52 @@ class Repository_Action_Main_Item_Editlinks extends RepositoryAction
     public $save_mode = null;
     
     /**
+     * The inter-item link: relationship between input value array
      * アイテム間リンク：関係性 入力値配列
+     *
      * @var array
      */
     public $item_relation_select = null;
     
     /**
-     * インデックス開閉情報
-     *   delemit is ","
+     * Index opening and closing information (delimit is ",")
+     * インデックス開閉情報(delemit is ",")
+     *
      * @var string
      */
     public $OpendIds = null;
     
     /**
-     * インデックスチェック情報：ID
-     *   delemit is "|"
+     * Index check information: ID (delemit is "|")
+     * インデックスチェック情報：ID(delemit is "|")
+     *
      * @var string
      */
     public $CheckedIds = null;
     
     /**
-     * インデックスチェック情報：インデックス名
-     *   delemit is "|"
+     * Index check information: name of the index (delimit is "|")
+     * インデックスチェック情報：インデックス名(delemit is "|")
+     *
      * @var string
      */
     public $CheckedNames = null;
     
     // メンバ変数
-    private $warningMsg = array();  // 警告メッセージ
+    /**
+     * Warning message
+     * 警告メッセージ
+     *
+     * @var array
+     */
+    private $warningMsg = array();
     
     /**
-     * 実行処理
-     * @see RepositoryAction::executeApp()
+     * Execute
+     * 実行
+     *
+     * @return string "success"/"error" success/failed 成功/失敗
+     * @throws AppException
      */
     protected function executeApp()
     {
@@ -81,8 +128,38 @@ class Repository_Action_Main_Item_Editlinks extends RepositoryAction
         $smartyAssign = $this->Session->getParameter("smartyAssign");
         $link = $this->Session->getParameter("link");
         $base_attr = $this->Session->getParameter("base_attr");
-        $item_id = intval($this->Session->getParameter("edit_item_id"));
-        $item_no = intval($this->Session->getParameter("edit_item_no"));
+        $edit_flag = $this->Session->getParameter("edit_flag");
+        if($edit_flag == 0){
+            // 新規登録時
+            $ItemRegister = new ItemRegister($this->Session, $this->Db);
+            $item_type_all = $this->Session->getParameter("item_type_all");
+            $item_id = intval($this->Db->nextSeq("repository_item"));
+            $item_no = 1;
+            if($base_attr["language"] == RepositoryConst::ITEM_LANG_JA)
+            {
+                //WEKOの設定言語に依存せず、論文の言語で決めるので仮タイトル文字列はベタ書きです
+                $base_attr["title"] = "タイトル無し";
+                $base_attr["title_english"] = "";
+            }
+            else
+            {
+                $base_attr["title"] = "";
+                $base_attr["title_english"] = "no title";
+            }
+            // アイテムの雛形を作成する
+            $ItemRegister->entryItemModel($item_id, $item_no, $item_type_all["item_type_id"], $base_attr["title"], $base_attr["title_english"], $base_attr["language"]);
+            
+            $this->Session->setParameter("base_attr", $base_attr);
+            $this->Session->setParameter("edit_item_id", $item_id);
+            $this->Session->setParameter("edit_item_no", $item_no);
+            $this->Session->setParameter("edit_flag", 1);
+            $edit_flag = 1;
+        } else if($edit_flag == 1){
+            //既存編集時
+            // 編集中のアイテムIDをセッションから取得
+            $item_id = intval($this->Session->getParameter("edit_item_id"));
+            $item_no = intval($this->Session->getParameter("edit_item_no"));
+        }
         
         for($ii=0; $ii<count($link); $ii++){
             $relation = '';
@@ -102,8 +179,13 @@ class Repository_Action_Main_Item_Editlinks extends RepositoryAction
         // set session to check index info
         $indice = array();
         if( $this->CheckedIds != null && $this->CheckedIds != '' ){
-            $checked_ids = explode('|', $this->CheckedIds);
-            $checked_names = explode('|', str_replace("&#039;", "'", html_entity_decode($this->CheckedNames)));
+            $checked_ids = array();
+            $checked_names = array();
+            Repository_Components_Util_Stringoperator::explodeIdAndName($this->CheckedIds, // リクエストパラメータのインデックスID文字列
+                                                                        str_replace("&#039;", "'", html_entity_decode($this->CheckedNames)), // リクエストパラメータのインデックス名文字列
+                                                                        $checked_ids, // フィルター済インデックスID受け取り用配列
+                                                                        $checked_names // フィルター済インデックス名受け取り用配列
+                                                                       );
             for($ii=0; $ii<count($checked_ids); $ii++) {
                 array_push($indice, array(
                         'index_id' => $checked_ids[$ii],
@@ -111,7 +193,6 @@ class Repository_Action_Main_Item_Editlinks extends RepositoryAction
                         );
             }
         }
-        $ItemRegister->setInsUserId($this->Session->getParameter(RepositoryConst::SESSION_PARAM_CONTRIBUTOR_USER_ID));
         $indice = $this->addPrivateTreeInPositionIndex($indice, $this->Session->getParameter(RepositoryConst::SESSION_PARAM_CONTRIBUTOR_USER_ID));
         
         $item = array("item_id"=>$item_id, "item_no"=>$item_no);

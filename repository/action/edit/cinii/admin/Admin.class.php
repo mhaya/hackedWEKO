@@ -1,7 +1,15 @@
 <?php
+
+/**
+ * ELS management screen action class
+ * ELS管理画面アクションクラス
+ * 
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Admin.class.php 20119 2012-11-02 10:33:38Z yuko_nakao $
+// $Id: Admin.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -12,41 +20,110 @@
 // --------------------------------------------------------------------
 
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
+/**
+ * Download Action class of registered file in WEKO
+ * WEKOに登録されたファイルのダウンロードアクションクラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/action/common/download/Download.class.php';
+/**
+ * ELS registration common classes
+ * ELS登録共通クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/action/edit/cinii/ElsCommon.class.php';
 
+/**
+ * ELS management screen action class
+ * ELS管理画面アクションクラス
+ * 
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
+ */
 class Repository_Action_Edit_Cinii_Admin extends RepositoryAction
 {
 	// memba
+	/**
+	 * Display language
+	 * 表示言語
+	 *
+	 * @var unknown_type
+	 */
 	var $lang = null;
 	
 	// component
+    /**
+     * Session management objects
+     * Session管理オブジェクト
+     *
+     * @var Session
+     */
 	var $Session = null;
+    /**
+     * Database management objects
+     * データベース管理オブジェクト
+     *
+     * @var DbObject
+     */
 	var $Db = null;
 	
+    /**
+     * Language Resource Management object
+     * 言語リソース管理オブジェクト
+     *
+     * @var Smarty
+     */
 	var $smartyAssign = null;
 	
+	/**
+	 * Select index ID
+	 * 選択インデックスID
+	 *
+	 * @var int
+	 */
 	var $selIdx_id = null;
+	/**
+	 * Select index name
+	 * 選択インデックス名
+	 *
+	 * @var string
+	 */
 	var $selIdx_name = null;
+	/**
+	 * Entry type
+	 * 登録タイプ
+	 *
+	 * @var int
+	 */
 	var $entry_type = null;
 	
     // prevent double registration for ELS 2010/10/21 A.Suzuki --start--
+    /**
+     * ELS registered index ID list
+     * ELS登録済みインデックスID一覧
+     *
+     * @var array[$ii]
+     */
     private $elsRegisteredIndex_ = null;
     // prevent double registration for ELS 2010/10/21 A.Suzuki --end--
 	
     // Add Shelf registration to contents lab 2012/10/21 T.Koyasu -start-
     /**
-     * flg of shelf registration to contents lab
+     * Automatic registration flag
+     * 自動登録フラグ
      *
-     * @var boolean: true->shelf registration
-     *             : false->normal entry
+     * @var boolean
      */
     private $shelfregistrationFlg_ = false;
     
 	/**
-	 *
-	 * @access  public
+	 * Carry out the management of the ELS data
+	 * ELSデータの管理を行う
 	 */
 	function execute()
 	{
@@ -210,10 +287,13 @@ class Repository_Action_Edit_Cinii_Admin extends RepositoryAction
 	}
 	
 	/**
-	 * get all child index from index
+	 * Get all child index from index
+	 * 全ての子インデックスを取得する
 	 *
-	 * @param $index_id index id
-	 * @param $embargo_index_id result
+	 * @param int $index_id Index id インデックスID
+	 * @param array $embargo_index_id Index id list インデックスID一覧
+	 *                                array[$ii]
+	 * @return boolean Exectuion result 実行結果
 	 */
 	function getSubIndexId($index_id, &$embargo_index_id){
 		// get childindex
@@ -245,10 +325,13 @@ class Repository_Action_Edit_Cinii_Admin extends RepositoryAction
 	}
 	
 	/**
-	 * get item data from index
+	 * Get item data from index
+	 * 
 	 *
-	 * @param $index_id indexID
-	 * @param $item_info result
+	 * @param int $index_id Index id 
+	 * @param array $item_info result 結果
+	 *                         array[$ii]["item_id"|"item_no"|"index_name"]
+	 * @return boolean Execution result 実行結果
 	 */
 	function getItemInfo($index_id, &$item_info){
 		$query = "SELECT item_id, item_no ".

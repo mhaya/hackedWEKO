@@ -1,8 +1,49 @@
 <?php
+
+/**
+ * Exception class
+ * 例外基底クラス
+ *
+ * @package WEKO
+ */
+
+// --------------------------------------------------------------------
+//
+// $Id: AppException.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
+//
+// Copyright (c) 2007 - 2008, National Institute of Informatics,
+// Research and Development Center for Scientific Information Resources
+//
+// This program is licensed under a Creative Commons BSD Licence
+// http://creativecommons.org/licenses/BSD/
+//
+// --------------------------------------------------------------------
+
+/**
+ * Exception abstract class
+ * 例外基底クラス
+ *
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
+ */
 abstract class App_Exception_PreviousNativeAbstract extends Exception
 {
+    /**
+     * Exception recursive print flag
+     * 例外再帰表示フラグ
+     *
+     * @var bool
+     */
     public static $printPrevious = true;
-    
+
+    /**
+     * Message to string
+     * メッセージ文字列化
+     *
+     * @return string error message エラーメッセージ
+     */
     public function __toString() {
         $result   = array();
         $result[] = sprintf("Exception '%s' with message '(%s) %s' in %s:%d", get_class($this), $this->code, $this->message, $this->file, $this->line);
@@ -26,48 +67,98 @@ abstract class App_Exception_PreviousNativeAbstract extends Exception
 }
 
 if (version_compare(PHP_VERSION, '5.3.0', '>=')) {
+    /**
+     * Exception abstract class (PHP version 5.3.0 or more)
+     * 例外基底クラス(PHP 5.3.0)
+     *
+     * @package WEKO
+     * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+     * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+     * @access public
+     */
     abstract class App_Exception_PreviousAbstract extends App_Exception_PreviousNativeAbstract {}
 }
 else {
+    /**
+     * Exception abstract class (PHP version less than 5.3.0 )
+     * 例外基底クラス(PHP 5.3.0未満)
+     *
+     * @package WEKO
+     * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+     * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+     * @access public
+     */
     abstract class App_Exception_PreviousLegacyAbstract extends App_Exception_PreviousNativeAbstract {
+        /**
+         * Previous exception object
+         * 直前の例外オブジェクト
+         *
+         * @var Exception
+         */
         protected $previous;
-        
+
+        /**
+         * App_Exception_PreviousLegacyAbstract constructor.
+         * コンストラクタ
+         *
+         * @param string    $message  error message             エラーメッセージ
+         * @param int       $code     error code                エラーコード
+         * @param Exception $previous previous exception object 直前の例外オブジェクト
+         */
         public function __construct($message, $code = 0, Exception $previous = null) {
             $this->previous = $previous;
             
             parent::__construct($message, $code);
         }
-        
+
+        /**
+         * Get previous exception object
+         * 直前の例外オブジェクト取得
+         * @return Exception
+         */
         public function getPrevious() {
             return $this->previous;
         }
     }
+
+    /**
+     * WEKO Exception abstract class
+     * WEKO例外基底クラス
+     *
+     * @package WEKO
+     * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+     * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+     * @access public
+     */
     abstract class App_Exception_PreviousAbstract extends App_Exception_PreviousLegacyAbstract {}
 }
 
 /**
- * $Id: AppException.class.php 48455 2015-02-16 10:53:40Z atsushi_suzuki $
- * 
- * 拡張例外クラス
- *   PHP 5.3.0 未満でもインナーエクセプションを扱えるよう対応
- * 
- * @author IVIS
+ * Exception class
+ * 拡張例外クラス(PHP 5.3.0 未満でもインナーエクセプションを扱えるよう対応)
+ *
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class AppException extends App_Exception_PreviousAbstract
 {
     /**
+     * error message list
      * エラーメッセージ一覧
      *
-     * @var array
+     * @var array array[$ii][$errorKey] エラーメッセージ配列
      */
     private $errors =array();
-    
+
     /**
+     * AppException constructor.
      * 例外を再定義し、メッセージをオプションではなくする
-     * 
-     * @params string $message 例外メッセージ
-     * @params int $code エラーコード
-     * @params Exception インナーエクセプション
+     *
+     * @param string $message exception message 例外メッセージ
+     * @param int $code error code エラーコード
+     * @param Exception inner exception インナーエクセプションクラス
      */
     public function __construct($message, $code = 0, Exception $previous = null)
     {
@@ -76,10 +167,11 @@ class AppException extends App_Exception_PreviousAbstract
     }
     
     /**
+     * Add error
      * エラー追加
      *
-     * @param string $errorKey
-     * @param array $errorParams
+     * @param string $errorKey error key 追加するエラーキー
+     * @param array $errorParams errors エラー内容
      */
     public function addError($errorKey, $errorParams=array())
     {
@@ -88,10 +180,11 @@ class AppException extends App_Exception_PreviousAbstract
     }
     
     /**
+     * Check exists error key
      * エラーキーの存在チェック
      * 
-     * @param string $key 検索するエラーキー
-     * @return bool ture:存在する/false:存在しない
+     * @param string $key error key 検索するエラーキー
+     * @return bool true/false 存在する/存在しない
      */
     public function existsError($key)
     {
@@ -107,9 +200,10 @@ class AppException extends App_Exception_PreviousAbstract
     }
     
     /**
+     * Error message list
      * エラーメッセージ一覧
      * 
-     * @return array:
+     * @return array array[$ii][$errorKey] エラーメッセージ配列
      */
     public function getErrors()
     {

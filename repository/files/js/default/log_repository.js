@@ -51,7 +51,7 @@ function execLogAjax_repos(type, is_csv, logErrorMsg){
 	//location.href=url+'?'+pars;
 	$('loading_'+type+'_'+is_csv).style.display = "";
 	var userAgent = window.navigator.userAgent.toLowerCase();
-	if(userAgent.indexOf("msie") > -1 || userAgent.indexOf("trident") > -1){
+	if(userAgent.indexOf("msie") > -1 || userAgent.indexOf("trident") > -1 || userAgent.indexOf("edge") > -1){
 		// IEでのonload代用処理
 		$('log_download').innerHTML = '<iframe boder="0" id="log_frame" src="'+url+'?'+pars+'"></iframe>';
 		$('log_frame').onreadystatechange = function(){
@@ -265,7 +265,7 @@ function downloadCSV_report(mail, error_msg){
 	
 	// disp loading icon 2010/03/02 Y.Nakao --start--
 	var userAgent = window.navigator.userAgent.toLowerCase();
-	if(userAgent.indexOf("msie") > -1 || userAgent.indexOf("trident") > -1){
+	if(userAgent.indexOf("msie") > -1 || userAgent.indexOf("trident") > -1 || userAgent.indexOf("edge") > -1){
 		// IEでのonload代用処理
 		$('log_download').innerHTML = '<iframe boder="0" id="log_frame" src="'+url+'?'+pars+'"></iframe>';
 		$('log_frame').onreadystatechange = function(){

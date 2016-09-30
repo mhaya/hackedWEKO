@@ -1,7 +1,15 @@
 <?php
+
+/**
+ * Action class for cooperation data automatic creation of the Y handle (http://id.nii.ac.jp/)
+ * Yハンドル(http://id.nii.ac.jp/)との連携データ自動作成用アクションクラス
+ * 
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Image.class.php 38124 2014-07-01 06:56:02Z rei_matsuura $
+// $Id: Image.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -12,21 +20,42 @@
 // --------------------------------------------------------------------
 
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
+/**
+ * Y handle (http://id.nii.ac.jp/) cooperative processing common classes
+ * Yハンドル(http://id.nii.ac.jp/)連携処理共通クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/IDServer.class.php';
 
 /**
- * [[機能説明]]
- *
- * @package     [[package名]]
- * @access      public
+ * Action class for cooperation data automatic creation of the Y handle (http://id.nii.ac.jp/)
+ * Yハンドル(http://id.nii.ac.jp/)との連携データ自動作成用アクションクラス
+ * 
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class Repository_Action_Edit_Prefix_Image extends RepositoryAction
 {
 	// リクエストパラメタ
+	/**
+	 * SSH path
+	 * SSHパス
+	 *
+	 * @var string
+	 */
 	var $ssl_path = null;
 
 	/**
+	 * Auto get the Y handle prefix
+	 * Yハンドル prefixを自動取得
+	 * 
+	 * @return string Result 結果
 	 * @access  public
 	 */
 	function execute()
@@ -56,6 +85,7 @@ class Repository_Action_Edit_Prefix_Image extends RepositoryAction
 			
 			// アクション終了処理
 			$result = $this->exitAction();	// トランザクションが成功していればCOMMITされる
+			$this->finalize();
 			return 'success';
 		}
 		catch ( RepositoryException $Exception) {

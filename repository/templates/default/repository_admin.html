@@ -1,6 +1,6 @@
 <!--// ---------------------------------------------------------------------->
 <!--//                                                                     -->
-<!--// $Id: repository_admin.html 54835 2015-06-25 04:10:46Z keiya_sugimoto $        -->
+<!--// $Id: repository_admin.html 68946 2016-06-16 09:47:19Z tatsuya_koyasu $        -->
 <!--//                                                                     -->
 <!--// Copyright (c) 2007 - 2008, National Institute of Informatics,        -->
 <!--// Research and Development Center for Scientific Information Resources -->
@@ -234,6 +234,22 @@
             </td>
            </tr>
 		  <{* Default Search Type setting 2014/12/03 K.Sugimoto --end-- *}>
+           <tr>
+           <{* 著者名検索 *}>
+            <td class="vt al item_edit_list normal w30">
+             <{$lang.repository_label_admin_author_search}>
+            </td>
+            <td class="w70 al item_edit_list">
+             <label style="margin-right:10px">
+              <input type="radio" name="author_search_type" value="0" <{if $action.author_search_type == 0}>checked=""<{/if}>>
+              <{$lang.repository_label_admin_author_name_search}>
+             </label>
+             <label>
+              <input type="radio" name="author_search_type" value="1" <{if $action.author_search_type > 0}>checked=""<{/if}>>
+              <{$lang.repository_label_admin_author_id_search}>
+             </label>
+            </td>
+           </tr>
           <{* Advanced Search condition setting 2013/11/20 R.Matsuura --start-- *}>
             <tr>
              <th class="al th_col_repos" colspan=2><{$lang.repository_detail_search_title}></th>
@@ -251,7 +267,7 @@
                     <{section name=i loop=$action.search_setup}>
                         <tr class="brd01">
                             <td class="brd01 item_edit_list ac">
-                                <input type="checkbox" align="center" id="search_use_flag_checkbox_id<{$id}>_<{$smarty.section.i.index}>" <{if $action.search_setup[i].use_flag==1}>checked<{/if}> <{if $action.search_setup[i].mapping=="creator"}>disabled="disabled"<{/if}> onclick="javascript: changeUseSearchFlag<{$id}>('search_use_flag_checkbox_id<{$id}>_<{$smarty.section.i.index}>', 'search_use_flag_id<{$id}>_<{$smarty.section.i.index}>', 'search_default_flag_checkbox_id<{$id}>_<{$smarty.section.i.index}>', 'search_default_flag_id<{$id}>_<{$smarty.section.i.index}>'); " >
+                                <input type="checkbox" align="center" id="search_use_flag_checkbox_id<{$id}>_<{$smarty.section.i.index}>" <{if $action.search_setup[i].use_flag==1}>checked<{/if}> <{if $action.search_setup[i].mapping=="creator" || $action.search_setup[i].type_id=="25"}>disabled="disabled"<{/if}> onclick="javascript: changeUseSearchFlag<{$id}>('search_use_flag_checkbox_id<{$id}>_<{$smarty.section.i.index}>', 'search_use_flag_id<{$id}>_<{$smarty.section.i.index}>', 'search_default_flag_checkbox_id<{$id}>_<{$smarty.section.i.index}>', 'search_default_flag_id<{$id}>_<{$smarty.section.i.index}>'); " >
                                 <input type="hidden" id="search_use_flag_id<{$id}>_<{$smarty.section.i.index}>" name="search_use_flag[]" value="<{$action.search_setup[i].use_flag}>" >
                                 <input type="hidden" name="search_type_id[]" value="<{$action.search_setup[i].type_id}>"
                             </td>
@@ -745,7 +761,7 @@
                        <tr class="brd01">
                         <th class="th_col_repos al" colspan=2><{$lang.repository_admin_site_license_mail_address}><br/></th>
                          <{* Sitelicense Mail Address *}>
-                         <td class="brd01 item_edit_list"><input type="text" class="full" name="sitelicense_mail[]" id="id_sitelicense_mail" value="<{$sitelicense_mail[$cnt]|smarty:nodefaults}>" /></td>
+                         <td class="brd01 item_edit_list"><textarea class="full" name="sitelicense_mail[<{$cnt}>]" id="id_sitelicense_mail"><{$sitelicense_mail[$cnt]|smarty:nodefaults}></textarea></td>
                        </tr>
                        <tr class="brd01">
                         <th class="th_col_repos al" colspan=2><{$lang.repository_admin_site_license_group}><br/></th>
@@ -833,37 +849,6 @@
 			    </td>
 			   </tr>
 			   <{*Item type select for Site License --end--*}>
-               <{* Add send feedback mail to sitelicense user 2014/04/22 T.Ichikawa --start-- *}>
-			   <tr>
-                <td class="vt al item_edit_list normal w30">
-                    <{$lang.repository_admin_sitelicense_send_mail_setting}>
-                </td>
-                <td class="w70 al item_edit_list">
-                    <label for="id_sitelicense_send_mail_activate">
-                            <input id="id_sitelicense_send_mail_activate" name="sitelicenseSendMailActivateFlag" type="checkbox" value="dummy" <{if $smarty.session.admin_params.send_sitelicense_mail_activate_flg.param_value == "1"}>checked<{/if}> onclick="javascript: sitelicenseActivateChange();" /><{$lang.repository_admin_sitelicense_send_mail_activate}>
-                    </label>
-                </td>
-               </tr>
-			   <tr id="id_sitelicense_send_mail_setting_tr_1" <{if $smarty.session.admin_params.send_sitelicense_mail_activate_flg.param_value == "0"}>style="display:none"<{/if}>>
-			    <td class="vt al item_edit_list normal w30"><{$lang.repository_admin_sitelicense_send_mail}></td>
-			    <td class="w70 al item_edit_list">
-			     <table class="full">
-			      <tr>
-				   <td >
-				    <input type="button" class="btn_white" value="<{$lang.repository_execute}>" onclick="commonCls.sendView('<{$id}>', {'action':'repository_view_edit_adminconf_confirm', 'adminconfirm_action':'sitelicensemail'}); return false;">
-			       </td>
-			      </tr>
-			      <tr>
-			       <td>
-				    <{$lang.repository_admin_crawler_comment}><br/>
-					<{$lang.repository_admin_adminconf_uri_comment}><br/>
-					<input type="text" value="<{$smarty.session.admin_params.siteLicenseMail_uri.path}>" class="full al" onclick="this.select(); return false;"><br/>
-			       </td>
-			      </tr>
-			     </table>
-			    </td>
-			   </tr>
-               <{* Add send feedback mail to sitelicense user 2014/04/22 T.Ichikawa --end-- *}>
 			  <{*フルテキストインデックス再作成*}>
 			   <{*データベース設定*}>
 			   <tr>
@@ -1073,18 +1058,50 @@
                     <{$lang.repository_admin_author_id_prefix_edit}>
                 </td>
                 <td class="w70 al item_edit_list">
-                    <select id="id_external_author_id_prefix_list">
-                        <{section name=i loop=$smarty.session.admin_params.author_id_prefix.list}>
-                            <option value="<{$smarty.session.admin_params.author_id_prefix.list[i].prefix_id}>" <{if $smarty.session.admin_params.author_id_prefix.list[i].prefix_id=='1' || $smarty.session.admin_params.author_id_prefix.list[i].prefix_id=='2' || $smarty.session.admin_params.author_id_prefix.list[i].prefix_id=='3'}>disabled<{/if}>>
-                                <{$smarty.session.admin_params.author_id_prefix.list[i].prefix_name}>
-                            </option>
-                        <{/section}>
-                    </select>
-                    <input type="button" class="btn_delete" value="<{$lang.repository_delete}>" onclick="javascript: delAuthorIdPrefix();">
-                    <br/>
-                    <input type="hidden" name="external_author_id_prefix_text" id="id_external_author_id_prefix_text" value="<{$smarty.session.admin_params.author_id_prefix.text}>">
-                    <input type="text" id="add_author_id_prefix" class="w85" value="">
-                    <input type="button" class="btn_white" value="<{$lang.repository_add}>" onclick="javascript: addAuthorIdPrefix();">
+                    
+                    <table width="600" cellspacing="0">
+                        <tr>
+                            <th width="145" align="center"><{$lang.repository_label_admin_author_id_prefix_name}></th>
+                            <th width="280" align="center"><{$lang.repository_label_admin_author_id_prefix_url}></th>
+                            <th width="100" align="center"><{$lang.repository_delete}></th>
+                        </tr>
+                    </table>
+                    
+                    <div style="height: 150px; overflow-y: scroll;">
+                        <table id="id_external_author_id_table" width="600" cellspacing="0">
+                            <{section name=i loop=$smarty.session.admin_params.author_id_prefix.list}>
+                                <tr>
+                                    <td width="120" align="center">
+                                        <{if $smarty.session.admin_params.author_id_prefix.list[i].prefix_id >= 1 && $smarty.session.admin_params.author_id_prefix.list[i].prefix_id <= 3}>
+                                            <label><{$smarty.session.admin_params.author_id_prefix.list[i].prefix_name}></label>
+                                            <input type="hidden" name="external_author_id_prefix_list[]" value="<{$smarty.session.admin_params.author_id_prefix.list[i].prefix_name}>"/>
+                                            <input type="hidden" name="external_author_id_prefix_list_id[]" value="<{$smarty.session.admin_params.author_id_prefix.list[i].prefix_id}>"/>
+                                        <{else}>
+                                            <input type="text" name="external_author_id_prefix_list[]" size="10" value="<{$smarty.session.admin_params.author_id_prefix.list[i].prefix_name}>"/>
+                                            <input type="hidden" name="external_author_id_prefix_list_id[]" value="<{$smarty.session.admin_params.author_id_prefix.list[i].prefix_id}>"/>
+                                        <{/if}>
+                                    </td>
+                                    <td width="280" align="center"><input type="text" name="external_author_id_prefix_list_url[]" value="<{$smarty.session.admin_params.author_id_prefix.list[i].url}>"></td>
+                                    <td width="100" align="center">
+                                        <{if $smarty.session.admin_params.author_id_prefix.list[i].prefix_id < 1 || $smarty.session.admin_params.author_id_prefix.list[i].prefix_id > 3}>
+                                            <img border="0" src="<{$smarty.const.CORE_BASE_URL}>/images/repository/default/close.png" onclick="javascript: delAuthorIdPrefix(this);">
+                                        <{/if}>
+                                    </td>
+                                </tr>
+                            <{/section}>
+                        </table>
+                    </div>
+                    
+                    <table width="600" cellspacing="0">
+                        <tr>
+                            <td width="120" align="center">
+                                <input type="text" id="id_add_external_author_id" size="10" value="" />
+                            </td>
+                            <td width="280" align="center"><input type="text" id="id_add_external_author_id_url" value="" /></td>
+                            <td width="100" align="center"><input type="button" class="btn_white" value="<{$lang.repository_add}>" onclick="javascript: addAuthorIdPrefix('id_external_author_id_table');"></td>
+                        </tr>
+                    </table>
+                    
                 </td>
             </tr>
             <{* Add authorID prefix edit 2010/11/08 A.Suzuki --end-- *}>
@@ -2407,6 +2424,10 @@
                      <p class="w15em fl"><img class="brd03" style="margin: 10px 4px 0px 4px; background-color: <{if $smarty.session.admin_params.path_mecab.path=='true'}> #0f0; <{else}> #f00;<{/if}>" src="<{$smarty.const.CORE_BASE_URL}>/images/repository/default/check.png" /> mecab&nbsp;(mecab)</p>
                      <input type="text" class="full al fl" name="path_mecab" value="<{$smarty.session.admin_params.path_mecab.param_value}>" />
                    </div>
+                   <div class="clear c">
+                     <p class="w15em fl"><img class="brd03" style="margin: 10px 4px 0px 4px; background-color: <{if $smarty.session.admin_params.path_php.path=='true'}> #0f0; <{else}> #f00;<{/if}>" src="<{$smarty.const.CORE_BASE_URL}>/images/repository/default/check.png" /> php&nbsp;(php)</p>
+                     <input type="text" class="full al fl" name="path_php" value="<{$smarty.session.admin_params.path_php.param_value}>" />
+                   </div>
 			     </div>
 			    </td>
 			   </tr>
@@ -2909,61 +2930,39 @@
 
 <{* Add search result setting 2009/03/13 A.Suzuki --start-- *}>
 <script class="nc_script" type="text/javascript">
-    addAuthorIdPrefix = function(){
-        var prefix_list = "id_external_author_id_prefix_list";
-        var prefix_text = "id_external_author_id_prefix_text";
-        var add_prefix = "add_author_id_prefix";
+    addAuthorIdPrefix = function(id){
+        var prefix_table = document.getElementById(id);
+        var new_prefix_name = "id_add_external_author_id";
+        var new_prefix_url = "id_add_external_author_id_url";
         
-        $(add_prefix).value = $(add_prefix).value.replace(/\|/g, "");
-        $(add_prefix).value = $(add_prefix).value.replace(/\,/g, "");
-    
-        if($(add_prefix).value.trim() != ""){
-            var cnt = $(prefix_list).length;
-            for (ii=0; ii<cnt; ii++) {
-                if($(prefix_list).options[ii].text == $(add_prefix).value){
-                    $(prefix_list).options[ii].selected = true;
-                    if(ii<3){
-                        // ii as 0, 1 and 2 are cannot select
-                        $(prefix_list).options[ii].selected = false;
-                    }
-                    $(add_prefix).value = "";
-                    return;
-                }
-            }
-            $(prefix_list).length = (cnt+1);
-            $(prefix_list).options[cnt].text = $(add_prefix).value;
-            $(prefix_list).options[cnt].value = "0";
-            $(prefix_text).value += "|0," + $(add_prefix).value;
-            $(add_prefix).value = "";
-        }
+        var row = prefix_table.insertRow(-1);
+        var cell_prefix_name = row.insertCell(-1);
+        var cell_prefix_url = row.insertCell(-1);
+        var cell_delete_button = row.insertCell(-1);
+        
+        var prefix_name_text = '<input type="text" name="external_author_id_prefix_list[]" size="10" value="'+$(new_prefix_name).value+'"/><input type="hidden" name="external_author_id_prefix_list_id[]" value="0"/>';
+        var prefix_url_text = '<input type="text" name="external_author_id_prefix_list_url[]" value="'+$(new_prefix_url).value+'">';
+        var delete_button = '<img border="0" src="<{$smarty.const.CORE_BASE_URL}>/images/repository/default/close.png" onclick="javascript: delAuthorIdPrefix(this);">';
+        
+        cell_prefix_name.width = '120';
+        cell_prefix_name.align = 'center';
+        cell_prefix_name.innerHTML = prefix_name_text;
+        cell_prefix_url.width = '280';
+        cell_prefix_url.align = 'center';
+        cell_prefix_url.innerHTML = prefix_url_text;
+        cell_delete_button.width = '100';
+        cell_delete_button.align = 'center';
+        cell_delete_button.innerHTML = delete_button;
+        
+        $(new_prefix_name).value = '';
+        $(new_prefix_url).value = '';
     }
 </script>
 
 <script class="nc_script" type="text/javascript">
-    delAuthorIdPrefix = function(){
-        var prefix_list = "id_external_author_id_prefix_list";
-        var prefix_text = "id_external_author_id_prefix_text";
-
-        if($(prefix_list).selectedIndex != -1 && $(prefix_list).selectedIndex > 2){
-            var prefix_text_array = ($(prefix_text).value).trim().split("|");
-            var cnt = $(prefix_list).length;
-            for (ii=cnt-1; ii>=0; ii--) {
-                if ($(prefix_list).options[ii].selected) {
-                    $(prefix_list).options[ii] = null;
-                    prefix_text_array.splice(ii,1);
-                    break;
-                }
-            }
-            $(prefix_text).value = "";
-            if(prefix_text_array.length != 0){
-                for(ii=0; ii<prefix_text_array.length; ii++){
-                    if($(prefix_text).value != ""){
-                        $(prefix_text).value += "|";
-                    }
-                    $(prefix_text).value += prefix_text_array[ii];
-                }
-            }
-        }
+    delAuthorIdPrefix = function(obj){
+        tr = obj.parentNode.parentNode;
+        tr.parentNode.deleteRow(tr.sectionRowIndex);
     }
 </script>
 <{* Add search result setting 2009/03/13 A.Suzuki --end-- *}>
@@ -3075,18 +3074,6 @@
     }
 </script>
 <{* Add feedback mail setting 2012/12/25 A.Suzuki --end-- *}>
-
-<{* Add sitelicense mail setting 2014/04/23 T.Ichikawa --start-- *}>
-<script class="nc_script" type="text/javascript">
-    sitelicenseActivateChange = function(){
-        if( $('id_sitelicense_send_mail_activate').checked){
-            $('id_sitelicense_send_mail_setting_tr_1').style.display='';
-        } else {
-            $('id_sitelicense_send_mail_setting_tr_1').style.display='none';
-        }
-    }
-</script>
-<{* Add sitelicense mail setting 2014/04/23 T.Ichikawa --end-- *}>
 
 <{*Add change privatetree creation 2013/04/10 K.Matsuo --start--*}>
  <script class="nc_script" type="text/javascript">

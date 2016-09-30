@@ -1,7 +1,15 @@
 <?php
+
+/**
+ * Action class for bibliographic information output in BIBTEX format
+ * BIBTEX形式での書誌情報出力用アクションクラス
+ *
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Bibtex.class.php 48455 2015-02-16 10:53:40Z atsushi_suzuki $
+// $Id: Bibtex.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -13,46 +21,125 @@
 
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
 
+/**
+ * ZIP file manipulation library
+ * ZIPファイル操作ライブラリ
+ */
 include_once MAPLE_DIR.'/includes/pear/File/Archive.php';
+
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
+
+/**
+ * Item export processing common classes
+ * アイテムエクスポート処理共通クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/action/main/export/ExportCommon.class.php';
+/**
+ * Item authority common classes
+ * アイテム権限共通クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryItemAuthorityManager.class.php';
+
+/**
+ * String format conversion common classes
+ * 文字列形式変換共通クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryOutputFilter.class.php';
 
 /**
- * [[機能説明]]
+ * Action class for bibliographic information output in BIBTEX format
+ * BIBTEX形式での書誌情報出力用アクションクラス
  *
- * @package     [[package名]]
- * @access      public
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class Repository_Bibtex extends RepositoryAction
 {
 	// リクエストパラメータを受け取るため
+	/**
+	 * Request parameters
+	 * リクエストパラメータ
+	 *
+	 * @var string
+	 */
 	var $verb = null;
+    /**
+     * Item id
+     * アイテムID
+     *
+     * @var int
+     */
 	var $itemId = null;
+    /**
+     * Item serial number
+     * アイテム通番
+     *
+     * @var int
+     */
 	var $itemNo = null;
 	
 	// ダウンロード用メンバ
+    /**
+     * Data upload objects
+     * データアップロードオブジェクト
+     *
+     * @var Uploads_View
+     */
 	var $uploadsView = null;
 	
 	// 改行
+	/**
+	 * Line feed code
+	 * 改行コード
+	 *
+	 * @var string
+	 */
 	var $LF = "\n";
 	// タブシフト
+	/**
+	 * Tab character
+	 * タブ文字
+	 *
+	 * @var string
+	 */
 	var $TAB_SHIFT = "\t";
 
 	// 出力文字列
+	/**
+	 * The output string
+	 * 出力文字列
+	 *
+	 * @var string
+	 */
 	var $feed = '';
 	
 	// エラーメッセージ
+	/**
+	 * Error message
+	 * エラーメッセージ
+	 *
+	 * @var string
+	 */
 	var $errorMsg = "";
 	
 	// グローバル
+	/**
+	 * Bibliographic information
+	 * 書誌情報
+	 *
+	 * @var array["title"|"booktitle"|"journal"|"number"|"pages"|"month"|"year"]
+	 */
 	var $bibtex_fields = array();
 	
     /**
-     * [[機能説明]]
-     *
-     * @access  public
+     * And outputs the bibliographic information of the items in BIBTEX format
+     * アイテムの書誌情報をBIBTEX形式で出力する
      */
     function execute()
     {
@@ -83,6 +170,13 @@ class Repository_Bibtex extends RepositoryAction
 
     }
 	
+    /**
+     * To get the information of the items, and returns a string of BIBTEX format
+     * アイテムの情報を取得し、BIBTEX形式の文字列を返す
+     *
+     * @return string|boolean string Output string of BIBTEX format BIBTEX形式の出力文字列
+     *                        boolean Treatment failure 処理失敗
+     */
     function outputBibtex()
     {
     	// アイテム情報の取得
@@ -930,6 +1024,12 @@ class Repository_Bibtex extends RepositoryAction
     	return $feed;
     }
     
+    /**
+     * To get the output string in accordance with the literature kind Article
+     * 文献種類Articleに応じた出力文字列を取得する
+     *
+     * @return string Output string of BIBTEX format BIBTEX形式の出力文字列
+     */
     function getArticle(){
     	// 文献種類、引用キー
     	$feed = '@article{weko_'.$this->itemId.'_'.$this->itemNo.','.$this->LF;
@@ -982,6 +1082,12 @@ class Repository_Bibtex extends RepositoryAction
     	return $feed;
     }
 
+    /**
+     * To get the output string in accordance with the literature kind Inproceedings
+     * 文献種類Inproceedingsに応じた出力文字列を取得する
+     *
+     * @return string Output string of BIBTEX format BIBTEX形式の出力文字列
+     */
     function getInproceedings(){
     	// 文献種類、引用キー
     	$feed = '@inproceedings{weko_'.$this->itemId.'_'.$this->itemNo.','.$this->LF;
@@ -1039,6 +1145,13 @@ class Repository_Bibtex extends RepositoryAction
     	return $feed;
     }
     
+    
+    /**
+     * To get the output string in accordance with the literature kind unpublished
+     * 文献種類unpublishedに応じた出力文字列を取得する
+     *
+     * @return string Output string of BIBTEX format BIBTEX形式の出力文字列
+     */
     function getUnpublished(){
     	// 文献種類、引用キー
     	$feed = '@unpublished{weko_'.$this->itemId.'_'.$this->itemNo.','.$this->LF;
@@ -1073,6 +1186,12 @@ class Repository_Bibtex extends RepositoryAction
     	return $feed;
     }
 
+    /**
+     * To get the output string in accordance with the literature kind techreport
+     * 文献種類techreportに応じた出力文字列を取得する
+     *
+     * @return string Output string of BIBTEX format BIBTEX形式の出力文字列
+     */
     function getTechreport(){
     	// 文献種類、引用キー
     	$feed = '@techreport{weko_'.$this->itemId.'_'.$this->itemNo.','.$this->LF;
@@ -1120,6 +1239,12 @@ class Repository_Bibtex extends RepositoryAction
     	return $feed;
     }
     
+    /**
+     * To get the output string in accordance with the literature kind misc
+     * 文献種類miscに応じた出力文字列を取得する
+     *
+     * @return string Output string of BIBTEX format BIBTEX形式の出力文字列
+     */
     function getMisc(){
     	// 文献種類、引用キー
     	$feed = '@misc{weko_'.$this->itemId.'_'.$this->itemNo.','.$this->LF;
@@ -1185,6 +1310,12 @@ class Repository_Bibtex extends RepositoryAction
     	return $feed;
     }
 
+    /**
+     * To get the output string in accordance with the literature kind book
+     * 文献種類bookに応じた出力文字列を取得する
+     *
+     * @return string Output string of BIBTEX format BIBTEX形式の出力文字列
+     */
     function getBook(){
     	// 文献種類、引用キー
     	$feed = '@book{weko_'.$this->itemId.'_'.$this->itemNo.','.$this->LF;
@@ -1232,6 +1363,12 @@ class Repository_Bibtex extends RepositoryAction
     	return $feed;
     }
 
+    /**
+     * To get the output string in accordance with the literature kind inbook
+     * 文献種類inbookに応じた出力文字列を取得する
+     *
+     * @return string Output string of BIBTEX format BIBTEX形式の出力文字列
+     */
     function getInbook(){
     	// 文献種類、引用キー
     	$feed = '@inbook{weko_'.$this->itemId.'_'.$this->itemNo.','.$this->LF;
@@ -1282,6 +1419,12 @@ class Repository_Bibtex extends RepositoryAction
     	return $feed;
     }
 
+    /**
+     * To get the output string in accordance with the literature kind booklet
+     * 文献種類bookletに応じた出力文字列を取得する
+     *
+     * @return string Output string of BIBTEX format BIBTEX形式の出力文字列
+     */
     function getBooklet(){
     	// 文献種類、引用キー
     	$feed = '@booklet{weko_'.$this->itemId.'_'.$this->itemNo.','.$this->LF;
@@ -1325,6 +1468,12 @@ class Repository_Bibtex extends RepositoryAction
     	return $feed;
     }
     
+    /**
+     * To get the output string in accordance with the literature kind incollection
+     * 文献種類incollectionに応じた出力文字列を取得する
+     *
+     * @return string Output string of BIBTEX format BIBTEX形式の出力文字列
+     */
     function getIncollection(){
     	// 文献種類、引用キー
     	$feed = '@incollection{weko_'.$this->itemId.'_'.$this->itemNo.','.$this->LF;

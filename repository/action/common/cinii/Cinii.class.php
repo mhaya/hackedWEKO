@@ -1,7 +1,15 @@
 <?php
+
+/**
+ * ELS automatic registration action class
+ * ELS自動登録アクションクラス
+ * 
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Cinii.class.php 44462 2014-11-28 02:42:41Z tomohiro_ichikawa $
+// $Id: Cinii.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -12,51 +20,87 @@
 // --------------------------------------------------------------------
 
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
+
+/**
+ * ELS automatic registration common classes
+ * ELS自動登録共通クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryShelfregistration.class.php';
 
+/**
+ * ELS automatic registration action class
+ * ELS自動登録アクションクラス
+ * 
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
+ */
 class Repository_Action_Common_Cinii extends RepositoryAction
 {
     // memba
     
     // component
+    /**
+     * Session management objects
+     * Session管理オブジェクト
+     *
+     * @var Session
+     */
     public $Session = null;
+    /**
+     * Database management objects
+     * データベース管理オブジェクト
+     *
+     * @var DbObject
+     */
     public $Db = null;
     
     /**
-     * login id
+     * Administrator login ID
+     * 管理者ログインID
      *
      * @var string
      */
     public $login_id = null;
     /**
-     * login password
+     * Administrator password
+     * 管理者パスワード
      *
      * @var string
      */
     public $password = null;
     /**
-     * user_authority_id
+     * User of the base level of authority
+     * ユーザのベース権限レベル
      *
-     * @var int
+     * @var string
      */
     public $user_authority_id = "";
     /**
-     * authority_id
+     * User of room privilege level
+     * ユーザのルーム権限レベル
      *
-     * @var int
+     * @var string
      */
     public $authority_id = "";
+
     /**
-     * user_id
+     * User id
+     * ユーザID
      *
      * @var string
      */
     public $user_id = "";
     
     /**
-     *
-     * @access  public
+     * Perform an automatic registration to ELS
+     * ELSへ自動登録を行う
      */
     function execute()
     {
@@ -195,9 +239,10 @@ class Repository_Action_Common_Cinii extends RepositoryAction
     }
     
     /**
-     * call next process
+     * To run the ELS automatic registration action to asynchronous
+     * ELS自動登録アクションを非同期に実行する
      *
-     * @return boolean
+     * @return boolean Execution result 実行結果
      */
     private function callAnotherProcessByAsync()
     {

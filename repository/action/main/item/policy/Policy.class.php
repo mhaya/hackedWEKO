@@ -1,95 +1,233 @@
 <?php
+
+/**
+ * Action class for copyright policy display
+ * 著作権ポリシー表示用アクションクラス
+ *
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Policy.class.php 38124 2014-07-01 06:56:02Z rei_matsuura $
+// $Id: Policy.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
-// Copyright (c) 2007 - 2008, National Institute of Informatics, 
+// Copyright (c) 2007 - 2008, National Institute of Informatics,
 // Research and Development Center for Scientific Information Resources
 //
 // This program is licensed under a Creative Commons BSD Licence
 // http://creativecommons.org/licenses/BSD/
 //
 // --------------------------------------------------------------------
-
 /**
- * require once
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
  */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
+/**
+ * SCPJ policy format class
+ * SCPJポリシーフォーマットクラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/action/main/item/policy/format/Scpj.class.php';
+/**
+ * Romeo policy format class
+ * Romeoポリシーフォーマットクラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/action/main/item/policy/format/Romeo.class.php';
 
 /**
- * get scpj
+ * Action class for copyright policy display
+ * 著作権ポリシー表示用アクションクラス
+ * 
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class Repository_Action_Main_Item_Policy extends RepositoryAction
 {
     /**
      * request parameter
      */
+    /**
+     * ISSN string
+     * ISSN文字列
+     *
+     * @var string
+     */
     public $issn = null;
+    /**
+     * ID string
+     * ID文字列
+     *
+     * @var string
+     */
     public $id_str = null;
+    /**
+     * Journal title string
+     * 雑誌名文字列
+     *
+     * @var string
+     */
     public $jtitle = null;
+    /**
+     * Type
+     * タイプ
+     *
+     * @var string
+     */
     public $type = null;
+    /**
+     * Policy type
+     * ポリシータイプ
+     *
+     * @var string
+     */
     public $acquiring = null;
     
-    /* Session resource */
+    /**
+     * Session management objects
+     * Session管理オブジェクト
+     *
+     * @var Session
+     */
     public $Session = null;
-    /* database resource */
+    /**
+     * Database management objects
+     * データベース管理オブジェクト
+     *
+     * @var DbObjectAdodb
+     */
     public $Db = null;
-    
-    //language resorce
+    /**
+     * Language Resource Management object
+     * 言語リソース管理オブジェクト
+     *
+     * @var Smarty
+     */
     var $smartyAssign = null;
     
     /**
      * Policy API URL
      */
     /**
-     * replace keys
+     * SCPJ URL
+     * SCPJ URL
      */
-    /* SCPJ URL */
     const SCPJ_API_URL = 'http://scpj.tulips.tsukuba.ac.jp/';
-    /* for search jounal id */
+    /**
+     * SCPJ API Detail Journal ID
+     * SCPJ API Detail Journal ID
+     */
     const SCPJ_API_DETAIL_JOURNAL_ID = 'detail/journal/id/';
-    /* for search jounal id format */
+    /**
+     * Format parameter for API
+     * フォーマットを指定するパラメータ
+     */
     const POLICY_API_FORMAT = '&format=xml';
-    /* Romeo URL */
+    /**
+     * Romeo API URL
+     * RomeoのAPIのURL
+     */
     const ROMEO_API_URL = 'http://www.sherpa.ac.uk/romeo/search.php';
-    /* for search issn  */
+    /**
+     * Romeo API parameter issn
+     * Romeo APIのISSNパラメータ
+     */
     const ROMEO_API_ISSN = '?issn=';
     
     /**
      * XML parser const
      */
+    /**
+     * XML parser const tag
+     * XML解釈用定数(tag)
+     */
     const XML_PARSER_TAG       = "tag";
+    /**
+     * XML parser const tag
+     * XML解釈用定数(type)
+     */
     const XML_PARSER_TYPE      = "type";
+    /**
+     * XML parser const tag
+     * XML解釈用定数(value)
+     */
     const XML_PARSER_VALUE     = "value";
     
     /**
      * POLICY API XML Tags
      */
+    /**
+     * XML Tag name journal
+     * タグ名 journal
+     */
     const POLICY_XML_TAG_JOURNAL           = "journal";
+    /**
+     * XML Tag name jtitle
+     * タグ名 jtitle
+     */
     const POLICY_XML_TAG_JTITLE            = "jtitle";
+    /**
+     * XML Tag name issn
+     * タグ名 issn
+     */
     const POLICY_XML_TAG_ISSN              = "issn";
+    /**
+     * XML Tag name language
+     * タグ名 language
+     */
     const POLICY_XML_TAG_LANGUAGE          = "language";
+    /**
+     * XML Tag name policycolour
+     * タグ名 policycolour
+     */
     const POLICY_XML_TAG_POLICYCOLOUR      = "policycolour";
+    /**
+     * XML Tag name acquiring
+     * タグ名 acquiring
+     */
     const POLICY_XML_TAG_ACQUIRING         = "acquiring";
-    
+    /**
+     * XML Tag name jounalId
+     * タグ名 journalId
+     */
     const POLICY_XML_JOURNAL_ID = "journalId";
+    /**
+     * XML Tag name policyJournalUrl
+     * タグ名 policyJournalUrl
+     */
     const POLICY_XML_POLICY_JOURNAL_URL = "policyJournalUrl";
+    /**
+     * XML Tag name scpjPolicyJournalUrl
+     * タグ名 scpjPolicyJournalUrl
+     */
     const POLICY_XML_SCPJ_JOURNAL_URL = "scpjPolicyJournalUrl";
+    /**
+     * XML Tag name romeoPolicyJournalUrl
+     * タグ名 romeoPolicyJournalUrl
+     */
     const POLICY_XML_ROMEO_JOURNAL_URL = "romeoPolicyJournalUrl";
+    /**
+     * XML Tag name isPolicyExist
+     * タグ名 isPolicyExist
+     */
     const POLICY_XML_IS_EXIST = "isPolicyExist";
     
     /**
-     * execute
-     * 下記を実施する。
-     * 1.リクエストパラメーターjtitleのURLエンコードをデコードする。
-     * 2.SPCJのAPIに著作権ポリシーを問合せる。
-     * 3.2の問合せ結果をJSON形式に整形する。
-     * 4.3のJSONを出力する。
+     * Execute
+     * 実行
+     *
+     * @throws RepositoryException
      */
     public function execute()
     {
+        /**
+         * 下記を実施する。
+         * 1.リクエストパラメーターjtitleのURLエンコードをデコードする。
+         * 2.SPCJのAPIに著作権ポリシーを問合せる。
+         * 3.2の問合せ結果をJSON形式に整形する。
+         * 4.3のJSONを出力する。
+         */
         try {
             //アクション初期化処理
             $result = $this->initAction();
@@ -172,7 +310,7 @@ class Repository_Action_Main_Item_Policy extends RepositoryAction
                 $this->failTrans();                             //トランザクション失敗を設定(ROLLBACK)
                 throw $exception;
             }
-            
+            $this->finalize();
             exit();
         }
         catch ( RepositoryException $Exception)
@@ -184,23 +322,26 @@ class Repository_Action_Main_Item_Policy extends RepositoryAction
     
     
     /**
+     * To convert the XML obtained from the API of SCPJ / ROMEO in JSON format.
      * SCPJ/ROMEOのAPIから取得したXMLをJSON形式に変換する。
-     * 1.XMLをパースする。
-     * 2.タグのデータをJSONに変換する。
-     * 3.2で生成したJSONを返す。
      * 
-     * @param $xmlArray array SCPJ&ROMEO XML 
-     * @return string SCPJ&ROMEO string format JSON
-     *                {
-     *                 Candidate ["xxx", "xxx",   ]
-     *                 JtitleCandidate [
-     *                     { “journalId” : xxx, “jtitle” : xxx, “issn” : xxx, "acquiring ": xxx},
-     *                     { “journalId” : xxx, “jtitle” : xxx, “issn” : xxx, "acquiring ": xxx},
-     *                    ]
-     *                }
+     * @param array $xmlArray SCPJ&ROMEO XML SCPJとROMEOのポリシーXML
+     * @return string SCPJ&ROMEO string format JSON JSONに変換したポリシーXML
      */
     private function convertJtitleJson( $xmlArray )
     {
+        /**
+         * 1.XMLをパースする。
+         * 2.タグのデータをJSONに変換する。
+         * 3.2で生成したJSONを返す。
+         *                {
+         *                 Candidate ["xxx", "xxx",   ]
+         *                 JtitleCandidate [
+         *                     { “journalId” : xxx, “jtitle” : xxx, “issn” : xxx, "acquiring ": xxx},
+         *                     { “journalId” : xxx, “jtitle” : xxx, “issn” : xxx, "acquiring ": xxx},
+         *                    ]
+         *                }
+         */
         
         // initialize array
         $titleData = array( 
@@ -265,9 +406,10 @@ class Repository_Action_Main_Item_Policy extends RepositoryAction
     
     /**
      * xml parse
+     * XMLを解釈する
      *
-     * @param string $str
-     * @return array parse array
+     * @param string $str XML string XML文字列
+     * @return array parse XML to array XMLを解釈して変換した配列
      */
     private function parseXML( $str )
     {
@@ -281,9 +423,11 @@ class Repository_Action_Main_Item_Policy extends RepositoryAction
     
     
     /**
-     * escape JSON 
+     * escape JSON
+     * JSON返却用にエスケープ処理を行う
      *
-     * @param array $index_data
+     * @param string $str JSON string JSON文字列
+     * @return string escaped JSON string エスケープ済JSON文字列
      */
     private function escapeJSON($str){
         
@@ -315,11 +459,15 @@ class Repository_Action_Main_Item_Policy extends RepositoryAction
     }
     
     /**
-     * 配列を連結しする
+     * Connect policy array
+     * ポリシー配列を連結する
      *
-     * @param array $scpj_jtitle_array
-     * @param array $romeo_jtitle_array
-     * @return array
+     * @param array $scpj_jtitle_array SCPJ journal name array SCPJ雑誌名配列
+     *                                  array[$xml]
+     * @param array $romeo_jtitle_array ROMEO journal name array ROMEO雑誌名配列
+     *                                   array[$xml]
+     * @return array connected policy array 連結済ポリシー配列
+     *                array[$SCPJournalArray|$ROMEOJournalArray]
      */
     private function connectionArray($scpj_jtitle_array, $romeo_jtitle_array){
         $jtitle_array = array();
@@ -340,8 +488,8 @@ class Repository_Action_Main_Item_Policy extends RepositoryAction
     }
     
     /**
+     * Output SCPJ policy JSON
      * SCPJの著作権ポリシーのJSONを出力する
-     *
      */
     private function echoColorJosnSCPJ(){
         //3.1.1 SPCJのAPIに著作権ポリシーカラーを問い合わせる。
@@ -397,8 +545,8 @@ class Repository_Action_Main_Item_Policy extends RepositoryAction
     
     
     /**
+     * Output RoMEO policy JSON
      * RoMEOの著作権ポリシーのJSONを出力する
-     *
      */
     private function echoColorJosnRomeo(){
         //3.2.1 SHERPA/ROMEOのAPIに著作権ポリシーカラーを問い合わせる。
@@ -447,10 +595,11 @@ class Repository_Action_Main_Item_Policy extends RepositoryAction
     }
 
     /**
+     * Create and encode mail subject by browser
      * ブラウザ毎にメール件名作成/エンコードする。
      *
-     * @param string $jtitle 雑誌名
-     * @return string $mail_title エンコードされたメール件名
+     * @param string $jtitle journal name 雑誌名
+     * @return string $mail_title encoded mail subject エンコードされたメール件名
      */
     private function encordingJtitle($jtitle){
         //メール件名を作成
@@ -460,7 +609,7 @@ class Repository_Action_Main_Item_Policy extends RepositoryAction
         $mail_title .= ')';
         
         //ブラウザ判定毎にエンコード
-        if (stristr($_SERVER['HTTP_USER_AGENT'], "MSIE") || stristr($_SERVER['HTTP_USER_AGENT'], "Trident")){
+        if (stristr($_SERVER['HTTP_USER_AGENT'], "MSIE") || stristr($_SERVER['HTTP_USER_AGENT'], "Trident") || stristr($_SERVER['HTTP_USER_AGENT'], "Edge")){
             // IEの場合
             $mail_title = mb_convert_encoding($mail_title, 'SJIS', _CHARSET);
         } elseif (stristr($_SERVER['HTTP_USER_AGENT'], "Opera")) {

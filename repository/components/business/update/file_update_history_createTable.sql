@@ -1,0 +1,20 @@
+CREATE TABLE IF NOT EXISTS %%DATABASE_PREFIX%%repository_file_update_history (
+ `item_id` INT, 
+ `item_no` INT, 
+ `attribute_id` INT, 
+ `file_no` INT, 
+ `version` INT, 
+ `file_update_date` VARCHAR(23) NOT NULL, 
+ `physical_file_name` TEXT NOT NULL, 
+ `file_update_user_id` VARCHAR(40) NOT NULL, 
+ `file_shown_state` INT(1) NOT NULL default 0, 
+ `mime_type` TEXT NOT NULL, 
+ `ins_user_id` VARCHAR(40) NOT NULL default 0, 
+ `mod_user_id` VARCHAR(40) NOT NULL default 0, 
+ `del_user_id` VARCHAR(40) NOT NULL default 0, 
+ `ins_date` VARCHAR(23) NOT NULL, 
+ `mod_date` VARCHAR(23) NOT NULL, 
+ `del_date` VARCHAR(23) NOT NULL, 
+ `is_delete` INT(1) NOT NULL, 
+PRIMARY KEY(`item_id`, `item_no`, `attribute_id`, `file_no`,`version`)
+) ENGINE=InnoDb;

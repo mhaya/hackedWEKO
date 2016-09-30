@@ -1,6 +1,6 @@
 <!--// ---------------------------------------------------------------------->
 <!--//                                                                     -->
-<!--// $Id: repository_item_type_edit.html 36229 2014-05-26 05:49:55Z satoshi_arata $          -->
+<!--// $Id: repository_item_type_edit.html 68946 2016-06-16 09:47:19Z tatsuya_koyasu $          -->
 <!--//                                                                     -->
 <!--// Copyright (c) 2007 - 2008, National Institute of Informatics,        -->
 <!--// Research and Development Center for Scientific Information Resources -->
@@ -232,15 +232,31 @@
        <td class="item_edit_list al">
         <{if ($smarty.session.item_type_id == 20001 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 17) ||
              ($smarty.session.item_type_id >= 20002 && $smarty.session.item_type_id <= 20015 && $loop_num >= 0 && $loop_num <= 60) ||
-             ($smarty.session.item_type_id == 20016 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 86) || 
-             ($smarty.session.item_type_id == 20017 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 37) }>
+             ($smarty.session.item_type_id == 20016 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 86) ||
+             ($smarty.session.item_type_id == 20017 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 37) ||
+             ($smarty.session.item_type_id == 20018 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 45) ||
+             ($smarty.session.item_type_id == 20019 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 45) ||
+             ($smarty.session.item_type_id == 20020 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 45) ||
+             ($smarty.session.item_type_id == 20021 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 13) ||
+             ($smarty.session.item_type_id == 20022 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 13) ||
+             ($smarty.session.item_type_id == 20023 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 8) ||
+             ($smarty.session.item_type_id == 20024 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 10) ||
+             ($smarty.session.item_type_id == 20025 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 23) }>
          <input type="hidden" name="metadata_title[]" value="<{$metadata[0]}>"/>
         <{/if}>
         
         <{if ($smarty.session.item_type_id == 20001 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 17) ||
              ($smarty.session.item_type_id >= 20002 && $smarty.session.item_type_id <= 20015 && $loop_num >= 0 && $loop_num <= 60) ||
-             ($smarty.session.item_type_id == 20016 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 86) || 
-             ($smarty.session.item_type_id == 20017 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 37) }>
+             ($smarty.session.item_type_id == 20016 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 86) ||
+             ($smarty.session.item_type_id == 20017 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 37) ||
+             ($smarty.session.item_type_id == 20018 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 45) ||
+             ($smarty.session.item_type_id == 20019 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 45) ||
+             ($smarty.session.item_type_id == 20020 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 45) ||
+             ($smarty.session.item_type_id == 20021 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 13) ||
+             ($smarty.session.item_type_id == 20022 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 13) ||
+             ($smarty.session.item_type_id == 20023 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 8) ||
+             ($smarty.session.item_type_id == 20024 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 10) ||
+             ($smarty.session.item_type_id == 20025 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 23) }>
             <{$metadata[0]}>
             <{* add multi language 2013/07/23 K.Matsuo --start *}>
             <div align="right" style="min-width:100px">
@@ -260,15 +276,31 @@
        <td class="item_edit_list al">
         <{if ($smarty.session.item_type_id == 20001 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 17) ||
              ($smarty.session.item_type_id >= 20002 && $smarty.session.item_type_id <= 20015 && $loop_num >= 0 && $loop_num <= 60) ||
-             ($smarty.session.item_type_id == 20016 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 86) || 
-             ($smarty.session.item_type_id == 20017 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 37) }>
+             ($smarty.session.item_type_id == 20016 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 86) ||
+             ($smarty.session.item_type_id == 20017 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 37) ||
+             ($smarty.session.item_type_id == 20018 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 45) ||
+             ($smarty.session.item_type_id == 20019 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 45) ||
+             ($smarty.session.item_type_id == 20020 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 45) ||
+             ($smarty.session.item_type_id == 20021 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 13) ||
+             ($smarty.session.item_type_id == 20022 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 13) ||
+             ($smarty.session.item_type_id == 20023 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 8) ||
+             ($smarty.session.item_type_id == 20024 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 10) ||
+             ($smarty.session.item_type_id == 20025 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 23) }>
          <input type="hidden" name="metadata_type[]" value="<{$metadata[1]}>"/>
         <{/if}>
 
         <{if ($smarty.session.item_type_id == 20001 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 17) ||
              ($smarty.session.item_type_id >= 20002 && $smarty.session.item_type_id <= 20015 && $loop_num >= 0 && $loop_num <= 60) ||
-             ($smarty.session.item_type_id == 20016 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 86) || 
-             ($smarty.session.item_type_id == 20017 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 37) }>
+             ($smarty.session.item_type_id == 20016 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 86) ||
+             ($smarty.session.item_type_id == 20017 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 37) ||
+             ($smarty.session.item_type_id == 20018 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 45) ||
+             ($smarty.session.item_type_id == 20019 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 45) ||
+             ($smarty.session.item_type_id == 20020 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 45) ||
+             ($smarty.session.item_type_id == 20021 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 13) ||
+             ($smarty.session.item_type_id == 20022 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 13) ||
+             ($smarty.session.item_type_id == 20023 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 8) ||
+             ($smarty.session.item_type_id == 20024 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 10) ||
+             ($smarty.session.item_type_id == 20025 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 23) }>
             <{* metadata *}>
             <{if $metadata[1]=="text"}><{$lang.repository_attribute_type_text}><{/if}>
             <{if $metadata[1]=="textarea"}><{$lang.repository_attribute_type_textarea}><{/if}>
@@ -391,8 +423,16 @@
          <div id="candidate_<{$loop_num}>" <{if $metadata[1]=="checkbox" || $metadata[1]=="radio" || $metadata[1]=="select" }>  <{else}> style="display:none;" <{/if}>>
           <{if ($smarty.session.item_type_id == 20001 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 17) ||
                ($smarty.session.item_type_id >= 20002 && $smarty.session.item_type_id <= 20015 && $loop_num >= 0 && $loop_num <= 60) ||
-               ($smarty.session.item_type_id == 20016 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 86) || 
-               ($smarty.session.item_type_id == 20017 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 37) }>
+               ($smarty.session.item_type_id == 20016 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 86) ||
+               ($smarty.session.item_type_id == 20017 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 37) ||
+               ($smarty.session.item_type_id == 20018 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 45) ||
+               ($smarty.session.item_type_id == 20019 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 45) ||
+               ($smarty.session.item_type_id == 20020 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 45) ||
+               ($smarty.session.item_type_id == 20021 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 13) ||
+               ($smarty.session.item_type_id == 20022 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 13) ||
+               ($smarty.session.item_type_id == 20023 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 8) ||
+               ($smarty.session.item_type_id == 20024 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 10) ||
+               ($smarty.session.item_type_id == 20025 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 23) }>
              <div style="padding: 2px;"><{$lang.repository_candidate}></div>
           <{else}>
              <div style="padding: 2px;"><{$lang.repository_selitem_explanation}></div>
@@ -401,14 +441,30 @@
            <div style="padding: 2px;">
             <{if ($smarty.session.item_type_id == 20001 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 17) ||
                  ($smarty.session.item_type_id >= 20002 && $smarty.session.item_type_id <= 20015 && $loop_num >= 0 && $loop_num <= 60) ||
-                 ($smarty.session.item_type_id == 20016 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 86) || 
-                 ($smarty.session.item_type_id == 20017 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 37) }>
+                 ($smarty.session.item_type_id == 20016 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 86) ||
+                 ($smarty.session.item_type_id == 20017 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 37) ||
+                 ($smarty.session.item_type_id == 20018 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 45) ||
+                 ($smarty.session.item_type_id == 20019 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 45) ||
+                 ($smarty.session.item_type_id == 20020 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 45) ||
+                 ($smarty.session.item_type_id == 20021 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 13) ||
+                 ($smarty.session.item_type_id == 20022 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 13) ||
+                 ($smarty.session.item_type_id == 20023 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 8) ||
+                 ($smarty.session.item_type_id == 20024 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 10) ||
+                 ($smarty.session.item_type_id == 20025 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 23) }>
              <input type="hidden" name="metadata_candidate[]" value="<{if $smarty.session.metadata_candidate[$loop_num]==""}> <{else}><{$smarty.session.metadata_candidate[$loop_num]}><{/if}>"/>
             <{/if}>
             <{if ($smarty.session.item_type_id == 20001 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 17) ||
                  ($smarty.session.item_type_id >= 20002 && $smarty.session.item_type_id <= 20015 && $loop_num >= 0 && $loop_num <= 60) ||
-                 ($smarty.session.item_type_id == 20016 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 86) || 
-                 ($smarty.session.item_type_id == 20017 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 37) }>
+                 ($smarty.session.item_type_id == 20016 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 86) ||
+                 ($smarty.session.item_type_id == 20017 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 37) ||
+                 ($smarty.session.item_type_id == 20018 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 45) ||
+                 ($smarty.session.item_type_id == 20019 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 45) ||
+                 ($smarty.session.item_type_id == 20020 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 45) ||
+                 ($smarty.session.item_type_id == 20021 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 13) ||
+                 ($smarty.session.item_type_id == 20022 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 13) ||
+                 ($smarty.session.item_type_id == 20023 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 8) ||
+                 ($smarty.session.item_type_id == 20024 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 10) ||
+                 ($smarty.session.item_type_id == 20025 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 23) }>
                 <{$smarty.session.metadata_candidate[$loop_num]}>
             <{else}>
                 <input value="<{$smarty.session.metadata_candidate[$loop_num]}>" type="text" class="full" name="metadata_candidate[]">
@@ -423,15 +479,31 @@
 			<label for="required<{$loop_num}>">
              <{if $metadata[2]==1 && (($smarty.session.item_type_id == 20001 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 17) ||
                   ($smarty.session.item_type_id >= 20002 && $smarty.session.item_type_id <= 20015 && $loop_num >= 0 && $loop_num <= 60) ||
-                  ($smarty.session.item_type_id == 20016 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 86) || 
-                  ($smarty.session.item_type_id == 20017 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 37) )}>
+                  ($smarty.session.item_type_id == 20016 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 86) ||
+                  ($smarty.session.item_type_id == 20017 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 37) ||
+                  ($smarty.session.item_type_id == 20018 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 45) ||
+                  ($smarty.session.item_type_id == 20019 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 45) ||
+                  ($smarty.session.item_type_id == 20020 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 45) ||
+                  ($smarty.session.item_type_id == 20021 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 13) ||
+                  ($smarty.session.item_type_id == 20022 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 13) ||
+                  ($smarty.session.item_type_id == 20023 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 8) ||
+                  ($smarty.session.item_type_id == 20024 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 10) ||
+                  ($smarty.session.item_type_id == 20025 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 23) )}>
                  <input type="hidden" name="metadata_required[]" value="<{$metadata[7]}>"/>
              <{/if}>
              <input type="checkbox" id="required<{$loop_num}>" value="<{$metadata[7]}>" <{if $metadata[1]== "supple"}>disabled="disabled"<{/if}> <{if $metadata[2]==1 && $metadata[1]!= "supple"}>CHECKED<{/if}>
               <{if ($smarty.session.item_type_id == 20001 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 17) ||
                    ($smarty.session.item_type_id >= 20002 && $smarty.session.item_type_id <= 20015 && $loop_num >= 0 && $loop_num <= 60) ||
-                   ($smarty.session.item_type_id == 20016 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 86) || 
-                   ($smarty.session.item_type_id == 20017 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 37) }>
+                   ($smarty.session.item_type_id == 20016 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 86) ||
+                   ($smarty.session.item_type_id == 20017 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 37) ||
+                   ($smarty.session.item_type_id == 20018 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 45) ||
+                   ($smarty.session.item_type_id == 20019 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 45) ||
+                   ($smarty.session.item_type_id == 20020 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 45) ||
+                   ($smarty.session.item_type_id == 20021 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 13) ||
+                   ($smarty.session.item_type_id == 20022 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 13) ||
+                   ($smarty.session.item_type_id == 20023 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 8) ||
+                   ($smarty.session.item_type_id == 20024 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 10) ||
+                   ($smarty.session.item_type_id == 20025 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 23) }>
                disabled="disabled"
               <{else}>
                name="metadata_required[]"
@@ -439,19 +511,35 @@
              ><{$lang.repository_requier}>
             </label><br />
 			<{* 複数可否 *}>
-			<span id="plural_display<{$loop_num}>" <{if $metadata[1]=="supple"}>style="display:none;"<{/if}>>
+			<span id="plural_display<{$loop_num}>" <{if $metadata[1]=="checkbox" || $metadata[1]=="supple"}>style="display:none;"<{/if}>>
              <label for="plural<{$loop_num}>">
               <{if $metadata[4]==1 && (($smarty.session.item_type_id == 20001 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 17) ||
                    ($smarty.session.item_type_id >= 20002 && $smarty.session.item_type_id <= 20015 && $loop_num >= 0 && $loop_num <= 60) ||
                    ($smarty.session.item_type_id == 20016 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 86) || 
-                   ($smarty.session.item_type_id == 20017 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 37) )}>
+                   ($smarty.session.item_type_id == 20017 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 37) ||
+                   ($smarty.session.item_type_id == 20018 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 45) ||
+                   ($smarty.session.item_type_id == 20019 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 45) ||
+                   ($smarty.session.item_type_id == 20020 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 45) ||
+                   ($smarty.session.item_type_id == 20021 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 13) ||
+                   ($smarty.session.item_type_id == 20022 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 13) ||
+                   ($smarty.session.item_type_id == 20023 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 8) ||
+                   ($smarty.session.item_type_id == 20024 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 10) ||
+                   ($smarty.session.item_type_id == 20025 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 23) )}>
                   <input type="hidden" name="metadata_plural[]" value="<{$metadata[7]}>"/>
               <{/if}>
-              <input type="checkbox" id="plural<{$loop_num}>" value="<{$metadata[7]}>" <{if ($metadata[4]==1 && $metadata[1]!="checkbox" && $metadata[1]!="radio" && $metadata[1]!="select" && $metadata[1]!="biblio_info" && $metadata[1]!="file_price") || $metadata[1]== "supple"}>CHECKED<{/if}> <{if $metadata[1]=="checkbox" || $metadata[1]=="radio" || $metadata[1]=="select" || $metadata[1]=="biblio_info" || $metadata[1]=="file_price" || $metadata[1]=="heading"}>disabled="disabled"<{/if}>
+              <input type="checkbox" id="plural<{$loop_num}>" value="<{$metadata[7]}>" <{if ($metadata[4]==1 && $metadata[1]!="radio" && $metadata[1]!="select" && $metadata[1]!="biblio_info" && $metadata[1]!="file_price") || $metadata[1]=="checkbox" || $metadata[1]== "supple"}>CHECKED<{/if}> <{if $metadata[1]=="radio" || $metadata[1]=="select" || $metadata[1]=="biblio_info" || $metadata[1]=="file_price" || $metadata[1]=="heading"}>disabled="disabled"<{/if}>
                <{if ($smarty.session.item_type_id == 20001 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 17) ||
                     ($smarty.session.item_type_id >= 20002 && $smarty.session.item_type_id <= 20015 && $loop_num >= 0 && $loop_num <= 60) ||
-                    ($smarty.session.item_type_id == 20016 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 86) || 
-                    ($smarty.session.item_type_id == 20017 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 37) }>
+                    ($smarty.session.item_type_id == 20016 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 86) ||
+                    ($smarty.session.item_type_id == 20017 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 37) ||
+                    ($smarty.session.item_type_id == 20018 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 45) ||
+                    ($smarty.session.item_type_id == 20019 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 45) ||
+                    ($smarty.session.item_type_id == 20020 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 45) ||
+                    ($smarty.session.item_type_id == 20021 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 13) ||
+                    ($smarty.session.item_type_id == 20022 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 13) ||
+                    ($smarty.session.item_type_id == 20023 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 8) ||
+                    ($smarty.session.item_type_id == 20024 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 10) ||
+                    ($smarty.session.item_type_id == 20025 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 23) }>
                 disabled="disabled"
                <{else}>
                 name="metadata_plural[]"
@@ -460,22 +548,38 @@
              </label>
             </span>
 			<{* 複数可否ダミー:チェックON *}>
-			<span id="plural_dummy<{$loop_num}>" <{if $metadata[1]!="supple"}>style="display:none"<{/if}>>
+			<span id="plural_dummy<{$loop_num}>" <{if $metadata[1]!="checkbox" && $metadata[1]!="supple"}>style="display:none"<{/if}>>
              <input type="checkbox" value="" CHECKED disabled="disabled"><{$lang.repository_plural}>
             </span><br />
 			<{* 一覧表示 *}>
 			<label for="disp<{$loop_num}>">
              <{if $metadata[3]==1 && (($smarty.session.item_type_id == 20001 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 17) ||
                   ($smarty.session.item_type_id >= 20002 && $smarty.session.item_type_id <= 20015 && $loop_num >= 0 && $loop_num <= 60) ||
-                  ($smarty.session.item_type_id == 20016 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 86) || 
-                  ($smarty.session.item_type_id == 20017 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 37) )}>
+                  ($smarty.session.item_type_id == 20016 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 86) ||
+                  ($smarty.session.item_type_id == 20017 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 37) ||
+                  ($smarty.session.item_type_id == 20018 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 45) ||
+                  ($smarty.session.item_type_id == 20019 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 45) ||
+                  ($smarty.session.item_type_id == 20020 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 45) ||
+                  ($smarty.session.item_type_id == 20021 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 13) ||
+                  ($smarty.session.item_type_id == 20022 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 13) ||
+                  ($smarty.session.item_type_id == 20023 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 8) ||
+                  ($smarty.session.item_type_id == 20024 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 10) ||
+                  ($smarty.session.item_type_id == 20025 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 23) )}>
               <input type="hidden" name="metadata_disp[]" value="<{$metadata[7]}>"/>
              <{/if}>
              <input type="checkbox" id="disp<{$loop_num}>" value="<{$metadata[7]}>" <{if $metadata[3]==1 && $metadata[6]!=1 && $metadata[1]!= "supple"}>CHECKED<{/if}> <{if $metadata[6]==1 || $metadata[1]== "supple"}>disabled="disabled"<{/if}>
               <{if ($smarty.session.item_type_id == 20001 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 17) ||
                    ($smarty.session.item_type_id >= 20002 && $smarty.session.item_type_id <= 20015 && $loop_num >= 0 && $loop_num <= 60) ||
-                   ($smarty.session.item_type_id == 20016 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 86) || 
-                   ($smarty.session.item_type_id == 20017 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 37) }>
+                   ($smarty.session.item_type_id == 20016 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 86) ||
+                   ($smarty.session.item_type_id == 20017 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 37) ||
+                   ($smarty.session.item_type_id == 20018 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 45) ||
+                   ($smarty.session.item_type_id == 20019 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 45) ||
+                   ($smarty.session.item_type_id == 20020 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 45) ||
+                   ($smarty.session.item_type_id == 20021 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 13) ||
+                   ($smarty.session.item_type_id == 20022 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 13) ||
+                   ($smarty.session.item_type_id == 20023 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 8) ||
+                   ($smarty.session.item_type_id == 20024 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 10) ||
+                   ($smarty.session.item_type_id == 20025 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 23) }>
                disabled="disabled"
               <{else}>
                name="metadata_disp[]"
@@ -489,15 +593,31 @@
              <label for="newline<{$loop_num}>">
               <{if $metadata[5]==1 && (($smarty.session.item_type_id == 20001 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 17) ||
                    ($smarty.session.item_type_id >= 20002 && $smarty.session.item_type_id <= 20015 && $loop_num >= 0 && $loop_num <= 60) ||
-                   ($smarty.session.item_type_id == 20016 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 86) || 
-                   ($smarty.session.item_type_id == 20017 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 37) )}>
+                   ($smarty.session.item_type_id == 20016 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 86) ||
+                   ($smarty.session.item_type_id == 20017 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 37) ||
+                   ($smarty.session.item_type_id == 20018 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 45) ||
+                   ($smarty.session.item_type_id == 20019 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 45) ||
+                   ($smarty.session.item_type_id == 20020 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 45) ||
+                   ($smarty.session.item_type_id == 20021 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 13) ||
+                   ($smarty.session.item_type_id == 20022 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 13) ||
+                   ($smarty.session.item_type_id == 20023 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 8) ||
+                   ($smarty.session.item_type_id == 20024 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 10) ||
+                   ($smarty.session.item_type_id == 20025 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 23) )}>
                <input type="hidden" name="metadata_newline[]" value="<{$metadata[7]}>"/>
               <{/if}>
               <input type="checkbox" id="newline<{$loop_num}>" name="metadata_newline[]" value="<{$metadata[7]}>" <{if ($metadata[5]==1 || $metadata[1]=="file" || $metadata[1]=="file_price" || $metadata[1]=="thumbnail") && ($metadata[6]!=1 && $metadata[1]!= "supple")}>CHECKED<{/if}> <{if $metadata[6]==1 || $metadata[1]== "supple"}>disabled="disabled"<{/if}>
                <{if ($smarty.session.item_type_id == 20001 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 17) ||
                     ($smarty.session.item_type_id >= 20002 && $smarty.session.item_type_id <= 20015 && $loop_num >= 0 && $loop_num <= 60) ||
-                    ($smarty.session.item_type_id == 20016 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 86) || 
-                    ($smarty.session.item_type_id == 20017 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 37) }>
+                    ($smarty.session.item_type_id == 20016 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 86) ||
+                    ($smarty.session.item_type_id == 20017 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 37) ||
+                    ($smarty.session.item_type_id == 20018 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 45) ||
+                    ($smarty.session.item_type_id == 20019 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 45) ||
+                    ($smarty.session.item_type_id == 20020 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 45) ||
+                    ($smarty.session.item_type_id == 20021 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 13) ||
+                    ($smarty.session.item_type_id == 20022 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 13) ||
+                    ($smarty.session.item_type_id == 20023 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 8) ||
+                    ($smarty.session.item_type_id == 20024 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 10) ||
+                    ($smarty.session.item_type_id == 20025 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 23) }>
                 disabled="disabled"
                <{else}>
                 name="metadata_newline[]"
@@ -515,15 +635,31 @@
 			<label for="hidden<{$loop_num}>">
              <{if $metadata[6]==1 && (($smarty.session.item_type_id == 20001 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 17) ||
                   ($smarty.session.item_type_id >= 20002 && $smarty.session.item_type_id <= 20015 && $loop_num >= 0 && $loop_num <= 60) ||
-                  ($smarty.session.item_type_id == 20016 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 86) || 
-                  ($smarty.session.item_type_id == 20017 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 37) )}>
+                  ($smarty.session.item_type_id == 20016 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 86) ||
+                  ($smarty.session.item_type_id == 20017 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 37) ||
+                  ($smarty.session.item_type_id == 20018 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 45) ||
+                  ($smarty.session.item_type_id == 20019 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 45) ||
+                  ($smarty.session.item_type_id == 20020 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 45) ||
+                  ($smarty.session.item_type_id == 20021 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 13) ||
+                  ($smarty.session.item_type_id == 20022 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 13) ||
+                  ($smarty.session.item_type_id == 20023 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 8) ||
+                  ($smarty.session.item_type_id == 20024 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 10) ||
+                  ($smarty.session.item_type_id == 20025 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 23) )}>
               <input type="hidden" name="metadata_hidden[]" value="<{$metadata[7]}>"/>
              <{/if}>
              <input type="checkbox" id="hidden<{$loop_num}>" name="metadata_hidden[]" value="<{$metadata[7]}>" <{if $metadata[6]==1}>CHECKED<{/if}> onclick="repositoryCls['<{$id}>'].checkSelectHidden(<{$loop_num}>);"
               <{if ($smarty.session.item_type_id == 20001 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 17) ||
                    ($smarty.session.item_type_id >= 20002 && $smarty.session.item_type_id <= 20015 && $loop_num >= 0 && $loop_num <= 60) ||
-                   ($smarty.session.item_type_id == 20016 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 86) || 
-                   ($smarty.session.item_type_id == 20017 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 37) }>
+                   ($smarty.session.item_type_id == 20016 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 86) ||
+                   ($smarty.session.item_type_id == 20017 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 37) ||
+                   ($smarty.session.item_type_id == 20018 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 45) ||
+                   ($smarty.session.item_type_id == 20019 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 45) ||
+                   ($smarty.session.item_type_id == 20020 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 45) ||
+                   ($smarty.session.item_type_id == 20021 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 13) ||
+                   ($smarty.session.item_type_id == 20022 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 13) ||
+                   ($smarty.session.item_type_id == 20023 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 8) ||
+                   ($smarty.session.item_type_id == 20024 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 10) ||
+                   ($smarty.session.item_type_id == 20025 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 23) }>
                disabled="disabled"
               <{else}>
                name="metadata_hidden[]"
@@ -534,12 +670,20 @@
       <{* 行入れ替え用 *}>
       <td class="item_edit_list ac">
        <{if !(($smarty.session.item_type_id == 20001 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 17) ||
-            ($smarty.session.item_type_id >= 20002 && $smarty.session.item_type_id <= 20015 && $loop_num >= 0 && $loop_num <= 60) ||
-            ($smarty.session.item_type_id == 20016 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 86) || 
-             ($smarty.session.item_type_id == 20017 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 37) )}>
+              ($smarty.session.item_type_id >= 20002 && $smarty.session.item_type_id <= 20015 && $loop_num >= 0 && $loop_num <= 60) ||
+              ($smarty.session.item_type_id == 20016 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 86) ||
+              ($smarty.session.item_type_id == 20017 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 37) ||
+              ($smarty.session.item_type_id == 20018 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 45) ||
+              ($smarty.session.item_type_id == 20019 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 45) ||
+              ($smarty.session.item_type_id == 20020 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 45) ||
+              ($smarty.session.item_type_id == 20021 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 13) ||
+              ($smarty.session.item_type_id == 20022 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 13) ||
+              ($smarty.session.item_type_id == 20023 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 8) ||
+              ($smarty.session.item_type_id == 20024 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 10) ||
+              ($smarty.session.item_type_id == 20025 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 23) )}>
         <input type="button" class="btn_white" value="<{$lang.repository_up}>"
                onclick="repositoryCls['<{$id}>'].repositoryShuffleUp(<{$loop_num}>); return false;"
-               <{if $loop_num==0 || ($smarty.session.item_type_id == 20001 && $loop_num==17) || (($smarty.session.item_type_id >= 20002 && $smarty.session.item_type_id <= 20015) && $loop_num==61) || ($smarty.session.item_type_id == 20016 && $loop_num==86) || ($smarty.session.item_type_id == 20017 && $loop_num==37)}>
+               <{if $loop_num==0 || ($smarty.session.item_type_id == 20001 && $loop_num==17) || (($smarty.session.item_type_id >= 20002 && $smarty.session.item_type_id <= 20015) && $loop_num==61) || ($smarty.session.item_type_id == 20016 && $loop_num==86) || ($smarty.session.item_type_id == 20017 && $loop_num==37) || ($smarty.session.item_type_id == 20018 && $loop_num==172)}>
                 disabled="disabled"
                <{/if}>
         ><br/>
@@ -553,8 +697,16 @@
       <td class="item_edit_list ac" >
        <{if !(($smarty.session.item_type_id == 20001 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 17) ||
             ($smarty.session.item_type_id >= 20002 && $smarty.session.item_type_id <= 20015 && $loop_num >= 0 && $loop_num <= 60) ||
-            ($smarty.session.item_type_id == 20016 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 86) || 
-             ($smarty.session.item_type_id == 20017 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 37) )}>
+            ($smarty.session.item_type_id == 20016 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 86) ||
+             ($smarty.session.item_type_id == 20017 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 37) ||
+           ($smarty.session.item_type_id == 20018 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 42) ||
+            ($smarty.session.item_type_id == 20019 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 42) ||
+            ($smarty.session.item_type_id == 20020 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 42) ||
+            ($smarty.session.item_type_id == 20021 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 10) ||
+            ($smarty.session.item_type_id == 20022 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 10) ||
+            ($smarty.session.item_type_id == 20023 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 5) ||
+            ($smarty.session.item_type_id == 20024 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 7) ||
+            ($smarty.session.item_type_id == 20025 && $smarty.session.attribute_id[$loop_num] >= 1 && $smarty.session.attribute_id[$loop_num] <= 20) )}>
         <input type="button" class="btn_delete" value="<{$lang.repository_delete}>" onclick="repositoryCls['<{$id}>'].repositoryItemTypeEditDellmetadata(<{$loop_num}>); return false;">
        <{/if}>
       </td>

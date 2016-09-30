@@ -1,59 +1,129 @@
 <?php
+
+/**
+ * Action class for delete thr item typemetadata
+ * アイテムタイプの属性削除時に呼ばれるアクションクラス
+ *
+ * @package     NetCommons
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Dellmetadata.class.php 53594 2015-05-28 05:25:53Z kaede_matsushita $
+// $Id: Dellmetadata.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
-// Copyright (c) 2007 - 2008, National Institute of Informatics, 
+// Copyright (c) 2007 - 2008, National Institute of Informatics,
 // Research and Development Center for Scientific Information Resources
 //
 // This program is licensed under a Creative Commons BSD Licence
 // http://creativecommons.org/licenses/BSD/
 //
 // --------------------------------------------------------------------
-
-/* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
 
 /**
- * repositoryモジュール アイテムタイプ作成 編集画面でメタデータ削除時に呼ばれるアクション
+ * Action class for delete thr item typemetadata
+ * アイテムタイプの属性削除時に呼ばれるアクションクラス
  *
  * @package     NetCommons
- * @author      nakao(IVIS)
  * @copyright   2006-2008 NetCommons Project
  * @license     http://www.netcommons.org/license.txt  NetCommons License
- * @project     NetCommons Project, supported by National Institute of Informatics
  * @access      public
  */
 class Repository_Action_Edit_Itemtype_Dellmetadata extends RepositoryAction
 {
 	// 使用コンポーネントを受け取るため
+	/**
+	 * Request component
+	 * リクエストコンポーネント
+	 *
+	 * @var object
+	 */
 	var $request = null;
-    // Mod metadata name edit 2009/12/10 K.Ando --start--
-	//var $itemtype_name = null;		//前画面で入力したアイテムタイプ名(新規作成時)
-	var $item_type_name = null;		//前画面で入力したアイテムタイプ名(新規作成時)
-    // Mod metadata name edit 2009/12/10 K.Ando --edit--
-	
+	/**
+	 * Item type name
+	 * アイテムタイプ名
+	 *
+	 * @var string
+	 */
+	var $item_type_name = null;	// 新規作成時
 	
 	// jsの引数がリクエストとして送信される
+	/**
+	 * Delete item type number
+	 * 削除されるアイテムタイプの番号
+	 *
+	 * @var int
+	 */
 	var $dell_metadata_number = null;
-	
-	
+
 	// メタデータ用配列
+	/**
+	 * Metadata title array
+	 * メタデータ項目配列
+	 *
+	 * @var array
+	 */
 	var $metadata_title = null;
+	/**
+	 * Metadata type array
+	 * メタデータタイプ配列
+	 *
+	 * @var array
+	 */
 	var $metadata_type = null;
+	/**
+	 * Metadata required flag array
+	 * メタデータ必須フラグ配列
+	 *
+	 * @var array
+	 */
 	var $metadata_required = null;
+	/**
+	 * Metadata show list flag array
+	 * メタデータ一覧表示フラグ配列
+	 *
+	 * @var array
+	 */
 	var $metadata_disp = null;
+	/**
+	 * Metadata candidate array
+	 * メタデータ選択候補配列
+	 *
+	 * @var array
+	 */
+	var $metadata_candidate = null;
+	/**
+	 * Metadata plural enable flag array
+	 * メタデータ複数可否フラグ配列
+	 *
+	 * @var array
+	 */
+	var $metadata_plural = null;
+	/**
+	 * Metadata new line flag array
+	 * メタデータ改行指定配列
+	 *
+	 * @var array
+	 */
+	var $metadata_newline = null;
+	/**
+	 * Metadata hidden flag array
+	 * メタデータ非表示フラグ配列
+	 *
+	 * @var array
+	 */
+	var $metadata_hidden = null;
 	
-	var $metadata_candidate = null;	// メタデータ選択肢配列 2008/02/28
-	var $metadata_plural = null;	// メタデータ複数可否配列 2008/03/04
-	var $metadata_newline = null;	// メタデータ改行指定配列 2008/03/13
-	var $metadata_hidden = null;	// メタデータ非表示設定配列 2009/01/28
-	
-    /**
-     * [[機能説明]]
-     *
-     * @access  public
-     */
+	/**
+	 * Execute
+	 * 実行
+	 *
+	 * @return string "success"/"error" success/failed 成功/失敗
+	 */
     function executeApp()
     {
     	// 送信されたFormデータから削除対称を削除する

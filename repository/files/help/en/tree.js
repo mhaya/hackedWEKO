@@ -256,7 +256,7 @@ function selectAndShowNode(node)
 		var treeDiv = document.getElementById('tree');
 		
 		var ua = window.navigator.userAgent.toLowerCase();
-		if ((i = ua.indexOf('msie')) != -1 || (i = ua.indexOf('trident')) != -1)
+		if ((i = ua.indexOf('msie')) != -1 || (i = ua.indexOf('trident')) != -1 || (i = ua.indexOf('edge')) != -1)
 		{
 			windowTop = node.offsetTop - treeDiv.scrollTop;
 			windowBottom = treeDiv.clientHeight - windowTop - node.offsetHeight;

@@ -1,7 +1,14 @@
 <?php
+/**
+ * Common class for create item type XML
+ * アイテムタイプXML作成共通クラス
+ *
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Swordmanager.class.php 43075 2014-10-20 06:12:22Z yuko_nakao $
+// $Id: Swordmanager.class.php 70936 2016-08-09 09:53:57Z keiya_sugimoto $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -13,81 +20,469 @@
 
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
 
+/**
+ * WEKO logic-based base class
+ * WEKOロジックベース基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryLogicBase.class.php';
+
+/**
+ * Common classes for factory
+ * ファクトリー用共通クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/Factory.class.php';
+
+/**
+ * Item export processing common classes
+ * アイテムエクスポート処理共通クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/action/main/export/ExportCommon.class.php';
+
+/**
+ * SCfW metadata file output common classes
+ * SCfWメタデータファイル出力共通クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryOutputTSV.class.php';
+/**
+ * Date manipulation common classes
+ * 日付操作共通クラス
+ */
 include_once WEBAPP_DIR. '/modules/repository/files/pear/Date.php';
 
+/**
+ * Common class for create item type XML
+ * アイテムタイプXML作成共通クラス
+ *
+ * @package WEKO
+ * @copyright (c) 2007 - 2008, National Institute of Informatics, Research and Development Center for Scientific Information Resources.
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
+ */
 class Repository_Components_Swordmanager extends RepositoryLogicBase
 {
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const TAG_ROOT = 'wekoDataConvertFilter';
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const TAG_METADATA = 'metadata';
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const TAG_ITEMTYPES = 'itemTypes';
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const TAG_ITEMTYPE = 'itemType';
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const TAG_ITEMTYPE_NAME = 'name';
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const TAG_BASICATTRIBUTES = 'basicAttributes';
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const TAG_TITLE = 'title';
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const TAG_TITLEINENGLISH = 'titleInEnglish';
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const TAG_LANGUAGE = 'language';
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const TAG_KEYWORDS = 'keywords';
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const TAG_KEYWORDSINENGLISH = 'keywordsInEnglish';
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const TAG_PUBLICATIONDATE = 'publicationDate';
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const TAG_ADDITIONALATTRIBUTES = 'additionalAttributes';
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const TAG_ADDITIONALATTRIBUTE = 'additionalAttribute';
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const TAG_ADD_ATTR_NAME = 'name';
+    /**
+     * Tag name
+     * タグ名
+     * 
+     * @var string
+     */
     const TAG_ADD_ATTR_CANDIDATES = 'candidates';
     
+    
+    /**
+     * Attribute name
+     * 属性名
+     * 
+     * @var string
+     */
     const ATTRIBUTE_TYPE = 'type';
+    /**
+     * Attribute name
+     * 属性名
+     * 
+     * @var string
+     */
     const ATTRIBUTE_MAPPING_INFO = 'mapping_info';
+    /**
+     * Attribute name
+     * 属性名
+     * 
+     * @var string
+     */
     const ATTRIBUTE_REQUIRED = 'required';
+    /**
+     * Attribute name
+     * 属性名
+     * 
+     * @var string
+     */
     const ATTRIBUTE_ALLOWMULTIPLEINPUT = 'allowmultipleinput';
+    /**
+     * Attribute name
+     * 属性名
+     * 
+     * @var string
+     */
     const ATTRIBUTE_LISTING = 'listing';
+    /**
+     * Attribute name
+     * 属性名
+     * 
+     * @var string
+     */
     const ATTRIBUTE_SPECIFYNEWLINE = 'specifynewline';
+    /**
+     * Attribute name
+     * 属性名
+     * 
+     * @var string
+     */
     const ATTRIBUTE_HIDDEN = 'hidden';
+    /**
+     * Attribute name
+     * 属性名
+     * 
+     * @var string
+     */
     const ATTRIBUTE_JUNII2_MAPPING = 'junii2_mapping';
+    /**
+     * Attribute name
+     * 属性名
+     * 
+     * @var string
+     */
     const ATTRIBUTE_DUBLIN_CORE_MAPPING = 'dublin_core_mapping';
+    /**
+     * Attribute name
+     * 属性名
+     * 
+     * @var string
+     */
     const ATTRIBUTE_DELIMITERS = 'delimiters';
+    /**
+     * Attribute name
+     * 属性名
+     * 
+     * @var string
+     */
     const ATTRIBUTE_DISPLAY_LANG_TYPE = 'display_lang_type';
     
+    /**
+     * Column name
+     * カラム名
+     * 
+     * @var string
+     */
     const ATTRIBUTE_COLNAME_ITEMTYPE = 'columnname_itemtype';
+    /**
+     * Column name
+     * カラム名
+     * 
+     * @var string
+     */
     const ATTRIBUTE_COLNAME_VALUE = 'columnname_value';
+    /**
+     * Name connect flag
+     * 姓名連結フラグ
+     * 
+     * @var string
+     */
     const ATTRIBUTE_ISFAMILYGIVENCONNECT = 'isfamilygivenconnected';
+    /**
+     * Column name
+     * カラム名
+     * 
+     * @var string
+     */
     const ATTRIBUTE_COLNAME_FAMILY = 'columnname_family';
+    /**
+     * Column name
+     * カラム名
+     * 
+     * @var string
+     */
     const ATTRIBUTE_COLNAME_GIVEN = 'columnname_given';
+    /**
+     * Column name
+     * カラム名
+     * 
+     * @var string
+     */
     const ATTRIBUTE_COLNAME_FAMILYRUBY = 'columnname_familyruby';
+    /**
+     * Column name
+     * カラム名
+     * 
+     * @var string
+     */
     const ATTRIBUTE_COLNAME_GIVENRUBY = 'columnname_givenruby';
+    /**
+     * Column name
+     * カラム名
+     * 
+     * @var string
+     */
     const ATTRIBUTE_COLNAME_EMAILADDRESS = 'columnname_emailaddress';
+    /**
+     * Column name
+     * カラム名
+     * 
+     * @var string
+     */
     const ATTRIBUTE_COLNAME_AUTHORIDS = 'columnname_authorids';
+    /**
+     * Input format
+     * 記入形式
+     * 
+     * @var string
+     */
     const ATTRIBUTE_ISSTARTENDPAGECONNECT = 'isstartendpageconnected';
+    /**
+     * Column name
+     * カラム名
+     * 
+     * @var string
+     */
     const ATTRIBUTE_COLNAME_BIBLIONAME = 'columnname_biblioname';
+    /**
+     * Column name
+     * カラム名
+     * 
+     * @var string
+     */
     const ATTRIBUTE_COLNAME_BIBLIONAMEENGLISH = 'columnname_biblionameenglish';
+    /**
+     * Column name
+     * カラム名
+     * 
+     * @var string
+     */
     const ATTRIBUTE_COLNAME_VOLUME = 'columnname_volume';
+    /**
+     * Column name
+     * カラム名
+     * 
+     * @var string
+     */
     const ATTRIBUTE_COLNAME_ISSUE = 'columnname_issue';
+    /**
+     * Column name
+     * カラム名
+     * 
+     * @var string
+     */
     const ATTRIBUTE_COLNAME_STARTPAGE = 'columnname_startpage';
+    /**
+     * Column name
+     * カラム名
+     * 
+     * @var string
+     */
     const ATTRIBUTE_COLNAME_ENDPAGE = 'columnname_endpage';
+    /**
+     * Column name
+     * カラム名
+     * 
+     * @var string
+     */
     const ATTRIBUTE_COLNAME_DATEOFISSUED = 'columnname_dateofissued';
+    /**
+     * Column name
+     * カラム名
+     * 
+     * @var string
+     */
     const ATTRIBUTE_COLNAME_LINKNAME = 'columnname_linkname';
+    /**
+     * Column name
+     * カラム名
+     * 
+     * @var string
+     */
     const ATTRIBUTE_COLNAME_LINKURL = 'columnname_linkurl';
+    /**
+     * Display format
+     * 表示形式
+     * 
+     * @var string
+     */
     const ATTRIBUTE_DISPLAYTYPE = 'displaytype';
+    /**
+     * Column name
+     * カラム名
+     * 
+     * @var string
+     */
     const ATTRIBUTE_COLNAME_FILENAME = 'columnname_filename';
+    /**
+     * Column name
+     * カラム名
+     * 
+     * @var string
+     */
     const ATTRIBUTE_COLNAME_DISPLAYNAME = 'columnname_displayname';
+    /**
+     * Column name
+     * カラム名
+     * 
+     * @var string
+     */
     const ATTRIBUTE_COLNAME_PUBDATE = 'columnname_pubdate';
+    /**
+     * Column name
+     * カラム名
+     * 
+     * @var string
+     */
     const ATTRIBUTE_COLNAME_LICENSE_CC = 'columnname_license_cc';
+    /**
+     * Column name
+     * カラム名
+     * 
+     * @var string
+     */
     const ATTRIBUTE_COLNAME_LICENSE_FREE = 'columnname_license_free';
+    /**
+     * Column name
+     * カラム名
+     * 
+     * @var string
+     */
     const ATTRIBUTE_COLNAME_FLASH_PUBDATE = 'columnname_flashpubdate';
+    /**
+     * Column name
+     * カラム名
+     * 
+     * @var string
+     */
     const ATTRIBUTE_COLNAME_ACCOUNTING_NONSUBSCRIBER = 'columnname_accounting_nonsubscriber';
+    /**
+     * Column name
+     * カラム名
+     * 
+     * @var string
+     */
     const ATTRIBUTE_COLNAME_ACCOUNTING = 'columnname_accounting';
+    /**
+     * Column name
+     * カラム名
+     * 
+     * @var string
+     */
     const ATTRIBUTE_COLNAME_HEADINGJP = 'columnname_headingjp';
+    /**
+     * Column name
+     * カラム名
+     * 
+     * @var string
+     */
     const ATTRIBUTE_COLNAME_HEADINGEN = 'columnname_headingen';
+    /**
+     * Column name
+     * カラム名
+     * 
+     * @var string
+     */
     const ATTRIBUTE_COLNAME_HEADINGSUBJP = 'columnname_headingsubjp';
+    /**
+     * Column name
+     * カラム名
+     * 
+     * @var string
+     */
     const ATTRIBUTE_COLNAME_HEADINGSUBEN = 'columnname_headingsuben';
     
     /**
      * create xml
+     * XML作成
      *
-     * @param string $xml_str
-     * @return bool  
+     * @param string $xml_str XML string XML文字列
+     * @return boolean Result 結果
      */
     public function createItemtypeXml(&$xml_str)
     {
@@ -114,7 +509,7 @@ class Repository_Components_Swordmanager extends RepositoryLogicBase
                  "AND is_delete = ? ;";
         $params = array();
         $params[] = 20001;
-        $params[] = 20016;
+        $params[] = 20017;
         $params[] = 0;
         $itemtype_mapping = $this->dbAccess->executeQuery($query, $params);
         
@@ -159,10 +554,11 @@ class Repository_Components_Swordmanager extends RepositoryLogicBase
     
     /**
      * convert item type xml to filter xml
+     * アイテムタイプXML作成
      *
-     * @param string $item_type_xml
-     * @param int $item_type_id
-     * @return string  
+     * @param string $item_type_xml Item type XML アイテムタイプXML
+     * @param int $item_type_id Item type id アイテムタイプID
+     * @return string XML string XML文字列
      */
     private function convertItemtypeXmlToFilterXml($item_type_xml, $item_type_id)
     {
@@ -256,6 +652,10 @@ class Repository_Components_Swordmanager extends RepositoryLogicBase
                     {
                         $input_type = 'biblioinfo';
                     }
+                    else if($input_type == 'supple')
+                    {
+                        $input_type = 'supplementalcontents';
+                    }
                     
                     $common_attr_str = '';
                     $common_attr_str .= self::ATTRIBUTE_TYPE."=\"".$input_type."\" ".
@@ -304,6 +704,9 @@ class Repository_Components_Swordmanager extends RepositoryLogicBase
                         case "pulldownmenu":
                             $this->addCandidateXmlNode($attribute_name, $common_attr_str, $header_str_array, $header_num, $update_xml, $options_array, $attribute_id);
                             break;
+                        case "supplementalcontents":
+                            $this->addSuppleXmlNode($attribute_name, $common_attr_str, $header_str_array, $header_num, $update_xml);
+                            break;
                         default:
                             break;
                     }
@@ -322,12 +725,15 @@ class Repository_Components_Swordmanager extends RepositoryLogicBase
     
     /**
      * add xml node for 'text' and 'date'
+     * XMLノード追加
      *
-     * @param string $attribute_name
-     * @param string $common_attr_str
-     * @param array $header_str_array
-     * @param int $header_num
-     * @param string $update_xml
+     * @param string $attribute_name Attribute name 属性名
+     * @param string $common_attr_str Common attribute string 共通属性文字列
+     * @param array $header_str_array Header string list ヘッダ名一覧
+     *                                array[$ii]
+     * @param int $header_num Hearder number ヘッダ数
+     * @param string $update_xml XML string XML文字列
+     * @return boolean Result 結果
      */
     private function addTextDateXmlNode($attribute_name, $common_attr_str, $header_str_array, &$header_num, &$update_xml)
     {
@@ -344,12 +750,14 @@ class Repository_Components_Swordmanager extends RepositoryLogicBase
     
     /**
      * add xml node for 'textarea'
+     * XMLノード追加
      *
-     * @param string $attribute_name
-     * @param string $common_attr_str
-     * @param array $header_str_array
-     * @param int $header_num
-     * @param string $update_xml
+     * @param string $attribute_name Attribute name 属性名
+     * @param string $common_attr_str Common attribute string 共通属性文字列
+     * @param array $header_str_array Header string list ヘッダ名一覧
+     *                                array[$ii]
+     * @param int $header_num Hearder number ヘッダ数
+     * @param string $update_xml XML string XML文字列
      */
     private function addTextareaXmlNode($attribute_name, $common_attr_str, $header_str_array, &$header_num, &$update_xml)
     {
@@ -387,12 +795,14 @@ class Repository_Components_Swordmanager extends RepositoryLogicBase
     
     /**
      * add xml node for 'name'
+     * XMLノード追加
      *
-     * @param string $attribute_name
-     * @param string $common_attr_str
-     * @param array $header_str_array
-     * @param int $header_num
-     * @param string $update_xml
+     * @param string $attribute_name Attribute name 属性名
+     * @param string $common_attr_str Common attribute string 共通属性文字列
+     * @param array $header_str_array Header string list ヘッダ名一覧
+     *                                array[$ii]
+     * @param int $header_num Hearder number ヘッダ数
+     * @param string $update_xml XML string XML文字列
      */
     private function addNameXmlNode($attribute_name, $common_attr_str, $header_str_array, &$header_num, &$update_xml)
     {
@@ -423,12 +833,14 @@ class Repository_Components_Swordmanager extends RepositoryLogicBase
     
     /**
      * add xml node for 'biblioinfo'
+     * XMLノード追加
      *
-     * @param string $attribute_name
-     * @param string $common_attr_str
-     * @param array $header_str_array
-     * @param int $header_num
-     * @param string $update_xml
+     * @param string $attribute_name Attribute name 属性名
+     * @param string $common_attr_str Common attribute string 共通属性文字列
+     * @param array $header_str_array Header string list ヘッダ名一覧
+     *                                array[$ii]
+     * @param int $header_num Hearder number ヘッダ数
+     * @param string $update_xml XML string XML文字列
      */
     private function addBiblioXmlNode($attribute_name, $common_attr_str, $header_str_array, &$header_num, &$update_xml)
     {
@@ -451,12 +863,14 @@ class Repository_Components_Swordmanager extends RepositoryLogicBase
     
     /**
      * add xml node for 'link'
+     * XMLノード追加
      *
-     * @param string $attribute_name
-     * @param string $common_attr_str
-     * @param array $header_str_array
-     * @param int $header_num
-     * @param string $update_xml
+     * @param string $attribute_name Attribute name 属性名
+     * @param string $common_attr_str Common attribute string 共通属性文字列
+     * @param array $header_str_array Header string list ヘッダ名一覧
+     *                                array[$ii]
+     * @param int $header_num Hearder number ヘッダ数
+     * @param string $update_xml XML string XML文字列
      */
     private function addLinkXmlNode($attribute_name, $common_attr_str, $header_str_array, &$header_num, &$update_xml)
     {
@@ -473,12 +887,14 @@ class Repository_Components_Swordmanager extends RepositoryLogicBase
     
     /**
      * add xml node for 'file'
+     * XMLノード追加
      *
-     * @param string $attribute_name
-     * @param string $common_attr_str
-     * @param array $header_str_array
-     * @param int $header_num
-     * @param string $update_xml
+     * @param string $attribute_name Attribute name 属性名
+     * @param string $common_attr_str Common attribute string 共通属性文字列
+     * @param array $header_str_array Header string list ヘッダ名一覧
+     *                                array[$ii]
+     * @param int $header_num Hearder number ヘッダ数
+     * @param string $update_xml XML string XML文字列
      */
     private function addFileXmlNode($attribute_name, $common_attr_str, $header_str_array, &$header_num, &$update_xml)
     {
@@ -500,12 +916,14 @@ class Repository_Components_Swordmanager extends RepositoryLogicBase
     
     /**
      * add xml node for 'file_price'
+     * XMLノード追加
      *
-     * @param string $attribute_name
-     * @param string $common_attr_str
-     * @param array $header_str_array
-     * @param int $header_num
-     * @param string $update_xml
+     * @param string $attribute_name Attribute name 属性名
+     * @param string $common_attr_str Common attribute string 共通属性文字列
+     * @param array $header_str_array Header string list ヘッダ名一覧
+     *                                array[$ii]
+     * @param int $header_num Hearder number ヘッダ数
+     * @param string $update_xml XML string XML文字列
      */
     private function addFilePriceXmlNode($attribute_name, $common_attr_str, $header_str_array, &$header_num, &$update_xml)
     {
@@ -529,12 +947,14 @@ class Repository_Components_Swordmanager extends RepositoryLogicBase
     
     /**
      * add xml node for 'thumbnail'
+     * XMLノード追加
      *
-     * @param string $attribute_name
-     * @param string $common_attr_str
-     * @param array $header_str_array
-     * @param int $header_num
-     * @param string $update_xml
+     * @param string $attribute_name Attribute name 属性名
+     * @param string $common_attr_str Common attribute string 共通属性文字列
+     * @param array $header_str_array Header string list ヘッダ名一覧
+     *                                array[$ii]
+     * @param int $header_num Hearder number ヘッダ数
+     * @param string $update_xml XML string XML文字列
      */
     private function addThumbnailXmlNode($attribute_name, $common_attr_str, $header_str_array, &$header_num, &$update_xml)
     {
@@ -550,12 +970,14 @@ class Repository_Components_Swordmanager extends RepositoryLogicBase
     
     /**
      * add xml node for 'heading'
+     * XMLノード追加
      *
-     * @param string $attribute_name
-     * @param string $common_attr_str
-     * @param array $header_str_array
-     * @param int $header_num
-     * @param string $update_xml
+     * @param string $attribute_name Attribute name 属性名
+     * @param string $common_attr_str Common attribute string 共通属性文字列
+     * @param array $header_str_array Header string list ヘッダ名一覧
+     *                                array[$ii]
+     * @param int $header_num Hearder number ヘッダ数
+     * @param string $update_xml XML string XML文字列
      */
     private function addHeadingXmlNode($attribute_name, $common_attr_str, $header_str_array, &$header_num, &$update_xml)
     {
@@ -574,14 +996,16 @@ class Repository_Components_Swordmanager extends RepositoryLogicBase
     
     /**
      * add xml node for 'checkbox' and 'radiobutton' and 'pulldownmenu'
+     * XMLノード追加
      *
-     * @param string $attribute_name
-     * @param string $common_attr_str
-     * @param array $header_str_array
-     * @param int $header_num
-     * @param string $update_xml
-     * @param array $options_array
-     * @param int $attribute_id
+     * @param string $attribute_name Attribute name 属性名
+     * @param string $common_attr_str Common attribute string 共通属性文字列
+     * @param array $header_str_array Header string list ヘッダ名一覧
+     *                                array[$ii]
+     * @param int $header_num Hearder number ヘッダ数
+     * @param string $update_xml XML string XML文字列
+     * @param array $options_array Option list オプション一覧
+     * @param int $attribute_id Attribute id 属性ID
      */
     private function addCandidateXmlNode($attribute_name, $common_attr_str, $header_str_array, &$header_num, &$update_xml, $options_array, $attribute_id)
     {
@@ -602,11 +1026,37 @@ class Repository_Components_Swordmanager extends RepositoryLogicBase
     }
     
     /**
-     * call superclass' __construct
+     * add xml node for 'supplementalcontents'
+     * XMLノード追加
      *
-     * @param var $session Session
-     * @param var $dbAccess Db
-     * @param string $transStartDate TransStartDate
+     * @param string $attribute_name Attribute name 属性名
+     * @param string $common_attr_str Common attribute string 共通属性文字列
+     * @param array $header_str_array Header string list ヘッダ名一覧
+     *                                array[$ii]
+     * @param int $header_num Hearder number ヘッダ数
+     * @param string $update_xml XML string XML文字列
+     * @return boolean Result 結果
+     */
+    private function addSuppleXmlNode($attribute_name, $common_attr_str, $header_str_array, &$header_num, &$update_xml)
+    {
+        $update_xml .= "<".self::TAG_ADDITIONALATTRIBUTE." ".
+                           self::ATTRIBUTE_COLNAME_VALUE."=\"".$header_str_array[$header_num]."\" ".
+                           $common_attr_str.">\n".
+                       "<".self::TAG_ADD_ATTR_NAME.">".
+                       $attribute_name.
+                       "</".self::TAG_ADD_ATTR_NAME.">\n".
+                       "</".self::TAG_ADDITIONALATTRIBUTE.">\n";
+        $header_num++;
+        return true;
+    }
+    
+    /**
+     * call superclass' __construct
+     * コンストラクタ
+     *
+     * @param Session $session Session セッション管理オブジェクト
+     * @param DbObject $db Database object データベース管理オブジェクト
+     * @param string $transStartDate Transaction start date トランザクション開始日
      */
     public function __construct($session, $db, $transStartDate)
     {
@@ -615,9 +1065,10 @@ class Repository_Components_Swordmanager extends RepositoryLogicBase
     
     /**
      * bool to string
+     * Booleanをstringに変換
      *
-     * @param bool $bool
-     * @return string $bool_str
+     * @param boolean $bool Input 入力値
+     * @return string Output string 出力文字列
      */
     private function boolToString($bool)
     {

@@ -1,6 +1,6 @@
 <!--// ---------------------------------------------------------------------->
 <!--//                                                                     -->
-<!--// $Id: repository_ranking.html 56591 2015-08-18 01:37:11Z keiya_sugimoto $          -->
+<!--// $Id: repository_ranking.html 60887 2015-12-04 06:48:47Z keiya_sugimoto $          -->
 <!--//                                                                     -->
 <!--// Copyright (c) 2007 - 2008, National Institute of Informatics,        -->
 <!--// Research and Development Center for Scientific Information Resources -->
@@ -12,8 +12,18 @@
 <{*repository ランキング*}>
 <div class="mt10">
 
-
-
+<div class="ar">
+	<{if $smarty.session._lang=="japanese" && $action.help_icon_display == "1"}>
+		<a href="#" onclick="repositoryCls['<{$id}>'].repositoryHelp(event,'ranking'); return false;" style="cursor: help;">
+			<img src="<{$smarty.const.CORE_BASE_URL}>/images/repository/default/help.png" align="right" alt="help">
+		</a>
+	<{/if}>
+</div>
+<div style="margin-bottom:5px;">
+	<b>
+		<{$lang.repository_rank_statistics_period}><{$action.ranking_count_period_from}> &ndash; <{$action.ranking_count_period_to}>
+	</b>
+</div>
 	<{* refer ranking *}>
 	<{if count($action.refer_ranking)>0}>
 		<div class="th_repos_title_bar text-color">
@@ -21,11 +31,6 @@
 				<tr>
 					<td class="w80 al"><{$lang.repository_rank_refer_top}></td>
 					<td class="w20 ar item_title">
-						<{if $smarty.session._lang=="japanese" && $action.help_icon_display == "1"}>
-							<a href="#" onclick="repositoryCls['<{$id}>'].repositoryHelp(event,'ranking'); return false;" style="cursor: help;">
-								<img src="<{$smarty.const.CORE_BASE_URL}>/images/repository/default/help.png" align="right" alt="help">
-							</a>
-						<{/if}>
 					</td>
 				</tr>
 			</table>
@@ -120,13 +125,6 @@
 			<tr>
 				<td class="w80 al"><{$lang.repository_rank_download_top}></td>
 				<td class="w10 ar">
-					<{if $smarty.session._lang=="japanese" && $action.help_icon_display =="1"}>
-						<{if count($action.refer_ranking)=="0"}>
-							<a href="#" onclick="repositoryCls['<{$id}>'].repositoryHelp(event,'ranking');return false;" style="cursor: help;">
-								<img src="<{$smarty.const.CORE_BASE_URL}>/images/repository/default/help.png" align="right" alt="help">
-							</a>
-						<{/if}>
-					<{/if}>
 				</td>
 			</tr>
 		</table>
@@ -211,13 +209,6 @@
 			<tr>
 				<td class="w80 al"><{$lang.repository_rank_regitem_top}></td>
 				<td class="w10 ar">
-					<{if $smarty.session._lang=="japanese" && $action.help_icon_display =="1"}>
-						<{if count($action.download_ranking)=="0" && count($action.refer_ranking)=="0"}>
-							<a href="#" onclick="repositoryCls['<{$id}>'].repositoryHelp(event,'ranking');return false;" style="cursor: help;">
-								<img src="<{$smarty.const.CORE_BASE_URL}>/images/repository/default/help.png" align="right" alt="help">
-							</a>
-						<{/if}>
-					<{/if}>
 				</td>
 			</tr>
 		</table>
@@ -282,13 +273,6 @@
 			<tr>
 				<td class="w80 al"><{$lang.repository_rank_search_top}></td>
 				<td class="w10 ar">
-					<{if $smarty.session._lang=="japanese" && $action.help_icon_display =="1"}>
-						<{if count($action.refer_ranking)=="0" && count($action.download_ranking)=="0" && count($action.user_ranking)=="0"}>
-							<a href="#" onclick="repositoryCls['<{$id}>'].repositoryHelp(event,'ranking');return false;" style="cursor: help;">
-								<img src="<{$smarty.const.CORE_BASE_URL}>/images/repository/default/help.png" align="right" alt="help">
-							</a>
-						<{/if}>
-					<{/if}>
 				</td>
 			</tr>
 		</table>
@@ -358,13 +342,6 @@
 			<tr>
 				<td class=""><{$lang.repository_rank_newitem}></td>
 				<td class="w10 ar">
-					<{if $smarty.session._lang=="japanese" && $action.help_icon_display =="1"}>
-						<{if count($action.refer_ranking)=="0" && count($action.download_ranking)=="0" && count($action.user_ranking)=="0" && count($action.keyword_ranking)=="0"}>
-							<a href="#" onclick="repositoryCls['<{$id}>'].repositoryHelp(event,'ranking');return false;" style="cursor: help;">
-								<img src="<{$smarty.const.CORE_BASE_URL}>/images/repository/default/help.png" align="right" alt="help">
-							</a>
-						<{/if}>
-					<{/if}>
 				</td>
 			</tr>
 		</table>
@@ -394,7 +371,7 @@
 			</td>
 			<td class="full ptb10 plr05 <{if $loop_num>0}>brdr02<{/if}>">
 				<{if $action.newitem_ranking[$loop_num][2] != null}>
-					<em><{$action.newitem_ranking[$loop_num][2]}></em>
+					<em><{$lang.repository_rank_registration_date}>&nbsp;<{$action.newitem_ranking[$loop_num][2]}></em>
 				<{/if}>
 				<div class="item_title">
 					<{* パブリックスペースで動作するパーマネントリンクはpage_id必須 *}>

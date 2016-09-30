@@ -1,6 +1,6 @@
 <!--// ---------------------------------------------------------------------->
 <!--//                                                                     -->
-<!--// $Id: item_setting.html 53594 2015-05-28 05:25:53Z kaede_matsushita $          -->
+<!--// $Id: item_setting.html 71165 2016-08-22 09:20:28Z keiya_sugimoto $          -->
 <!--//                                                                     -->
 <!--// Copyright (c) 2007 - 2008, National Institute of Informatics,        -->
 <!--// Research and Development Center for Scientific Information Resources -->
@@ -112,6 +112,9 @@
 			<div class="page_list">
 				<a name="doibulkgrant"></a>
 				インデックスに属するアイテムに一括でDOIを付与することができます。<br/>
+				DOI一括付与を利用するためには、DOIを自動発番で付与できる設定にする必要があります。<br/>
+				自動発番については、<a href="item_entry.html#doi_auto_departure">アイテム登録</a>をご覧ください。<br/>
+				DOIを自動発番で付与できるようにするためには、repository/config/define.inc.phpの_REPOSITORY_WEKO_DOISUFFIX_FREEをfalseに設定します。<br/>
 				<br/>
 				「DOI一括付与」タブをクリックし、「インデックスツリー」からDOI一括付与を行うインデックスを選択します。<br/>
 				 選択したインデックスの直下に配置されているアイテムのうち、DOIを付与できるアイテムの一覧が表示されます。<br/>

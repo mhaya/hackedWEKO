@@ -1,7 +1,15 @@
 <?php
+
+/**
+ * Harvest processing common classes
+ * ハーベスト処理共通クラス
+ * 
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: RepositoryHarvesting.class.php 53594 2015-05-28 05:25:53Z kaede_matsushita $
+// $Id: RepositoryHarvesting.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -11,13 +19,21 @@
 //
 // --------------------------------------------------------------------
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
+
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
 
 /**
- * Repository module harvesting class
- *
- * @package repository
- * @access  public
+ * Harvest processing common classes
+ * ハーベスト処理共通クラス
+ * 
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class RepositoryHarvesting extends RepositoryAction
 {
@@ -25,39 +41,177 @@ class RepositoryHarvesting extends RepositoryAction
     // Const
     // ---------------------------------------------
     // Temporary file path (without WEBAPP_DIR)
+    /**
+     * Work file path
+     * ワークファイルパス
+     *
+     * @var string
+     */
     const PATH_WORKFILE     = "/logs/weko/harvesting/progress.tsv";
+    /**
+     * Temporary directory path
+     * 一時ディレクトリパス
+     *
+     * @var string
+     */
     const PATH_TMP_WORKFILE = "/logs/weko/harvesting/tmp_progress.tsv";
+    /**
+     * XML file path
+     * XMLファイルパス
+     *
+     * @var string
+     */
     const PATH_XMLFILE      = "/logs/weko/harvesting/response.xml";
+    /**
+     * XML save directory path
+     * XML保存ディレクトリパス
+     *
+     * @var string
+     */
     const PATH_XML_SAVEDIR  = "/logs/weko/harvesting/xmlSave/";
     
     // Filter file path (without WEBAPP_DIR)
+    /**
+     * OAI-PMH filter path
+     * OAI-PMHフィルターパス
+     *
+     * @var string
+     */
     const FILTER_OAIPMH = "/modules/repository/action/common/harvesting/filter/HarvestingOaipmh.class.php";
     
     // status
+    /**
+     * Status(start)
+     * ステータス(開始)
+     *
+     * @var string
+     */
     const STATUS_START = "start";
+    /**
+     * Status(running)
+     * ステータス(実行中)
+     *
+     * @var string
+     */
     const STATUS_RUNNING = "running";
+    /**
+     * Status(end)
+     * ステータス(終了)
+     *
+     * @var string
+     */
     const STATUS_END = "end";
+    /**
+     * Status (in other process is started)
+     * ステータス(他のプロセスが起動中)
+     *
+     * @var string
+     */
     const STATUS_BLOCK = "block";
     
     // metadataPrefix
+    /**
+     * Dublin Core metadata prefix
+     * Dublin Coreメタデータ接頭辞
+     *
+     * @var string
+     */
     const MP_OAIDC = RepositoryConst::OAIPMH_METADATA_PREFIX_DC;
+    /**
+     * junii2 metadata prefix
+     * junii2メタデータ接頭辞
+     *
+     * @var string
+     */
     const MP_JUNII2 = RepositoryConst::OAIPMH_METADATA_PREFIX_JUNII2;
+    /**
+     * LOM metadata prefix
+     * LOMメタデータ接頭辞
+     *
+     * @var string
+     */
     const MP_OAILOM = RepositoryConst::OAIPMH_METADATA_PREFIX_LOM;
     
     // tag
+    /**
+     * Tag name(identifier)
+     * タグ名(identifier)
+     *
+     * @var string
+     */
     const OAIPMH_TAG_IDENTIFIER = "identifier";
+    /**
+     * Tag name(datestamp)
+     * タグ名(datestamp)
+     *
+     * @var string
+     */
     const OAIPMH_TAG_DATESTAMP = "datestamp";
+    /**
+     * Tag name(setSpec)
+     * タグ名(setSpec)
+     *
+     * @var string
+     */
     const OAIPMH_TAG_SETSPEC = "setSpec";
     
     // Add Selective Harvesting 2013/09/04 R.Matsuura --start--
+    /**
+     * Minimum date and time
+     * 最小日時
+     *
+     * @var string
+     */
     const DEFAULT_FROM_DATE = "0001-01-01T00:00:00Z";
+    /**
+     * Up to date and time
+     * 最大日時
+     *
+     * @var string
+     */
     const DEFAULT_UNTIL_DATE = "9999-12-31T23:59:59Z";
     
+    /**
+     * Key name(year)
+     * キー名(年)
+     *
+     * @var string
+     */
     const DATE_YEAR = "year";
+    /**
+     * Key name(month)
+     * キー名(月)
+     *
+     * @var string
+     */
     const DATE_MONTH = "month";
+    /**
+     * Key name(day)
+     * キー名(日)
+     *
+     * @var string
+     */
     const DATE_DAY = "day";
+    /**
+     * Key name(hour)
+     * キー名(時)
+     *
+     * @var string
+     */
     const DATE_HOUR = "hour";
+    /**
+     * Key name(minute)
+     * キー名(分)
+     *
+     * @var string
+     */
     const DATE_MINUTE = "minute";
+    /**
+     * Key name(second)
+     * キー名(秒)
+     *
+     * @var string
+     */
     const DATE_SECOND = "second";
     // Add Selective Harvesting 2013/09/04 R.Matsuura --end--
     
@@ -66,102 +220,130 @@ class RepositoryHarvesting extends RepositoryAction
     // ---------------------------------------------
     /**
      * repository ID
+     * 機関ID
      *
      * @var int
      */
     private $repositoryId = 0;
     /**
      * repository's baseUrl
+     * ベースURL
      *
      * @var string
      */
     private $baseUrl = "";
     /**
      * metadataPrefix
+     * メタデータ接頭辞
      *
      * @var string metadataPrefix:oai_dc/junii2/oai_lom
      */
     private $metadataPrefix = "";
     /**
      * postIndexId
+     * 登録先インデックスID
      *
      * @var int
      */
     private $postIndexId = 0;
     /**
      * isAutoSoting
+     * サブインデックスへの自動振分
      *
      * @var int 0:not exec/1:execute sorting
      */
     private $isAutoSoting = 0;
     /**
      * requestUrl
+     * リクエストURL
      *
      * @var string
      */
     private $requestUrl = "";
     /**
      * progress file path
+     * 進捗ファイルパス
      *
      * @var string
      */
     private $workFile = "";
     /**
      * tmp_progress file path
+     * 一時進捗ファイルパス
      *
      * @var string
      */
     private $tmpWorkFile  = "";
     /**
      * response xml file path
+     * レスポンスXMLファイルパス
      *
      * @var string
      */
     private $xmlFile = "";
     /**
      * Harvesting status
+     * ハーベスト実施状態
      * 
      * @var string status:start/running/end/block
      */
     private $status = self::STATUS_BLOCK;
     /**
      * Seconds to sleep
+     * ハーベスト実行間隔(秒)
      *
      * @var int
      */
     private $sleepSec = 5;
     /**
      * next request URL
+     * 次URL
      * 
      * @var string
      */
     private $nextURL = '';
     /**
      * Harvesting filter class
+     * ハーベストフィルタクラスオブジェクト
      *
      * @var classObject
      */
     private $harvestingFilter = null;
     
     // For datacheck
+    /**
+     * Responce xml file save flag
+     * レスポンスXMLファイル保存フラグ
+     *
+     * @var unknown_type
+     */
     private $saveResponseFlag = false;    // default: false
+    /**
+     * Save directory
+     * 保存ディレクトリ
+     *
+     * @var unknown_type
+     */
     private $saveResponseDir = "";
     
     // Add Selective Harvesting 2013/09/04 R.Matsuura --start--
     /**
      * from date for selective harvesting
+     * fromパラメータの指定値
      * 
      * @var int
      */
     private $from_date = null;
     /**
      * until date for selective harvesting
+     * untilパラメータの指定値
      * 
-     * @var int
+     * @var string
      */
     private $until_date = null;
     /**
      * set parameter for selective harvesting
+     * setパラメータの指定値
      * 
      * @var string
      */
@@ -173,8 +355,10 @@ class RepositoryHarvesting extends RepositoryAction
     // ---------------------------------------------
     /**
      * Constructor
+     * コンストラクタ
      *
-     * @return RepositoryHarvesting
+     * @param Session $Session session object セッション
+     * @param DbObject $Db DB object DBオブジェクト
      */
     public function RepositoryHarvesting($Session, $Db){
         $this->Session = $Session;
@@ -188,8 +372,9 @@ class RepositoryHarvesting extends RepositoryAction
     
     /**
      * Get now date
+     * 現在日時の取得
      * 
-     * @return string
+     * @return string Date 日時
      */
     private function getNowDate()
     {
@@ -199,8 +384,9 @@ class RepositoryHarvesting extends RepositoryAction
     
     /**
      * Get member: status
+     * ステータス取得
      * 
-     * @return string member:status
+     * @return string Status ステータス
      */
     public function getStatus()
     {
@@ -209,8 +395,9 @@ class RepositoryHarvesting extends RepositoryAction
     
     /**
      * Set member: nextURL
+     * 次URLの取得
      * 
-     * @param string $url
+     * @param string Next url 次URL
      */
     public function setNextUrl($url)
     {
@@ -219,8 +406,9 @@ class RepositoryHarvesting extends RepositoryAction
     
     /**
      * Open progress file
+     * 進捗ファイルを開く
      * 
-     * @param $executeFlg execute or not
+     * @param boolean $executeFlg execute or not 実行フラグ
      */
     public function openProgressFile($executeFlg=true)
     {
@@ -303,6 +491,10 @@ class RepositoryHarvesting extends RepositoryAction
     
     /**
      * Create progress file
+     * 進捗ファイル作成
+     * 
+     * @param boolean $executeAllItemAcquisition All Items acquisition flag 全アイテム取得フラグ
+     * @return boolean Result 結果
      */
     public function createProgressFile($executeAllItemAcquisition=false)
     {
@@ -396,9 +588,9 @@ class RepositoryHarvesting extends RepositoryAction
     
     /**
      * Update progress file
+     * 進捗ファイル更新
      * 
-     * @param string $url
-     * @return bool
+     * @return boolean Result 結果
      */
     public function updateProgressFile()
     {
@@ -458,6 +650,7 @@ class RepositoryHarvesting extends RepositoryAction
     
     /**
      * Delete progress file and response file
+     * 作業ファイルの削除
      */
     public function deleteHarvestingFiles()
     {
@@ -476,9 +669,10 @@ class RepositoryHarvesting extends RepositoryAction
     
     /**
      * Check access Repository
+     * リポジトリへのアクセス確認
      * 
-     * @param string $url
-     * @return string responseDate
+     * @param string $url Request URL リクエストURL
+     * @return string Response date レスポンス日時
      */
     private function checkRepositoryAccess($url)
     {
@@ -536,9 +730,11 @@ class RepositoryHarvesting extends RepositoryAction
     
     /**
      * Get repositories
+     * リポジトリ一覧取得
      *
-     * @param array &$records
-     * @return bool
+     * @param array $records repository information list リポジトリ一覧
+     *                       array[$ii]["post_index_name"|"repository_id"|"repository_name"|"base_url"|"from_date"|"until_date"|"set_param"|"metadata_prefix"|"post_index_id"|"automatic_sorting"|"execution_date"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     * @return boolean Result 結果
      */
     public function getHarvestingTable(&$records)
     {
@@ -586,7 +782,9 @@ class RepositoryHarvesting extends RepositoryAction
     
     /**
      * Harvesting start process
-     *
+     * ハーベスト開始
+     * 
+     * @return boolean Result 結果
      */
     public function startHarvesting()
     {
@@ -618,8 +816,9 @@ class RepositoryHarvesting extends RepositoryAction
     
     /**
      * Execute harvesting
+     * ハーベスト実行
      *
-     * @return bool
+     * @return boolean Result 結果
      */
     public function executeHarvesting()
     {
@@ -669,7 +868,9 @@ class RepositoryHarvesting extends RepositoryAction
     
     /**
      * Harvesting end process
-     *
+     * ハーベスト終了
+     * 
+     * @return boolean Result 結果
      */
     public function endHarvesting()
     {
@@ -695,8 +896,9 @@ class RepositoryHarvesting extends RepositoryAction
     
     /**
      * Create response file by response body from URL
+     * リポジトリへのレスポンスからXMLファイルを作成する
      *
-     * @return bool
+     * @return boolean Result 結果
      */
     public function createResponseFile()
     {
@@ -772,9 +974,11 @@ class RepositoryHarvesting extends RepositoryAction
     
     /**
      * Check is_delete status in repository_index table
+     * インデックスが論理削除されていないかを確認する
      *
-     * @param int $indexId
-     * @return bool true: is_delete=0 / false: is_delete=1
+     * @param int $indexId Index id インデックスID
+     * @return boolean Delete Status 削除されていないか否か
+     *                 true: is_delete=0 / false: is_delete=1
      */
     private function checkIndexDeleteStatus($indexId)
     {
@@ -795,9 +999,10 @@ class RepositoryHarvesting extends RepositoryAction
     
     /**
      * Update harvesting start date
+     * ハーベスト実行日時更新
      * 
-     * @param string $startDate
-     * @return bool
+     * @param string $startDate Date and time of execution 実行日時
+     * @return boolean Result 結果
      */
     public function updateHarvestingStartDate($startDate="")
     {
@@ -817,8 +1022,10 @@ class RepositoryHarvesting extends RepositoryAction
     
     /**
      * Update harvesting end date
+     * ハーベスト終了日時を更新
      * 
-     * @param string $endDate
+     * @param string $endDate End date and time 終了日時
+     * @return boolean Result 結果
      */
     public function updateHarvestingEndDate($endDate="")
     {
@@ -838,10 +1045,11 @@ class RepositoryHarvesting extends RepositoryAction
     
     /**
      * Disable Repositories Data
+     * リポジトリを無効にする
      *
-     * @param string $user_id
-     * @param staing $updateDate
-     * @return bool
+     * @param string $user_id User id ユーザID
+     * @param string $updateDate ate and time of update 更新日時
+     * @return boolean Result 結果
      */
     public function disableRepositoriesData($user_id, $updateDate)
     {
@@ -869,11 +1077,13 @@ class RepositoryHarvesting extends RepositoryAction
     // Update for Selective Harvesting 2013/09/04 R.Matsuura
     /**
      * Upsert repositories data
+     * リポジトリを挿入・更新する
      *
-     * @param array $repoData
-     * @param string $user_id
-     * @param string $updateDate
-     * @return bool
+     * @param array $repoData Repository information リポジトリ情報
+     *                        array[$ii]["repository_id"|"base_url"|"from_date"|"until_date"|"set_param"|"metadata_prefix"|"post_index_id"|"automatic_sorting"|"execution_date"]
+     * @param string $user_id User id ユーザID
+     * @param string $date ate and time of update 更新日時
+     * @return boolean Result 結果
      */
     public function upsertRepositoriesData($repoData, $user_id, $date)
     {
@@ -949,8 +1159,9 @@ class RepositoryHarvesting extends RepositoryAction
     
     /**
      * Clear Harvesting Log
+     * ハーベストログクリア
      *
-     * @return bool
+     * @return boolean Result 結果
      */
     private function clearHarvestingLog()
     {
@@ -966,6 +1177,7 @@ class RepositoryHarvesting extends RepositoryAction
     /**
      * kill harvesting process
      * -> delete workFile
+     * ハーベスト強制終了
      */
     public function killProcess()
     {
@@ -979,10 +1191,12 @@ class RepositoryHarvesting extends RepositoryAction
     // Add Selective Harvesting 2013/09/04 R.Matsuura --start--
     /**
      * Divide Datestamp(YYYY-MM-DDThh:mm:ssZ)
+     * DateStamp分割
      * 
-     * @param string $datestamp
-     * @param array $dividedDate
-     * @return bool
+     * @param string $datestamp DateStamp 日時
+     * @param array $dividedDate Divided date 分割した日時
+     *                           array["year"|"month"|"day"|"hour"|"minute"|"second"]
+     * @return boolean Result 結果
      */
     public function dividDatestamp($datestamp, &$date_params)
     {
@@ -1040,8 +1254,9 @@ class RepositoryHarvesting extends RepositoryAction
     
     /**
      * Update Havesting Execute Date
+     * ハーベスト実行日時更新
      * 
-     * @return bool
+     * @return boolean Result 結果
      */
     private function updateHarvestingExecuteDate()
     {

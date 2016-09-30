@@ -1,7 +1,15 @@
 <?php
+
+/**
+ * Search common classes
+ * 検索共通クラス
+ * 
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: RepositorySearch.class.php 53594 2015-05-28 05:25:53Z kaede_matsushita $
+// $Id: RepositorySearch.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -10,30 +18,141 @@
 // http://creativecommons.org/licenses/BSD/
 //
 // --------------------------------------------------------------------
+/**
+ * Search request parameter class
+ * 検索リクエストパラメーター処理クラス
+ */
 require_once WEBAPP_DIR."/modules/repository/components/RepositorySearchRequestParameter.class.php";
+/**
+ * Query generator class
+ * 検索クエリ作成クラス
+ */
 require_once WEBAPP_DIR."/modules/repository/components/QueryGenerator.class.php";
+/**
+ * Plugin manager class
+ * プラグイン管理クラス
+ */
 require_once WEBAPP_DIR."/modules/repository/components/RepositoryPluginManager.class.php";
+/**
+ * Convert multi byte string class
+ * マルチバイト文字変換クラス
+ */
 require_once WEBAPP_DIR."/modules/repository/files/plugin/searchkeywordconverter/Twobytechartohalfsizechar.class.php";
 
 /**
- * for search class object
+ * Search request parameter classes
+ * 検索パラメータクラス
  * 
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class RepositorySearchQueryParameter 
 {
+    /**
+     * Search terms
+     * 検索文字列
+     *
+     * @var array
+     */
     public $search_term = null;
+    /**
+     * Index ID
+     * インデックスID
+     *
+     * @var int
+     */
     public $index_id = null;
+    /**
+     * User ID
+     * ユーザーID
+     *
+     * @var string
+     */
     public $user_id = null;
+    /**
+     * User base authority
+     * ユーザーベース権限
+     *
+     * @var int
+     */
     public $user_auth_id = null;
+    /**
+     * User room authority
+     * ユーザールーム権限
+     *
+     * @var int
+     */
     public $auth_id = null;
+    /**
+     * admin flag
+     * 管理者ユーザーフラグ
+     *
+     * @var bool
+     */
     public $adminUser = null;
+    /**
+     * Search engine
+     * 検索エンジン
+     *
+     * @var string
+     */
     public $searchEngine = null;
+    /**
+     * Count query flag
+     * アイテム数取得フラグ
+     *
+     * @var bool
+     */
     public $countFlag = null;
+    /**
+     * Sort order
+     * 表示順序
+     *
+     * @var string
+     */
     public $sort_order = null;
+    /**
+     * Group list
+     * グループリスト
+     *
+     * @var array
+     */
     public $groupList = null;
+    /**
+     * Search result total count
+     * 検索結果合計数
+     *
+     * @var int
+     */
     public $total = null;
+    /**
+     * Language
+     * 表示言語
+     *
+     * @var string
+     */
     public $lang = null;
-    
+
+    /**
+     * RepositorySearchQueryParameter constructor.
+     * コンストラクタ
+     *
+     * @param array $search_term search terms 検索文字列
+     *               array[$searchKey]
+     * @param int $index_id index ID インデックスID
+     * @param string $user_id user ID ユーザーID
+     * @param int $user_auth_id user base authority ユーザーベース権限
+     * @param int $auth_id use room authority ユーザールーム権限
+     * @param bool $adminUser admin flag 管理者ユーザーフラグ
+     * @param string $searchEngine search engine 検索エンジン
+     * @param bool $countFlag count query flag アイテム数取得フラグ
+     * @param string $sort_order sort order 表示順序
+     * @param array $groupList group list グループリスト
+     *                          array[$ii]
+     * @param string $lang language 表示言語
+     */
     function __construct($search_term, 
                          $index_id, 
                          $user_id, 
@@ -61,28 +180,74 @@ class RepositorySearchQueryParameter
 }
 
 /**
- * repository search class
- * 
+ * Search common classes
+ * 検索共通クラス
+ *
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class RepositorySearch extends RepositorySearchRequestParameter
 {
+    /**
+     * Output process time flag
+     * 処理時間出力フラグ
+     */
     const OUTPUT_PROC_TIME = false;
     // search table name
+    /**
+     * Sort table name
+     * ソートテーブル名
+     */
     const SORT_TABLE = "repository_search_sort";
+    /**
+     * Item table name
+     * アイテムテーブル名
+     */
     const ITEM_TABLE = "repository_item";
+    /**
+     * Position index name
+     * 所属インデックス名
+     */
     const POS_INDEX_TABLE = "repository_position_index";
     // search table short name
+    /**
+     * Sort table short name
+     * ソートテーブル短縮名
+     */
     const SORT_TABLE_SHORT_NAME = "sort";
+    /**
+     * Item table short name
+     * アイテムテーブル短縮名
+     */
     const ITEM_TABLE_SHORT_NAME = "item";
+    /**
+     * Position index table short name
+     * 所属インデックステーブル短縮名
+     */
     const POS_INDEX_TABLE_SHORT_NAME = "pos";
-    
+
+    /**
+     * JOIN limit
+     * 結合テーブル最大数
+     */
     const CONNECT_INNERJOIN_LIMIT = 1000;
-    
+
+    /**
+     * Inner join
+     * Inner join
+     */
     const INNER_JOIN = "innerJoin";
+    /**
+     * Where in
+     * Where in
+     */
     const WHERE_IN = "wherIn";
     
     /**
      * search total
+     * 検索結果合計数
      *
      * @var int
      */
@@ -90,6 +255,7 @@ class RepositorySearch extends RepositorySearchRequestParameter
     
     /**
      * start index ( 1 origine )
+     * 開始件数
      *
      * @var int
      */
@@ -97,7 +263,7 @@ class RepositorySearch extends RepositorySearchRequestParameter
     
     /**
      * construct
-     *
+     * コンストラクタ
      */
     public function __construct()
     {
@@ -105,8 +271,10 @@ class RepositorySearch extends RepositorySearchRequestParameter
     }
     
     /**
+     * get total search count
      * ヒット件数
      *
+     * @return int search result total count 検索結果合計数
      */
     public function getTotal()
     {
@@ -114,7 +282,10 @@ class RepositorySearch extends RepositorySearchRequestParameter
     }
     
     /**
-     * 開始件数
+     * Get start index
+     * 開始件数取得
+     *
+     * @return int start index 開始番号
      */
     public function getStartIndex()
     {
@@ -122,36 +293,37 @@ class RepositorySearch extends RepositorySearchRequestParameter
     }
     
     /**
+     * Search execute
      * 検索実行
-     * 
-     * ★使い方★
-     * 下記を記述すると、検索条件に応じた検索結果を取得する。
-     * require_once WEBAPP_DIR."/modules/repository/components/RepositorySearch.class.php";
-     * $RepositorySearch = new RepositorySearch();
-     * $RepositorySearch->Session = $this->Session;
-     * $RepositorySearch->Db = $this->Db;
-     * $RepositorySearch->search();
-     * 
-     * ◆検索条件はリクエストパラメータから自動取得する
-     * 下記を記述したクラスのリクエストパラメータから自動で取得する ⇒ RepositorySearchRequestParameter::setRequestParameter
-     * $RepositorySearch = new RepositorySearch();
-     * 
-     * ただし、リクエストパラメータの変数名がsetRequestParameterメソッドのものと違う場合は個別に指定する必要がある
-     * なお、個別指定の場合validatorは実施されないので適宜対応すること
-     * ⇒ $RepositorySearch->keyword = $sample;
-     * 
-     * ◆全件取得
-     * 全件取得したい場合、下記を設定する。
-     * $RepositorySearch->listResords = "all";
-     * $RepositorySearch->search();
-     * 
-     * 
-     * @param bool search result in metadata or not
-     * @return search result
-     * 
+     *
+     * @return array search result 検索結果
+     *                array[$ii]
      */
     public function search()
     {
+        /**
+         * ★使い方★
+         * 下記を記述すると、検索条件に応じた検索結果を取得する。
+         * require_once WEBAPP_DIR."/modules/repository/components/RepositorySearch.class.php";
+         * $RepositorySearch = new RepositorySearch();
+         * $RepositorySearch->Session = $this->Session;
+         * $RepositorySearch->Db = $this->Db;
+         * $RepositorySearch->search();
+         *
+         * ◆検索条件はリクエストパラメータから自動取得する
+         * 下記を記述したクラスのリクエストパラメータから自動で取得する ⇒ RepositorySearchRequestParameter::setRequestParameter
+         * $RepositorySearch = new RepositorySearch();
+         *
+         * ただし、リクエストパラメータの変数名がsetRequestParameterメソッドのものと違う場合は個別に指定する必要がある
+         * なお、個別指定の場合validatorは実施されないので適宜対応すること
+         * ⇒ $RepositorySearch->keyword = $sample;
+         *
+         * ◆全件取得
+         * 全件取得したい場合、下記を設定する。
+         * $RepositorySearch->listResords = "all";
+         * $RepositorySearch->search();
+         */
+
         // clear
         $this->total = 0;
         $this->startIndex = 0;
@@ -171,8 +343,11 @@ class RepositorySearch extends RepositorySearchRequestParameter
     }
     
     /**
-     * 条件ごとにクエリーを投げて配列を連結していく形にする
+     * Search item
+     * アイテムを検索する
      *
+     * @return array search result 検索結果
+     *                array[$ii]
      */
     private function searchItem()
     {
@@ -212,11 +387,11 @@ class RepositorySearch extends RepositorySearchRequestParameter
         if(strlen($searchEngine) == 0)
         {
             // check search engine is senna
-            try
-            {
-                $sennaStatus = $this->dbAccess->executeQuery("SHOW SENNA STATUS;");
+            // Senna用のパラメータの有無でチェックを行う
+            $sennaStatus = $this->executeSql("SHOW VARIABLES LIKE '%senna%';");
+            if(count($sennaStatus) > 0) {
                 $searchEngine = "senna";
-            } catch (RepositoryException $Exception){
+            } else {
                 $searchEngine = "";
             }
         }
@@ -341,10 +516,12 @@ class RepositorySearch extends RepositorySearchRequestParameter
     }
     
     /**
+     * Search processing time measurement
      * 検索処理時間計測
      *
-     * @param float $sTime
-     * @param float $eTime
+     * @param string $message message メッセージ
+     * @param float $sTime start time 処理開始時間
+     * @param float $eTime end time 処理終了時間
      */
     public function outputProcTime($message, $sTime, $eTime)
     {
@@ -366,6 +543,7 @@ class RepositorySearch extends RepositorySearchRequestParameter
     }
     
     /**
+     * Output search keyword log
      * 検索キーワードログ出力
      *
      */
@@ -579,6 +757,13 @@ class RepositorySearch extends RepositorySearchRequestParameter
                         $keywordArray[0] = $value;
                         
                         break;
+                    // WEKO著者ID
+                    case "wekoAuthorId":
+                    	$detailSearchItemId = 26;
+                        // スペース区切りで1単語ずつに分割
+                        $keywordArray = explode(" ", $value);
+                        
+                        break;
                     
                     default:
                         $keywordArray = array();
@@ -595,8 +780,9 @@ class RepositorySearch extends RepositorySearchRequestParameter
                     }
                     // Mod entryLog T.Koyasu 2015/03/06 --start--
                     require_once WEBAPP_DIR. '/modules/repository/components/FW/AppLogger.class.php';
-                    AppLogger::infoLog("businessLogmanager", __FILE__, __CLASS__, __LINE__);
-                    BusinessFactory::initialize($this->Session, $this->Db, $this->TransStartDate);
+                    $AppLogger = new AppLogger();
+                    $AppLogger->infoLog("businessLogmanager", __FILE__, __CLASS__, __LINE__);
+                    WekoBusinessFactory::initialize($this->Session, $this->Db, $this->TransStartDate);
                     $logManager = BusinessFactory::getFactory()->getBusiness("businessLogmanager");
                     
                     $logManager->entryLogForKeywordSearch($keywordArray[$ii], $detailSearchItemId);
@@ -609,9 +795,13 @@ class RepositorySearch extends RepositorySearchRequestParameter
     
     // Improve Search Log 2015/03/19 K.Sugimoto --start--
     /**
+     * Convert NII type
      * 資源タイプ変換
      *
-     * @param Array $niiTypeArray
+     * @param array $niiTypeArray NII type array 資源タイプ配列
+     *                             array[$ii]
+     * @return array converted NII type array 変換済資源タイプ配列
+     *                array[$ii]
      */
     private function transformNiiTypeIdToNiiTypeName($niiTypeArray)
     {
@@ -669,9 +859,13 @@ class RepositorySearch extends RepositorySearchRequestParameter
     }
     
     /**
+     * Convert right
      * 権利変換
      *
-     * @param Array $niiTypeArray
+     * @param array $rightArray right array 権利配列
+     *                           array[$ii]
+     * @return array converted right array 変換済権利配列
+     *                array[$ii]
      */
     private function transformRightIdToRightName($rightArray)
     {

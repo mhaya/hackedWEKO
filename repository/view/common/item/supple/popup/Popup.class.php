@@ -1,7 +1,15 @@
 <?php
+
+/**
+ * View class for supplemental content registration pop-up display
+ * サプリメンタルコンテンツ登録ポップアップ表示用ビュークラス
+ *
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Popup.class.php 9286 2011-06-03 02:22:01Z yuko_nakao $
+// $Id: Popup.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -12,29 +20,67 @@
 // --------------------------------------------------------------------
 
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
-
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
 
 /**
- * [[機能説明]]
+ * View class for supplemental content registration pop-up display
+ * サプリメンタルコンテンツ登録ポップアップ表示用ビュークラス
  *
- * @package     [[package名]]
- * @access      public
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class Repository_View_Common_Item_Supple_Popup extends RepositoryAction
 {
 	// リクエストパラメタ
+    /**
+     * Item id
+     * アイテムID
+     *
+     * @var int
+     */
 	var $item_id = null;			// アイテムID
+    /**
+     * Item serial number
+     * アイテム通番
+     *
+     * @var int
+     */
 	var $item_no = null;			// アイテム通番
-	var $supple_weko_url = "";	// サプリWEKOURL
+	/**
+	 * Supple WEKO URL
+	 * サプリWEKOURL
+	 *
+	 * @var unknown_type
+	 */
+	var $supple_weko_url = "";
 	
+    /**
+     * Session management objects
+     * Session管理オブジェクト
+     *
+     * @var Session
+     */
 	var $Session = null;
+    /**
+     * Database management objects
+     * データベース管理オブジェクト
+     *
+     * @var DbObject
+     */
 	var $Db = null;
 	
     /**
-     * [[機能説明]]
+     * Pop-up display
+     * ポップアップ表示
      *
      * @access  public
+     * @return string|boolean Result 結果
      */
     function execute()
     {
@@ -65,7 +111,7 @@ class Repository_View_Common_Item_Supple_Popup extends RepositoryAction
     	
     	//アクション終了処理
 		$result = $this->exitAction();     // トランザクションが成功していればCOMMITされる
-    	
+    	$this->finalize();
         return 'success';
     }
 }

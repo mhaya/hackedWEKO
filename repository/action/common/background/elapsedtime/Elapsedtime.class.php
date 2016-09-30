@@ -1,7 +1,14 @@
 <?php
+/**
+ * Action class for background process elapsed time log create
+ * 経過時間ログ作成非同期処理用アクションクラス
+ * 
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Elapsedtime.class.php 52763 2015-04-28 00:12:16Z shota_suzuki $
+// $Id: Elapsedtime.class.php 69174 2016-06-22 06:43:30Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -12,20 +19,35 @@
 // --------------------------------------------------------------------
 
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
+/**
+ * Base class for carrying out asynchronously and recursively possibility is the ability to process a long period of time
+ * 長時間処理する可能性がある機能を非同期かつ再帰的に実施するための基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/BackgroundProcess.class.php';
 
 /**
- * [[機能説明]]
- *
- * @package     [[package名]]
+ * Action class for background process elapsed time log create
+ * 経過時間ログ作成非同期処理用アクションクラス
+ * 
+ * @package     WEKO
+ * @copyright   (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license     http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
  * @access      public
  */
 class Repository_Action_Common_Background_Elapsedtime extends BackgroundProcess
 {
+    /**
+     * Background process name for lock table
+     * ロックテーブル用非同期処理名
+     *
+     * @var string
+     */
     const PARAM_NAME = "Repository_Action_Common_Background_Elapsedtime";
     
     /**
-     * constructer
+     * Constructer
+     * コンストラクタ
+     *
      */
     public function __construct()
     {
@@ -33,7 +55,15 @@ class Repository_Action_Common_Background_Elapsedtime extends BackgroundProcess
     }
     
     /**
-     * search unregistered log
+     * Check unregistered elapsed time log
+     * 登録されていない経過時間ログが存在するか検索する
+     *
+     * @param array $target Unregistered elapsed time log
+     *                       経過時間ログが登録されていないログ
+     *                       array[$ii]["log_no"|"record_date"|"user_id"|...]
+     *
+     * @return boolean Whether or not to register elapsed time log
+     *                 経過時間ログを登録するか否か
      */
     protected function prepareBackgroundProcess(&$target)
     {
@@ -49,8 +79,13 @@ class Repository_Action_Common_Background_Elapsedtime extends BackgroundProcess
         return true;
     }
     
-    /** 
-     * execute background process
+    /**
+     * Register elapsed time log
+     * 経過時間ログを登録する
+     *
+     * @param array $target Unregistered elapsed time log
+     *                       経過時間ログが登録されていないログ
+     *                       array[$ii]["log_no"|"record_date"|"user_id"|...]
      */
     protected function executeBackgroundProcess(&$target) 
     {
@@ -76,7 +111,12 @@ class Repository_Action_Common_Background_Elapsedtime extends BackgroundProcess
     }
     
     /** 
-     * get unregistered logs from log table
+     * Get unregistered elapsed time logs from log table
+     * ログテーブルから経過時間ログが登録されていないログを取得する
+     *
+     * @return array Unregistered elapsed time log
+     *               経過時間ログが登録されていないログ
+     *               array[$ii]["log_no"|"record_date"|"user_id"|...]
      */
     private function getUnregisteredLogs()
     {

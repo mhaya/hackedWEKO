@@ -1,7 +1,15 @@
 <?php
+
+/**
+ * Import process common class
+ * インポート処理汎用クラス
+ *
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: ImportCommon.class.php 58688 2015-10-11 08:21:12Z tatsuya_koyasu $
+// $Id: ImportCommon.class.php 70936 2016-08-09 09:53:57Z keiya_sugimoto $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics,
 // Research and Development Center for Scientific Information Resources
@@ -10,50 +18,168 @@
 // http://creativecommons.org/licenses/BSD/
 //
 // --------------------------------------------------------------------
-
-/* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
-
+/**
+ * File archive class
+ * ファイルアーカイブクラス
+ */
 include_once MAPLE_DIR.'/includes/pear/File/Archive.php';
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
+/**
+ * Connect ID sercer class
+ * IDサーバー連携クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/IDServer.class.php';
+/**
+ * Nmae authority class
+ * 氏名メタデータ管理クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/NameAuthority.class.php';
+/**
+ * Item register class
+ * アイテム登録クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/ItemRegister.class.php';
+/**
+ * Update by Sword Client for WEKO class
+ * SCfWアップデートクラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/action/main/sword/SwordUpdate.class.php';
+/**
+ * Output filter class
+ * 出力内容フィルタークラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryOutputFilter.class.php';
+/**
+ * Search table manager class
+ * 検索テーブル管理クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositorySearchTableProcessing.class.php';
+/**
+ * Check file type utility class
+ * ファイルタイプチェックユーティリティークラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryCheckFileTypeUtility.class.php';
+/**
+ * Handle manager class
+ * ハンドル管理クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryHandleManager.class.php';
+/**
+ * Import XML validator class
+ * インポートXMLバリデータクラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryImportXmlValidator.class.php';
-require_once WEBAPP_DIR. '/modules/repository/components/Checkdoi.class.php';
+/**
+ * Check DOI class
+ * DOIチェッククラス
+ */
+require_once WEBAPP_DIR. '/modules/repository/components/business/doi/Checkdoi.class.php';
+/**
+ * Item type manager class
+ * アイテムタイプ管理クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/ItemtypeManager.class.php';
+/**
+ * String operator class
+ * 文字列操作クラス
+ */
+require_once WEBAPP_DIR. '/modules/repository/components/util/StringOperator.class.php';
 
 /**
- * Import common action
+ * Import process common class
+ * インポート処理汎用クラス
+ * 
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class ImportCommon extends RepositoryAction
 {
     // component
+    /**
+     * Session management objects
+     * Session管理オブジェクト
+     *
+     * @var Session
+     */
     var $Session = null;
+    /**
+     * Database management objects
+     * データベース管理オブジェクト
+     *
+     * @var DbObject
+     */
     var $Db = null;
+    /**
+     * Process start date
+     * 処理開始時間
+     *
+     * @var string
+     */
     var $TransStartDate = null;
 
+    /**
+     * Encode type
+     * エンコード形式
+     *
+     * @var string
+     */
     var $encode = null;         // Add encode charset 2009/11/27 A.Suzuki
-
+    /**
+     * Log file
+     * ログファイル
+     *
+     * @var resource
+     */
     private $logFh = null;
 
     // Const
+    /**
+     * public date
+     * 公開日
+     */
     const PUBDATE = "pubDate";
+    /**
+     * Year
+     * 年
+     */
     const YEAR = "year";
+    /**
+     * Month
+     * 月
+     */
     const MONTH = "month";
+    /**
+     * Day
+     * 日
+     */
     const DAY = "day";
 
+    /**
+     * Handle manager class
+     * ハンドル管理クラス
+     *
+     * @var RepositoryHandleManager
+     */
     private $repositoryHandleManager = null;
+    /**
+     * Item type manager class
+     * アイテムタイプ管理クラス
+     *
+     * @var Repository_Components_Itemtypemanager
+     */
     private $itemtypeManager = null;
 
     /**
      * Set log file handle
+     * ログファイルソケットセット
      *
-     * @param resource $handle
+     * @param resource $handle file socket ファイルソケット
      */
     public function setLogFileHandle($handle)
     {
@@ -62,10 +188,11 @@ class ImportCommon extends RepositoryAction
 
     /**
      * Write log to file
+     * ログファイルに書き込む
      *
-     * @param string $string
-     * @param int $length [optional]
-     * @return int
+     * @param string $string string 文字列
+     * @param int $length byte length 長さ
+     * @return int written lenght 書き込んだ文字列長
      */
     private function writeLog($string, $length=null)
     {
@@ -86,6 +213,14 @@ class ImportCommon extends RepositoryAction
         }
     }
 
+    /**
+     * ImportCommon constructor.
+     * コンストラクタ
+     *
+     * @param Session $session session object セッション
+     * @param DbObjectAdodb $db DB object DBオブジェクト
+     * @param string $ins_date process start date 処理開始時間
+     */
     function ImportCommon($session, $db, $ins_date){
         if($session!=null){
             $this->Session = $session;
@@ -109,20 +244,29 @@ class ImportCommon extends RepositoryAction
             $this->encode = _CHARSET;
         }
         // Add encode charset 2009/11/27 A.Suzuki --end--
+        
+        // ロガー
+        $this->Logger = WekoBusinessFactory::getFactory()->logger;
     }
     /**
      * XML analysis
+     * XMLを解釈する
      *
-     * Decompression from Zip file
-     * ->Registration of item in Zip
-     * ->すでに登録済みは登録しない(他に登録済みがなくても)
-     * ->アイテムタイプはかぶることがある
-     *
-     * @param $tmp_dir upload file put dir pass
-     * @access  public
+     * @param string $tmp_dir upload file put dir pass アップロードファイルパス
+     * @param array $ret_info result analysis 解析結果データ
+                              array[$ii]
+     * @param string $error_msg error message エラーメッセージ
+     * @return bool true/false success/failed 成功/失敗
      */
     function XMLAnalysis($tmp_dir, &$ret_info, &$error_msg)
     {
+        /**
+         * Decompression from Zip file
+         * ->Registration of item in Zip
+         * ->すでに登録済みは登録しない(他に登録済みがなくても)
+         * ->アイテムタイプはかぶることがある
+         */
+
         $this->writeLog("-- Start XMLAnalysis in ImportCommon class --\n");
         // Add XML Check 2014/09/12 T.Ichikawa --start--
         $xmlValidator = new RepositoryImportXmlValidator();
@@ -562,14 +706,24 @@ class ImportCommon extends RepositoryAction
         return true;
     }
 
-    /*
-     * insert file
-     * $table           ：テーブル名
-     * $column          ：カラム名
-     * $path            ：アップロードするファイルパス
-     * $where_clause    ：条件式
+    /**
+     * Insert file
+     * ファイルを登録する
+     *
+     * @param string $table table name テーブル名
+     * @param string $column column name カラム名
+     * @param string $path file path 登録するファイルパス
+     * @param string $where_clause where query WHERE句クエリ
+     * @param string $error_msg error message エラーメッセージ
+     * @return bool true/false success/failed 成功/失敗
      */
     function registFile($table, $column, $path, $where_clause, &$error_msg){
+        /**
+         *      * $table           ：テーブル名
+         * $column          ：カラム名
+         * $path            ：アップロードするファイルパス
+         * $where_clause    ：条件式
+         */
         $this->writeLog("-- Start registFile in ImportCommon class --\n");
         $ret = file_exists($path);
         if($ret == false){
@@ -598,8 +752,15 @@ class ImportCommon extends RepositoryAction
         return true;
     }
 
-    /*
-     * データの切り出し
+    /**
+     * Pick up data
+     * データを抽出する
+     *
+     * @param array $value data データ
+     *                      array[$columnName]
+     * @param string $column column name カラム名
+     * @return array decoded data デコードされたデータ
+     *                array[$columnName]
      */
     function pickupData($value, $column){
         $insert_data = array();
@@ -613,9 +774,13 @@ class ImportCommon extends RepositoryAction
         return $insert_data;
     }
 
-    /*
-     * 新規ID発行
-     * $table_name　：　発行対象のテーブル名
+    /**
+     * Numbering new ID
+     * IDを新規発番する
+     *
+     * @param string $table_name table name テーブル名
+     * @return int new ID 新規ID
+     * @throws RepositoryException
      */
     function issueNewID( $table_name ){
         $this->writeLog("-- Start issueNewID in ImportCommon class --\n");
@@ -640,10 +805,15 @@ class ImportCommon extends RepositoryAction
         return $newID;
     }
 
-    /*
-     * アイテムとの依存関係チェック
-     * $item_id ：アイテムID
-     * $item_no ：アイテムNo
+    /**
+     * Check the item dependency
+     * アイテム依存関係をチェックする
+     *
+     * @param int $item_id item ID アイテムID
+     * @param int $item_no item number アイテム通番
+     * @param array $key_array key array ID配列
+     *                          array[$ii]
+     * @return bool true/false relation/or not 関係ある/ない
      */
     function itemDependentCheck( $item_id, $item_no, $key_array ){
 
@@ -660,8 +830,17 @@ class ImportCommon extends RepositoryAction
     }
 
     /**
-     * insert item type
+     * Insert item type
+     * アイテムタイプを追加する
      *
+     * @param array $item_type_data item type data アイテムタイプデータ
+     *                               array[$ii]["item_type_array"|"item_attr_type_array"|"item_attr_candidate_array"]
+     * @param string $tmp_dir file upload directory ファイルアップロードパス
+     * @param array $item_type_info item type info アイテムタイプ情報
+     *                               array[$ii]["item_type_id"|"item_type_name"|...]
+     * @param string $error_msg error message エラーメッセージ
+     * @return bool true/false insert success/insert failed 挿入成功/挿入失敗
+     * @throws RepositoryException
      */
     function itemtypeEntry($item_type_data, $tmp_dir, &$item_type_info, &$error_msg){
         $this->writeLog("-- Start itemtypeEntry in ImportCommon class --\n");
@@ -812,7 +991,18 @@ class ImportCommon extends RepositoryAction
     }
 
     /**
-     * Insert an item type
+     * Insert new item type
+     * 新規アイテムタイプを挿入する
+     *
+     * @param int $newID new item type ID 新規アイテムタイプID
+     * @param array $item_type item type data アイテムタイプデータ
+     *                          array[0][$XMLData]
+     * @param array $item_attr_type item attr type data アイテム属性タイプデータ
+     *                               array[0][$XMLData]
+     * @param array $item_attr_candidate item attr candidate data 選択肢データ
+     *                                    array[0][$XMLData]
+     * @param string $error_msg error message エラーメッセージ
+     * @return bool true/false insert success/insert failed 挿入成功/挿入失敗
      */
     function insertItemtype($newID, $item_type, $item_attr_type, $item_attr_candidate, &$error_msg){
         $this->writeLog("-- Start insertItemtype in ImportCommon class --\n");
@@ -927,13 +1117,14 @@ class ImportCommon extends RepositoryAction
                     "dublin_core_mapping, " .
                     "lom_mapping, " .// add "lom_mapping" 2013/01/29 A.Jin
                     "lido_mapping, ".
+                    "spase_mapping, ".
                     "display_lang_type, " . // add "display_lang_type" 2009/07/23 A.Suzuki
                     "ins_user_id, " .
                     "mod_user_id, " .
                     "ins_date, " .
                     "mod_date, " .
                     "is_delete ) " .
-                    "VALUES( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? );";
+                    "VALUES( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? );";
             // バインド変数設定
             $param_item_attr_type = array();
             $param_item_attr_type[] = intval( $newID );
@@ -950,7 +1141,8 @@ class ImportCommon extends RepositoryAction
             $param_item_attr_type[] = $item_attr_type[$ii]['JUNII2_MAPPING'];
             $param_item_attr_type[] = $item_attr_type[$ii]['DUBLIN_CORE_MAPPING'];
             $param_item_attr_type[] = $item_attr_type[$ii]['LOM_MAPPING'];
-            $param_item_attr_type[] = "";
+            $param_item_attr_type[] = "";                                           // lido_mapping
+            $param_item_attr_type[] = "";                                           // spase_mapping
             // add "display_lang_type" 2009/07/23 A.Suzuki --start--
             if($item_attr_type[$ii]['DISPLAY_LANG_TYPE']==null){
                 $item_attr_type[$ii]['DISPLAY_LANG_TYPE'] = "";
@@ -1034,9 +1226,28 @@ class ImportCommon extends RepositoryAction
     }
 
     /**
-     * Insert or Update an item
+     * Insert item
+     * アイテムを追加する
+     *
+     * @param array $array_item_data item data アイテムデータ
+     *                                array[0][$XMLData]
+     * @param string $tmp_dir file upload directory ファイルアップロードパス
+     * @param array $array_item item array アイテム情報配列
+     *                           array[$ii]
+     * @param int $index_id index ID インデックスID
+     * @param array $item_type_info item type data アイテムタイプデータ
+     *                               array[$ii]["item_type_array"|"item_attr_type_array"|"item_attr_candidate_array"]
+     * @param array $array_item_type_data item type array アイテムタイプ情報配列
+     *                                     array[$ii]
+     * @param string $error_msg error message エラーメッセージ
+     * @param int $item_id item ID アイテムID
+     * @param string $detail_uri item URL 登録されたアイテムの詳細画面URL
+     * @param string $warningMsg warning message 警告メッセージ
+     * @param int $changeMode Mode of regist(0:normal mode, 1:DOI change mode) 
+     *                         登録のモード(0:通常モード, 1:DOI変更モード)
+     * @return bool true/false insert success/insert failed 挿入成功/挿入失敗
      */
-    function itemEntry($array_item_data, $tmp_dir, &$array_item, $index_id, $item_type_info, $array_item_type_data, &$error_msg, &$item_id, &$detail_uri, &$warningMsg){
+    function itemEntry($array_item_data, $tmp_dir, &$array_item, $index_id, $item_type_info, $array_item_type_data, &$error_msg, &$item_id, &$detail_uri, &$warningMsg, $changeMode=Repository_Components_Business_Doi_Checkdoi::CHECKING_STATUS_SWORD_NORMAL){
         $this->writeLog("-- Start itemEntry in ImportCommon class --\n");
 
         // get user_id
@@ -1754,6 +1965,11 @@ class ImportCommon extends RepositoryAction
                 $error_msg .= "warning:file not exists ".$thumbnail_array[$cnt]['FILE_NAME'];
                 continue;
             }
+            
+            // ディレクトリセパレータが含まれないようにファイル名を抽出する
+            $thumbnailName = Repository_Components_Util_Stringoperator::extractFileNameFromFilePath($thumbnail_array[$cnt]['FILE_NAME']);
+            
+            $thumbnail_array[$cnt]['EXTENSION'] = Repository_Components_Util_Stringoperator::extractExtensionFromFilename($thumbnail_array[$cnt]['FILE_NAME']);
             $path = "";
 
             $query = "INSERT INTO ". DATABASE_PREFIX ."repository_thumbnail(" .
@@ -1780,7 +1996,7 @@ class ImportCommon extends RepositoryAction
             $param_thumbnail[] = intval( $thumbnail_array[$cnt]['ITEM_NO'] );
             $param_thumbnail[] = $attrId;
             $param_thumbnail[] = $attrNo;
-            $param_thumbnail[] = $thumbnail_array[$cnt]['FILE_NAME'];
+            $param_thumbnail[] = $thumbnailName;
             $param_thumbnail[] = $attrNo;
             $param_thumbnail[] = $thumbnail_array[$cnt]['MIME_TYPE'];
             $param_thumbnail[] = $thumbnail_array[$cnt]['EXTENSION'];
@@ -1933,7 +2149,9 @@ class ImportCommon extends RepositoryAction
                 $this->writeLog("  file path: ".$path."\n");
                 continue;
             }
-
+            
+            $file_array[$cnt]['EXTENSION'] = Repository_Components_Util_Stringoperator::extractExtensionFromFilename($file_array[$cnt]['FILE_NAME']);
+            
             // ファイルをリネーム 2013/03/15 K.Matsuo --start--
             $now = new Date();
             $rename_file_name = $now->getDate(DATE_FORMAT_TIMESTAMP).".".$file_array[$cnt]['EXTENSION'];
@@ -1959,7 +2177,7 @@ class ImportCommon extends RepositoryAction
             // 外部コマンドをDBから取得する 2008/08/07 Y.Nakao --start--
             // Insert実行前に、uploadファイルがPDFならばサムネイルを作成する
             $prev_flg = sprintf("false"); // サムネイルができたかどうか
-            if($file_array[$cnt]['EXTENSION'] == "pdf"){
+            if(strtolower($file_array[$cnt]['EXTENSION']) == "pdf"){
                 // ファイル格納先+ファイル名
                 // ファイル名を変更 2013/03/18 K.Matsuo
                 $path = $tmp_dir. DIRECTORY_SEPARATOR. $file_array[$cnt]['RENAME'];
@@ -2116,35 +2334,36 @@ class ImportCommon extends RepositoryAction
             // create image-file thumbnail using gd 2010/02/16 K.Ando --end--
 
             // Add separate file from DB 2009/04/21 Y.Nakao --start--
-            // ファイル名を変更 2013/03/18 K.Matsuo
-            $path = $tmp_dir. DIRECTORY_SEPARATOR. $file_array[$cnt]['RENAME'];
-
-            $file_path = $contents_path.DIRECTORY_SEPARATOR.
-                        $item_id.'_'.
-                        $attrId.'_'.
-                        $attrNo.'.'.
-                        $file_array[$cnt]['EXTENSION'];
-            if(file_exists($file_path)){
-                unlink($file_path);
-            }
-            
-	        // file upload check 2015/04/02 K.Sugimoto --start--
-	        $result = copy($path, $file_path);
-	        if(!$result || !(file_exists($file_path))){
-		        $smarty_assign = $this->Session->getParameter("smartyAssign");
-		        if(!isset($smarty_assign))
-		        {
-			        $this->setLangResource();
-			        $smarty_assign = $this->Session->getParameter("smartyAssign");
-		        }
-		        $error_msg = sprintf($smarty_assign->getLang("repository_file_upload_failed"), $file_array[$cnt]['FILE_NAME']);
-		        return false;
-	        }
-	        // file upload check 2015/04/02 K.Sugimoto --end--
-            // Add separate file from DB 2009/04/21 Y.Nakao --end--
 
             // display_type
             $displayType = $this->validateFileDisplayType($file_array[$cnt]["DISPLAY_TYPE"]);
+            
+            // Add File replace T.Koyasu 2016/02/29 --start--
+            // Convert to flash
+            $flashList = null;
+            if($displayType == RepositoryConst::FILE_DISPLAY_TYPE_FLASH){
+                $convertToFlash = BusinessFactory::getFactory()->getBusiness("businessConverttoflash");
+                $isConvertedFlash = $convertToFlash->convertFileToFlash(intval($item_id), 
+                                                                        $tmp_dir. DIRECTORY_SEPARATOR. $file_array[$cnt]["RENAME"], 
+                                                                        $file_array[$cnt]['MIME_TYPE'], 
+                                                                        $file_array[$cnt]['EXTENSION'], 
+                                                                        $flashList, 
+                                                                        $error_msg);
+                if(!$isConvertedFlash){
+                    $this->writeLog("  warning: ".$error_msg."\n");
+                    $displayType = RepositoryConst::FILE_DISPLAY_TYPE_DETAIL;
+                    $flashPubDate = "";
+                }
+            }
+            
+            // ContentsFileTransactionクラスを用いてファイルを新規登録し、ファイル通番を再取得する
+            $contentFileTransaction = BusinessFactory::getFactory()->getBusiness("businessContentfiletransaction");
+            $attrNo = $contentFileTransaction->insert($item_id, $attrId, $tmp_dir. DIRECTORY_SEPARATOR. $file_array[$cnt]['RENAME'], $flashList);
+            $file_array[$cnt]["FILE_NO"] = $attrNo;
+            // Add File replace T.Koyasu 2016/02/29 --end--
+            
+	        // file upload check 2015/04/02 K.Sugimoto --end--
+            // Add separate file from DB 2009/04/21 Y.Nakao --end--
 
             // license
             $license = $this->validateFileLicense($file_array[$cnt]["LICENSE_ID"], $file_array[$cnt]["LICENSE_NOTATION"]);
@@ -2159,6 +2378,9 @@ class ImportCommon extends RepositoryAction
                 $flashPubDate = $flashPubDateArray[self::PUBDATE];
             }
 
+            // ディレクトリセパレータが含まれないようにファイル名を抽出する
+            $fileName = Repository_Components_Util_Stringoperator::extractFileNameFromFilePath($file_array[$cnt]['FILE_NAME']);
+            
             $query = "INSERT INTO ". DATABASE_PREFIX ."repository_file(" .
                     "item_id, " .
                     "item_no, " .
@@ -2193,7 +2415,7 @@ class ImportCommon extends RepositoryAction
             $param_file[] = intval( $file_array[$cnt]['ITEM_NO'] );
             $param_file[] = $attrId;
             $param_file[] = $attrNo;
-            $param_file[] = $file_array[$cnt]['FILE_NAME'];
+            $param_file[] = $fileName;
             $param_file[] = $file_array[$cnt]['DISPLAY_NAME'];
             $param_file[] = $displayType;
             $param_file[] = $attrNo;
@@ -2650,69 +2872,20 @@ class ImportCommon extends RepositoryAction
         // Add cnri handle 2014/09/17 T.Ichikawa --end--
         
         //////////////////////////////////// Insert selfDOI //////////////////////////////////
-        if(isset($selfdoi_array[0]['RA']) && strlen($selfdoi_array[0]['RA']) > 0)
+        if(isset($selfdoi_array) && is_array($selfdoi_array) && count($selfdoi_array) > 0)
         {
-            $selfdoi_array[0]['RA'] = strtoupper($selfdoi_array[0]['RA']);
-            $checkdoi = new Repository_Components_Checkdoi($this->Session, $this->Db, $this->TransStartDate);
-            $handleManager = new RepositoryHandleManager($this->Session, $this->Db, $this->TransStartDate);
-            if($selfdoi_array[0]['RA'] === strtoupper(RepositoryConst::JUNII2_SELFDOI_RA_JALC))
-            {
-                $selfdoiPrefixSuffix = explode("/", $selfdoi_array[0]['SELFDOI']);
-                $libraryJalcdoiPrefix = $handleManager->getLibraryJalcDoiPrefix();
-                if($selfdoiPrefixSuffix[0] === $libraryJalcdoiPrefix)
-                {
-                    $checkRegist = $checkdoi->checkDoiGrant($item_id, $item_no, Repository_Components_Checkdoi::TYPE_LIBRARY_JALC_DOI, Repository_Components_Checkdoi::CHECKING_STATUS_ITEM_REGISTRATION);
-                    if($checkRegist)
-                    {
-                        try {
-                            $handleManager->registLibraryJalcdoiSuffix($item_id, $item_no, $selfdoi_array[0]['SELFDOI']);
-                        } catch(AppException $ex){
-                            $this->debugLog($ex->getMessage(). "::itemId=". $item_id. "::selfDoi=". $selfdoi_array[0]['SELFDOI'], __FILE__, __CLASS__, __LINE__);
-                            $warningMsg = $this->addWarningMsg($ex->getMessage(), $warningMsg);
-                        }
-                    }
-                    else
-                    {
-                        $checkRegist = $checkdoi->checkDoiGrant($item_id, $item_no, Repository_Components_Checkdoi::TYPE_JALC_DOI, Repository_Components_Checkdoi::CHECKING_STATUS_ITEM_REGISTRATION);
-                        if($checkRegist)
-                        {
-                            $suffix = $handleManager->getYHandleSuffix($item_id, $item_no);
-                            $handleManager->registJalcdoiSuffix($item_id, $item_no, $suffix);
-                        }
-                    }
-                }
-                else
-                {
-                    $checkRegist = $checkdoi->checkDoiGrant($item_id, $item_no, Repository_Components_Checkdoi::TYPE_JALC_DOI, Repository_Components_Checkdoi::CHECKING_STATUS_ITEM_REGISTRATION);
-                    if($checkRegist)
-                    {
-                        $suffix = $handleManager->getYHandleSuffix($item_id, $item_no);
-                        $handleManager->registJalcdoiSuffix($item_id, $item_no, $suffix);
-                    }
+            // RA値が不正な場合は処理を行わない
+            if($this->checkRaInputFormat($selfdoi_array[0]['RA'])) {
+                $handleManager = new RepositoryHandleManager($this->Session, $this->Db, $this->TransStartDate);
+                $resultCheckDoi = $handleManager->entrySelfdoi($item_id, $item_no, $selfdoi_array[0]['RA'], $selfdoi_array[0]['SELFDOI'], $changeMode);
+                if(!$resultCheckDoi->isGrantDoi) {
+                    $ConvertResultCheckDoi = BusinessFactory::getFactory()->getBusiness("businessConvertresultcheckdoi");
+                    $error_msg = implode(" ", $ConvertResultCheckDoi->chooseDoiErrMsg($item_id, $item_no, $resultCheckDoi));
+                    $this->writeLog("  Failed: ".$error_msg."\n");
+                    $this->writeLog("-- End itemEntry in ImportCommon class --\n");
+                    return false;
                 }
             }
-            else if($selfdoi_array[0]['RA'] === strtoupper(RepositoryConst::JUNII2_SELFDOI_RA_CROSSREF))
-            {
-            
-                $checkRegist = $checkdoi->checkDoiGrant($item_id, $item_no, Repository_Components_Checkdoi::TYPE_CROSS_REF, Repository_Components_Checkdoi::CHECKING_STATUS_ITEM_REGISTRATION);
-                if($checkRegist)
-                {
-                    $suffix = $handleManager->getYHandleSuffix($item_id, $item_no);
-                    $handleManager->registCrossrefSuffix($item_id, $item_no, $suffix);
-                }
-            }
-        	// Add DataCite 2015/02/09 K.Sugimoto --start--
-            else if($selfdoi_array[0]['RA'] === strtoupper(RepositoryConst::JUNII2_SELFDOI_RA_DATACITE))
-            {
-            
-                $checkRegist = $checkdoi->checkDoiGrant($item_id, $item_no, Repository_Components_Checkdoi::TYPE_DATACITE, Repository_Components_Checkdoi::CHECKING_STATUS_ITEM_REGISTRATION);
-                if($checkRegist)
-                {
-                    $suffix = $handleManager->getYHandleSuffix($item_id, $item_no);
-                    $handleManager->registDataciteSuffix($item_id, $item_no, $suffix);
-                }
-            }
-    	// Add DataCite 2015/02/09 K.Sugimoto --end--
         }
 
         // Add suppleContentsEntry Y.Yamazawa --start-- 2015/03/17 --start--
@@ -2737,15 +2910,6 @@ class ImportCommon extends RepositoryAction
         if($result)
         {
             $this->writeLog("  requiredCheck OK.\n");
-            
-            // Convert to flash
-            if(!$this->convertToFlash(intval($item_id), intval($item_array[0]['ITEM_NO']), $error_msg))
-            {
-                $error_msg .="MySQL ERROR : SELECT file data.";
-                $this->writeLog("  Failed: ".$this->Db->ErrorMsg()."\n");
-                $this->writeLog("-- End itemEntry in ImportCommon class --\n");
-                return false;
-            }
 
             // Set item status and regist to whatsnew
             if(!$this->setItemStatus(intval($item_id), intval($item_array[0]['ITEM_NO']), $user_id, $index_id, $item_array[0]['SHOWN_STATUS'], $item_array[0]['REVIEW_STATUS']))
@@ -2792,13 +2956,24 @@ class ImportCommon extends RepositoryAction
         $this->writeLog("-- End itemEntry in ImportCommon class --\n");
         return true;
     }
-
+    
     // Add check metadata 2008/10/01 Y.Nakao --start--
     /**
      * metadata check
      *
      * return true  : metadata is same
      *        false : metadata is different
+     */
+    /**
+     * Check metadata same
+     * メタデータが一致しているかチェックする
+     *
+     * @param int $item_type_id item type ID アイテムタイプID
+     * @param array $item_attr_type item attribute type array アイテム属性タイプ配列
+     *                               array[$ii][$XMLData]
+     * @param array $item_attr_candidate item type candidate array 選択肢配列
+     *                               array[$ii][$XMLData]
+     * @return bool true/false same/difference 一致/不一致
      */
     function checkMetadata($item_type_id, $item_attr_type, $item_attr_candidate){
         $this->writeLog("-- Start checkMetadata in ImportCommon class --\n");
@@ -2891,6 +3066,14 @@ class ImportCommon extends RepositoryAction
     }
     // Add check metadata conflict 2008/10/01 Y.Nakao --end--
 
+    /**
+     * Check date format
+     * 日付型のフォーマットを整形する
+     *
+     * @param string $input_date date 日付文字列
+     * @param bool $full_date full date flag 日付のみか日時までかのフラグ
+     * @return string fomat date string 整形済日付文字列
+     */
     function checkDateFormat($input_date, $full_date=true){
         // If delimiter is "/" or ".", change to "-".
         $input_date = trim($input_date);
@@ -2927,12 +3110,15 @@ class ImportCommon extends RepositoryAction
 
         return $output_date;
     }
+
     // create image-file thumbnail using gd 2010/02/16 K.Ando --start--
     /**
      * create thumnail image using GD
+     * サムネイルイメージファイルを作成する
      *
-     * @param $image image file
-     * @param $filepath filepath
+     * @param string $image image file イメージファイルパス
+     * @param string $filepath file path 作成元のファイルパス
+     * @return bool true/false success/failed 成功/失敗
      */
     function createThumbnailImage(&$image, $filepath)
     {
@@ -2985,10 +3171,11 @@ class ImportCommon extends RepositoryAction
 
     /**
      * Convert bmp to GD Object
+     * BMPファイルをGDによって変換する
      *
-     * @param $src
-     * @param $dest
-     * @return GD image
+     * @param string $src source file 元ファイル
+     * @param string $dest destination file 出力ファイル
+     * @return bool true/false success/failed 成功/失敗
      */
     function ConvertBMP2GD($src, $dest = false) {
         if(!($src_f = fopen($src, "rb"))) {
@@ -3096,9 +3283,10 @@ class ImportCommon extends RepositoryAction
 
     /**
      * create GD image by bmp
+     * GDイメージをBMPから作成する
      *
-     * @param $filename bmp file path
-     * @return GD image
+     * @param string $filename bmp file path BMPファイルパス
+     * @return string GD image file path GDイメージファイルパス
      */
     function imagecreatefrombmp($filename) {
         $tmp_name = $filename."bk";
@@ -3114,6 +3302,13 @@ class ImportCommon extends RepositoryAction
 
 
     // Fix null language 2012/02/21 Y.Nakao --start--
+    /**
+     * Set language
+     * 言語情報を設定する
+     *
+     * @param string $lang language 言語
+     * @return string set language 設定した言語
+     */
     function setLanguage($lang)
     {
         $lang = RepositoryOutputFilter::language($lang);
@@ -3133,11 +3328,13 @@ class ImportCommon extends RepositoryAction
     // Fix null language 2012/02/21 Y.Nakao --end--
     
     /**
-     * Get registered files data
+     * (Deprecated) Get registered files data
+     * (廃止予定) 登録済ファイル一覧を取得する
      *
-     * @param int $itemId
-     * @param int $itemNo
-     * @return array
+     * @param int $itemId item ID アイテムID
+     * @param int $itemNo item number アイテム通番
+     * @return array file data ファイルデータ
+     *                array[$ii]["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"display_type"|"mime_type"|"extension"]
      */
     private function getRegistertedFileData($itemId, $itemNo)
     {
@@ -3164,12 +3361,16 @@ class ImportCommon extends RepositoryAction
     }
 
     /**
-     * Adjust attribute_id
+     * Adjust attribute id
+     * 属性IDを調整する
      *
-     * @param array &$arrayItemData
-     * @param array $itemTypeInfo
-     * @param array $itemAttrTypeArray
-     * @return bool
+     * @param array &$arrayItemData item data array アイテム情報配列
+     *                               array[$ii]
+     * @param array $itemTypeInfo item type info array アイテムタイプ情報配列
+     *                             array[$ii]
+     * @param array $itemAttrTypeArray item attribute type array アイテム属性タイプ情報配列
+     *                                  array[$ii]
+     * @return bool true/false success/failed 成功/失敗
      */
     public function adjustAttributeId(&$arrayItemData, $itemTypeInfo, $itemAttrTypeArray)
     {
@@ -3207,11 +3408,15 @@ class ImportCommon extends RepositoryAction
 
     /**
      * Adjust attribute_id to show_order
+     * 属性IDから表示順序を調整する
      *
-     * @param array &$arrayAttrData
-     * @param int $itemTypeId
-     * @param array $itemAttrTypeArray
-     * @return array
+     * @param array &$arrayAttrData attribute data array アイテム属性配列
+     *                               array[$ii]
+     * @param int $itemTypeId item type ID アイテムタイプID
+     * @param array $itemAttrTypeArray item attribute type array アイテム属性タイプ配列
+     *                                  array[$ii]
+     * @return array replaced attribute ID array 調整済属性ID配列
+     *                array[$ii]
      */
     private function adjustAttributeIdToShowOrder(&$arrayAttrData, $itemTypeId, $itemAttrTypeArray)
     {
@@ -3262,163 +3467,17 @@ class ImportCommon extends RepositoryAction
     }
     
     /**
-     * Convert to flash
-     *
-     * @param int $itemId
-     * @param int $itemNo
-     * @param string $errorMsg
-     * @return bool
-     */
-    public function convertToFlash($itemId, $itemNo, &$errorMsg)
-    {
-        // Create IDServer class
-        $idServer = new IDServer($this->Session, $this->Db);
-        $itemRegister = new ItemRegister($this->Session, $this->Db);
-
-        $result = $this->getRegistertedFileData($itemId, $itemNo);
-        if ($result === false) {
-            return false;
-        }
-        for($ii=0; $ii<count($result); $ii++)
-        {
-            if($result[$ii][RepositoryConst::DBCOL_REPOSITORY_FILE_DISPLAY_TYPE] == RepositoryConst::FILE_DISPLAY_TYPE_FLASH)
-            {
-                $flashErrorFlag = false;
-                if($this->isMultimediaFile($result[$ii][RepositoryConst::DBCOL_REPOSITORY_FILE_MIME_TYPE], $result[$ii][RepositoryConst::DBCOL_REPOSITORY_FILE_EXTENSION]))
-                {
-                    // マルチメディアファイルの場合
-                    if( strtolower($result[$ii][RepositoryConst::DBCOL_REPOSITORY_FILE_EXTENSION]) == "swf" ||
-                        strtolower($result[$ii][RepositoryConst::DBCOL_REPOSITORY_FILE_EXTENSION]) == "flv")
-                    {
-                        // swf, flv の場合はそのままコピー
-                        $flashDir = $this->makeFlashFolder( $result[$ii][RepositoryConst::DBCOL_REPOSITORY_FILE_ITEM_ID],
-                                                            $result[$ii][RepositoryConst::DBCOL_REPOSITORY_FILE_ATTRIBUTE_ID],
-                                                            $result[$ii][RepositoryConst::DBCOL_REPOSITORY_FILE_FILE_NO]);
-                        if(strlen($flashDir) > 0)
-                        {
-                            $flashContentsPath = $flashDir."/weko.".strtolower($result[$ii][RepositoryConst::DBCOL_REPOSITORY_FILE_EXTENSION]);
-
-                            // コピー元ファイル取得
-                            $fileContentsPath = $this->getFileSavePath("file");
-                            if(strlen($fileContentsPath) == 0){
-                                // default directory
-                                $fileContentsPath = BASE_DIR.'/webapp/uploads/repository/files';
-                            }
-                            $fileContentsPath .= "/".$result[$ii][RepositoryConst::DBCOL_REPOSITORY_FILE_ITEM_ID];
-                            $fileContentsPath .= "_".$result[$ii][RepositoryConst::DBCOL_REPOSITORY_FILE_ATTRIBUTE_ID];
-                            $fileContentsPath .= "_".$result[$ii][RepositoryConst::DBCOL_REPOSITORY_FILE_FILE_NO];
-                            $fileContentsPath .= ".".$result[$ii][RepositoryConst::DBCOL_REPOSITORY_FILE_EXTENSION];
-                            if( file_exists($fileContentsPath) ){
-                                // file copy
-                                copy($fileContentsPath, $flashContentsPath);
-                            } else {
-                                // Not found file
-                                $flashErrorFlag = true;
-                            }
-                        }
-                    }
-                    else
-                    {
-                        // マルチメディアファイルは flv へ変換する
-                        // create arg for convert
-                        $fileInfo = array();
-                        $fileInfo['item_id'] = $result[$ii][RepositoryConst::DBCOL_REPOSITORY_FILE_ITEM_ID];
-                        $fileInfo['attribute_id'] = $result[$ii][RepositoryConst::DBCOL_REPOSITORY_FILE_ATTRIBUTE_ID];
-                        $fileInfo['file_no'] = $result[$ii][RepositoryConst::DBCOL_REPOSITORY_FILE_FILE_NO];
-                        $fileInfo['upload']['extension'] = $result[$ii][RepositoryConst::DBCOL_REPOSITORY_FILE_EXTENSION];
-                        $fileInfo['upload']['mimetype'] = $result[$ii][RepositoryConst::DBCOL_REPOSITORY_FILE_MIME_TYPE];
-
-                        // 変換元ファイル取得
-                        $fileContentsPath = $this->getFileSavePath("file");
-                        if(strlen($fileContentsPath) == 0){
-                            // default directory
-                            $fileContentsPath = BASE_DIR.'/webapp/uploads/repository/files';
-                        }
-                        $fileContentsPath .= "/".$fileInfo['item_id'];
-                        $fileContentsPath .= "_".$fileInfo['attribute_id'];
-                        $fileContentsPath .= "_".$fileInfo['file_no'];
-                        $fileContentsPath .= ".".$fileInfo['upload']['extension'];
-                        $result = $itemRegister->convertFileToFlv($fileInfo, $errMsg, $fileContentsPath);
-                        if($result === false){
-                            // Failef convert
-                            $flashErrorFlag = true;
-                        }
-                    }
-                }
-                else if(!RepositoryCheckFileTypeUtility::isImageFile($result[$ii][RepositoryConst::DBCOL_REPOSITORY_FILE_MIME_TYPE], $result[$ii][RepositoryConst::DBCOL_REPOSITORY_FILE_EXTENSION]))
-                {
-                    // マルチメディアファイル以外(pdf, ppt など)
-                    $this->getRepositoryHandleManager();
-
-                    if($this->repositoryHandleManager != null){
-                        if($idServer != null){
-                                $prefixId = $this->repositoryHandleManager->getPrefix(RepositoryHandleManager::ID_Y_HANDLE);
-
-                            if(strlen($prefixId) > 0){
-                                $flashError = "";
-                                $flashData = array();
-                                $flashData['item_id'] = $result[$ii][RepositoryConst::DBCOL_REPOSITORY_FILE_ITEM_ID];
-                                $flashData['attribute_id'] = $result[$ii][RepositoryConst::DBCOL_REPOSITORY_FILE_ATTRIBUTE_ID];
-                                $flashData['file_no'] = $result[$ii][RepositoryConst::DBCOL_REPOSITORY_FILE_FILE_NO];
-                                $flashData['upload']['file_name'] = $result[$ii][RepositoryConst::DBCOL_REPOSITORY_FILE_FILE_NAME];
-                                $flashData['upload']['extension'] = $result[$ii][RepositoryConst::DBCOL_REPOSITORY_FILE_EXTENSION];
-                                $url = BASE_URL . "/?action=repository_uri&item_id=".$result[$ii][RepositoryConst::DBCOL_REPOSITORY_FILE_ITEM_ID];
-                                // PDF to Flash
-                                $flashResult = $idServer->convertToFlash($flashData, $url, $flashError);
-                                if($flashResult !== "true"){
-                                    $flashErrorFlag = true;
-                                }
-                            }
-                            else
-                            {
-                                $flashErrorFlag = true;
-                            }
-                        } else {
-                            $flashErrorFlag = true;
-                        }
-                    }
-                }
-
-                // Flash変換エラー時の処理
-                if($flashErrorFlag)
-                {
-                    // Failed convert to Flash
-                    $query = "UPDATE ".DATABASE_PREFIX.RepositoryConst::DBTABLE_REPOSITORY_FILE." ".
-                             "SET ".RepositoryConst::DBCOL_REPOSITORY_FILE_DISPLAY_TYPE." = ?, ".
-                                    RepositoryConst::DBCOL_REPOSITORY_FILE_FLASH_PUB_DATE." = ? ".
-                             "WHERE ".RepositoryConst::DBCOL_REPOSITORY_FILE_ITEM_ID." = ? ".
-                             "AND ".RepositoryConst::DBCOL_REPOSITORY_FILE_ITEM_NO." = ? ".
-                             "AND ".RepositoryConst::DBCOL_REPOSITORY_FILE_ATTRIBUTE_ID." = ? ".
-                             "AND ".RepositoryConst::DBCOL_REPOSITORY_FILE_FILE_NO." = ?; ";
-                    $params = array();
-                    $params[] = 0;
-                    $params[] = "";
-                    $params[] = $result[$ii][RepositoryConst::DBCOL_REPOSITORY_FILE_ITEM_ID];
-                    $params[] = $result[$ii][RepositoryConst::DBCOL_REPOSITORY_FILE_ITEM_NO];
-                    $params[] = $result[$ii][RepositoryConst::DBCOL_REPOSITORY_FILE_ATTRIBUTE_ID];
-                    $params[] = $result[$ii][RepositoryConst::DBCOL_REPOSITORY_FILE_FILE_NO];
-                    $updateResult = $this->Db->execute($query, $params);
-                    if($updateResult === false)
-                    {
-                        return false;
-                    }
-                    $errorMsg .= "warning:\"".$result[$ii][RepositoryConst::DBCOL_REPOSITORY_FILE_FILE_NAME]."\" cannot convert to flash. ";
-                }
-            }
-        }
-
-        return true;
-    }
-
-    /**
      * Set item status
+     * アイテムステータスを設定する
      *
-     * @param int $itemId
-     * @param int $itemNo
-     * @param string $userId
-     * @param array $indexIds
-     * @param int $reviewStatus
-     * @return bool
+     * @param int $itemId item ID アイテムID
+     * @param int $itemNo item number アイテム通番
+     * @param string $userId user ID ユーザーID
+     * @param array $indexIds index ID list インデックスIDリスト
+     *                         array[$ii]
+     * @param int $shownStatus shown status 公開状態
+     * @param int $reviewStatus review status 査読ステータス
+     * @return bool true/false update success/update failed 更新成功/更新失敗
      */
     public function setItemStatus($itemId, $itemNo, $userId, $indexIds, $shownStatus, &$reviewStatus)
     {
@@ -3535,9 +3594,11 @@ class ImportCommon extends RepositoryAction
 
     /**
      * Check insert or update
+     * 挿入か更新かを判定する
      *
-     * @param array $xmlItemData
-     * @return bool
+     * @param array $xmlItemData XML item data XMLのアイテムデータ配列
+     *               array[$ii][$XMLData]
+     * @return bool true/false update/insert 更新/挿入
      */
     private function isUpdate($xmlItemData)
     {
@@ -3553,9 +3614,11 @@ class ImportCommon extends RepositoryAction
 
     /**
      * Validate pub date
+     * アイテム公開日のフォーマットを整形する
      *
-     * @param string $pubDate "YYYY-MM-DD"
-     * @return array
+     * @param string $pubDate YYYY-MM-DD YYYY-MM-DD
+     * @return array public date array 公開年月日配列
+     *                array["pubDate"|"year"|"month"|"day"]
      */
     public function validatePubDate($pubDate)
     {
@@ -3581,9 +3644,10 @@ class ImportCommon extends RepositoryAction
 
     /**
      * Validate link
+     * リンク属性データのフォーマットを整形する
      *
-     * @param string $attrValue "[URL]|[表示名]"
-     * @return string
+     * @param string $attrValue "[URL]|[Display name]" "[URL]|[表示名]"
+     * @return string "[URL]|[Display name]" "[URL]|[表示名]"
      */
     public function validateLink($attrValue)
     {
@@ -3610,9 +3674,10 @@ class ImportCommon extends RepositoryAction
 
     /**
      * Validate file display type
+     * ファイル表示タイプのフォーマットを整形する
      *
-     * @param string $displayType
-     * @return int
+     * @param string $displayType "detail"/"simple"/"flash" "detail"/"simple"/"flash"
+     * @return int 0/1/2
      */
     public function validateFileDisplayType($displayType)
     {
@@ -3634,10 +3699,12 @@ class ImportCommon extends RepositoryAction
 
     /**
      * Validate file license
+     * ファイルライセンス情報のフォーマットを整形する
      *
-     * @param string $licenseId
-     * @param string $notation
-     * @return array
+     * @param string $licenseId file license ID ファイルライセンスID
+     * @param string $notation notation 表記法
+     * @return array file license array ファイルライセンス配列
+     *                array["license_id"|"license_notation"]
      */
     public function validateFileLicense($licenseId, $notation)
     {
@@ -3678,11 +3745,13 @@ class ImportCommon extends RepositoryAction
 
     /**
      * Validate title
+     * タイトル文字列を整形する
      *
-     * @param string $title
-     * @param string $titleEn
-     * @param string $language
-     * @return array
+     * @param string $title title タイトル
+     * @param string $titleEn title english タイトルエイ名
+     * @param string $language language 表示言語
+     * @return array item title array タイトル配列
+     *                array["title"|"title_english"]
      */
     public function validateTitle($title, $titleEn, $language)
     {
@@ -3708,11 +3777,12 @@ class ImportCommon extends RepositoryAction
 
     /**
      * Reissue attribute no
+     * 属性通番を振り直す
      *
-     * @param int $itemId
-     * @param int $itemNo
-     * @param string $errorMsg
-     * @return bool
+     * @param int $itemId item ID アイテムID
+     * @param int $itemNo item number アイテム通番
+     * @param string $errorMsg error message エラーメッセージ
+     * @return bool true/false success/failed 成功/失敗
      */
     public function reissueAttrNo($itemId, $itemNo, &$errorMsg)
     {
@@ -3740,37 +3810,21 @@ class ImportCommon extends RepositoryAction
             return false;
         }
 
-        // thumbnail
-//        $result = $this->reissueAttrNoByTableName($itemId, $itemNo, RepositoryConst::DBTABLE_REPOSITORY_THUMBNAIL);
-//        if($result === false)
-//        {
-//            $errorMsg .= "Cannot UPDATE attribute_no at ".RepositoryConst::DBTABLE_REPOSITORY_THUMBNAIL.".";
-//            return false;
-//        }
-//
-//        // file and file_price
-//        $result = $this->reissueAttrNoByTableName($itemId, $itemNo, RepositoryConst::DBTABLE_REPOSITORY_FILE);
-//        if($result === false)
-//        {
-//            $errorMsg .= "Cannot UPDATE attribute_no at ".RepositoryConst::DBTABLE_REPOSITORY_FILE.".";
-//            return false;
-//        }
-
         return true;
     }
 
     /**
      * Reissue attribute no by table name
+     * 各属性の通番が順不同となっている場合、1から通番を振り直す(入力としてある属性に複数のメタデータが紐付いており、それらの通番が1,5,9など)
      *
-     * @param int $itemId
-     * @param int $itemNo
-     * @param string $tableName
-     * @return bool
+     * @param int $itemId item ID アイテムID
+     * @param int $itemNo item number アイテム通番
+     * @param string $tableName table name テーブル名
+     * @return bool true/false success/failed 成功/失敗
      */
     private function reissueAttrNoByTableName($itemId, $itemNo, $tableName)
     {
         // Init
-        $fileFlag = false;
         $itemIdColName = "";
         $itemNoColName = "";
         $attrIdColName = "";
@@ -3795,19 +3849,6 @@ class ImportCommon extends RepositoryAction
                 $attrIdColName = RepositoryConst::DBCOL_REPOSITORY_BIBLIO_INFO_ATTRIBUTE_ID;
                 $attrNoColName = RepositoryConst::DBCOL_REPOSITORY_BIBLIO_INFO_BIBLIO_NO;
                 break;
-            case RepositoryConst::DBTABLE_REPOSITORY_THUMBNAIL:
-                $itemIdColName = RepositoryConst::DBCOL_REPOSITORY_THUMB_ITEM_ID;
-                $itemNoColName = RepositoryConst::DBCOL_REPOSITORY_THUMB_ITEM_NO;
-                $attrIdColName = RepositoryConst::DBCOL_REPOSITORY_THUMB_ATTR_ID;
-                $attrNoColName = RepositoryConst::DBCOL_REPOSITORY_THUMB_FILE_NO;
-                break;
-            case RepositoryConst::DBTABLE_REPOSITORY_FILE:
-                $fileFlag = true;
-                $itemIdColName = RepositoryConst::DBCOL_REPOSITORY_FILE_ITEM_ID;
-                $itemNoColName = RepositoryConst::DBCOL_REPOSITORY_FILE_ITEM_NO;
-                $attrIdColName = RepositoryConst::DBCOL_REPOSITORY_FILE_ATTRIBUTE_ID;
-                $attrNoColName = RepositoryConst::DBCOL_REPOSITORY_FILE_FILE_NO;
-                break;
             default:
                 $tableName = "";
                 break;
@@ -3820,23 +3861,6 @@ class ImportCommon extends RepositoryAction
         // New attribute_no counter
         $prevAttrId = 0;
         $newAttrNo = 1;
-
-        // Set file and flash save path
-        $contentsPath = "";
-        $flashContentsPath = "";
-        if($fileFlag)
-        {
-            // Get file and flash save path
-            $contentsPath = $this->getFileSavePath("file");
-            if(strlen($contentsPath) == 0){
-                // default directory
-                $contentsPath = BASE_DIR.'/webapp/uploads/repository/files';
-                if(!(file_exists($contentsPath))){
-                    mkdir ( $contentsPath, 0777);
-                }
-            }
-            $flashContentsPath = $this->getFlashFolder();
-        }
 
         // Get table record
         $query = "SELECT ".$attrIdColName.", ".$attrNoColName." ".
@@ -3877,54 +3901,10 @@ class ImportCommon extends RepositoryAction
                 continue;
             }
 
-            // For file
-            $selfExtension = "";
-            $targetExtension = "";
-            if($fileFlag)
-            {
-                // Get self extension
-                $query = "SELECT ".RepositoryConst::DBCOL_REPOSITORY_FILE_EXTENSION." ".
-                         "FROM ".DATABASE_PREFIX.$tableName." ".
-                         "WHERE ".$itemIdColName." = ? ".
-                         "AND ".$itemNoColName." = ? ".
-                         "AND ".$attrIdColName." = ? ".
-                         "AND ".$attrNoColName." = ? ";
-                $params = array();
-                $params[] = $itemId;
-                $params[] = $itemNo;
-                $params[] = $attrId;
-                $params[] = $oldAttrNo;
-                $result = $this->Db->execute($query, $params);
-                if($ret === false)
-                {
-                    return false;
-                }
-                if(isset($result[0][RepositoryConst::DBCOL_REPOSITORY_FILE_EXTENSION]))
-                {
-                    $selfExtension = $result[0][RepositoryConst::DBCOL_REPOSITORY_FILE_EXTENSION];
-                }
-
-                // Get target extension
-                $params = array();
-                $params[] = $itemId;
-                $params[] = $itemNo;
-                $params[] = $attrId;
-                $params[] = $newAttrNo;
-                $result = $this->Db->execute($query, $params);
-                if($ret === false)
-                {
-                    return false;
-                }
-                if(isset($result[0][RepositoryConst::DBCOL_REPOSITORY_FILE_EXTENSION]))
-                {
-                    $targetExtension = $result[0][RepositoryConst::DBCOL_REPOSITORY_FILE_EXTENSION];
-                }
-            }
-
             // Update attribute_no from newNo to tmpNo(0)
             $result = $this->updateAttrNoAndRenameFile(
                             $tableName, $itemIdColName, $itemNoColName, $attrIdColName, $attrNoColName,
-                            $itemId, $itemNo, $attrId, $newAttrNo, 0, $targetExtension, $contentsPath, $flashContentsPath);
+                            $itemId, $itemNo, $attrId, $newAttrNo, 0);
             if($result === false)
             {
                 return false;
@@ -3933,7 +3913,7 @@ class ImportCommon extends RepositoryAction
             // Update attribute_no from oldNo to newNo
             $result = $this->updateAttrNoAndRenameFile(
                             $tableName, $itemIdColName, $itemNoColName, $attrIdColName, $attrNoColName,
-                            $itemId, $itemNo, $attrId, $oldAttrNo, $newAttrNo, $selfExtension, $contentsPath, $flashContentsPath);
+                            $itemId, $itemNo, $attrId, $oldAttrNo, $newAttrNo);
             if($result === false)
             {
                 return false;
@@ -3942,7 +3922,7 @@ class ImportCommon extends RepositoryAction
             // Update attribute_no from tmpNo(0) to oldNo
             $result = $this->updateAttrNoAndRenameFile(
                             $tableName, $itemIdColName, $itemNoColName, $attrIdColName, $attrNoColName,
-                            $itemId, $itemNo, $attrId, 0, $oldAttrNo, $targetExtension, $contentsPath, $flashContentsPath);
+                            $itemId, $itemNo, $attrId, 0, $oldAttrNo);
             if($result === false)
             {
                 return false;
@@ -3954,26 +3934,23 @@ class ImportCommon extends RepositoryAction
 
     /**
      * Update attribute_no and rename physical file
+     * 属性通番を更新し、ファイル物理名を変更する
      *
-     * @param string $tableName
-     * @param string $itemIdColName
-     * @param string $itemNoColName
-     * @param string $attrIdColName
-     * @param string $attrNoColName
-     * @param int $itemId
-     * @param int $itemNo
-     * @param int $attrId
-     * @param int $oldAttrNo
-     * @param int $newAttrNo
-     * @param string $extension
-     * @param string $contentsPath
-     * @param string $flashContentsPath
-     * @return bool
+     * @param string $tableName table name テーブル名
+     * @param string $itemIdColName item ID column name アイテムIDカラム名
+     * @param string $itemNoColName item nuber column name アイテム通番カラム名
+     * @param string $attrIdColName item attribute ID column name アイテム属性IDカラム名
+     * @param string $attrNoColName item attribute number column name アイテム属性通番カラム名
+     * @param int $itemId item ID アイテムID
+     * @param int $itemNo item number アイテム通番
+     * @param int $attrId attribute ID 属性ID
+     * @param int $oldAttrNo old attribute ID 古い属性ID
+     * @param int $newAttrNo new attribute number 新しい属性通番
+     * @return bool true/false update success/update failed 更新成功/更新失敗
      */
     private function updateAttrNoAndRenameFile(
             $tableName, $itemIdColName, $itemNoColName, $attrIdColName, $attrNoColName,
-            $itemId, $itemNo, $attrId, $oldAttrNo, $newAttrNo,
-            $extension="", $contentsPath="", $flashContentsPath="")
+            $itemId, $itemNo, $attrId, $oldAttrNo, $newAttrNo)
     {
         // Update attribute_no from [oldNo] to [newNo]
         $query = "UPDATE ".DATABASE_PREFIX.$tableName." ".
@@ -3994,55 +3971,18 @@ class ImportCommon extends RepositoryAction
             return false;
         }
 
-        // Move physical file
-        if($tableName == RepositoryConst::DBTABLE_REPOSITORY_FILE)
-        {
-            $filePath = $contentsPath.DIRECTORY_SEPARATOR.
-                        $itemId.'_'.$attrId.'_'.$newAttrNo.'.'.$extension;
-            $newFilePath = $contentsPath.DIRECTORY_SEPARATOR.
-                           $itemId.'_'.$attrId.'_'.$newAttrNo.'.'.$extension;
-            if(file_exists($filePath)){
-                if( file_exists($newFilePath) ){
-                    unlink($newFilePath);
-                }
-                rename($filePath, $newFilePath);
-            }
-            $flashPath = $flashContentsPath.DIRECTORY_SEPARATOR.
-                         $itemId.'_'.$attrId.'_'.$newAttrNo;
-            $newFlashPath = $flashContentsPath.DIRECTORY_SEPARATOR.
-                            $itemId.'_'.$attrId.'_'.$newAttrNo;
-            if(file_exists($flashPath)){
-                if( file_exists($newFlashPath) ){
-                    $this->removeDirectory($newFlashPath);
-                }
-                rename($flashPath, $newFlashPath);
-            }
-
-            // Set file_price
-            $result = $this->updateAttrNoAndRenameFile(
-                            RepositoryConst::DBTABLE_REPOSITORY_FILE_PRICE,
-                            RepositoryConst::DBCOL_REPOSITORY_FILE_PRICE_ITEM_ID,
-                            RepositoryConst::DBCOL_REPOSITORY_FILE_PRICE_ITEM_NO,
-                            RepositoryConst::DBCOL_REPOSITORY_FILE_PRICE_ATTRIBUTE_ID,
-                            RepositoryConst::DBCOL_REPOSITORY_FILE_PRICE_FILE_NO,
-                            $itemId, $itemNo, $attrId, $oldAttrNo, $newAttrNo);
-            if($result === false)
-            {
-                return false;
-            }
-        }
-
         return true;
     }
 
     /**
      * Required check
+     * 必須チェック
      *
-     * @param int $itemId
-     * @param int $itemNo
-     * @param string $errorMsg
-     * @param string $warningMsg
-     * @return bool
+     * @param int $itemId item ID アイテムID
+     * @param int $itemNo item number アイテム通番
+     * @param string $errorMsg error message エラーメッセージ
+     * @param string $warningMsg warning message 警告メッセージ
+     * @return bool true/false no problem/problem 問題無し/あり
      */
     public function requiredCheck($itemId, $itemNo, &$errorMsg, &$warningMsg)
     {
@@ -4250,7 +4190,7 @@ class ImportCommon extends RepositoryAction
 
     /**
      * create RepositoryHandleManager instance
-     *
+     * ハンドル管理オブジェクトを作成する
      */
     private function getRepositoryHandleManager()
     {
@@ -4267,7 +4207,7 @@ class ImportCommon extends RepositoryAction
     
     /**
      * create ItemtypeManager instance
-     *
+     * アイテムタイプ管理オブジェクトを作成する
      */
     private function getItemtypeManager()
     {
@@ -4285,9 +4225,11 @@ class ImportCommon extends RepositoryAction
     // Bug Fix WEKO-2014-046 T.Koyasu 2014/08/07 --start--
     /**
      * correct attribute_id of item_type data array
+     * アイテムタイプ属性をチェックする
      *
-     * @param int(i ) $itemTypeId
-     * @param array(io) $xmlItemTypeData
+     * @param int $itemTypeId item type ID アイテムタイプID
+     * @param array $xmlItemTypeData item type data アイテムタイプデータ
+     *                                array[$ii][$XMLData]
      */
     public function validateItemTypeXmlData($itemTypeId, &$xmlItemTypeData)
     {
@@ -4342,10 +4284,11 @@ class ImportCommon extends RepositoryAction
     
     /**
      * get attribute id by show order and item_type_id
+     * アイテムタイプIDと表示順序から属性IDを取得する
      *
-     * @param int $showOrder
-     * @param int $itemTypeId
-     * @return int attribute_id
+     * @param int $showOrder show order 表示順序
+     * @param int $itemTypeId item type ID アイテムタイプID
+     * @return int attribute ID 属性ID
      */
     private function getAttrIdByShowOrderAndItemTypeId($showOrder, $itemTypeId)
     {
@@ -4372,12 +4315,13 @@ class ImportCommon extends RepositoryAction
     // Bug Fix WEKO-2014-046 T.Koyasu 2014/08/07 --end--
     
     /**
-     * check usage itemtype
+     * Check authority for use item type
+     * 現在のユーザーで使用可能なアイテムタイプかチェックする
      *
-     * @param int $item_type_id_list
-     * @param int $user_role_id
-     * @param int $user_room_auth_id
-     * @return bool
+     * @param int $item_type_id_list item type ID list アイテムタイプIDリスト
+     * @param int $user_role_id user role ID ユーザーベース権限
+     * @param int $user_room_auth_id user room authority ユーザールーム権限
+     * @return bool true/false can use/or not 使用可能/不可
      */
     function canUseItemtype($item_type_id_list, $user_role_id, $user_room_auth_id)
     {
@@ -4405,19 +4349,24 @@ class ImportCommon extends RepositoryAction
 
     // Add suppleContentsEntry Y.Yamazawa --start-- 2015/03/17 --start--
     /**
+     * Register supple contents
      * サプリコンテンツ登録
-     * 1.サプリコンテンツURLが空か確認
-     * 2.ビジネスクラスの呼び出し
-     * 3.サプリコンテンツの登録
      *
-     * @param string $item_id アイテムID
-     * @param string $item_no アイテムNo
-     * @param array $supple_info_array サプリコンテンツURL
-     * @param string $error_msg エラーメッセージ
-     * @return boolean 登録結果
+     * @param string $item_id item ID アイテムID
+     * @param string $item_no item number アイテムNo
+     * @param array $supple_info_array supple URL array サプリコンテンツURL
+     *                                  array[$ii]
+     * @param string $error_msg error message エラーメッセージ
+     * @return bool true/false success/failed 成功/失敗
      */
     private function entrySupple($item_id,$item_no,$supple_info_array,&$error_msg)
     {
+        /**
+         * 1.サプリコンテンツURLが空か確認
+         * 2.ビジネスクラスの呼び出し
+         * 3.サプリコンテンツの登録
+         */
+
         $this->traceLog(__FUNCTION__, __FILE__, __CLASS__, __LINE__);
         $this->traceLog(print_r($supple_info_array, true), __FILE__, __CLASS__, __LINE__);
         // サプリコンテンツURLが空か確認
@@ -4451,9 +4400,9 @@ class ImportCommon extends RepositoryAction
      * add warning message
      * 警告メッセージを追記する
      *
-     * @param string $msgKey: 追加する警告文の言語リソースキー
-     * @param string $warningMsg: 追加元の警告メッセージ
-     * @return string: 警告メッセージ(スラッシュ区切り)
+     * @param string $msgKey message key 追加する警告文の言語リソースキー
+     * @param string $warningMsg warning message 追加元の警告メッセージ
+     * @return string warning message
      */
     private function addWarningMsg($msgKey, $warningMsg){
         $this->setLangResource();
@@ -4465,6 +4414,30 @@ class ImportCommon extends RepositoryAction
         $warningMsg .= $smarty_assign->getLang($msgKey);
         
         return $warningMsg;
+    }
+    
+    /**
+     * Check DOI RA input status
+     * RAの入力状態をチェックする
+     *
+     * @param string $ra DOI RA DOIのRA値
+     * @return bool true/false 入力済/未入力・形式不正
+     */
+    public function checkRaInputFormat($ra) {
+        // RAの形式チェック
+        if(strlen($ra) == 0) {
+            // RAが未入力の場合はエラー
+            return false;
+        } elseif(!(strtolower($ra) == strtolower(RepositoryConst::JUNII2_SELFDOI_RA_JALC) || 
+                   strtolower($ra) == strtolower(RepositoryConst::JUNII2_SELFDOI_RA_CROSSREF) || 
+                   strtolower($ra) == strtolower(RepositoryConst::JUNII2_SELFDOI_RA_DATACITE)
+                  )
+                ) {
+            // RAが指定の物以外ならエラー
+            return false;
+        }
+        
+        return true;
     }
 }
 ?>

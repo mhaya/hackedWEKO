@@ -1,6 +1,6 @@
 <!--// ---------------------------------------------------------------------->
 <!--//                                                                     -->
-<!--// $Id: repository_item_type_mappingconfirm.html 36428 2014-05-29 04:01:44Z rei_matsuura $          -->
+<!--// $Id: repository_item_type_mappingconfirm.html 68946 2016-06-16 09:47:19Z tatsuya_koyasu $          -->
 <!--//                                                                     -->
 <!--// Copyright (c) 2007 - 2008, National Institute of Informatics,        -->
 <!--// Research and Development Center for Scientific Information Resources -->
@@ -73,6 +73,7 @@
     <col align="left" width="100px">
     <col align="left" width="120px">
     <col align="left" width="200px">
+    <col align="left" width="100px">
     <col align="left" width="50px">
    <tr>
     <th class="item_edit_list ac"><{$lang.repository_mapping_name}></th>
@@ -81,8 +82,9 @@
     <th class="item_edit_list ac"><{$lang.repository_mapping_junii2}></th>
     <th class="item_edit_list ac"><{$lang.repository_lom_LearningObjectMetadata}></th>
     <th class="item_edit_list ac"><{$lang.repository_mapping_lido}></th>
-	<th class="item_edit_list ac"><{$lang.repository_mapping_language}></th>
-    
+    <th class="item_edit_list ac"><{$lang.repository_mapping_spase}></th>
+    <th class="item_edit_list ac"><{$lang.repository_mapping_language}></th>
+
    </tr>
    <{*基本データ*}>
    <{*タイトル*}>
@@ -93,6 +95,7 @@
     <td class="item_edit_list al"><{$lang.repository_junii2_title}>/<{$lang.repository_junii2_alternative}></td>
     <td class="item_edit_list al">generalTitle</td>
     <td class="item_edit_list al"><{$lang.repository_lido_title_full}></td>
+    <td class="item_edit_list al"></td>
     <td class="item_edit_list al"><{$lang.repository_language_ja}></td>
    </tr>
    <{*タイトル(英)*}>
@@ -103,6 +106,7 @@
     <td class="item_edit_list al"><{$lang.repository_junii2_title}>/<{$lang.repository_junii2_alternative}></td>
     <td class="item_edit_list al">generalTitle</td>
     <td class="item_edit_list al"><{$lang.repository_lido_title_full}></td>
+    <td class="item_edit_list al"></td>
     <td class="item_edit_list al"><{$lang.repository_language_en}></td>
    </tr>
    <{*言語*}>
@@ -114,6 +118,7 @@
     <td class="item_edit_list al">generalLanguage</td>
     <td class="item_edit_list al"></td>
     <td class="item_edit_list al"></td>
+    <td class="item_edit_list al"><{$lang.repository_language_no_mapping}></td>
    </tr>
    <{*公開日*}>
    <tr>
@@ -124,6 +129,7 @@
     <td class="item_edit_list al">lifeCycleContribute</td>
     <td class="item_edit_list al"></td>
     <td class="item_edit_list al"></td>
+    <td class="item_edit_list al"><{$lang.repository_language_no_mapping}></td>
    </tr>
    <{*キーワード*}>
    <tr>
@@ -133,6 +139,7 @@
     <td class="item_edit_list al"><{$lang.repository_junii2_subject}></td>
     <td class="item_edit_list al">generalKeyword</td>
     <td class="item_edit_list al"><{$lang.repoistory_lido_keyword_full}></td>
+    <td class="item_edit_list al"></td>
     <td class="item_edit_list al"><{$lang.repository_language_ja}></td>
    </tr>
    <{*キーワード(英)*}>
@@ -143,6 +150,7 @@
     <td class="item_edit_list al"><{$lang.repository_junii2_subject}></td>
     <td class="item_edit_list al">generalKeyword</td>
     <td class="item_edit_list al"><{$lang.repoistory_lido_keyword_full}></td>
+    <td class="item_edit_list al"></td>
     <td class="item_edit_list al"><{$lang.repository_language_en}></td>
    </tr>
    
@@ -160,6 +168,7 @@
       <td class="item_edit_list al"><{$metadata.junii2_mapping[0]}></td>
       <td class="item_edit_list al" rowspan="7"><{$metadata.lom_mapping}></td>
       <td class="item_edit_list al" rowspan="7"><{$metadata.lido_mapping}></td>
+      <td class="item_edit_list al" rowspan="7"><{$metadata.spase_mapping}></td>
       <td class="item_edit_list al">
       <{if $maetadata.display_lang_type[0] != ""}>
           <{if $metadata.display_lang_type[0] == "japanese"}><{$lang.repository_language_ja}><{elseif $metadata.display_lang_type[0] == "english"}><{$lang.repository_language_en}>
@@ -283,6 +292,7 @@
       <td class="item_edit_list al"><{$metadata.junii2_mapping}></td>
       <td class="item_edit_list al"><{$metadata.lom_mapping}></td>
       <td class="item_edit_list al"><{$metadata.lido_mapping}></td>
+      <td class="item_edit_list al"><{$metadata.spase_mapping}></td>
       <td class="item_edit_list al nobr">
         <{if $metadata.display_lang_type == "japanese"}>
             <{$lang.repository_language_ja}>

@@ -1,23 +1,55 @@
 <?php
 
 /**
- * $Id: Usagestatistics.class.php 51664 2015-04-07 02:13:40Z tatsuya_koyasu $
- * 
- * 利用統計集計ビジネスクラス
- * 
- * @author IVIS
- * @sinse 2014/11/11
+ * Repository Components Business Usage Statistics Class
+ * 利用統計フィードバック集計クラス
+ *
+ * @package     WEKO
+ */
+
+// --------------------------------------------------------------------
+//
+// $Id: Aggregatesitelicenseusagestatistics.class.php 68463 2016-06-06 06:05:40Z tomohiro_ichikawa $
+//
+// Copyright (c) 2007 - 2008, National Institute of Informatics,
+// Research and Development Center for Scientific Information Resources
+//
+// This program is licensed under a Creative Commons BSD Licence
+// http://creativecommons.org/licenses/BSD/
+//
+// --------------------------------------------------------------------
+/**
+ * Business logic abstract class
+ * ビジネスロジック基底クラス
  */
 require_once WEBAPP_DIR. '/modules/repository/components/FW/BusinessBase.class.php';
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
+/**
+ * Log operation abstract class
+ * ログ操作基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/business/Logbase.class.php';
 
+/**
+ * Repository Components Business Usage Statistics Class
+ * 利用統計フィードバック集計クラス
+ *
+ * @package     WEKO
+ * @copyright   (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license     http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access      public
+ */
 class Repository_Components_Business_Usagestatistics extends BusinessBase
 {
     /**
+     * Perform the aggregation processing of usage statistics log
      * 利用統計ログの集計処理を実行する
      * 
-     * @return bool
+     * @return bool true/false success/failed 成功/失敗
      */
     public function aggregateUsageStatistics() {
         $this->debugLog(__FUNCTION__ , __FILE__, __CLASS__, __LINE__);
@@ -53,11 +85,13 @@ class Repository_Components_Business_Usagestatistics extends BusinessBase
     }
     
     /**
+     * Check existing usage statistics data record
      * 利用統計レコードが存在するかチェックする
      * 
-     * @oaram int $itemId
-     * @param int $itemNo
-     * @return bool
+     * @param int $itemId item ID アイテムID
+     * @param int $itemNo item number アイテム通番
+     * @return bool true/false exist/not exist 存在する/存在しない
+     * @throws AppException
      */
     public function checkUsageStatisticsRecords($itemId, $itemNo) {
         $this->debugLog(__FUNCTION__ , __FILE__, __CLASS__, __LINE__);
@@ -85,22 +119,18 @@ class Repository_Components_Business_Usagestatistics extends BusinessBase
     }
     
     /**
+     * Get the download statistics of the specified item
      * 指定したアイテムのダウンロード統計を取得する
      * 
-     * @param int $itemId
-     * @param int $itemNo
-     * @param int $year
-     * @param int $month
-     * @return array $retArray[NUM]["item_id"] = int
-     *                             ["item_no"] = int
-     *                             ["attribute_id"] = int
-     *                             ["file_no"] = int
-     *                             ["file_name"] = string
-     *                             ["display_name"] = string
-     *                             ["usagestatistics"]["total"] = int
-     *                                                ["byDomain"][DOMAINNAME]["cnt"] = int
-     *                                                                        ["rate"] = double
-     *                                                                        ["img"] = string
+     * @param int $itemId item ID アイテムID
+     * @param int $itemNo item number アイテム通番
+     * @param int $year year 年
+     * @param int $month month 月
+     * @return array donwload statistics ダウンロード統計
+     *                $array[$ii]["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"display_name"|
+     *                                                                                     "usagestatistics"]["total"|
+     *                                                                                                        "byDomain"][DOMAINNAME]["cnt"|"rate"|"img"]
+     * @throws AppException
      */
     public function getUsagesDownloads($itemId, $itemNo, $year, $month) {
         $this->debugLog(__FUNCTION__ , __FILE__, __CLASS__, __LINE__);
@@ -157,18 +187,19 @@ class Repository_Components_Business_Usagestatistics extends BusinessBase
     }
     
     /**
+     * Get the download statistics of the specified file
      * 指定したファイルのダウンロード統計を取得する
-     * 
-     * @param int $itemId
-     * @param int $itemNo
-     * @param int $attributeId
-     * @param int $fileNo
-     * @param int $year
-     * @param int $month
-     * @return array $retArray["total"] = int
-     *                        ["byDomain"][DOMAINNAME]["cnt"] = int
-     *                                                ["rate"] = double
-     *                                                ["img"] = string
+     *
+     * @param int $itemId item ID アイテムID
+     * @param int $itemNo item number アイテム通番
+     * @param int $attributeId attribute ID 属性ID
+     * @param int $fileNo file number ファイル通番
+     * @param int $year year 年
+     * @param int $month month 月
+     * @return array donwload statistics ダウンロード統計
+     *                $array["total"|
+     *                       "byDomain"][DOMAINNAME]["cnt"|"rate"|"img"]
+     * @throws AppException
      */
     public function getUsagesDownloadsByFile($itemId, $itemNo, $attributeId, $fileNo, $year, $month) {
         $this->debugLog(__FUNCTION__ , __FILE__, __CLASS__, __LINE__);
@@ -216,13 +247,14 @@ class Repository_Components_Business_Usagestatistics extends BusinessBase
     }
     
     /**
+     * And outputs the sum of logs and usage statistics to date
      * 現在までのログと利用統計の合計を出力する
-     * 
-     * @param int $itemId
-     * @param int $itemNo
-     * @param int $attributeId
-     * @param int $fileNo
-     * @return int
+     *
+     * @param int $itemId item ID アイテムID
+     * @param int $itemNo item number アイテム通番
+     * @param int $attributeId attribute ID 属性ID
+     * @param int $fileNo file number ファイル通番
+     * @return int $retCnt sum log and statistics ログと利用統計の合計
      */
     public function getUsagesDownloadsNow($itemId, $itemNo, $attributeId, $fileNo) {
         $this->debugLog(__FUNCTION__ , __FILE__, __CLASS__, __LINE__);
@@ -244,16 +276,16 @@ class Repository_Components_Business_Usagestatistics extends BusinessBase
     }
     
     /**
+     * Get the usage statistics of browsing
      * 閲覧の利用統計を取得する
-     * 
-     * @param int $itemId
-     * @param int $itemNo
-     * @param int $year
-     * @param int $month
-     * @return array $retArray["total"] = int
-     *                        ["byDomain"][DOMAINNAME]["cnt"] = int
-     *                                                ["rate"] = double
-     *                                                ["img"] = string
+     *
+     * @param int $itemId item ID アイテムID
+     * @param int $itemNo item number アイテム通番
+     * @param int $year year 年
+     * @param int $month month 月
+     * @return array $retArray["total"|
+     *                          "byDomain"][DOMAINNAME]["cnt"|"rate"|"img"]
+     * @throws AppException
      */
     public function getUsagesViews($itemId, $itemNo, $year, $month) {
         $this->debugLog(__FUNCTION__ , __FILE__, __CLASS__, __LINE__);
@@ -298,9 +330,11 @@ class Repository_Components_Business_Usagestatistics extends BusinessBase
     }
     
     /**
+     * Get oldest log record date
      * 最も古いログの日付を取得する
      * 
-     * @return string
+     * @return string log oldest record date 最古のログ日付
+     * @throws AppException
      */
     private function getOldestDateAtLogTable() {
         $this->debugLog(__FUNCTION__ , __FILE__, __CLASS__, __LINE__);
@@ -322,10 +356,12 @@ class Repository_Components_Business_Usagestatistics extends BusinessBase
     }
     
     /**
+     * Delete a new usage statistics than the passed time
      * 渡された時刻より新しい利用統計を削除する
      * 
-     * @param string $oldestDate
-     * @return bool
+     * @param string $oldestDate oldest date 日付情報
+     * @return bool true/false delete success/delete failed 削除成功/削除失敗
+     * @throws AppException
      */
     private function deleteUsageStatisticsRecords($oldestDate) {
         $this->debugLog(__FUNCTION__ , __FILE__, __CLASS__, __LINE__);
@@ -349,9 +385,10 @@ class Repository_Components_Business_Usagestatistics extends BusinessBase
     }
     
     /**
+     * Insert usage statistics log
      * 利用統計ログを挿入する
      * 
-     * @return bool
+     * @return bool true/false insert success/insert failed 挿入成功/挿入失敗
      */
     private function insertUsageStatistics() {
         $this->debugLog(__FUNCTION__ , __FILE__, __CLASS__, __LINE__);
@@ -373,12 +410,14 @@ class Repository_Components_Business_Usagestatistics extends BusinessBase
     }
     
     /**
+     * Inserting data obtained from the log table
      * ログテーブルから取得したデータを挿入する
      * 
-     * @param string $insDate
-     * @param int $operationId
-     * @param string $logExclusion
-     * @return bool
+     * @param string $insDate log insert date ログ挿入日時
+     * @param int $operationId operation ID 操作種別ID
+     * @param string $logExclusion exclusion condition query 除外条件クエリ文
+     * @return bool true/false insert success/insert failed 挿入成功/挿入失敗
+     * @throws AppException
      */
     private function insertUsageStatisticsRecords($insDate, $operationId, $logExclusion) {
         $this->debugLog(__FUNCTION__ , __FILE__, __CLASS__, __LINE__);
@@ -409,9 +448,11 @@ class Repository_Components_Business_Usagestatistics extends BusinessBase
     }
     
     /**
+     * It updates the last execution time of usage statistics summary
      * 利用統計集計の最終実行時間を更新する
-     * 
-     * @return bool
+     *
+     * @return bool true/false update success/update failed 更新成功/更新失敗
+     * @throws AppException
      */
     private function updateParameterUsageStatisticsLastDate() {
         $this->debugLog(__FUNCTION__ , __FILE__, __CLASS__, __LINE__);
@@ -438,10 +479,12 @@ class Repository_Components_Business_Usagestatistics extends BusinessBase
     }
     
     /**
+     * Get the exclusion log sub query
      * 除外ログサブクエリを取得する
      * 
-     * @param  string $prefix
-     * @return string
+     * @param  string $prefix table alias テーブル別名
+     * @return string sub query サブクエリ文
+     * @throws AppException
      */
     private function getLogExclusion($prefix="") {
         $this->debugLog(__FUNCTION__ , __FILE__, __CLASS__, __LINE__);
@@ -483,12 +526,13 @@ class Repository_Components_Business_Usagestatistics extends BusinessBase
     }
 
     /**
+     * Divide the statistics for each domain
      * ドメイン毎に統計を分ける
      * 
-     * @param array &$domainArray
-     * @param string $domain
-     * @param int $count
-     * @return bool
+     * @param array $domainArray statistics by domain array ドメイン別統計配列
+     * @param string $domain domain name ドメイン名
+     * @param int $count statistics count 統計情報
+     * @return bool true/false success/failed 成功/失敗
      */
     private function setArrayByDomain(&$domainArray, $domain, $count) {
         $this->debugLog(__FUNCTION__ , __FILE__, __CLASS__, __LINE__);
@@ -545,11 +589,12 @@ class Repository_Components_Business_Usagestatistics extends BusinessBase
     }
     
     /**
-     * Set array for usagestatistics data
+     * Set array for usage statistics data
+     * 統計配列にデータを追加する
      * 
-     * @param array &$retArray
-     * @param int $total
-     * @param array $byDomain
+     * @param array $retArray statistics by domain array ドメイン別統計配列
+     * @param int $total total count 統計合計値
+     * @param array $byDomain statistics count by domain ドメインの統計情報
      * @return bool
      */
     private function setUsageStatisticsArray(&$retArray, $total, $byDomain) {
@@ -575,9 +620,10 @@ class Repository_Components_Business_Usagestatistics extends BusinessBase
     
     /**
      * Get flag image path
+     * フラグイメージパスを取得
      * 
-     * @param string $domain
-     * @return string
+     * @param string $domain domain name ドメイン名
+     * @return string image path イメージパス
      */
     private function getFlagImagePath($domain) {
         $this->debugLog(__FUNCTION__ , __FILE__, __CLASS__, __LINE__);
@@ -615,9 +661,11 @@ class Repository_Components_Business_Usagestatistics extends BusinessBase
     }
     
     /**
+     * Get the date and time of the most recent available statistics
      * 最新の利用統計の日時を取得する
      *
-     * @return string
+     * @return string latest date 最新日時
+     * @throws AppException
      */
     private function getLatestDateAtUsageStatistics() {
         $this->debugLog(__FUNCTION__ , __FILE__, __CLASS__, __LINE__);
@@ -639,14 +687,16 @@ class Repository_Components_Business_Usagestatistics extends BusinessBase
     }
     
     /**
+     * Get the download count of the specified files from the usage statistics log
      * 利用統計ログから指定したファイルのダウンロード回数を取得する
      *
-     * @param int    $itemId
-     * @param int    $itemNo
-     * @param int    $attributeId
-     * @param int    $fileNo
-     * @param string $latestDate
-     * @return int
+     * @param int $itemId item ID アイテムID
+     * @param int $itemNo item number アイテム通番
+     * @param int $attributeId attribute ID 属性ID
+     * @param int $fileNo file number ファイル通番
+     * @param string $latestDate latest date 最新日時
+     * @return int download count ダウンロード回数
+     * @throws AppException
      */
     private function getDownloadCountFromUsageStatistics($itemId, $itemNo, $attributeId, $fileNo, $latestDate) {
         $this->debugLog(__FUNCTION__ , __FILE__, __CLASS__, __LINE__);
@@ -686,14 +736,16 @@ class Repository_Components_Business_Usagestatistics extends BusinessBase
     }
     
     /**
+     * Get the download count of the specified files from the log
      * ログから指定したファイルのダウンロード回数を取得する
      *
-     * @param int    $itemId
-     * @param int    $itemNo
-     * @param int    $attributeId
-     * @param int    $fileNo
-     * @param string $latestDate
-     * @return int
+     * @param int $itemId item ID アイテムID
+     * @param int $itemNo item number アイテム通番
+     * @param int $attributeId attribute ID 属性ID
+     * @param int $fileNo file number ファイル通番
+     * @param string $latestDate latest date 最新日時
+     * @return int download count ダウンロード回数
+     * @throws AppException
     */
     private function getDownloadCountFromLog($itemId, $itemNo, $attributeId, $fileNo, $latestDate) {
         $this->debugLog(__FUNCTION__ , __FILE__, __CLASS__, __LINE__);
@@ -739,9 +791,11 @@ class Repository_Components_Business_Usagestatistics extends BusinessBase
     }
     
     /**
+     * And determines whether or not during the removal robot list log
      * ロボットリストログ削除中かどうか判定する
      *
-     * @return bool
+     * @return bool true/false deleting/not deleting 削除中である/削除中では無い
+     * @throws AppException
     */
     private function isExecuteRemovingLog() {
         // check removing log process

@@ -1,130 +1,511 @@
 <?php
+
+/**
+ * Search request parameter process class
+ * 検索リクエストパラメータ処理クラス
+ *
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: RepositorySearchRequestParameter.class.php 53594 2015-05-28 05:25:53Z kaede_matsushita $
+// $Id: RepositorySearchRequestParameter.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
-// Copyright (c) 2007 - 2008, National Institute of Informatics, 
+// Copyright (c) 2007 - 2008, National Institute of Informatics,
 // Research and Development Center for Scientific Information Resources
 //
 // This program is licensed under a Creative Commons BSD Licence
 // http://creativecommons.org/licenses/BSD/
 //
 // --------------------------------------------------------------------
-require_once WEBAPP_DIR.'/modules/repository/components/RepositoryAction.class.php';
-require_once WEBAPP_DIR.'/modules/repository/components/RepositoryConst.class.php';
-require_once WEBAPP_DIR.'/modules/repository/components/RepositoryOutputFilter.class.php';
-require_once WEBAPP_DIR.'/modules/repository/components/RepositoryDbAccess.class.php';
 /**
- * repository search request parameter validate class
- * 
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
+require_once WEBAPP_DIR.'/modules/repository/components/RepositoryAction.class.php';
+/**
+ * Const for WEKO class
+ * WEKO用定数クラス
+ */
+require_once WEBAPP_DIR.'/modules/repository/components/RepositoryConst.class.php';
+/**
+ * Output filter class
+ * 出力フィルタリングクラス
+ */
+require_once WEBAPP_DIR.'/modules/repository/components/RepositoryOutputFilter.class.php';
+/**
+ * DB connect class
+ * DB接続クラス
+ */
+require_once WEBAPP_DIR.'/modules/repository/components/RepositoryDbAccess.class.php';
+
+/**
+ * Search request parameter process class
+ * 検索リクエストパラメータ処理クラス
+ *
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class RepositorySearchRequestParameter
 {
+    /**
+     * Format description
+     * 抄録フォーマット
+     */
     const FORMAT_DESCRIPTION = "description";
+    /**
+     * Format RSS
+     * RSSフォーマット
+     */
     const FORMAT_RSS = "rss";
+    /**
+     * Format ATOM
+     * ATOMフォーマット
+     */
     const FORMAT_ATOM = "atom";
+    /**
+     * Format OAI-DC
+     * OAI-DCフォーマット
+     */
     const FORMAT_DUBLIN_CORE = "oai_dc";
+    /**
+     * Format JuNii2
+     * JuNii2フォーマット
+     */
     const FORMAT_JUNII2 = "junii2";
+    /**
+     * Format OAI-LOM
+     * OAI-LOMフォーマット
+     */
     const FORMAT_LOM = "oai_lom";
-    
+
+    /**
+     * title ASC
+     * タイトル昇順
+     */
     const ORDER_TITLE_ASC           =  1;
+    /**
+     * title DESC
+     * タイトル降順
+     */
     const ORDER_TITLE_DESC          =  2;
+    /**
+     * Insert user ID ASC
+     * 登録ユーザーID昇順
+     */
     const ORDER_INS_USER_ASC        =  3;
+    /**
+     * Insert user ID DESC
+     * 登録ユーザーID降順
+     */
     const ORDER_INS_USER_DESC       =  4;
+    /**
+     * Item type ID ASC
+     * アイテムタイプID昇順
+     */
     const ORDER_ITEM_TYPE_ID_ASC    =  5;
+    /**
+     * Item type ID DESC
+     * アイテムタイプID降順
+     */
     const ORDER_ITEM_TYPE_ID_DESC   =  6;
+    /**
+     * WEKO ID ASC
+     * WEKO ID昇順
+     */
     const ORDER_WEKO_ID_ASC         =  7;
+    /**
+     * WEKO ID DESC
+     * WEKO ID降順
+     */
     const ORDER_WEKO_ID_DESC        =  8;
+    /**
+     * Mod date ASC
+     * 更新日時昇順
+     */
     const ORDER_MOD_DATE_ASC        =  9;
+    /**
+     * Mod date DESC
+     * 更新日時降順
+     */
     const ORDER_MOD_DATE_DESC       = 10;
+    /**
+     * Insert date ASC
+     * 登録日時昇順
+     */
     const ORDER_INS_DATE_ASC        = 11;
+    /**
+     * Insert date DESC
+     * 登録日時降順
+     */
     const ORDER_INS_DATE_DESC       = 12;
+    /**
+     * Review date ASC
+     * 査読日時昇順
+     */
     const ORDER_REVIEW_DATE_ASC     = 13;
+    /**
+     * Review date DESC
+     * 査読日時降順
+     */
     const ORDER_REVIEW_DATE_DESC    = 14;
+    /**
+     * Date of issued ASC
+     * 発行年月日昇順
+     */
     const ORDER_DATEOFISSUED_ASC    = 15;
+    /**
+     * Date of issued DESC
+     * 発行年月日昇降順
+     */
     const ORDER_DATEOFISSUED_DESC   = 16;
+    /**
+     * Custom sort order ASC
+     * カスタムソート順序昇順
+     */
     const ORDER_CUSTOM_SORT_ASC     = 17;
+    /**
+     * Custom sort order DESC
+     * カスタムソート順序降順
+     */
     const ORDER_CUSTOM_SORT_DESC    = 18;
         
     // request parameter
+    /**
+     * Search request parameter key
+     * 検索リクエストパラメータキー
+     */
     const REQUEST_META = "meta";
+    /**
+     * Search request parameter key
+     * 検索リクエストパラメータキー
+     */
     const REQUEST_ALL = "all";
+    /**
+     * Search request parameter key
+     * 検索リクエストパラメータキー
+     */
     const REQUEST_TITLE = "title";
+    /**
+     * Search request parameter key
+     * 検索リクエストパラメータキー
+     */
     const REQUEST_CREATOR = "creator";
+    /**
+     * Search request parameter key
+     * 検索リクエストパラメータキー
+     */
     const REQUEST_KEYWORD = "kw";
+    /**
+     * Search request parameter key
+     * 検索リクエストパラメータキー
+     */
     const REQUEST_SUBJECT_LIST = "scList";
+    /**
+     * Search request parameter key
+     * 検索リクエストパラメータキー
+     */
     const REQUEST_SUBJECT_DESC = "scDes";
+    /**
+     * Search request parameter key
+     * 検索リクエストパラメータキー
+     */
     const REQUEST_DESCRIPTION = "des";
+    /**
+     * Search request parameter key
+     * 検索リクエストパラメータキー
+     */
     const REQUEST_PUBLISHER = "pub";
+    /**
+     * Search request parameter key
+     * 検索リクエストパラメータキー
+     */
     const REQUEST_CONTRIBUTOR = "con";
+    /**
+     * Search request parameter key
+     * 検索リクエストパラメータキー
+     */
     const REQUEST_DATE = "date";
+    /**
+     * Search request parameter key
+     * 検索リクエストパラメータキー
+     */
     const REQUEST_ITEMTYPE_LIST = "itemTypeList";
+    /**
+     * Search request parameter key
+     * 検索リクエストパラメータキー
+     */
     const REQUEST_TYPE_LIST = "typeList";
+    /**
+     * Search request parameter key
+     * 検索リクエストパラメータキー
+     */
     const REQUEST_FORMAT = "form";
+    /**
+     * Search request parameter key
+     * 検索リクエストパラメータキー
+     */
     const REQUEST_ID_LIST = "idList";
+    /**
+     * Search request parameter key
+     * 検索リクエストパラメータキー
+     */
     const REQUEST_ID_DESC = "idDes";
+    /**
+     * Search request parameter key
+     * 検索リクエストパラメータキー
+     */
     const REQUEST_JTITLE = "jtitle";
+    /**
+     * Search request parameter key
+     * 検索リクエストパラメータキー
+     */
     const REQUEST_PUBYEAR_FROM = "pubYearFrom";
+    /**
+     * Search request parameter key
+     * 検索リクエストパラメータキー
+     */
     const REQUEST_PUBYEAR_UNTIL = "pubYearUntil";
+    /**
+     * Search request parameter key
+     * 検索リクエストパラメータキー
+     */
     const REQUEST_LANGUAGE = "ln";
+    /**
+     * Search request parameter key
+     * 検索リクエストパラメータキー
+     */
     const REQUEST_AREA = "sp";
+    /**
+     * Search request parameter key
+     * 検索リクエストパラメータキー
+     */
     const REQUEST_ERA = "era";
+    /**
+     * Search request parameter key
+     * 検索リクエストパラメータキー
+     */
     const REQUEST_RIGHT_LIST = "riList";
+    /**
+     * Search request parameter key
+     * 検索リクエストパラメータキー
+     */
     const REQUEST_RITHT_DESC = "riDes";
+    /**
+     * Search request parameter key
+     * 検索リクエストパラメータキー
+     */
     const REQUEST_TEXTVERSION = "textver";
+    /**
+     * Search request parameter key
+     * 検索リクエストパラメータキー
+     */
     const REQUEST_GRANTID = "grantid";
+    /**
+     * Search request parameter key
+     * 検索リクエストパラメータキー
+     */
     const REQUEST_GRANTDATE_FROM = "grantDateFrom";
+    /**
+     * Search request parameter key
+     * 検索リクエストパラメータキー
+     */
     const REQUEST_GRANTDATE_UNTIL = "grantDateUntil";
+    /**
+     * Search request parameter key
+     * 検索リクエストパラメータキー
+     */
     const REQUEST_DEGREENAME = "degreename";
+    /**
+     * Search request parameter key
+     * 検索リクエストパラメータキー
+     */
     const REQUEST_GRANTOR = "grantor";
+    /**
+     * Search request parameter key
+     * 検索リクエストパラメータキー
+     */
     const REQUEST_IDX = "idx";
+    /**
+     * Search request parameter key
+     * 検索リクエストパラメータキー
+     */
     const REQUEST_SHOWORDER = "order";
+    /**
+     * Search request parameter key
+     * 検索リクエストパラメータキー
+     */
     const REQUEST_COUNT = "count";
+    /**
+     * Search request parameter key
+     * 検索リクエストパラメータキー
+     */
     const REQUEST_PAGENO = "pn";
+    /**
+     * Search request parameter key
+     * 検索リクエストパラメータキー
+     */
     const REQUEST_LIST_RECORDS = "listRecords";
+    /**
+     * Search request parameter key
+     * 検索リクエストパラメータキー
+     */
     const REQUEST_OUTPUT_TYPE = "format";
+    /**
+     * Search request parameter key
+     * 検索リクエストパラメータキー
+     */
     const REQUEST_INDEX_ID = "index_id";
+    /**
+     * Search request parameter key
+     * 検索リクエストパラメータキー
+     */
     const REQUEST_PAGE_ID = "page_id";
+    /**
+     * Search request parameter key
+     * 検索リクエストパラメータキー
+     */
     const REQUEST_BLOCK_ID = "block_id";
+    /**
+     * Search request parameter key
+     * 検索リクエストパラメータキー
+     */
     const REQUEST_WEKO_ID = "weko_id";
+    /**
+     * Search request parameter key
+     * 検索リクエストパラメータキー
+     */
     const REQUEST_ITEM_IDS = "item_ids";
+    /**
+     * Search request parameter key
+     * 検索リクエストパラメータキー
+     */
     const REQUEST_DISPLAY_LANG = "lang";
+    /**
+     * Search request parameter key
+     * 検索リクエストパラメータキー
+     */
     const REQUEST_SEARCH_TYPE = "st";
+    /**
+     * Search request parameter key
+     * 検索リクエストパラメータキー
+     */
     const REQUEST_MODULE_ID = "module_id";
+    /**
+     * Search request parameter key
+     * 検索リクエストパラメータキー
+     */
     const REQUEST_HEADER = "_header";
+    /**
+     * Search request parameter key
+     * 検索リクエストパラメータキー
+     */
     const REQUEST_OLD_SEARCH_TYPE = "search_type";
+    /**
+     * Search request parameter key
+     * 検索リクエストパラメータキー
+     */
     const REQUEST_OLD_KEYWORD = "keyword";
+    /**
+     * Search request parameter key
+     * 検索リクエストパラメータキー
+     */
     const REQUEST_OLD_PAGENO = "page_no";
+    /**
+     * Search request parameter key
+     * 検索リクエストパラメータキー
+     */
     const REQUEST_OLD_COUNT = "list_view_num";
+    /**
+     * Search request parameter key
+     * 検索リクエストパラメータキー
+     */
     const REQUEST_OLD_SHOWORDER = "sort_order";
     // Add OpenSearch WekoId K.Matsuo 2014/04/04 --start--
+    /**
+     * Search request parameter key
+     * 検索リクエストパラメータキー
+     */
     const REQUEST_PUBDATE_FROM = "pubDateFrom";
+    /**
+     * Search request parameter key
+     * 検索リクエストパラメータキー
+     */
     const REQUEST_PUBDATE_UNTIL = "pubDateUntil";
     // Add OpenSearch WekoId K.Matsuo 2014/04/04 --end--
+    /**
+     * Key of request parameter for WEKO author id
+     * WEKO著者ID用のリクエストパラメータのキー
+     *
+     * @var string
+     */
+    const REQUEST_WEKO_AUTHOR_ID = "wekoAuthorId";
+    
     /***** components *****/
+    /**
+     * Container object
+     * コンテナオブジェクト
+     *
+     * @var DIContainer
+     */
     public $_container = null;
+    /**
+     * Request object
+     * リクエスト処理オブジェクト
+     *
+     * @var Request
+     */
     public $_request = null;
+    /**
+     * Session management objects
+     * Session管理オブジェクト
+     *
+     * @var Session
+     */
     public $Session = null;
+    /**
+     * Database management objects
+     * データベース管理オブジェクト
+     *
+     * @var RepositoryDbAccess
+     */
     public $dbAccess = null;
+    /**
+     * Database management objects
+     * データベース管理オブジェクト
+     *
+     * @var DbObjectAdodb
+     */
     public $Db = null;
+    /**
+     * Process start date
+     * 処理開始時間
+     * 
+     * @var string
+     */
     public $TransStartDate = null;
     
     /**
      * RepositoryAction class
+     * RepositoryActionオブジェクト
      *
-     * @var Object
+     * @var RepositoryAction
      */
     public $RepositoryAction = null;
     
     /***** search key *****/
     /**
      * search keyword
+     * 検索キーワード
      *
      * @var string
      */
     public $keyword = null;
     /**
      * search index
+     * インデックスID
      *
      * @var string (int is exclude 0)
      */
@@ -132,62 +513,43 @@ class RepositorySearchRequestParameter
     
     /***** view status *****/
     /**
-     * 1 <= page no
+     * page number
+     * ページ番号
      *
      * @var int
      */
     public $page_no = null;
     /**
-     * list view, 20, 50, 75, 100
+     * list view number
+     * 1ページに表示するアイテム数
      *
      * @var int
      */
     public $list_view_num = null;
     /**
-     * sort_order
+     * sort order
+     * 表示順序
      *
-     * @var int  1:title ASC,
-     *           2：title DESC,
-     *           3：ins_user_id ASC,
-     *           4：ins_user_id DESC, 
-     *           5：item_type_id ADC,
-     *           6：item_type_id DESC,
-     *           7：WEKOID ASC,
-     *           8：WEKOID DESC,
-     *           9：mod_date ASC,
-     *          10：mod_date DESC,
-     *          11：ins_date ASC,
-     *          12：ins_date DESC,
-     *          13：review_date ASC,
-     *          14：review_date DESC,
-     *          15：dateofissued ASC,
-     *          16：dateofissued DESC,
-     *          17：custom sort ASC, at index search only
-     *          18：custom sort DESC, at index search only
-     *          --:default => WEKO管理画面で指定されたデフォルトソート条件に従う
+     * @var int
      */
     public $sort_order = null;
     /**
      * output format
+     * 出力フォーマット
      *
-     * @var string  description：OpenSearch description
-     *              rss：output RSS
-     *              atom：output atom
-     *              oai_dc:output dublin core
-     *              junii2:output junii2
-     *              oai_lom:output lom
-     *              else:HTML for repository_view_main_item_snippet
-     * 
+     * @var string
      */
     public $format = null;
     /**
      * language
+     * 言語
      *
      * @var string
      */
     public $lang = null;
     /**
      * when this parameter is 'all', output all search result.
+     * リストレコード
      * 
      * @var string
      */
@@ -196,6 +558,7 @@ class RepositorySearchRequestParameter
     
     /**
      * search request parameter.
+     * 検索キーワード
      * 
      * @var array
      */
@@ -203,6 +566,7 @@ class RepositorySearchRequestParameter
     
     /**
      * search request parameter.
+     * 検索タイプ
      * 
      * @var array
      */
@@ -210,14 +574,15 @@ class RepositorySearchRequestParameter
     
     /**
      * search request parameter.
+     * 全文検索タイプ
      * 
-     * @var string (simple or detail)
+     * @var string
      */
     public $all_search_type = null;
     
     /**
      * construct
-     *
+     * コンストラクタ
      */
     public function __construct()
     {
@@ -253,9 +618,8 @@ class RepositorySearchRequestParameter
     }
     
     /**
-     * set requestparameter
-     * $リファラからリクエストパラメータ(検索条件)を設定する
-     *
+     * set request parameter
+     * リファラからリクエストパラメータ(検索条件)を設定する
      */
     public function setRequestParameterFromReferrer()
     {
@@ -279,10 +643,10 @@ class RepositorySearchRequestParameter
         $this->_request = $refererRequest;
         $this->setRequestParameter();
     }
+
     /**
-     * set requestparameter
+     * set request parameter
      * $this->_requestコンポーネントからリクエストパラメータ(検索条件)を設定する
-     *
      */
     public function setRequestParameter()
     {
@@ -360,7 +724,9 @@ class RepositorySearchRequestParameter
                 || $requestParam == self::REQUEST_GRANTDATE_UNTIL || $requestParam == self::REQUEST_DEGREENAME
                 || $requestParam == self::REQUEST_GRANTOR || $requestParam == self::REQUEST_IDX
                 || $requestParam == self::REQUEST_PUBDATE_FROM || $requestParam == self::REQUEST_PUBDATE_UNTIL
-                || $requestParam == self::REQUEST_WEKO_ID){                if(!isset($requestValue) || strlen($requestValue) == 0){
+                || $requestParam == self::REQUEST_WEKO_ID || $requestParam == self::REQUEST_WEKO_AUTHOR_ID)
+            {
+                if(!isset($requestValue) || strlen($requestValue) == 0){
                     continue;
                 }
                 $this->search_term[$requestParam] = $requestValue;
@@ -424,8 +790,9 @@ class RepositorySearchRequestParameter
     
     /**
      * request query
+     * リクエストクエリを取得する
      *
-     * @return string
+     * @return string request query リクエストクエリ
      */
     public function getRequestQuery()
     {
@@ -473,9 +840,11 @@ class RepositorySearchRequestParameter
     }
     
     /**
-     * get request parameter array
+     * get request parameter
+     * リクエストパラメータを取得する
      *
-     * @return array
+     * @return array request parameters リクエストパラメータ配列
+     *                array["index_is"|"page_no"|"count"|"show_order"|"output_type"|"language"|"listRecords"|"search_type"]
      */
     public function getRequestParameter()
     {
@@ -495,8 +864,10 @@ class RepositorySearchRequestParameter
     
     /**
      * get request parameter array
+     * リクエストパラメータ配列を取得する
      *
-     * @return array
+     * @return array request parameter array リクエストパラメータ配列
+     *                array[$ii]["param"|"value"]
      */
     public function getRequestParameterList()
     {
@@ -519,8 +890,9 @@ class RepositorySearchRequestParameter
     
     /**
      * validate page no for over max page no
+     * ページ番号が最大ページ数を超えていないかバリデートする
      *
-     * @param unknown_type $maxPageNo
+     * @param int $maxPageNo max page number 最大ページ数
      */
     public function validatePageNo($maxPageNo)
     {
@@ -532,8 +904,13 @@ class RepositorySearchRequestParameter
     
     /**
      * validate sort order
+     * 表示順序をバリデートする
      *
-     * @param int $sortOrder
+     * @param array $searchTerm search terms 検索キーワード
+     *                           array[$searchKey]
+     * @param int $indexId index ID インデックスID
+     * @param int $sortOrder sort order 表示順序
+     * @return int sort order バリデータされた表示順序
      */
     public function validateSortOrder($searchTerm, $indexId, $sortOrder)
     {
@@ -582,9 +959,10 @@ class RepositorySearchRequestParameter
     }
     
     /**
+     * Check search type "index" or "keyword"
      * インデックス検索かキーワード検索か判定する
      *
-     * @return 検索タイプ
+     * @return string search type 検索タイプ
      */
     public function getSearchType(){
         $type = '';
@@ -606,7 +984,6 @@ class RepositorySearchRequestParameter
     /**
      * validate request parameter
      * リクエストパラメータを精査し、範囲外の場合は適切な値を代入する
-     *
      */
     private function validate()
     {
@@ -651,12 +1028,12 @@ class RepositorySearchRequestParameter
                 $tmpValue = $requestValue;
                 $tmpValue = trim(mb_convert_encoding($tmpValue, "UTF-8", "ASCII,JIS,UTF-8,EUC-JP,SJIS"));
                 $tmpValue = RepositoryOutputFilter::string($tmpValue);
-                $this->search_term[$requestParam] = preg_replace("/[\s,]+|　/", ",", $tmpValue);
+                $this->search_term[$requestParam] = trim(preg_replace("/[\s,]+|　/", ",", $tmpValue));
             } else {
                 $tmpValue = $requestValue;
                 $tmpValue = trim(mb_convert_encoding($tmpValue, "UTF-8", "ASCII,JIS,UTF-8,EUC-JP,SJIS"));
                 $tmpValue = RepositoryOutputFilter::string($tmpValue);
-                $this->search_term[$requestParam] = preg_replace("/[\s]+|　|\+/", " ", $tmpValue);
+                $this->search_term[$requestParam] = trim(preg_replace("/[\s]+|　|\+/", " ", $tmpValue));
             }
             
             // Bug fix WEKO-2014-012 T.Koyasu 2014/06/10 --start--
@@ -753,7 +1130,6 @@ class RepositorySearchRequestParameter
     /**
      * set request parameter
      * リクエストパラメータを精査し、範囲外の場合は適切な値を代入する
-     *
      */
     private function validateBackwordCompatible()
     {
@@ -778,7 +1154,13 @@ class RepositorySearchRequestParameter
             $this->sort_order = $this->_request[self::REQUEST_OLD_SHOWORDER];
         }
     }
-    
+
+    /**
+     * Set INI parameter
+     * 各種設定を行う
+     *
+     * @throws RepositoryException
+     */
     public function setActionParameter(){
         $this->initSearchList();
         if($this->search_type != null || count($this->search_term) == 0){
@@ -840,8 +1222,10 @@ class RepositorySearchRequestParameter
     // Add Default Search Type 2014/12/09 K.Sugimoto --start--
     /**
      * get default_search_type
+     * デフォルト検索タイプを取得する
      *
-     * @access public
+     * @return array default search type
+     *                array[0]["param_value"]
      */
     public function getDefaultSearchType()
     {
@@ -860,8 +1244,7 @@ class RepositorySearchRequestParameter
     
     /**
      * init session detail_search_select_item
-     *
-     * @access private
+     * 詳細検索項目を設定する
      */
     private function initSearchList()
     {
@@ -876,9 +1259,11 @@ class RepositorySearchRequestParameter
     }
     
     /**
-     * set requestparameter
+     * set show search parameter
+     * 画面に表示する検索キーワードパラメータを設定する
      *
-     * @access private
+     * @param array $reqParam request parameter リクエストパラメータ
+     *                         array[$searchKey]
      */
     private function setShowSearchParameter($reqParam)
     {
@@ -1088,6 +1473,11 @@ class RepositorySearchRequestParameter
                     $selectInfo[$count]["checkList"] = $value;
                     $count++;
                     break;
+                case self::REQUEST_WEKO_AUTHOR_ID:
+                    $selectInfo[$count]["type_id"] = "25";
+                    $selectInfo[$count]["value"] = $value;
+                    $count++;
+                    break;
                 default:
                     break;
             }
@@ -1101,7 +1491,7 @@ class RepositorySearchRequestParameter
     
     /**
      * set default search parameter
-     *
+     * 検索キーワードパラメータのデフォルトを設定する
      */
     public function setDefaultSearchParameter()
     {
@@ -1165,8 +1555,9 @@ class RepositorySearchRequestParameter
     // Bug fix WEKO-2014-012 T.Koyasu 2014/06/10 --start--
     /**
      * Validate request parameters(search_term[$key]) for remove bad strings
+     * 使用不可文字列をバリデートする
      *
-     * @param string $key
+     * @param string $key search key 検索キー
      */
     private function validateList($key)
     {
@@ -1251,7 +1642,7 @@ class RepositorySearchRequestParameter
                 if(count($tmpArray) === 0){
                     return;
                 }
-                $searchArray = array("ja", "en", "fr", "it", "de", "es", "zh", "ru", "la", "ms", "eo", "ar", "el", "ko", "other");
+                $searchArray = array("ja", "en", "fr", "it", "de", "es", "zh", "ru", "la", "ms", "eo", "ar", "el", "ko", "otherlanguage");
                 $validateArray = array_intersect($searchArray, $tmpArray);
                 
                 $this->search_term[$key] = implode(",", $validateArray);
@@ -1273,5 +1664,24 @@ class RepositorySearchRequestParameter
         }
     }
     // Bug fix WEKO-2014-012 T.Koyasu 2014/06/10 --end--
+    
+    /**
+     * Run the universally to perform processing during query execution
+     * クエリ実行時に普遍的に行う処理を実行する
+     *
+     * @param string $query Query to run 実行するクエリ
+     * @param array $params Parameters of the query クエリのパラメータ
+     * @return array Result 実行結果
+     *                array[$ii][$columnName]
+     * @throws AppException
+     */
+    protected function executeSql($query, $params=array()){
+        $result = $this->Db->execute($query, $params);
+        if($result === false){
+            // 例外
+            throw new AppException($this->Db->ErrorMsg());
+        }
+        return $result;
+    }
 }
 ?>

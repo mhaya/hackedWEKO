@@ -1,7 +1,15 @@
 <?php
+
+/**
+ * Action class for the automatic setting of the external command absolute path
+ * 外部コマンド絶対パスの自動設定用アクションクラス
+ * 
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Setcmdpath.class.php 38124 2014-07-01 06:56:02Z rei_matsuura $
+// $Id: Setcmdpath.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -12,23 +20,54 @@
 // --------------------------------------------------------------------
 
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
 
 /**
+ * Action class for the automatic setting of the external command absolute path
+ * 外部コマンド絶対パスの自動設定用アクションクラス
+ * 
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class Repository_Action_Edit_Setcmdpath extends RepositoryAction
 {
 	//コンポーネント取得
+    /**
+     * Session management objects
+     * Session管理オブジェクト
+     *
+     * @var Session
+     */
 	var $Session = null;
+    /**
+     * Database management objects
+     * データベース管理オブジェクト
+     *
+     * @var DbObject
+     */
 	var $Db = null;
 	
 	// リクエストパラメタ (配列ではなく個別で渡す)
+    /**
+     * Showing tab information
+     * 表示中タブ情報
+     *
+     * @var int
+     */
 	var $admin_active_tab = null;
 	
 	/**
-	 * [[機能説明]]
+	 * To get the external command absolute path
+	 * 外部コマンド絶対パスを取得する
 	 *
 	 * @access  public
+	 * @return string Result 結果
 	 */
 	function execute()
 	{
@@ -234,6 +273,23 @@ class Repository_Action_Edit_Setcmdpath extends RepositoryAction
                     }
                 }
                 // Add external search word 2014/05/23 K.Matsuo -end-
+                // PHP
+                if( $admin_params['path_php']['path'] == "false"){
+                    // search command
+                    if(file_exists($path[$ii]."php") || file_exists($path[$ii]."php.exe")){
+                        // update
+                        $params[0] = $path[$ii];
+                        $params[3] = "path_php";
+                        $result = $this->updateParamTableData($params, $Error_Msg);
+                        if ($result === false) {
+                            $errMsg = $this->Db->ErrorMsg();
+                            $tmpstr = sprintf("path_php update failed : %s", $ii, $jj, $errMsg ); 
+                            $this->Session->setParameter("error_msg", $tmpstr);
+                            $this->failTrans();
+                            return 'error';
+                        }
+                    }
+                }
 			}
 			
 			//セッションの初期化
@@ -243,6 +299,7 @@ class Repository_Action_Edit_Setcmdpath extends RepositoryAction
 			 	
 			// アクション終了処理
 			$result = $this->exitAction();	// トランザクションが成功していればCOMMITされる
+			$this->finalize();
 			return 'success';
 		}
 		catch ( RepositoryException $Exception) {

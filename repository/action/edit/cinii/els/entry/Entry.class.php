@@ -1,7 +1,15 @@
 <?php
+
+/**
+ * ELS item registration action class
+ * ELSアイテム登録アクションクラス
+ * 
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Entry.class.php 22551 2013-05-13 00:57:50Z yuko_nakao $
+// $Id: Entry.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -11,32 +19,72 @@
 //
 // --------------------------------------------------------------------
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
+/**
+ * ZIP file manipulation library
+ * ZIPファイル操作ライブラリ
+ */
 include_once MAPLE_DIR.'/includes/pear/File/Archive.php';
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
 
 /**
- * [[機能説明]]
- *
- * @package	 [[package名]]
- * @access	  public
+ * ELS item registration action class
+ * ELSアイテム登録アクションクラス
+ * 
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class Repository_Action_Edit_Cinii_Els_Entry extends RepositoryAction
 {
 	// component
+    /**
+     * Session management objects
+     * Session管理オブジェクト
+     *
+     * @var Session
+     */
 	var $Session = null;
+    /**
+     * Database management objects
+     * データベース管理オブジェクト
+     *
+     * @var DbObject
+     */
 	var $Db = null;
 	
 	// parameter
+	/**
+	 * ELS connection flag
+	 * ELS接続フラグ
+	 *
+	 * @var string
+	 */
 	var $els_connect = null;
+	/**
+	 * LAB connection flag
+	 * LAB接続フラグ
+	 *
+	 * @var unknown_type
+	 */
 	var $lab_connect = null;
 	// prevent double registration for ELS 2010/10/21 A.Suzuki --start--
+    /**
+     * Select index ID
+     * 選択インデックスID
+     *
+     * @var int
+     */
 	var $sel_index_id = null;
 	// prevent double registration for ELS 2010/10/21 A.Suzuki --start--
 	
 	/**
-	 * [[機能説明]]
-	 *
-	 * @access  public
+	 * Registration implementation
+	 * 登録実施
 	 */
 	function execute()
 	{
@@ -390,8 +438,9 @@ class Repository_Action_Edit_Cinii_Els_Entry extends RepositoryAction
 	
     /**
      * Entry registered index_id to parameter table
+     * 登録したインデックスIDをパラメータテーブルに保存する
      *
-     * @param $index_id int indexID
+     * @param int $index_id Index id インデックスID
      */
     function entryRegisteredIndex($index_id){
         // get registered index
@@ -444,9 +493,11 @@ class Repository_Action_Edit_Cinii_Els_Entry extends RepositoryAction
     
     /**
      * Get child index_id
+     * 子インデックスIDを取得する
      *
-     * @param $index_id int
-     * @param &$index_array array
+     * @param int $index_id Index id インデックスID
+     * @param array $index_array Index list インデックス一覧
+     *                           array[$ii]["index_id"]
      */
     function getChildIndexId($index_id, &$index_array) {
         array_push($index_array, $index_id);
@@ -472,8 +523,10 @@ class Repository_Action_Edit_Cinii_Els_Entry extends RepositoryAction
     // Add Shelf registration to contents lab 2012/10/21 T.Koyasu -start-
     /**
      * update registered index list of contents lab
+     * コンテンツラボに登録済みのインデックスIDを更新する
      *
-     * @param int $index_id
+     * @param int $index_id Index id インデックスID
+     * @return boolean|string 実行結果
      */
     private function entryRegisteredIndexForContentsLab($index_id)
     {

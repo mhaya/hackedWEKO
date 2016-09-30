@@ -1,7 +1,13 @@
 <?php
+/**
+ * View class for item export confirmation
+ * アイテムエクスポート確認用ビュークラス
+ *
+ * @package WEKO
+ */
 // --------------------------------------------------------------------
 //
-// $Id: Detailconfirm.class.php 40423 2014-08-26 02:30:50Z tatsuya_koyasu $
+// $Id: Detailconfirm.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -12,27 +18,48 @@
 // --------------------------------------------------------------------
 
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
-
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
 
 /**
- * [[機能説明]]
+ * View class for item export confirmation
+ * アイテムエクスポート確認用ビュークラス
  *
- * @package     [[package名]]
- * @access      public
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class Repository_View_Main_Export_DetailConfirm extends RepositoryAction
 {
-    //自分用
-    //var $name_buf = "view_main_init execute() 実行前";
-    
+    /**
+     * Session management objects
+     * Session管理オブジェクト
+     *
+     * @var Session
+     */
 	var $Session = null;
+    /**
+     * Database management objects
+     * データベース管理オブジェクト
+     *
+     * @var DbObject
+     */
 	var $Db = null;
-	
+    /**
+     * Previous screen URL
+     * 前画面URL
+     *
+     * @var unknown_type
+     */
 	var $prev_url = null;
     
     /**
-     * [[機能説明]]
+     * Item export confirmation confirmation screen display
+     * アイテムエクスポート確認確認画面表示
      *
      * @access  public
      */

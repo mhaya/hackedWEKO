@@ -1,7 +1,15 @@
 <?php
+
+/**
+ * Action class for RSS output
+ * RSS出力用アクションクラス
+ *
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Rss.class.php 38124 2014-07-01 06:56:02Z rei_matsuura $
+// $Id: Rss.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -12,34 +20,121 @@
 // --------------------------------------------------------------------
 
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
-
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
+/**
+ * Index rights management common classes
+ * インデックス権限管理共通クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryIndexAuthorityManager.class.php';
+/**
+ * String format conversion common classes
+ * 文字列形式変換共通クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryOutputFilter.class.php';
 
+/**
+ * Action class for RSS output
+ * RSS出力用アクションクラス
+ *
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
+ */
 class Repository_Rss extends RepositoryAction
 {
 	// component
+    /**
+     * Session management objects
+     * Session管理オブジェクト
+     *
+     * @var Session
+     */
 	var $Session = null;
+    /**
+     * Database management objects
+     * データベース管理オブジェクト
+     *
+     * @var DbObject
+     */
 	var $Db = null;
 	
 	// Request param
+	/**
+	 * Display page number
+	 * 表示ページ番号
+	 *
+	 * @var int
+	 */
 	var $page = null;			// 表示ページ番号
+	/**
+	 * Search results display the number of 1 page
+	 * 1ページの検索結果表示数
+	 *
+	 * @var int
+	 */
 	var $count = null;			// 1ページの検索結果表示数
+	/**
+	 * Period
+	 * 集計期間
+	 *
+	 * @var int
+	 */
 	var $term = null;			// 集計期間
+	/**
+	 * Index id
+	 * インデックスID
+	 *
+	 * @var int
+	 */
 	var $index_id = null;		// インデックスID
 	//Add multiple language 2009/09/04 K.Ito --start--
+	/**
+	 * Language setting
+	 * 言語設定
+	 *
+	 * @var string
+	 */
 	var $lang = null;			//言語設定
 	//Add multiple language 2009/09/04 K.Ito --end--
+	/**
+	 * Start number
+	 * 開始番号
+	 *
+	 * @var int
+	 */
 	var $start_num = 0;
+	/**
+	 * End number
+	 * 終了番号
+	 *
+	 * @var int
+	 */
 	var $end_num = 0;
+	/**
+	 * All item number
+	 * 全アイテム数
+	 *
+	 * @var int
+	 */
 	var $all_num = 0;
 	
 	// member
+	/**
+	 * Feed title
+	 * フィードタイトル
+	 *
+	 * @var string
+	 */
 	var $feed_title = null;
 	
 	/**
-	 * 
+	 * Output RSS
+	 * RSS出力
 	 */
 	function execute()
 	{
@@ -89,7 +184,7 @@ class Repository_Rss extends RepositoryAction
        	
        	// 終了処理
     	$this->exitAction();
-		
+		$this->finalize();
 		// XML書き出し終了後にexit関数を呼び出す
     	exit();
 
@@ -99,7 +194,7 @@ class Repository_Rss extends RepositoryAction
 	 * getRssForNewItem
 	 * 検索結果をRSSで出力する
 	 * 
-	 * @return $xml
+	 * @return string Output string 出力文字列
 	 */
 	function getRssForNewItem()
 	{
@@ -237,8 +332,8 @@ class Repository_Rss extends RepositoryAction
 	 * getNewItemData
 	 * 新着アイテム情報を返す
 	 *
-	 * @param 
-	 * @return 
+	 * @return array Item information アイテム情報
+	 *               array[$ii]["item_id"|"item_no"|"revision_no"|"item_type_id"|"prev_revision_no"|"title"|"title_english"|"language"|"review_status"|"review_date"|"shown_status"|"shown_date"|"reject_status"|"reject_date"|"reject_reason"|"serch_key"|"serch_key_english"|"remark"|"uri"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"|"name"|"publisher"|"description"|"jtitle"]
 	 */
 	function getNewItemData() {
 		// パラメタテーブルの値を取得
@@ -815,6 +910,25 @@ class Repository_Rss extends RepositoryAction
 		return $item_data;
 	}
 	
+	/**
+	 * Get metadata
+	 * メタデータ取得
+	 *
+	 * @param int $item_id Item id アイテムID
+	 * @param int $item_no Item serial number アイテム通番
+	 * @param array $itemData Item information アイテム情報
+	 *                        array["item"][$ii]["item_id"|"item_no"|"revision_no"|"item_type_id"|"prev_revision_no"|"title"|"title_english"|"language"|"review_status"|"review_date"|"shown_status"|"shown_date"|"reject_status"|"reject_date"|"reject_reason"|"serch_key"|"serch_key_english"|"remark"|"uri"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_type"][$ii]["item_type_id"|"item_type_name"|"item_type_short_name"|"explanation"|"mapping_info"|"icon_name"|"icon_mime_type"|"icon_extension"|"icon"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_attr_type"][$ii]["item_type_id"|"attribute_id"|"show_order"|"attribute_name"|"attribute_short_name"|"input_type"|"is_required"|"plural_enable"|"line_feed_enable"|"list_view_enable"|"hidden"|"junii2_mapping"|"dublin_core_mapping"|"lom_mapping"|"lido_mapping"|"spase_mapping"|"display_lang_type"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"personal_name_no"|"family"|"name"|"family_ruby"|"name_ruby"|"e_mail_address"|"item_type_id"|"author_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"show_order"|"mime_type"|"extension"|"file"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"display_name"|"display_type"|"show_order"|"mime_type"|"extension"|"prev_id"|"file_prev"|"file_prev_name"|"license_id"|"license_notation"|"pub_date"|"flash_pub_date"|"item_type_id"|"browsing_flag"|"cover_created_flag"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"biblio_no"|"biblio_name"|"biblio_name_english"|"volume"|"issue"|"start_page"|"end_page"|"date_of_issued"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"display_name"|"display_type"|"show_order"|"mime_type"|"extension"|"prev_id"|"file_prev"|"file_prev_name"|"license_id"|"license_notation"|"pub_date"|"flash_pub_date"|"item_type_id"|"browsing_flag"|"cover_created_flag"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"|"price"]
+     *                        array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"supple_no"|"item_type_id"|"supple_weko_item_id"|"supple_title"|"supple_title_en"|"uri"|"supple_item_type_name"|"mime_type"|"file_id"|"supple_review_status"|"supple_review_date"|"supple_reject_status"|"supple_reject_date"|"supple_reject_reason"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"attribute_no"|"attribute_value"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+	 * @return string Metadata メタデータ
+	 */
 	function getMetaData($item_id, $item_no, $itemData) {
 		$rtnVal = '';
 		if($itemData['input_type'] == 'name'){
@@ -825,6 +939,16 @@ class Repository_Rss extends RepositoryAction
 	    return str_replace("\n", " ", $rtnVal);
 	}
 	
+	/**
+	 * Get author name
+	 * 氏名を取得
+	 *
+     * @param int $item_id Item id アイテムID
+     * @param int $item_no Item serial number アイテム通番
+	 * @param int $attribute_id Attribute id 属性ID
+	 * @return array Author name list 氏名一覧
+	 *               array[$ii]
+	 */
 	function getName($item_id, $item_no, $attribute_id) {
 		// 氏名を取得
         $query = 'SELECT family, '.
@@ -864,10 +988,12 @@ class Repository_Rss extends RepositoryAction
 	}
 	
 	/**
+	 * Get child index id
 	 * 子インデックスのIDを取得
 	 *
-	 * @param $index_id
-	 * @param &$index_array
+	 * @param int $index_id Index id インデックスID
+	 * @param array $index_array Child index id list 子インデックスのID一覧
+	 *                           array[$ii]
 	 */
 	function getChildIndexId($index_id, &$index_array) {
 		array_push($index_array, $index_id);

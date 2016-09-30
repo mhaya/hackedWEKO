@@ -1,0 +1,141 @@
+<!--// ---------------------------------------------------------------------->
+<!--//                                                                     -->
+<!--// $Id: repository_edit_tree_metadata.html 59810 2015-11-05 04:18:28Z yuko_nakao $          -->
+<!--//                                                                     -->
+<!--// Copyright (c) 2007 - 2008, National Institute of Informatics,        -->
+<!--// Research and Development Center for Scientific Information Resources -->
+<!--//                                                                     -->
+<!--// This program is licensed under a Creative Commons BSD Licence       -->
+<!--// http://creativecommons.org/licenses/BSD/                            -->
+<!--//                                                                     -->
+<!--// ---------------------------------------------------------------------->
+<{strip}>
+	
+	<{if $action.tree_error_msg != null}>
+		<div class="error_msg">
+			<{$action.tree_error_msg}>
+		</div>
+	<{/if}>
+	
+	<div class="pd10">
+		<label><input type="radio" name="journalInfo" value="0" <{if $action.outputStatus==0}> checked="checked"<{/if}> onclick="if($('journalInfo<{$id}>').value==1){commonCls.visibilityNone($('repositoryIndexMetadata<{$id}>'));$('journalInfo<{$id}>').value=0;}"><{$lang.repository_label_edittree_metadata_notoutput}></label>
+		<label><input type="radio" name="journalInfo" value="1" <{if $action.outputStatus==1}> checked="checked"<{/if}> onclick="if($('journalInfo<{$id}>').value==0){commonCls.visibilityVisible($('repositoryIndexMetadata<{$id}>'));$('journalInfo<{$id}>').value=1;}"><{$lang.repository_label_edittree_metadata_output}></label>
+		<input type="hidden" id="journalInfo<{$id}>" value="0">
+		<input type="hidden" id="journalTypeId" value="<{$action.journalTypeId}>">
+	</div>
+	<div id="repositoryIndexMetadata<{$id}>" class="visible-hide pd10">
+		<table width="650" cellspacing="0" class="full tb01">
+			<tr>
+				<th nobr="nobr" class="item_edit_list4 vt al ptb04 plr08"><{$lang.repository_label_edittree_metadata_name}></th>
+				<th nobr="nobr" class="item_edit_list4 vt al ptb04 plr08"><{$lang.repository_label_edittree_metadata_value}></th>
+			</tr>
+			<{section name=i loop=$action.metadata}>
+			<{assign var="metadata" value=$action.metadata}>
+				<tr>
+					<th nobr="nobr" class="item_edit_list4 vt al ptb04 plr08">
+						<{$metadata[i].attribute_name}>
+						<{if $metadata[i].is_required == 1}>
+							<font color="#f00">
+								*
+							</font>
+						<{/if}>
+					</th>
+					<td class="item_edit_list4">
+						<{if $metadata[i].input_type == "text"}>
+							<input type="text" id="index_attr_<{$metadata[i].attribute_id}><{$id}>" name="journalAttrValue" value="" style="width:99%;" <{if $metadata[i].length > 0}>maxlength="<{$metadata[i].length}>"<{/if}> disabled="true"/>
+							<input style="display:none" name="journalAttrId" value="<{$metadata[i].attribute_id}>" />
+							<input style="display:none" name="journalAttrRequired" value="<{$metadata[i].is_required}>" />
+						<{elseif $metadata[i].input_type == "date"}>
+							<input type="text" id="index_attr_<{$metadata[i].attribute_id}>_year<{$id}>" value="" style="width:40px;" onchange="javascript: dateCombine();" disabled="true"/>
+							<{$lang.repository_edittree_year}>
+							<select id="index_attr_<{$metadata[i].attribute_id}>_month<{$id}>" style="width:40px;" onchange="javascript: dateCombine();" disabled="true">
+								<option value=""></option>
+								<option value="01">1</option>
+								<option value="02">2</option>
+								<option value="03">3</option>
+								<option value="04">4</option>
+								<option value="05">5</option>
+								<option value="06">6</option>
+								<option value="07">7</option>
+								<option value="08">8</option>
+								<option value="09">9</option>
+								<option value="10">10</option>
+								<option value="11">11</option>
+								<option value="12">12</option>
+							</select>
+							<{$lang.repository_edittree_month}>
+							<select id="index_attr_<{$metadata[i].attribute_id}>_day<{$id}>" style="width:40px;" onchange="javascript: dateCombine();" disabled="true">
+								<option value=""></option>
+								<option value="01">1</option>
+								<option value="02">2</option>
+								<option value="03">3</option>
+								<option value="04">4</option>
+								<option value="05">5</option>
+								<option value="06">6</option>
+								<option value="07">7</option>
+								<option value="08">8</option>
+								<option value="09">9</option>
+								<option value="10">10</option>
+								<option value="11">11</option>
+								<option value="12">12</option>
+								<option value="13">13</option>
+								<option value="14">14</option>
+								<option value="15">15</option>
+								<option value="16">16</option>
+								<option value="17">17</option>
+								<option value="18">18</option>
+								<option value="19">19</option>
+								<option value="20">20</option>
+								<option value="21">21</option>
+								<option value="22">22</option>
+								<option value="23">23</option>
+								<option value="24">24</option>
+								<option value="25">25</option>
+								<option value="26">26</option>
+								<option value="27">27</option>
+								<option value="28">28</option>
+								<option value="29">29</option>
+								<option value="30">30</option>
+								<option value="31">31</option>
+							</select>
+							<{$lang.repository_edittree_day}>
+							<input style="display:none" id="index_attr_<{$metadata[i].attribute_id}><{$id}>" name="journalAttrValue" value="" />
+							<input style="display:none" name="journalAttrId" value="<{$metadata[i].attribute_id}>" />
+							<input style="display:none" name="journalAttrRequired" value="<{$metadata[i].is_required}>" />
+						<{elseif $metadata[i].input_type == "select"}>
+							<select id="index_attr_<{$metadata[i].attribute_id}><{$id}>" name="journalAttrValue" style="width:99%;" disabled="true">
+								<{section name=j loop=$metadata[i].candidate_value}>
+									<option value="<{$metadata[i].candidate_value[j]}>"><{$metadata[i].candidate_label[j]}></option>
+								<{/section}>
+							</select>
+							<input style="display:none" name="journalAttrId" value="<{$metadata[i].attribute_id}>" />
+							<input style="display:none" name="journalAttrRequired" value="<{$metadata[i].is_required}>" />
+						<{/if}>
+					</td>
+				</tr>
+			<{/section}>
+		</table>
+	</div>
+
+<{/strip}>
+
+<script class="nc_script" type="text/javascript">
+	<{section name=i loop=$action.metadata}>
+	<{assign var="metadata" value=$action.metadata}>
+		<{if $metadata[i].input_type == "text" || $metadata[i].input_type == "select"}>
+			var index_attr_<{$metadata[i].attribute_id}> = $('index_attr_<{$metadata[i].attribute_id}><{$id}>');
+		<{elseif $metadata[i].input_type == "date"}>
+			var index_attr_<{$metadata[i].attribute_id}>_year = $('index_attr_<{$metadata[i].attribute_id}>_year<{$id}>');
+			var index_attr_<{$metadata[i].attribute_id}>_month = $('index_attr_<{$metadata[i].attribute_id}>_month<{$id}>');
+			var index_attr_<{$metadata[i].attribute_id}>_day = $('index_attr_<{$metadata[i].attribute_id}>_day<{$id}>');
+			var index_attr_<{$metadata[i].attribute_id}> = $('index_attr_<{$metadata[i].attribute_id}><{$id}>');
+		<{/if}>
+	<{/section}>
+	var journal_info = document.getElementsByName("journalInfo");
+	var journal_info_data = $('journalInfo<{$id}>');
+	var journal_type_id = $('journalTypeId');
+	var journal_attr_value = document.getElementsByName("journalAttrValue");
+	var journal_attr_id = document.getElementsByName("journalAttrId");
+	var journal_attr_required = document.getElementsByName("journalAttrRequired");
+	
+</script>

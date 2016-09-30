@@ -1,7 +1,13 @@
 <?php
+/**
+ * View class for the management screen display
+ * 管理画面表示用ビュークラス
+ * 
+ * @package WEKO
+ */
 // --------------------------------------------------------------------
 //
-// $Id: Admin.class.php 57169 2015-08-26 12:01:09Z tatsuya_koyasu $
+// $Id: Admin.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -13,38 +19,127 @@
 
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
 
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
+/**
+ * Name authority common classes
+ * 著者名典拠共通クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/NameAuthority.class.php';
+/**
+ * Harvest processing common classes
+ * ハーベスト処理共通クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryHarvesting.class.php';
+/**
+ * Handle management common classes
+ * ハンドル管理共通クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryHandleManager.class.php';
+/**
+ * Common classes for creating and updating the search table that holds the metadata and file contents of each item to search speed improvement
+ * 検索速度向上のためアイテム毎のメタデータおよびファイル内容を保持する検索テーブルの作成・更新を行う共通クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositorySearchRequestParameter.class.php';
 
 /**
- * [[機能説明]]
- *
- * @package     [[package名]]
- * @access      public
+ * View class for the management screen display
+ * 管理画面表示用ビュークラス
+ * 
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class Repository_View_Edit_Admin extends RepositoryAction
 {
     // メンバ変数
+    /**
+     * Sort was arranging the index record in the inclusive hierarchical structure (for display)
+     * インデックスレコードを階層構造込みでソートた配列(表示用)
+     *
+     * @var array[$ii]["index_id"|"index_name"|"index_name_english"]
+     */
     var $index_array = null;    // インデックスレコードを階層構造込みでソートた配列(表示用)
+    /**
+     * Error message
+     * エラーメッセージ
+     *
+     * @var string
+     */
     var $error_msg = null;      // エラーメッセージ
+    /**
+     * active tab info
+     * 選択されているタブ情報
+     *
+     * @var int
+     */
     var $admin_active_tab = null;
+    /**
+     * Language
+     * 表示言語
+     *
+     * @var string
+     */
     var $lang = null;
     // Set help icon setting 2010/02/10 K.Ando --start--
+    /**
+     * Help icon display flag
+     * ヘルプアイコン表示フラグ
+     *
+     * @var int
+     */
     var $help_icon_display =  null;
     // Set help icon setting 2010/02/10 K.Ando --end--
     // Add url_rewrite error 2011/11/17 T.Koyasu --start--
+    /**
+     * URL rewrite error
+     * URL書換えエラー
+     *
+     * @var string
+     */
     var $url_rewrite_error = null;
     // Add url_rewrite error 2011/11/17 T.Koyasu --end--
     //Add new prefix2013/12/24T.Ichikawa --start--
+    /**
+     * JaLC DOI prefix
+     * JaLC DOI prefix
+     *
+     * @var string
+     */
     var $prefixJalcDoi = null;
+    /**
+     * CrossRef DOI prefix
+     * CrossRef DOI prefix
+     *
+     * @var string
+     */
     var $prefixCrossRef = null;
     // Add DataCite 2015/02/10 K.Sugimoto --start--
+    /**
+     * DataCite DOI prefix
+     * DataCite DOI prefix
+     *
+     * @var string
+     */
     var $prefixDataCite = null;
     // Add DataCite 2015/02/10 K.Sugimoto --end--
+    /**
+     * CNRI prefix
+     * CNRI prefix
+     *
+     * @var string
+     */
     var $prefixCnri = null;
+    /**
+     * Y handle prefix
+     * Y handle prefix
+     *
+     * @var string
+     */
     var $prefixYHandle = null;
     //Add new prefix 2013/12/24 T.Ichikawa --end--
     // Add Detail Search 2013/11/20 R.Matsuura --start--
@@ -56,35 +151,93 @@ class Repository_View_Edit_Admin extends RepositoryAction
      *   use_flag:  use flag(not use:0 use:1)
      *   default_flag: default flag(not default:0 default:1)
      *   mapping:   mapping
+     * 詳細検索項目
+     * 
+     * @var array[$ii]["type_id"|"show_name"|"use_flag"|"default_flag"|"mapping"]
      */
     public $search_setup = null;
     // Add Detail Search 2013/11/20 R.Matsuura --end--
+    /**
+     * OAI-PMH output flag
+     * OAI-PMH出力フラグ
+     *
+     * @var string
+     */
     public $oaipmh_output_flag = null;
     
+    /**
+     * Institution name
+     * 機関名
+     *
+     * @var string
+     */
     public $institution_name = null;
     
     // Add Default Search Type 2014/12/03 K.Sugimoto --start--
+    /**
+     * Default search type
+     * デフォルト検索設定
+     *
+     * @var boolean
+     */
     public $default_search_type = null;
     // Add Default Search Type 2014/12/03 K.Sugimoto --end--
 
     // Add Usage Statistics link display setting 2014/12/16 K.Matsushita --start--
+    /**
+     * Usagestatics feedback mail flag
+     * フィードバックメール送信機能設定
+     *
+     * @var boolean
+     */
     public $usagestatistics_link_display = null;
     // Add Usage Statistics link display setting 2014/12/16 K.Matsushita --end--
 
     // Add ranking tab display setting 2014/12/19 K.Matsushita --start--
+    /**
+     * Ranking tab display flag
+     * ランキングタブ表示フラグ
+     *
+     * @var boolean
+     */
     public $ranking_tab_display = null;
     // Add ranking tab display setting 2014/12/19 K.Matsushita --end--
     
     // Add DataCite 2015/02/10 K.Sugimoto --start--
+    /**
+     * Prefix display flag
+     * Prefix表示フラグ
+     *
+     * @var boolean
+     */
     public $prefix_flag = null;
+    /**
+     * Doi granted item flag
+     * DOI付与アイテムフラグ
+     *
+     * @var boolean
+     */
     public $exist_doi_item = null;
     // Add DataCite 2015/02/10 K.Sugimoto --end--
-    
+    /**
+     * Log table status
+     * ログテーブル状態
+     *
+     * @var boolean
+     */
     public $logTableStatus = null;
     
+    /**
+     * Value of type of author search
+     * 著者名検索の設定値
+     *
+     * @var int
+     */
+    public $author_search_type = null;
     
     /**
-     * [[機能説明]]
+     * Display magnagement screen
+     * 管理画面表示
      *
      * @access  public
      */
@@ -306,6 +459,17 @@ class Repository_View_Edit_Admin extends RepositoryAction
                 $admin_params['path_mecab']['path'] = "false";
             }
             // Add external search word 2014/05/23 K.Matsuo -end-
+            // PHP
+            if($admin_params['path_php']['param_value']!=""){ 
+                if(file_exists($admin_params['path_php']['param_value']."php") || 
+                    file_exists($admin_params['path_php']['param_value']."php.exe")){
+                    $admin_params['path_php']['path'] = "true";
+                } else {
+                    $admin_params['path_php']['path'] = "false";
+                }
+            } else {
+                $admin_params['path_php']['path'] = "false";
+            }
             
             // Modified display name of fulltext index 2010/05/19 A.Suzuki --start--
             // Whether exists command for extract.
@@ -318,14 +482,6 @@ class Repository_View_Edit_Admin extends RepositoryAction
                 $this->Session->setParameter("extract_command_flag", "false");
             }
             
-            // Check senna status.
-            $chk_senna = $this->Db->execute("SHOW SENNA STATUS;");
-            
-            if($chk_senna === false){
-                $this->Session->setParameter("senna_flag", "false");
-            } else {
-                $this->Session->setParameter("senna_flag", "true");
-            }
             // Modified display name of fulltext index 2010/05/19 A.Suzuki --end--
 
             // Add site license 2008/10/20 Y.Nakao --start--
@@ -502,9 +658,6 @@ class Repository_View_Edit_Admin extends RepositoryAction
             $admin_params["reconstructIndexAuthDatabase_uri"]["path"] = BASE_URL ."/?action=repository_action_common_reconstruction_indexauthority&login_id=[login_id]&password=[password]";
             $admin_params["reconstructSearchDatabase_uri"]["path"] = BASE_URL ."/?action=repository_action_common_reconstruction_search&login_id=[login_id]&password=[password]";
             // Add reconstruct table 2013/12/18 R.Matsuura --end--
-            // Add send feedback mail to sitelicense user 2014/04/22 T.Ichikawa --start--
-            $admin_params["siteLicenseMail_uri"]["path"] = BASE_URL ."/?action=repository_action_common_sitelicensemail&login_id=[login_id]&password=[password]";
-            // Add send feedback mail to sitelicense user 2014/04/22 T.Ichikawa --end--
             
             // Add feedback mail 2012/08/22 A.Suzuki --start--
             // Get send mail status
@@ -562,12 +715,6 @@ class Repository_View_Edit_Admin extends RepositoryAction
                 $this->Session->setParameter("error_code",$errMsg);
                 if($istest) { echo $errMsg . "<br>"; }
                 return 'error';
-            }
-            for($ii=0;$ii<count($admin_params["author_id_prefix"]["list"]);$ii++){
-                if($admin_params["author_id_prefix"]["text"] != ""){
-                    $admin_params["author_id_prefix"]["text"] .= "|";
-                }
-                $admin_params["author_id_prefix"]["text"] .= $admin_params["author_id_prefix"]["list"][$ii]["prefix_id"].",".$admin_params["author_id_prefix"]["list"][$ii]["prefix_name"];
             }
             // Add authorID prefix list edit 2010/11/10 A.Suzuki --end--
             // Add setting URL rewrite 2011/11/14 T.Koyasu -start-
@@ -1052,6 +1199,9 @@ class Repository_View_Edit_Admin extends RepositoryAction
             $this->logTableStatus = $result[0]["status"];
             // Add RobotList 2015/04/06 S.Suzuki --start--
             
+            // 著者名検索設定
+            $this->author_search_type = $admin_params["author_search_type"]["param_value"];
+            
             // ----------------------------------------------------
             // 終了処理
             // ----------------------------------------------------
@@ -1100,7 +1250,16 @@ class Repository_View_Edit_Admin extends RepositoryAction
     }    
    
     /**
-     * [[再帰的にインデックステーブルの値をソート]]
+     * Sort the values recursively index table
+     * 再帰的にインデックステーブルの値をソート
+     * 
+     * @param array $index_table Index list インデックス一覧
+     *                           array[$ii]["index_id"|"parent_index_id"|"index_name"|"index_name_english"|"nest"]
+     * @param int $nest Nest ネスト
+     * @param int $parent_index_id Parent index id 親インデックスID
+     * @param array $index_array Index information インデックス情報
+     *                           array[$ii]["index_id"|"parent_index_id"|"index_name"|"index_name_english"|"nest"]
+     * @return boolean Result 結果
      */
     function sortIndexTable($index_table, $nest, $parent_index_id, &$index_array){
         // 現在のnestを親とするインデックスを取得, show_order昇順にソート
@@ -1138,8 +1297,10 @@ class Repository_View_Edit_Admin extends RepositoryAction
     
     /**
      * Set index_id create cover to parameters
+     * PDFカバーページ設定
      *
-     * @param array $admin_params
+     * @param array $admin_params Parameter パラメータ
+     *                            array["pdfCover"]["headerType"|"headerAlign"|"headerText"|"headerImage"]
      */
     function setPdfCoverParamsToAdminParams(&$admin_params){
         // Get cover params by param name
@@ -1206,9 +1367,10 @@ class Repository_View_Edit_Admin extends RepositoryAction
     }
 
     /**
+     * To check the cooperation state to Ichushi
      * 医中誌への連携状態をチェックする
      * 
-     * @return bool 医中誌への連携状態
+     * @return boolean Cooperation state to Ichushi 医中誌への連携状態
      */
     private function checkLoginIchushi()
     {

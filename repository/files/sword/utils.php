@@ -1,7 +1,15 @@
 <?php
+
+/**
+ * Library to realize the WORD on WEKO
+ * WEKO上でSWORDを実現するライブラリ
+ * 
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: utils.php 56714 2015-08-19 13:30:20Z tomohiro_ichikawa $
+// $Id: utils.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics,
 // Research and Development Center for Scientific Information Resources
@@ -41,13 +49,28 @@
 //require_once ('D:/xampp/htdocs/netcommons21/maple/includes/pear/HTTP/Request.php');
 //$_CONF['have_pear'] = false;      // OK
 //require_once('../../maple/includes/pear/HTTP/Request.php');   // NG
+
+/**
+ * HTTP request class
+ * HTTPリクエストクラス
+ */
 require_once('HTTP/Request.php');       // OK
 //require_once('HTTP/Client.php');
 
-// Check authenticate parameters.
-// equivalent of E-Prints, "authenticate"
-// Success : Return Value is Response Params.
-// Error   : Retun Status-Code
+/**
+ * Check authenticate parameters.
+ *      equivalent of E-Prints, "authenticate"
+ *      Success : Return Value is Response Params.
+ *      Error   : Retun Status-Code
+ * 権限パラメータのチェックを行う
+ *
+ * @param Session $session
+ * @param array $request Request information リクエスト情報
+ *                       array["HTTP_X_ON_BEHALF_OF"|"PHP_AUTH_PW"|"PHP_AUTH_USER"]
+ * @param array $login_Cookies Login cookies ログインクッキー情報
+ * @return array Responce result レスポンス結果
+ *               array["login_id"|"owner"|"login_user_email"|"owner_email"|"status_code"|"x_error_code"]
+ */
 function authenticate(&$session, $request, &$login_Cookies=array())
 {
 
@@ -261,6 +284,16 @@ function authenticate(&$session, $request, &$login_Cookies=array())
 // equivalent of E-Prints, "process_headers"
 // Success : Return Value is Header Params.
 // Error   : Retun Status-Code
+
+/**
+ * To get the header information from the request
+ * リクエストからヘッダ情報を取得する
+ *
+ * @param array $request Request information リクエスト情報
+ *                       array["userID"|"password"|"PHP_AUTH_USER"|"HTTP_NEW_INDEX"|"PHP_AUTH_PW"|"HTTP_X_PACKAGING"|"HTTP_INSERT_INDEX"|"HTTP_X_ON_BEHALF_OF"|"HTTP_CONTENT_TYPE"|"CONTENT_LENGTH"|"HTTP_SLUG"|"HTTP_USER_AGENT"|"HTTP_CONTENT_LENGTH"|"HTTP_CONTENT_MD5"|"HTTP_CONTENT_DISPOSITION"|"HTTP_X_VERBOSE"|"HTTP_X_NO_OP"|"HTTP_X_FORMAT_NAMESPACE"|"uri"]
+ * @return array Header information ヘッダ情報
+ *               array["status_code"|"contentLength"|"generator"|"contentMd5"|"xFormatNamespace"|"slugHeader"|"user_agent"|"x_packaging"|"insert_index"|"new_index"|"contentType"]
+ */
 function process_headers($request)
 {
     // ---------------------------------------------------
@@ -436,6 +469,15 @@ function process_headers($request)
 // htmlspecialcharsを使用すると何故かhttpヘッダ(status code = 200, OK)が送信される。
 // ・・・そのためステータスをヘッダにセットしてから本メソッドを使用すること
 // ・・・しかしそうするとhtmlspecialcharsを使用時に"ヘッダ送信済み"警告が勝手にechoされるため使わないのが無難
+
+/**
+ * (Deprecated)genedrate "Atom Entry Document" (on Successful case)
+ * equivalent of E-Prints, "create_xml"
+ * (廃止予定)Atom形式のXML文書を作成する
+ *
+ * @param array $infos
+ * @param array $response
+ */
 function generateEntryDocument($infos, &$response)
 {
     # get entry document information
@@ -543,7 +585,7 @@ function generateEntryDocument($infos, &$response)
     # Header
     $response = "<?xml version=\"1.0\" encoding=\"utf-8\"?>" . "\n";
     # ENTRY
-    $response.= "<entry xmlns=\"http://www.w3.org/2005/Atom\" xmlns:sword=\"http://purl.org/net/sword/\">" . "\n";
+    $response.= "<entry xmlns=\"http://www.w3.org/2005/Atom\" xmlns:sword=\"http://purl.org/net/sword/terms/\">" . "\n";
     # TITLE
     $response.= "  <title>" . $infos['collectionName'] . "</title>" . "\n";
     # ID    ( or SLUG => at the mo, the Slug value is kept in the db, but not shown in the answer )
@@ -622,9 +664,19 @@ function generateEntryDocument($infos, &$response)
     //return $response;
 }
 
-// genedrate "Error Document" (on Error cases)
-// htmlspecialcharsを使用すると何故かhttpヘッダ(status code = 200, OK)が送信される。
-// ・・・そのためステータスをヘッダにセットしてから本メソッドを使用すること
+/**
+ * genedrate "Error Document" (on Error cases)
+ * Why http header by using the htmlspecialchars (status code = 200, OK) is sent.
+ *      The use of this method for the status from the sets to the header
+ * Error文書を作成する
+ * htmlspecialcharsを使用すると何故かhttpヘッダ(status code = 200, OK)が送信される。
+ *      そのためステータスをヘッダにセットしてから本メソッドを使用すること
+ *
+ * @param array $infos Header information ヘッダ情報
+ *                     array["owner"|"owner_email"|"depositor"|"depositor_email"|"version"|"summary"|"generator"|"treatment"|"description"]
+ * @param string $response Error document エラー文書
+ * @return string Error document エラー文書
+ */
 function generateErrorDocument($infos, &$response)
 {
     # get error document information
@@ -687,7 +739,7 @@ function generateErrorDocument($infos, &$response)
     $response = "<?xml version=\"1.0\" encoding=\"utf-8\"?>" . "\n";
     # ERROR
     $response.= "<sword:error xmlns=\"". htmlspecialchars_self("http://www.w3.org/2005/Atom").
-                "\" xmlns:sword=\""    . htmlspecialchars_self("http://purl.org/net/sword/") .
+                "\" xmlns:sword=\""    . htmlspecialchars_self("http://purl.org/net/sword/terms/") .
                 "\" xmlns:arxiv=\""    . htmlspecialchars_self("http://arxiv.org/schemas/atom") .
                 "\" href=\""           . htmlspecialchars_self("http://example.org/errors/BadManifest"). "\">" . "\n";
     # TITLE (const string)
@@ -743,8 +795,15 @@ function generateErrorDocument($infos, &$response)
     return $response;
 }
 
-// htmlspecialchars self implement ver.
-// htmlspecialcharsを呼ぶと何故かheaderのsattus code 200が送信される。それでは自前でステータスコードをセットできないため困る
+/**
+ * htmlspecialchars self implement ver.
+ * Why Calling htmlspecialchars sattus code 200 of the header is sent. So because you can not set the status code on their own
+ * htmlspecialcharsと同様に特殊文字の変換を実施する
+ * htmlspecialcharsを呼ぶと何故かheaderのsattus code 200が送信される。それでは自前でステータスコードをセットできないため
+ *
+ * @param unknown_type $source
+ * @return unknown
+ */
 function htmlspecialchars_self($source){
     // < => &lt;
     // > => &gt;

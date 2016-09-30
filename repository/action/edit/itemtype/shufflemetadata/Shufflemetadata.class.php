@@ -1,58 +1,137 @@
 <?php
+
+/**
+ * Action for shuffle item type metadata show order
+ * アイテムタイプのメタデータ項目順番入替アクションクラス
+ *
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Shufflemetadata.class.php 53594 2015-05-28 05:25:53Z kaede_matsushita $
+// $Id: Shufflemetadata.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
-// Copyright (c) 2007 - 2008, National Institute of Informatics, 
+// Copyright (c) 2007 - 2008, National Institute of Informatics,
 // Research and Development Center for Scientific Information Resources
 //
 // This program is licensed under a Creative Commons BSD Licence
 // http://creativecommons.org/licenses/BSD/
 //
 // --------------------------------------------------------------------
-
-/* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
 
 /**
- * repositoryモジュール アイテムタイプ作成 編集画面でメタデータ追入れ替えクリック時に呼ばれるアクション
+ * Action for shuffle item type metadata show order
+ * アイテムタイプのメタデータ項目順番入替アクションクラス
  *
- * @package     NetCommons
- * @author      nakao(IVIS)
- * @copyright   2006-2008 NetCommons Project
- * @license     http://www.netcommons.org/license.txt  NetCommons License
- * @project     NetCommons Project, supported by National Institute of Informatics
- * @access      public
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class Repository_Action_Edit_Itemtype_Shufflemetadata extends RepositoryAction
 {
 	// 使用コンポーネントを受け取るため
+	/**
+	 * Request components
+	 * リクエストコンポーネント
+	 *
+	 * @var object
+	 */
 	var $request = null;
-    // アイテムタイプ名保持用変数　追加 2009/12/10 K.Ando --start--
-	//var $itemtype_name = null;		//前画面で入力したアイテムタイプ名(新規作成時)
-	var $item_type_name = null;		//前画面で入力したアイテムタイプ名(新規作成時)
-    // アイテムタイプ名保持用変数　追加 2009/12/10 K.Ando --end--
-	
-	
+
+	/**
+	 * Item type name
+	 * アイテムタイプ名
+	 *
+	 * @var string
+	 */
+	var $item_type_name = null;	//前画面で入力したアイテムタイプ名(新規作成時)
+
 	// jsの引数がリクエストとして送信される
-	var $shuffle_idx = null;	// 移動されるIndex
+	/**
+	 * shuffle index ID
+	 * 移動されるインデックスID
+	 *
+	 * @var int
+	 */
+	var $shuffle_idx = null;
+	/**
+	 * Movement determination flag (true: move up, false: move down)
+	 * 移動判定フラグ(true: 上に移動, false: 下に移動)
+	 *
+	 * @var bool
+	 */
 	var $shuffle_flg = null;	// true:上に移動, false:下に移動	
 	
 	// メタデータ用配列
-	var $metadata_title = null;		// メタデータ項目名配列
-	var $metadata_type = null;		// メタデータ属性配列
-	var $metadata_candidate = null;	// メタデータ選択肢配列
-	var $metadata_required = null;	// メタデータ必須
-	var $metadata_disp = null;		// メタデータ一覧表示
-	var $metadata_plural = null;	// メタデータ複数可否配列
-	var $metadata_newline = null;	// メタデータ改行指定追加
-	var $metadata_hidden = null;	// メタデータ非表示指定	2009/02/09 A.Suzuki
+	/**
+	 * Metadata title array
+	 * メタデータ項目配列
+	 *
+	 * @var array
+	 */
+	var $metadata_title = null;
+	/**
+	 * Metadata type array
+	 * メタデータタイプ配列
+	 *
+	 * @var array
+	 */
+	var $metadata_type = null;
+	/**
+	 * Metadata candidate array
+	 * メタデータ選択候補配列
+	 *
+	 * @var array
+	 */
+	var $metadata_candidate = null;
+	/**
+	 * Metadata required flag array
+	 * メタデータ必須フラグ配列
+	 *
+	 * @var array
+	 */
+	var $metadata_required = null;
+	/**
+	 * Metadata show list flag array
+	 * メタデータ一覧表示フラグ配列
+	 *
+	 * @var array
+	 */
+	var $metadata_disp = null;
+	/**
+	 * Metadata plural enable flag array
+	 * メタデータ複数可否フラグ配列
+	 *
+	 * @var array
+	 */
+	var $metadata_plural = null;
+	/**
+	 * Metadata new line flag array
+	 * メタデータ改行指定配列
+	 *
+	 * @var array
+	 */
+	var $metadata_newline = null;
+	/**
+	 * Metadata hidden flag array
+	 * メタデータ非表示フラグ配列
+	 *
+	 * @var array
+	 */
+	var $metadata_hidden = null;
 	
-    /**
-     * [[機能説明]]
-     *
-     * @access  public
-     */
+	/**
+	 * Execute
+	 * 実行
+	 *
+	 * @return string "success"/"error" success/failed 成功/失敗
+	 */
     function executeApp()
     {
     	$metadata_title = $this->metadata_title;

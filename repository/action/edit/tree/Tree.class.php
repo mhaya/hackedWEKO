@@ -1,7 +1,15 @@
 <?php
+
+/**
+ * Action class for the index operation
+ * インデックス操作用アクションクラス
+ *
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Tree.class.php 53594 2015-05-28 05:25:53Z kaede_matsushita $
+// $Id: Tree.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -10,36 +18,78 @@
 // http://creativecommons.org/licenses/BSD/
 //
 // --------------------------------------------------------------------
-
-/* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
-//require_once WEBAPP_DIR. '\modules\Repository\components\RepositoryAction.class.php';
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
+/**
+ * Download class
+ * ダウンロードクラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryDownload.class.php';
+/**
+ * Search table manager class
+ * 検索テーブル管理クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositorySearchTableProcessing.class.php';
+/**
+ * Index manager class
+ * インデックス管理クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryIndexManager.class.php';
 
 /**
- * repository edit index tree action
- *
- * @package  NetCommons
- * @author    S.Kawasaki(IVIS)
- * @copyright   2006-2008 NetCommons Project
- * @license  http://www.netcommons.org/license.txt  NetCommons License
- * @project  NetCommons Project, supported by National Institute of Informatics
- * @access    public
+ * Action class for the index operation
+ * インデックス操作用アクションクラス
+ * 
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class Repository_Action_Edit_Tree extends RepositoryAction
 {   
     // change index tree 2008/12/08 Y.Nakao --start--
     
     // component
+    /**
+     * Session management objects
+     * Session管理オブジェクト
+     *
+     * @var Session
+     */
     var $Session = null;
+    /**
+     * Database management objects
+     * データベース管理オブジェクト
+     *
+     * @var DbObject
+     */
     var $Db = null;
+    /**
+     * Data upload objects
+     * データアップロードオブジェクト
+     *
+     * @var Uploads_View
+     */
     var $uploadsView = null;
     
     // request parameter
-    var $edit_id = null;            // click index ID
-    var $edit_mode = null;          // edit mode
+    /**
+     * Edit index ID
+     * 編集中のインデックスID
+     *
+     * @var int
+     */
+    var $edit_id = null;
+    /**
+     * Edit mode
+     * 編集モード
+     *
+     * @var string
+     */
+    var $edit_mode = null;
                                     // '' : select edit index
                                     // 'insert' : make new index
                                     // 'update' : edit index
@@ -47,118 +97,368 @@ class Repository_Action_Edit_Tree extends RepositoryAction
                                     // 'sort' : sort index
                                     // 'copy_tree' : copy index tree
     // request parameter for now edit index data
+    /**
+     * Index name
+     * インデックス名
+     *
+     * @var string
+     */
     var $name_jp = null;                // now edit index japanese name
+    /**
+     * Index name english
+     * インデックス英名
+     *
+     * @var string
+     */
     var $name_en = null;                // now edit index english name
+    /**
+     * Comment
+     * コメント
+     *
+     * @var string
+     */
     var $comment = null;                // now edit index comment
+    /**
+     * Parent index ID
+     * 親インデックスID
+     *
+     * @var int
+     */
     var $pid = null;                    // now edit index parent_index_id
+    /**
+     * Showr order
+     * 表示順序
+     *
+     * @var int
+     */
     var $show_order= null;              // now edit index show order
+    /**
+     * public flag
+     * 公開フラグ値
+     *
+     * @var int
+     */
     var $pub_chk = null;                // now edit index pub flg
+    /**
+     * public year
+     * 公開年
+     *
+     * @var int
+     */
     var $pub_year = null;               // now edit index pub year
+    /**
+     * public month
+     * 公開月
+     *
+     * @var int
+     */
     var $pub_month = null;              // now edit index pub month
-    var $pub_day = null;                // now edit index pub day 
+    /**
+     * public day
+     * 公開日
+     *
+     * @var int
+     */
+    var $pub_day = null;                // now edit index pub day
+    /**
+     * access group IDs
+     * アクセス可能グループID
+     *
+     * @var string
+     */
     var $access_group_ids = null;       // now edit index entry item group id
+    /**
+     * not access group ID
+     * アクセス不可能グループID
+     *
+     * @var string
+     */
     var $not_access_group_ids = null;   // now edit index not entry item group id
+    /**
+     * access role ID
+     * アクセス可能ユーザー権限
+     *
+     * @var string
+     */
     var $access_role_ids = null;        // now edit index entry item auth id
+    /**
+     * not access role ID
+     * アクセス不可能ユーザー権限
+     *
+     * @var string
+     */
     var $not_access_role_ids = null;    // now edit index not entry item auth id
+    /**
+     * mod date
+     * 更新日
+     *
+     * @var string
+     */
     var $mod_date = null;               // now edit index mod date
+    /**
+     * Drag from index ID
+     * ドラッグ元インデックスID
+     *
+     * @var int
+     */
     var $drag_id = null;                // drag index id at drag event
+    /**
+     * Drop to index ID
+     * ドロップ先インデックスID
+     *
+     * @var int
+     */
     var $drop_id = null;                // drop index id at drop event
+    /**
+     * Drop flag
+     * DD操作フラグ
+     *
+     * @var bool true/false drop into index/shuffle インデックス内に移動/同階層での並び替え
+     */
     var $drop_index = null;             // true  : index drop in index
                                         // false : index drop in sentry
     // Add child index display more 2009/01/16 Y.Nakao --start--
+    /**
+     * "display more" use flag
+     * "Display more"の使用フラグ
+     *
+     * @var int
+     */
     var $display_more = null;           // first display child index show all or a little
+    /**
+     * The number to be displayed in more than
+     * "Display more"を表示し始める件数
+     *
+     * @var int
+     */
     var $display_more_num = null;       // first display child index num
     // Add child index display more 2009/01/16 Y.Nakao --end--
-    
+    /**
+     * RSS display flag
+     * RSSアイコン表示フラグ
+     *
+     * @var int
+     */
     var $rss_display = null;            // RSS icon display
     
     // Add config management authority 2010/02/23 Y.Nakao --start--
+    /**
+     * access room authority
+     * アクセス可能ルーム権限
+     *
+     * @var int
+     */
     var $access_role_room = null;       // now edit index access OK room authority
     // Add config management authority 2010/02/23 Y.Nakao --end--
     
     // Add contents page 2010/08/06 Y.Nakao --start--
+    /**
+     * Display type
+     * 表示形式
+     *
+     * @var int
+     */
     var $display_type = null;
     // Add contents page 2010/08/06 Y.Nakao --end--
     
     // Add index list 2011/4/5 S.Abe --start--
+    /**
+     * Opening child index list
+     * オープン状態となっているインデックス一覧 
+     * 
+     * @var array
+     */
     var $select_index_list_display = null;
+    /**
+     * Opening child index name list
+     * オープン状態となっているインデックス名前一覧
+     *
+     * @var array
+     */
     var $select_index_list_name = null;
+    /**
+     * Opening child index name english list
+     * オープン状態となっているインデックス英名一覧
+     *
+     * @var array
+     */
     var $select_index_list_name_english = null;
     // Add index list 2011/4/5 S.Abe --end--
-
+    /**
+     * Language Resource Management object
+     * 言語リソース管理オブジェクト
+     *
+     * @var Smarty
+     */
     var $smartyAssign = null;
 
     // Add index thumbnail 2010/08/20 Y.Nakao --start--
+    /**
+     * Delete thumbnail flag
+     * サムネイル削除フラグ
+     * 
+     * @var int
+     */
     public $thumbnail_del = null;
     // Add index thumbnail 2010/08/20 Y.Nakao --end--
     
     // Add tree access control list 2012/02/22 T.Koyasu -start-
+    /**
+     * Exclusive role IDs
+     * アクセス除外ベース権限  
+     * 
+     * @var string
+     */
     public $exclusiveAclRoleIds = null;
+    /**
+     * Exclusive room auth
+     * アクセス除外ルーム権限
+     *
+     * @var string
+     */
     public $exclusiveAclRoomAuth = null;
+    /**
+     * Exclusive group id
+     * アクセス除外グループID権限
+     *
+     * @var string
+     */
     public $exclusiveAclGroupIds = null;
     // Add tree access control list 2012/02/22 T.Koyasu -end-
     
     // Add tree access control list 2011/12/28 Y.Nakao --start--
     /**
      * default access role ids
+     * アクセス可能ベース権限初期値
      *
      * @var string
      */
     private $defaultAccessRoleIds_ = '';
     /**
      * default access role room
+     * アクセス可能ルーム権限初期値
      *
      * @var int
      */
     private $defaultAccessRoleRoom_ = '';
     /**
      * default access group
+     * アクセス可能グループ初期値
      *
      * @var string
      */
     private $defaultAccessGroups_ = '';
     /**
      * default exclusive access control list for role_authority_id.
+     * アクセス不可能ベース権限初期値
      *
      * @var string
      */
     private $defaultExclusiveAclRoleIds_ = '';
     /**
      * default exclusive access control list for room authority.
+     * アクセス不可能ルーム権限初期値
      * 
-     * @var unknown_type
+     * @var string
      */
     private $defaultExclusiveAclRoleRoom_ = '';
     /**
      * default exclusive access control list for group.
+     * アクセス不可能グループ初期値
      *
      * @var string
      */
     private $defaultExclusiveAclGroups_ = '';
     // Add tree access control_ list 2011/12/28 Y.Nakao --end--
-    
+    /**
+     * create PDF cover page flag
+     * PDFカバーページ作成フラグ
+     *
+     * @var int
+     */
     public $create_cover_flag = null;
     
     // Add harvest public flag 2013/07/05 K.Matsuo --start--
+    /**
+     * Harvest public flag
+     * ハーベスト公開フラグ
+     *
+     * @var int
+     */
     public $harvest_public_state = null;
     // Add harvest public flag 2013/07/05 K.Matsuo --end--
     // Add issn and biblio flag 2014/04/16 T.Ichikawa --start--
+    /**
+     * Bibilio flag
+     * 書籍フラグ
+     *
+     * @var int
+     */
     public $biblio_flag = null;
+    /**
+     * ONLINE ISSN
+     * ONLINE ISSN
+     *
+     * @var string
+     */
     public $online_issn = null;
     // Add issn and biblio flag 2014/04/16 T.Ichikawa --end--
     
     // Add recursively uppdate flag 2015/01/21 S.Suzuki --start--
+    /**
+     * Public date recursive udpate flag
+     * 公開日再帰反映フラグ
+     *
+     * @var int
+     */
     public $pubdate_recursive = null;
+    /**
+     * Create PDF cover page recursive update flag
+     * PDFカバーページ付与再帰反映フラグ
+     *
+     * @var int
+     */
     public $create_cover_recursive = null;
+    /**
+     * Role IDs recursive update flag
+     * ベース権限再帰反映フラグ
+     *
+     * @var int
+     */
     public $aclRoleIds_recursive = null;
+    /**
+     * Room IDs recursive update flag
+     * ルーム権限再帰反映フラグ
+     *
+     * @var int
+     */
     public $aclRoomAuth_recursive = null;
+    /**
+     * Group IDs recursive update flag
+     * グループ情報再帰反映フラグ
+     *
+     * @var int
+     */
     public $aclGroupIds_recursive = null;
     // Add recursively uppdate flag 2015/01/21 S.Suzuki --end--
     
     // Add change view role flag 2015/03/10 T.Ichikawa --start--
+    /**
+     * Change browsing authority flag
+     * 閲覧権限変更フラグ
+     *
+     * @var bool
+     */
     public $changeBrowsingAuthorityFlag = false;
     // Add change view role flag 2015/03/10 T.Ichikawa --end--
-    
+
+    /**
+     * Execute
+     * 実行
+     *
+     * @return string "success"/"error" success/failed 成功/失敗
+     * @throws RepositoryException
+     */
     function execute()
     {
         try {
@@ -509,6 +809,8 @@ class Repository_Action_Edit_Tree extends RepositoryAction
                     return 'error';
                 }
             } else if($this->edit_mode == "update"){
+                // TODO:更新処理は「treeupdate」へ移行したため通常のインデックス更新時はここを通らない
+                
                 // Add count contents for unpublic index 2009/02/16 A.Suzuki --start--
                 // update前の公開状況と親インデックスのidを取得       // owner_user_idを追加 K.Matsuo 2013/04/12
                 $query = "SELECT public_state, parent_index_id, owner_user_id ".
@@ -865,7 +1167,7 @@ class Repository_Action_Edit_Tree extends RepositoryAction
                 if($this->edit_id == "0"){
                     return "";
                 }
-                $index_data = $this->getIndexEditData($this->edit_id);                
+                $index_data = $this->getIndexEditData($this->edit_id);
                 // Add new Prefix 2013/12/24 T.Ichikawa --start--
                 $this->sendIndexParameterToHtml($index_data);
                 // Add new Prefix 2013/12/24 T.Ichikawa --end--
@@ -878,7 +1180,9 @@ class Repository_Action_Edit_Tree extends RepositoryAction
             }
             // not remove edit data
             $this->Session->setParameter("edit_tree_continue", "continue");
-                
+            
+            $this->finalize();
+            
             if($this->edit_mode == "update"){
                 return 'redirect';
             } else {
@@ -904,10 +1208,10 @@ class Repository_Action_Edit_Tree extends RepositoryAction
     }
     
     /**
-     * 新規index_idを取得する
      * get new index id
+     * 新規index_idを取得する
      *
-     * @return new index id
+     * @return int new index id 新規インデックスID
      */
     function getNewIndexId(){
         // get new index id
@@ -923,10 +1227,10 @@ class Repository_Action_Edit_Tree extends RepositoryAction
     }
     
     /**
+     * get parent index bottom index max show order
      * $pid直下にあるindexの最大show_orderを取得する
-     * get $pid bottom index max show order
      *
-     * @param $pid
+     * @param int $pid parent index ID 親インデックスID
      */ 
     function getShowOrder($pid){
         // get new parent index bottom's max show_order
@@ -944,15 +1248,14 @@ class Repository_Action_Edit_Tree extends RepositoryAction
     
     // Add tree access control list 2011/12/28 Y.Nakao --start--
     /**
-     * NetCommonsに登録されている全グループを取得し、
-     * 投稿権限のあるグループID、グループ名、投稿権限のないグループID、グループ名のリストを取得する。
-     * 
      * get edit index access group list
+     * NetCommonsに登録されている全グループを取得し、投稿権限のあるグループID、グループ名、投稿権限のないグループID、グループ名のリストを取得する。
      *
-     * @param $access_group_id access OK group room ids
-     * @param $exclusive_acl_group acl NG group room ids
-     * @param $edit_index add result in this parameter
-     * @return true or false
+     *
+     * @param int $access_group_id access OK group room ids アクセス許可グループ
+     * @param int $exclusive_acl_group_id NG group room ids アクセス不可グループ
+     * @param int $edit_index add result in this parameter 編集中のインデックスID
+     * @return bool true/false success/failed 成功/失敗
      */
     function getAccessGroupData($access_group_id, $exclusive_acl_group_id, &$edit_index)
     {
@@ -1045,14 +1348,13 @@ class Repository_Action_Edit_Tree extends RepositoryAction
     }
     
     /**
-     * NetCommonsに登録されている全権限を取得し、
-     * 投稿権限のある権限ID、権限名、投稿権限のない権限ID、権限名のリストを取得する。
-     * 
-     * get edit index access auth list
+     * get edit index access user authority list
+     * NetCommonsに登録されている全権限を取得し、投稿権限のある権限ID、権限名、投稿権限のない権限ID、権限名のリストを取得する。
      *
-     * @param $access_role_id access OK group room ids
-     * @param $edit_index add result in this parameter
-     * @return true or false
+     * @param int $access_role access OK group room ids アクセス可能ベース権限
+     * @param int $exclusive_acl_role NG base authority 除外ベース権限
+     * @param int $edit_index add result in this parameter 編集中のインデックスID
+     * @return bool true/false success/failed 成功/失敗
      */
     function getAccessAuthData($access_role, $exclusive_acl_role, &$edit_index){
         // Add config management authority 2010/02/23 Y.Nakao --start--
@@ -1231,11 +1533,12 @@ class Repository_Action_Edit_Tree extends RepositoryAction
     }
     
     /**
-     * indexの新規登録(プライベートツリーで使用)
      * insert index
+     * indexの新規登録(プライベートツリーで使用)
      *
-     * @param $index_data update index data
-     * @return true or false
+     * @param array $index_data update index data
+     *               array[$ii]["index_id"|"index_name"|...]
+     * @return bool true/false success/failed 成功/失敗
      */
     function insertIndex($index_data){
         // Fix index authority table. Y.Nakao --start--
@@ -1247,11 +1550,12 @@ class Repository_Action_Edit_Tree extends RepositoryAction
     
     // Add insert multiple index 2013/10/11 K.Matsuo --start--
     /**
-     * indexの新規登録
      * insert index
+     * indexの新規登録
      *
-     * @param $index_data update index data
-     * @return true or false
+     * @param array $index_data update index data
+     *               array[$ii]["index_id"|"index_name"|...]
+     * @return bool true/false success/failed 成功/失敗
      */
     function insertMultiIndex($index_data_list){
         // Fix Not call indexAuthorityManager 2014/03/15 Y.Nakao --start--
@@ -1266,12 +1570,11 @@ class Repository_Action_Edit_Tree extends RepositoryAction
     // Add insert multiple index 2013/10/11 K.Matsuo --end--
     
     /**
-     * index_idが$pidのインデックスに子インデックスがあるかどうか調べる
      * check this index has child index or not
+     * index_idが$pidのインデックスに子インデックスがあるかどうか調べる
      *
-     * @param $pid
-     * @return  true:has child index
-     *          false:not has child index
+     * @param int $pid parent index ID 親インデックスID
+     * @return  true/false has/or not 子インデックスを持っている/持っていない
      */
     function hasChild($pid){
         $query = "SELECT DISTINCT index_id FROM ". DATABASE_PREFIX ."repository_index ".
@@ -1288,11 +1591,11 @@ class Repository_Action_Edit_Tree extends RepositoryAction
     }
     
     /**
-     * インデックスIDが$idのインデックスの直下にアイテムがあるかどうか調べる
      * check this index has item
+     * 指定したインデックスの直下にアイテムがあるかどうか調べる
      *
-     * @param $id index id
-     * @return true:has item, false:not item
+     * @param int $id index id インデックスID
+     * @return  true/false has/or not アイテムを持っている/持っていない
      */
     function hasItem($id){
         $query = "SELECT DISTINCT item_id FROM ". DATABASE_PREFIX ."repository_position_index ".
@@ -1309,11 +1612,11 @@ class Repository_Action_Edit_Tree extends RepositoryAction
     }
     
     /**
-     * 指定されたIndexIdのインデックスを削除する
      * delete index
+     * 指定されたIndexIdのインデックスを削除する
      *
-     * @param 削除対象のIndexId
-     * @return 成功フラグ
+     * @param int $index_id index ID インデックスID
+     * @return bool true/false success/failed 成功/失敗
      */
     function deleteIndex( $index_id )
     {
@@ -1322,9 +1625,13 @@ class Repository_Action_Edit_Tree extends RepositoryAction
     }
     
     /**
+     * Get Relation Index ID
      * 指定されたIndexIdに紐づくIndexIdをすべて取得する
-     * 
-     * @return array
+     *
+     * @param int $index_id index ID インデックスID
+     * @param array $index_info index info インデックスIDリスト
+     *                           array[$ii]["index_id"]
+     * @return bool true/false success/failed 成功/失敗
      */
     function getAllChildIndexID( $index_id, &$index_info )
     {   
@@ -1355,11 +1662,13 @@ class Repository_Action_Edit_Tree extends RepositoryAction
     }
     
     /**
-     * 削除対象のIndexに紐づくアイテムが削除対象かを判断し、削除対象ならば削除
-     * また、自身のindexを削除する
+     * Delete relation index and self
+     * 削除対象のIndexに紐づくアイテムが削除対象かを判断し、削除対象ならば削除。また、自身のindexを削除する
      *
-     * @param $index_info 削除対象のIndexId
-     * @return 成功フラグ
+     * @param array $index_info delete index ID list 削除対象のIndexId
+     *                           array[$ii]["index_id"]
+     * @param bool $is_index_del target delete index flag 削除対象インデックスフラグ
+     * @return bool true/false delete success/delete failed 削除成功/削除失敗
      */
     function deleteIndexItem( $index_info, $is_index_del=true )
     {
@@ -1462,10 +1771,11 @@ class Repository_Action_Edit_Tree extends RepositoryAction
     
     /**
      * move item to parent index
+     * アイテムを親インデックスへ移動する
      *
-     * @param $id position index id
-     * @param $pid position index's parent index id
-     * @return true or false
+     * @param int $id position index id 現在のインデックスID
+     * @param int $pid position index's parent index id 親インデックスID
+     * @return bool true/false success/failed 成功/失敗
      */
     function moveItemIndexToParentIndex($id, $pid){
         // Fix contents update action 2010/07/02 Y.Nakao --start--
@@ -1728,14 +2038,13 @@ class Repository_Action_Edit_Tree extends RepositoryAction
     }
     
     /**
-     * check index movable
-     * if index is root private tree and parent_index_id changes, index can not move
+     * check index movable if index is root private tree and parent_index_id changes, index can not move
+     * インデックスが移動できるかチェックする
      *
-     * @param array $indexData
-     * @param int $pid
-     * @return boolean
-     *              treu : movable
-     *              false: not movable
+     * @param array $indexData index data インデックス情報
+     *                          array[$ii]["index_id"]
+     * @param int $pid parent index ID 親インデックスID
+     * @return boolean true/false movable/or not 移動可能/不可
      */
     private function checkMovable($indexData, $pid){
         
@@ -1761,13 +2070,12 @@ class Repository_Action_Edit_Tree extends RepositoryAction
     
     /**
      * change parent index
+     * 親インデックスを変更する
      * 
-     * @param $id      this index move このインデックスを
-     * @param $pid　        throw in this index bottom このインデックスの下の
-     * @param $sort_id this index after この後に挿入。
-     *                 first : 先頭
-     *                 last  : 末尾 
-     * 
+     * @param int $id source index ID 移動するインデックスID
+     * @param int $pid parent index ID 移動先の親インデックスID
+     * @param int $sort_id sort index ID 移動先の直上のインデックスID
+     * @return bool true/false success/failed 成功/失敗
      */
     function changeParentIndex($id, $pid, $sort_id){
         // 移動するインデックスの情報を取得 get move index's data
@@ -1998,11 +2306,11 @@ class Repository_Action_Edit_Tree extends RepositoryAction
     }
     
     /**
+     * Get parent index ID
      * 親Index_idを取得する
      *
-     * @param $index_id 検索対象のIndexId
-     * @param $mod_date 更新日時に変更がないか確認する
-     * @return 親IndexId 
+     * @param int $index_id index ID 検索対象のIndexId
+     * @return int parent index ID 親インデックスID
      */
     function getParentIndexId ( $index_id )
     {
@@ -2027,8 +2335,11 @@ class Repository_Action_Edit_Tree extends RepositoryAction
     
     /**
      * get edit index data
+     * 編集中のインデックス情報を取得する
      *
-     * @param $id edit index id
+     * @param int $id index ID 編集中のインデックスID
+     * @return array index info インデックス情報
+     *                array[0]["index_id"|"index_name"|"index_name_english"|...]
      */
     function getIndexEditData($id){
         // 編集に必要な情報
@@ -2083,11 +2394,12 @@ class Repository_Action_Edit_Tree extends RepositoryAction
     }
     
     /**
-     * 1アイテム削除
+     * To delete the specified items
+     * 指定されたアイテムを削除する
      * 
-     * @param 
-     * @param 
-     * @return 成功フラグ
+     * @param int $item_id Item ID for identifying the item アイテムを特定するためのアイテムID
+     * @param int $item_no Item serial number used to identify the item アイテムを特定するためのアイテム通番
+     * @return bool true/false delete success/delete failed 削除成功/削除失敗
      */
     function deleteItem( $item_id, $item_no )
     {
@@ -2104,12 +2416,12 @@ class Repository_Action_Edit_Tree extends RepositoryAction
     }
     
     /**
-     * 
-     * $parent_index_id直下のインデックス情報をshow_order順にソートして渡す 
-     * show_order順で並ぶ
-     * 新規作成分も込み
-     * 
-     * @return array
+     * Get sorted index info list the bottom of parent index
+     * $parent_index_id直下のインデックス情報をshow_order順にソートして渡す
+     *
+     * @param int $parent_index_id int parent index ID 親インデックスID
+     * @return array index info インデックス情報
+     *                array[$ii["index_id"|"index_name"|"index_name_english"|...]
      */
     private function getChildIndexInfo($parent_index_id)
     {
@@ -2144,13 +2456,12 @@ class Repository_Action_Edit_Tree extends RepositoryAction
     
     /**
      * reset show order
+     * 並び順序を元に戻す
      *
-     * @param $id      this index move
-     * @param $pid　        throw in this index bottom
-     * @param $sort_id this index after
-     *                 first : 先頭
-     *                 last  : 末尾 
-     * @return true or false
+     * @param int $id source index ID 移動するインデックスID
+     * @param int $pid parent index ID 移動先の親インデックスID
+     * @param int $sort_id sort index ID 移動先の直上のインデックスID
+     * @return bool true/false success/failed 成功/失敗
      */
     function sortIndexData($id, $pid, $sort_id){
         // 親インデックス直下のインデックス情報を全部取得 get parent index's child index
@@ -2250,9 +2561,11 @@ class Repository_Action_Edit_Tree extends RepositoryAction
     
     /**
      * update index key index_id and mod_date
+     * インデックスを更新する
      *
-     * @param $index_data update index data
-     * @return true or false
+     * @param array $index_data index info インデックス情報
+     *                           array[$ii["index_id"|"index_name"|"index_name_english"|...]
+     * @return bool true/false update success/update failed 更新成功/更新失敗
      */
     function updateIndex($index_data)
     {
@@ -2262,10 +2575,12 @@ class Repository_Action_Edit_Tree extends RepositoryAction
     // change index tree 2008/12/26 Y.Nakao --end--
     
     /**
+     * Lock index
      * インデックス及び所属インデックスのカラムをロックする
      * 
-     * @param $index_id 対象レコードのIndexId
-     * @return 成功フラグ
+     * @param int $index_id index ID 対象インデックスID
+     * @param string $mod_date mod date 更新日時
+     * @return bool true/false success/failed 成功/失敗
      */
     function rockIndexRecorde( $index_id, $mod_date )
     {
@@ -2304,13 +2619,15 @@ class Repository_Action_Edit_Tree extends RepositoryAction
         }
         return true;
     }
+
     // インデックスツリーコンテンツ数対応 add index contents item num 2008/12/26 Y.Nakao --start--
     /**
-     * index_idが$pidのインデックスコンテンツ数から、index_idが$idのインデックスコンテンツ数を引く
      *  index contents num for index_id is $pid sub index contents num for index_id is $id
+     * index_idが$pidのインデックスコンテンツ数から、index_idが$idのインデックスコンテンツ数を引く
      * 
-     * @param $pid parent index id
-     * @param $id index id
+     * @param int $pid parent index id 親インデックスID
+     * @param int $id index id インデックスID
+     * @return bool true/false success/failed 成功/失敗
      */ 
     function subIndexContents($pid, $id){
         // 親インデックスをチェック check parent index id
@@ -2356,11 +2673,12 @@ class Repository_Action_Edit_Tree extends RepositoryAction
     }
     
     /**
-     * index_idが$pidのインデックスコンテンツ数から、index_idが$idのインデックスコンテンツ数を足す
      *  index contents num for index_id is $pid add index contents num for index_id is $id
-     * 
-     * @param $pid parent index id
-     * @param $id index id
+     * index_idが$pidのインデックスコンテンツ数から、index_idが$idのインデックスコンテンツ数を足す
+     *
+     * @param int $pid parent index id 親インデックスID
+     * @param int $id index id インデックスID
+     * @return bool true/false success/failed 成功/失敗
      */ 
     function addIndexContents($pid, $id){
         // 親インデックスをチェック check parent index id
@@ -2408,9 +2726,11 @@ class Repository_Action_Edit_Tree extends RepositoryAction
 
     // インデックス以下のアイテムを新着情報から削除する　2009/02/09 A.Suzuki --start--
     /**
+     * If removed from the new information that belongs only to the child index of the index and private
      * インデックスおよび非公開の子インデックスにのみ所属している場合新着情報から削除
      *
-     * @param  $index_id
+     * @param int $index_id index ID インデックスID
+     * @return bool true/false delete success/delete failed 削除成功/削除失敗
      */
     function deleteWhatsnewForIndex($index_id){
         // インデックスに所属するアイテムのitem_id, item_noを取得
@@ -2490,10 +2810,11 @@ class Repository_Action_Edit_Tree extends RepositoryAction
     
     // コンテンツ数対応 2009/02/16 A.Suzuki --start--
     /**
+     * It recalculates the number of contents of the specified index or later, to update
      * 指定インデックス以下のコンテンツ数を再計算し、更新する
      *
-     * @param  $index_id
-     * @return $contents インデックス以下のコンテンツ数
+     * @param  int $index_id index ID
+     * @return int $contents contents count インデックス以下のコンテンツ数
      */
     function recountContents($index_id=0){
         $contents = 0;
@@ -2571,10 +2892,11 @@ class Repository_Action_Edit_Tree extends RepositoryAction
     }
     
     /**
+     * Recalculates the number of private content specified index or later, to update
      * 指定インデックス以下の非公開コンテンツ数を再計算し、更新する
      *
-     * @param  $index_id
-     * @return $contents インデックス以下のコンテンツ数
+     * @param  int $index_id index ID インデックスID
+     * @return int $contents contents count インデックス以下のコンテンツ数
      */
     function recountPrivateContents($index_id=0){
         $contents = 0;
@@ -2671,9 +2993,11 @@ class Repository_Action_Edit_Tree extends RepositoryAction
     }
     
     /**
+     * To reset the number of contents of the specified index or later
      * 指定インデックス以下のコンテンツ数をリセットする
      *
-     * @param  $index_id
+     * @param  int $index_id index ID インデックスID
+     * @return bool true/false update success/update failed 更新成功/更新失敗
      */
     function resetContents($index_id=0){
         // update contents
@@ -2710,12 +3034,14 @@ class Repository_Action_Edit_Tree extends RepositoryAction
         
         return true;
     }
+
     // Add index list 2011/4/14 S.Abe --start--
     /**
      * check whether input value is blank only or not
+     * 空白文字を削除する
      *
-     * @param $name index list name
-     * @return $name index list name
+     * @param string $name index list name インデックス名
+     * @return string $name index list name 空白文字除去済みインデックス名
      */
     function checkBlank($name) {
         $check_name = str_replace(" ","", $name);
@@ -2730,8 +3056,11 @@ class Repository_Action_Edit_Tree extends RepositoryAction
     // Bugfix input scrutiny 2011/06/17 Y.Nakao --start--
     /**
      * escape JSON
+     * JSON文字列をエスケープする
      *
-     * @param array $index_data
+     * @param string $str JSON string JSON文字列
+     * @param bool true/false new line/or not 改行する/しない
+     * @return string escaped JSON string エスケープ済JSON文字列
      */
     function escapeJSON($str, $lineFlg=false){
         
@@ -2752,12 +3081,9 @@ class Repository_Action_Edit_Tree extends RepositoryAction
     // Add tree access control list 2011/12/28 Y.Nakao --start--
     /**
      * set default
-     *
+     * 初期値を設定する
      */
-    // Add harvesting 2012/03/13 T.Koyasu -start-
-    // changed access(private->public)
     public function setDefaultAccessControlList()
-    // Add harvesting 2012/03/13 T.Koyasu -end-
     {
         $this->defaultAccessRoleIds_ = '';
         $this->defaultAccessRoleRoom_ = _AUTH_CHIEF;
@@ -2792,9 +3118,12 @@ class Repository_Action_Edit_Tree extends RepositoryAction
         // setting defaultExclusiveAclGroup_
     }
     // Add tree access control list 2011/12/28 Y.Nakao --end--
-    
-    
+
     // Add private_tree access control list 2013/04/23 K.Matsuo --start--
+    /**
+     * Set private tree default authority
+     * プライベートツリーの権限初期値を設定する
+     */
     public function setPrivateTreeDefaultAccessControlList()
     {
         // Mod Bug fix No.55 2014/03/24 T.Koyasu --start--
@@ -2811,8 +3140,9 @@ class Repository_Action_Edit_Tree extends RepositoryAction
     // Fix private tree auth id. 2013/06/12 Y.Nakao --start--
     /**
      * Get insert auth ids
+     * 投稿可能なベース権限値を取得する
      *
-     * @return string
+     * @return string authority ID string 投稿可能ベース権限
      */
     public function getInsertAuthIds()
     {
@@ -2863,10 +3193,11 @@ class Repository_Action_Edit_Tree extends RepositoryAction
     
     // Add get owner_user_id 2013/04/17 K.Matsuo --start--
     /**
+     * get owner user id
      * owner_user_idを取得する
      *
-     * @param $index_id 検索対象のIndexId
-     * @return owner_user_id 
+     * @param int $index_id index ID 検索対象のIndexId
+     * @return string  owner user ID 所有者ユーザーID
      */
     function getIndexOwnerUserId ( $index_id )
     {
@@ -2891,33 +3222,81 @@ class Repository_Action_Edit_Tree extends RepositoryAction
     // Add get owner_user_id 2013/04/17 K.Matsuo --end--
     
     // Add harvesting 2012/03/13 T.Koyasu -start-
-    // get private member
+    /**
+     * Default access role id getter
+     * アクセス可能ベース権限初期値のGetter
+     *
+     * @return string
+     */
     public function getDefaultAccessRoleIds()
     {
         return $this->defaultAccessRoleIds_;
     }
+
+    /**
+     * Default access room auth getter
+     * アクセス可能ルーム権限初期値のGetter
+     *
+     * @return string
+     */
     public function getDefaultAccessRoleRoom()
     {
         return $this->defaultAccessRoleRoom_;
     }
+
+    /**
+     * Default access group getter
+     * アクセス可能グループ初期値のGetter
+     *
+     * @return string
+     */
     public function getDefaultAccessGroups()
     {
         return $this->defaultAccessGroups_;
     }
+
+    /**
+     * Default exclusive access role id getter
+     * アクセス不可能ベース権限初期値のGetter
+     *
+     * @return string
+     */
     public function getDefaultExclusiveRoleIds()
     {
         return $this->defaultExclusiveAclRoleIds_;
     }
+
+    /**
+     * Default exclusive access room auth getter
+     * アクセス不可能ルーム権限初期値のGetter
+     *
+     * @return string
+     */
     public function getDefaultExclusiveAclRoleRoom()
     {
         return $this->defaultExclusiveAclRoleRoom_;
     }
+
+    /**
+     * Default exclusive access group getter
+     * アクセス不可能グループ初期値のGetter
+     *
+     * @return string
+     */
     public function getDefaultExclusiveAclGroups()
     {
         return $this->defaultExclusiveAclGroups_;
     }
     // Add harvesting 2012/03/13 T.Koyasu -end-
+
     // Add new prefix id 2013/12/24 T.Ichikawa --start--
+    /**
+     * Send index data to HTML view by JSON format
+     * JSON形式でインデックス情報をHTML画面へ送信する
+     *
+     * @param array $index_data index data インデックス情報
+     *                           array[$ii["index_id"|"index_name"|"index_name_english"|...]
+     */
     public function sendIndexParameterToHtml($index_data)
     {
         $repositoryDownload = new RepositoryDownload();
@@ -3015,13 +3394,14 @@ class Repository_Action_Edit_Tree extends RepositoryAction
     
     // Add change view authority flag 2015/03/10 T.Ichikawa --start--
     /**
+     * To check whether the viewing rights has been changed
      * 閲覧権限が変更されたかチェックする
      * 
-     * @param int $indexId             インデックスID
-     * @param int $exclusiveRoleId     除外閲覧権限ID
-     * @param int $exclusiveRoomAuth   除外ルーム権限
-     * @param string $exclusiveGroupId 除外グループID
-     * @return bool
+     * @param int $indexId             index ID                   インデックスID
+     * @param int $exclusiveRoleId     exclusive access role ID   除外閲覧権限ID
+     * @param int $exclusiveRoomAuth   exclusive access room auth 除外ルーム権限
+     * @param string $exclusiveGroupId exclusive access group     除外グループID
+     * @return bool true/false changed/not changed 変更された/変更されていない
      */
     private function checkChangeBrowsingAuthority($indexId, $exclusiveRoleId, $exclusiveRoomAuth, $exclusiveGroupId)
     {
@@ -3074,10 +3454,11 @@ class Repository_Action_Edit_Tree extends RepositoryAction
     }
     
     /**
+     * Check index public state
      * 指定インデックスの公開状況をチェックする
      *
-     * @param  int $index_id インデックスID
-     * @return string "public" "private"
+     * @param  int $index_id index ID インデックスID
+     * @return string "public"/"private" "公開"/"非公開"
      */
     private function checkIndexState($index_id) {
         // インデックス自身の公開状況取得

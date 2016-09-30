@@ -1,181 +1,660 @@
 <?php
+
+/**
+ * Action for edit admin row
+ * 管理画面行変更処理Actionクラス
+ *
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Admineditrow.class.php 53594 2015-05-28 05:25:53Z kaede_matsushita $
+// $Id: Admineditrow.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
-// Copyright (c) 2007 - 2008, National Institute of Informatics, 
+// Copyright (c) 2007 - 2008, National Institute of Informatics,
 // Research and Development Center for Scientific Information Resources
 //
 // This program is licensed under a Creative Commons BSD Licence
 // http://creativecommons.org/licenses/BSD/
 //
 // --------------------------------------------------------------------
-
-/* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
+/**
+ * Harvest process manager class
+ * ハーベスト処理管理クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryHarvesting.class.php';
 
 /**
- * repository module admin action
+ * Action for edit admin row
+ * 管理画面行変更処理Actionクラス
  *
- * @package	 NetCommons
- * @author	  S.Kawasaki(IVIS)
- * @copyright   2006-2008 NetCommons Project
- * @license	 http://www.netcommons.org/license.txt  NetCommons License
- * @project	 NetCommons Project, supported by National Institute of Informatics
- * @access	  public
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class Repository_Action_Edit_Admineditrow extends RepositoryAction
 {
+	/**
+	 * Upload file management objects
+	 * アップロードファイル管理オブジェクト
+	 *
+	 * @var Uploads_Action
+	 */
     public $uploadsAction = null;
     
-	// リクエストパラメタ (配列ではなく個別で渡す)	
+	// リクエストパラメタ (配列ではなく個別で渡す)
+	/**
+	 * OS type
+	 * OS種別
+	 *
+	 * @var string
+	 */
 	var $OS_type = null;						// All : OS kind
+	/**
+	 * Display index type
+	 * インデックス表示形式
+	 *
+	 * @var int
+	 */
 	var $disp_index_type = null;				// All : first index view setting
+	/**
+	 * Default display index
+	 * 初期表示インデックス
+	 *
+	 * @var int
+	 */
 	var $default_disp_index = null;				// All : first index
+	/**
+	 * Number of days to be treated as new in the rankings
+	 * ランキングで新着として扱う日数
+	 *
+	 * @var int
+	 */
 	var $ranking_term_recent_regist = null;		// ranking : new insert time
+	/**
+	 * Ranking statistics range
+	 * ランキング統計範囲
+	 *
+	 * @var null
+	 */
 	var $ranking_term_stats = null;				// ranking : ranking time
+	/**
+	 * Ranking display number
+	 * ランキング表示件数
+	 *
+	 * @var int
+	 */
 	var $ranking_disp_num = null;	   			// ranking : disp num
+	/**
+	 * Ranking display flag: most browse item
+	 * ランキング表示可否：最も閲覧されたアイテム
+	 *
+	 * @var int
+	 */
 	var $ranking_is_disp_browse_item = null;	// ランキング表示可否, 最も閲覧されたアイテム
+	/**
+	 * Ranking display flag: most download item
+	 * ランキング表示可否：最もダウンロードされたアイテム
+	 *
+	 * @var int
+	 */
 	var $ranking_is_disp_download_item = null;	// ランキング表示可否, 最もダウンロードされたアイテム
+	/**
+	 * Ranking display flag: most number of create item user
+	 * ランキング表示可否：最もアイテムを作成したユーザー
+	 *
+	 * @var int
+	 */
 	var $ranking_is_disp_item_creator = null;	// ランキング表示可否, 最もアイテムを作成したユーザ
+	/**
+	 * Ranking display flag: most search keyword
+	 * ランキング表示可否：最も検索されたキーワード
+	 *
+	 * @var int
+	 */
 	var $ranking_is_disp_keyword = null;		// ランキング表示可否, 最も検索されたキーワード
+	/**
+	 * Ranking display flag: new item
+	 * ランキング表示可否：新着アイテム
+	 *
+	 * @var int
+	 */
 	var $ranking_is_disp_recent_item = null;	// ランキング表示可否, 新着アイテム
-//	var $item_coef_cp = null;					// アイテム管理 : 係数Cp
-//	var $item_coef_ci = null;					// アイテム管理 : 係数Ci
-//	var $file_coef_cp = null;					// アイテム管理 : 係数Cpf
-//	var $file_coef_ci = null;					// アイテム管理 : 係数Cif
+	/**
+	 * File output destination at the time of export file
+	 * エクスポートファイル時のファイル出力可否
+	 *
+	 * @var int
+	 */
 	var $export_is_include_files = null;		// アイテム管理 : Export ファイル出力の可否
+	/**
+	 * OAI-PMH: admin mail address
+	 * OAI-PMH管理：管理者メールアドレス
+	 *
+	 * @var string
+	 */
 	var $prvd_Identify_adminEmail = null;		// OAI-PMH管理 : 管理者メールアドレス
+	/**
+	 * OAI-PMH: repository name
+	 * OAI-PMH管理：リポジトリ名
+	 *
+	 * @var string
+	 */
 	var $prvd_Identify_repositoryName = null;	// OAI-PMH管理 : リポジトリ名
+	/**
+	 * OAI-PMH: latest date stamp year
+	 * OAI-PMH管理：最新データスタンプ(年)
+	 *
+	 * @var string
+	 */
 	var $prvd_Identify_earliestDatestamp_year = null;	// OAI-PMH管理 : earliest_datestamp : year
+	/**
+	 * OAI-PMH: latest date stamp month
+	 * OAI-PMH管理：最新データスタンプ(月)
+	 *
+	 * @var string
+	 */
 	var $prvd_Identify_earliestDatestamp_month = null;	// OAI-PMH管理 : earliest_datestamp : month
+	/**
+	 * OAI-PMH: latest date stamp day
+	 * OAI-PMH管理：最新データスタンプ(日)
+	 *
+	 * @var string
+	 */
 	var $prvd_Identify_earliestDatestamp_day = null;	// OAI-PMH管理 : earliest_datestamp : day
+	/**
+	 * OAI-PMH: latest date stamp hour
+	 * OAI-PMH管理：最新データスタンプ(時)
+	 *
+	 * @var string
+	 */
 	var $prvd_Identify_earliestDatestamp_hour = null;	// OAI-PMH管理 : earliest_datestamp : hour
+	/**
+	 * OAI-PMH: latest date stamp minutes
+	 * OAI-PMH管理：最新データスタンプ(分)
+	 *
+	 * @var string
+	 */
 	var $prvd_Identify_earliestDatestamp_minute = null;	// OAI-PMH管理 : earliest_datestamp : minute
-	var $prvd_Identify_earliestDatestamp_second = null;	// OAI-PMH管理 : earliest_datestamp : second	
-    // Add Selective Harvesting 2013/09/04 R.Matsuura --start--
-    public $harvesting_from_date_year = null;	// Selective Harvesting : from : year
-    public $harvesting_from_date_month = null;	// Selective Harvesting : from : month
-    public $harvesting_from_date_day = null;	// Selective Harvesting : from : day
-    public $harvesting_from_date_hour = null;	// Selective Harvesting : from : hour
-    public $harvesting_from_date_minute = null;	// Selective Harvesting : from : minute
-    public $harvesting_from_date_second = null;	// Selective Harvesting : from : second
-    public $harvesting_until_date_year = null;	// Selective Harvesting : until : year
-    public $harvesting_until_date_month = null;	// Selective Harvesting : until : month
-    public $harvesting_until_date_day = null;	// Selective Harvesting : until : day
-    public $harvesting_until_date_hour = null;	// Selective Harvesting : until : hour
-    public $harvesting_until_date_minute = null;// Selective Harvesting : until : minute
-    public $harvesting_until_date_second = null;// Selective Harvesting : until : second
-    public $harvesting_set_param = null;		// Selective Harvesting : set
-    public $harvesting_execution_date = null;	// Selective Harvesting : execution date
-    // Add Selective Harvesting 2013/09/04 R.Matsuura --end--
-    
-	var $path_wvWare = null;	// Commd "wvWare"
-	var $path_xlhtml = null;	// Commd "xlhtml"
-	var $path_poppler = null;	// Commd "poppler"
-	var $path_ImageMagick = null;	// Commd "ImageMagick"
-    var $path_pdftk = null;   // Commd "pdftk"  // Add pdftk 2012/06/07 A.Suzuki --start--
-    public $path_ffmpeg = null; // Commd "ffmpeg"   // Add multimedia support 2012/08/27 T.Koyasu
-    public $path_mecab = null; // Commd "mecab"   // Add external search word 2014/05/23 K.Matsuo
+	/**
+	 * OAI-PMH: latest date stamp second
+	 * OAI-PMH管理：最新データスタンプ(秒)
+	 *
+	 * @var string
+	 */
+	var $prvd_Identify_earliestDatestamp_second = null;	// OAI-PMH管理 : earliest_datestamp : second
 
+    // Add Selective Harvesting 2013/09/04 R.Matsuura --start--
+	/**
+	 * Harvest: start year
+	 * ハーベスト：開始年
+	 *
+	 * @var string
+	 */
+	public $harvesting_from_date_year = null;	// Selective Harvesting : from : year
+	/**
+	 * Harvest: start month
+	 * ハーベスト：開始月
+	 *
+	 * @var string
+	 */
+	public $harvesting_from_date_month = null;	// Selective Harvesting : from : month
+	/**
+	 * Harvest: start day
+	 * ハーベスト：開始日
+	 *
+	 * @var string
+	 */
+	public $harvesting_from_date_day = null;	// Selective Harvesting : from : day
+	/**
+	 * Harvest: start hour
+	 * ハーベスト：開始時
+	 *
+	 * @var string
+	 */
+	public $harvesting_from_date_hour = null;	// Selective Harvesting : from : hour
+	/**
+	 * Harvest: start minutes
+	 * ハーベスト：開始分
+	 *
+	 * @var string
+	 */
+	public $harvesting_from_date_minute = null;	// Selective Harvesting : from : minute
+	/**
+	 * Harvest: start second
+	 * ハーベスト：開始秒
+	 *
+	 * @var string
+	 */
+	public $harvesting_from_date_second = null;	// Selective Harvesting : from : second
+	/**
+	 * Harvest: finish year
+	 * ハーベスト：終了年
+	 *
+	 * @var string
+	 */
+	public $harvesting_until_date_year = null;	// Selective Harvesting : until : year
+	/**
+	 * Harvest: finish month
+	 * ハーベスト：終了月
+	 *
+	 * @var string
+	 */
+	public $harvesting_until_date_month = null;	// Selective Harvesting : until : month
+	/**
+	 * Harvest: finish day
+	 * ハーベスト：終了日
+	 *
+	 * @var string
+	 */
+	public $harvesting_until_date_day = null;	// Selective Harvesting : until : day
+	/**
+	 * Harvest: finish hour
+	 * ハーベスト：終了時
+	 *
+	 * @var string
+	 */
+	public $harvesting_until_date_hour = null;	// Selective Harvesting : until : hour
+	/**
+	 * Harvest: finish minutes
+	 * ハーベスト：終了分
+	 *
+	 * @var string
+	 */
+	public $harvesting_until_date_minute = null;// Selective Harvesting : until : minute
+	/**
+	 * Harvest: finish second
+	 * ハーベスト：終了秒
+	 *
+	 * @var string
+	 */
+	public $harvesting_until_date_second = null;// Selective Harvesting : until : second
+	/**
+	 * Harvesting parameter
+	 * ハーベストパラメータ
+	 *
+	 * @var string
+	 */
+	public $harvesting_set_param = null;		// Selective Harvesting : set
+	/**
+	 * Harvesting execute data
+	 * ハーベスト実行時間
+	 *
+	 * @var string
+	 */
+	public $harvesting_execution_date = null;	// Selective Harvesting : execution date
+    // Add Selective Harvesting 2013/09/04 R.Matsuura --end--
+	/**
+	 * Command path: wvWare
+	 * wvWareの実行パス
+	 *
+	 * @var string
+	 */
+	var $path_wvWare = null;	// Commd "wvWare"
+	/**
+	 * Command path: wvWare
+	 * wvWareの実行パス
+	 *
+	 * @var string
+	 */
+	var $path_xlhtml = null;	// Commd "xlhtml"
+	/**
+	 * Command path: poppler
+	 * popplerの実行パス
+	 *
+	 * @var string
+	 */
+	var $path_poppler = null;	// Commd "poppler"
+	/**
+	 * Command path: ImageMagick
+	 * ImageMagickの実行パス
+	 *
+	 * @var string
+	 */
+	var $path_ImageMagick = null;	// Commd "ImageMagick"
+	/**
+	 * Command path: pdftk
+	 * pdftkの実行パス
+	 *
+	 * @var string
+	 */
+	var $path_pdftk = null;   // Commd "pdftk"  // Add pdftk 2012/06/07 A.Suzuki --start--
+	/**
+	 * Command path: ffmpeg
+	 * ffmpegの実行パス
+	 *
+	 * @var string
+	 */
+	public $path_ffmpeg = null; // Commd "ffmpeg"   // Add multimedia support 2012/08/27 T.Koyasu
+	/**
+	 * Command path: mecab
+	 * mecabの実行パス
+	 *
+	 * @var string
+	 */
+	public $path_mecab = null; // Commd "mecab"   // Add external search word 2014/05/23 K.Matsuo
+	/**
+	 * Command path: php
+	 * phpの実行パス
+	 *
+	 * @var string
+	 */
+	public $path_php = null; // Command "php"
+	/**
+	 * Item review flag
+	 * アイテム査読フラグ
+	 *
+	 * @var int
+	 */
 	var $review_flg = null;			// アイテム管理 : 査読・承認ON/OFF 
+	/**
+	 * Item auto public flag after review
+	 * アイテム査読後の自動公開フラグ
+	 *
+	 * @var int
+	 */
 	var $item_auto_public = null;	// アイテム管理 : 承認済みアイテムの自動公開ss
-	
+	/**
+	 * exclusion log
+	 * 除外するログ
+	 *
+	 * @var string
+	 */
 	var $log_exclusion = null;	// log restriction
-	
+	/**
+	 * Sitelicense name
+	 * サイトライセンス機関名
+	 *
+	 * @var array
+	 */
 	var $sitelicense_org = null;	// org name for site license
+	/**
+	 * Sitelicense ip address from
+	 * サイトライセンスIPアドレス範囲開始文字列
+	 *
+	 * @var array
+	 */
 	var $ip_sitelicense_from = null;	// ip address from for site license
+	/**
+	 * Sitelicense ip address to
+	 * サイトライセンスIPアドレス範囲終了文字列
+	 *
+	 * @var array
+	 */
 	var $ip_sitelicense_to = null;	// ip address to for site license
 	// Add mail address for feedback mail 2014/04/11 T.Ichikawa --start--
+	/**
+	 * Sitelicense mail address
+	 * サイトライセンス機関メールアドレス
+	 *
+	 * @var array
+	 */
 	var $sitelicense_mail = null; // mail address for site license
 	// Add mail address for feedback mail 2014/04/11 T.Ichikawa --end--
 	// Add multi ip address 2015/01/20 T.Ichikawa --start--
+	/**
+	 * Sitelicense ID
+	 * サイトライセンス機関ID
+	 *
+	 * @var array
+	 */
 	var $sitelicense_id = null;
+	/**
+	 * Sitelicense group name
+	 * サイトライセンスグループ名
+	 *
+	 * @var array
+	 */
 	var $sitelicense_group = null;
 	// Add multi ip address 2015/01/20 T.Ichikawa --end--
+	/**
+	 * Edit type
+	 * 編集モードタイプ
+	 *
+	 * @var string
+	 */
 	var $edit_type = null;			// edit type (addrow, shufflerow, deleterow, addHarvestRow, delHarvestRow, killHarvestingProcess, addExcludeAddress, killSendFeedbackMailProcess)
+	/**
+	 * edit index ID
+	 * 編集対象インデックスID
+	 *
+	 * @var int
+	 */
 	var $edit_idx = null;			// edit row number
 	
 	// Add AWSAccessKeyId 2008/11/18 A.Suzuki --start--
+	/**
+	 * AWS access key ID
+	 * 書誌情報簡単登録
+	 *
+	 * @var int
+	 */
 	var $AWSAccessKeyId = null;	// 書誌情報簡単登録 : AWSAccessKeyId
 	// Add AWSAccessKeyId 2008/11/18 A.Suzuki --end--
 	
 	// Add ranking disp　setting 2008/12/2 A.Suzuki --start--
+	/**
+	 * Ranking display setting
+	 * ランキング表示設定
+	 *
+	 * @var int
+	 */
 	var $ranking_disp_setting = null;	// ranking : display　setting
 	// Add ranking disp　setting 2008/12/2 A.Suzuki --end--
 	
 	// Add default display type 2008/12/8 A.Suzuki --start--
+	/**
+	 * Ranking display type
+	 * ランキング表示タイプ
+	 *
+	 * @var int
+	 */
 	var $default_disp_type = null;		// All : default display type setting
 	// Add default display type 2008/12/8 A.Suzuki --end--
 	
 	// Add select item type for Site License 2009/01/06 A.Suzuki --start--
+	/**
+	 * Sitelicense usage statistics exclusion item type
+	 * サイトライセンス利用統計除外アイテムタイプ
+	 *
+	 * @var string
+	 */
 	var $sitelicense_itemtype = null; 	// allow item type ids
+	/**
+	 * Allow item type
+	 * 許可アイテムタイプ
+	 *
+	 * @var string
+	 */
 	var $allow_item_type = null;		// allow item type name
+	/**
+	 * Not allow item type
+	 * 許可されていないアイテムタイプ
+	 *
+	 * @var string
+	 */
 	var $not_allow_item_type = null;	// not allow item type name
 	// Add select item type for Site License 2009/01/06 A.Suzuki --end--
-	
+	/**
+	 * Admin view active tab
+	 * 管理画面で表示中のタブ
+	 *
+	 * @var int
+	 */
 	var $admin_active_tab = null;
 	
 	// Add search result setting 2009/03/13 A.Suzuki --start--
+	/**
+	 * Sort not display
+	 * 表示しないソートタイプ
+	 *
+	 * @var string
+	 */
 	var $sort_not_disp = null;
+	/**
+	 * Sort display
+	 * 表示するソートタイプ
+	 *
+	 * @var string
+	 */
 	var $sort_disp = null;
+	/**
+	 * Sort display default index
+	 * インデックス検索時のデフォルトソートタイプ
+	 *
+	 * @var string
+	 */
 	var $sort_disp_default_index = null;
+	/**
+	 * Sort display default keyword
+	 * キーワード検索時のデフォルトソートタイプ
+	 *
+	 * @var string
+	 */
 	var $sort_disp_default_keyword = null;
 	// Add search result setting 2009/03/13 A.Suzuki --end--
 	
 	// Add default_list_view_num 2009/03/27 A.Suzuki --start--
+	/**
+	 * Default search result number
+	 * 検索時に1ページに表示するアイテム数
+	 *
+	 * @var int
+	 */
 	var $default_list_view_num = null;
 	// Add default_list_view_num 2009/03/27 A.Suzuki --end--
 	
 	// Add currency_setting 2009/06/29 A.Suzuki --start--
+	/**
+	 * Currency setting
+	 * 通貨単位
+	 *
+	 * @var string
+	 */
 	var $currency_setting = null;
 	// Add currency_setting 2009/06/29 A.Suzuki --end--
 	
 	// Add select_language 2009/07/01 A.Suzuki --start--
+	/**
+	 * Select language pull down display
+	 * 言語選択プルダウンの表示設定
+	 *
+	 * @var int
+	 */
 	var $select_language = null;
 	// Add select_language 2009/07/01 A.Suzuki --end--
 	
 	// Add alternative language setting 2009/08/11 A.Suzuki --start--
+	/**
+	 * alternatice language display flag: japanese
+	 * 他言語メタデータ表示フラグ：日本語
+	 *
+	 * @var int
+	 */
 	var $alternative_language_ja = null;
+	/**
+	 * alternatice language display flag: english
+	 * 他言語メタデータ表示フラグ：英語
+	 *
+	 * @var int
+	 */
 	var $alternative_language_en = null;
 	// Add alternative language setting 2009/08/11 A.Suzuki --end--
 	
 	// Add supple WEKO setting 2009/09/09 A.Suzuki --start--
+	/**
+	 * Supple WEKO URL
+	 * サプリWEKOのURL
+	 *
+	 * @var string
+	 */
 	var $supple_weko_url = null;
+	/**
+	 * Supple review flag
+	 * サプリWEKO査読フラグ
+	 *
+	 * @var int
+	 */
 	var $review_flg_supple = null;
 	// Add supple WEKO setting 2009/09/09 A.Suzuki --end--
 	
 	// Add review mail setting 2009/09/24 Y.Nakao --start--
+	/**
+	 * Send review mail flag
+	 * 査読メール通知フラグ
+	 *
+	 * @var int
+	 */
 	var $review_mail_flg = null;
+	/**
+	 * review mail address
+	 * 査読通知先メールアドレス
+	 *
+	 * @var string
+	 */
 	var $review_mail = null;
 	// Add review mail setting 2009/09/24 Y.Nakao --end--
 	
-    // Add external author ID prefix 2010/11/11 A.Suzuki --start--
-    var $external_author_id_prefix_text = null;
-    // Add external author ID prefix 2010/11/11 A.Suzuki --end--
     // Add index list 2011/4/7 S.Abe --start--
-    var $select_index_list_display = null;
+	/**
+	 * Select index list display
+	 * 選択インデックス表示フラグ
+	 *
+	 * @var int
+	 */
+	var $select_index_list_display = null;
     // Add index list 2011/4/7 S.Abe --end--
     
     // Add AssociateTag for modify API Y.Nakao 2011/10/19 --start--
-    public $AssociateTag = null;
+	/**
+	 * Associate tag
+	 * Amazon associate tag
+	 *
+	 * @var string
+	 */
+	public $AssociateTag = null;
     // Add AssociateTag for modify API Y.Nakao 2011/10/19 --end--
     
     // Add private tree parameter K.matsuo 2013/4/5 --start--
+	/**
+	 * make private tree flag
+	 * プライベートツリー作成フラグ
+	 *
+	 * @var int
+	 */
 	public $is_make_privatetree = null;		// プライベートツリー : プライベートツリー作成の可否
+	/**
+	 * Private tree sort order
+	 * プライベートツリーのソート順序
+	 *
+	 * @var int
+	 */
 	public $privatetree_sort_order = null;	// プライベートツリー : プライベートツリーのソート順
+	/**
+	 * Private tree parent index ID
+	 * プライベートツリー作成先インデックスID
+	 *
+	 * @var null
+	 */
 	public $privatetree_parent_indexid = NULL;	// プライベートツリー : プライベートツリーの親インデックスのID
     // Add private tree parameter K.matsuo 2013/4/5 --end--
     // Add harvesting 2012/03/05 A.Suzuki --start--
     /**
      * repositoryIDs for harvesting
+	 * ハーベスト機関ID
      *
      * @var array
      */
     public $harvesting_repositoryId = null;
     /**
      * repositoryNames for harvesting
+	 * ハーベスト機関名
      *
      * @var array
      */
@@ -183,6 +662,7 @@ class Repository_Action_Edit_Admineditrow extends RepositoryAction
     
     /**
      * baseUrl for harvesting
+	 * ハーベスト機関URL
      *
      * @var array
      */
@@ -190,6 +670,7 @@ class Repository_Action_Edit_Admineditrow extends RepositoryAction
     
     /**
      * metadataPrefix for harvesting
+	 * ハーベストのプレフィックス
      *
      * @var array
      */
@@ -197,6 +678,7 @@ class Repository_Action_Edit_Admineditrow extends RepositoryAction
     
     /**
      * post_index for harvesting
+	 * ハーベストアイテム登録先インデックス
      *
      * @var array
      */
@@ -204,6 +686,7 @@ class Repository_Action_Edit_Admineditrow extends RepositoryAction
     
     /**
      * harvesting_post_name for harvesting
+	 * ハーベスト登録名
      *
      * @var array
      */
@@ -211,6 +694,7 @@ class Repository_Action_Edit_Admineditrow extends RepositoryAction
     
     /**
      * automatic_sorting for harvesting
+	 * ハーベストインデックス自動振り分けフラグ
      *
      * @var array
      */
@@ -219,6 +703,7 @@ class Repository_Action_Edit_Admineditrow extends RepositoryAction
     
     /**
      * PDF cover header type
+	 * PDFカバーヘッダータイプ
      *
      * @var string
      */
@@ -226,6 +711,7 @@ class Repository_Action_Edit_Admineditrow extends RepositoryAction
     
     /**
      * PDF cover header text
+	 * PDFカバーヘッダーメッセージ
      *
      * @var string
      */
@@ -233,6 +719,7 @@ class Repository_Action_Edit_Admineditrow extends RepositoryAction
     
     /**
      * PDF cover header align
+	 * PDFカバーページヘッダーレイアウト
      *
      * @var string
      */
@@ -240,6 +727,7 @@ class Repository_Action_Edit_Admineditrow extends RepositoryAction
     
     /**
      * PDF cover header image delete flag
+	 * PDFカバーページ画像削除フラグ
      *
      * @var int
      */
@@ -247,6 +735,7 @@ class Repository_Action_Edit_Admineditrow extends RepositoryAction
     
     /**
      * Exclude address list for feedback mail
+	 * フィードバックメール送信除外リスト
      *
      * @var int
      */
@@ -254,6 +743,7 @@ class Repository_Action_Edit_Admineditrow extends RepositoryAction
     
     /**
      * Additional exclude address for feedback mail
+	 * フィードバックメール送信除外追加リスト
      *
      * @var int
      */
@@ -261,6 +751,7 @@ class Repository_Action_Edit_Admineditrow extends RepositoryAction
     
     /**
      * is connect checked ICHUSHI
+	 * 医中誌コンテンツフラグ
      *
      * @var string
      */
@@ -268,6 +759,7 @@ class Repository_Action_Edit_Admineditrow extends RepositoryAction
     
     /**
      * ICHUSHI login id
+	 * 医中誌ログインID
      *
      * @var string
      */
@@ -275,6 +767,7 @@ class Repository_Action_Edit_Admineditrow extends RepositoryAction
     
     /**
      * ICHUSHI login password
+	 * 医中誌ログインパスワード
      *
      * @var string
      */
@@ -282,57 +775,153 @@ class Repository_Action_Edit_Admineditrow extends RepositoryAction
     
     /**
      * Feedback send mail activate flag
+	 * フィードバックメール送信可否フラグ
      *
      * @var string
      */
     public $feedbackSendMailActivateFlag = null;
     
-    /**
-     * sitelicense  mail activate flag
-     *
-     * @var string
-     */
-    public $sitelicenseSendMailActivateFlag = null;
-    
     // Bug Fix WEKO-2014-039 no inherit prefix from html 2014/07/11 --start--
+	/**
+	 * JaLC DOI prefix
+	 * JaLC DOIのプレフィックス
+	 *
+	 * @var string
+	 */
     public $prefixJalcDoi = null;
+	/**
+	 * CrossRef DOI prefix
+	 * CrossRef DOIのプレフィックス
+	 *
+	 * @var string
+	 */
     public $prefixCrossRef = null;
     // Add DataCite 2015/02/09 K.Sugimoto --start--
+	/**
+	 * DataCite DOI prefix
+	 * DataCite DOIのプレフィックス
+	 *
+	 * @var string
+	 */
     public $prefixDataCite = null;
     // Add DataCite 2015/02/09 K.Sugimoto --end--
+	/**
+	 * CNRI prefix
+	 * CNRIのプレフィックス
+	 *
+	 * @var string
+	 */
     public $prefixCnri = null;
     // Bug Fix WEKO-2014-039 no inherit prefix from html 2014/07/11 --end--
     
     // OAI-PMH Output Flag
+	/**
+	 * OAI-PMH output flag
+	 * OAI-PMH出力フラグ
+	 *
+	 * @var int
+	 */
     public $oaipmh_output_flag = null;
     
     // Institution Name
+	/**
+	 * Institution name
+	 * 機関名
+	 *
+	 * @var string
+	 */
     public $institutionName = null;
     
     // Add Default Search Type 2014/12/03 K.Sugimoto --start--
     // Default Search Type
+	/**
+	 * Default search type
+	 * デフォルト検索タイプ
+	 *
+	 * @var string
+	 */
     public $default_search_type = null;
     // Add Default Search Type 2014/12/03 K.Sugimoto --end--
 
     // Add Usage Statistics link display setting 2014/12/16 K.Matsushita --start--
+	/**
+	 * Usage statistics display flag
+	 * 利用統計リンク表示フラグ
+	 *
+	 * @var null
+	 */
     public $usagestatistics_link_display = null;
     // Add Usage Statistics link display setting 2014/12/16 K.Matsushita --end--
 
     // Add ranking tab display setting 2014/12/19 K.Matsushita --start--
+	/**
+	 * Ranking tab display
+	 * 表示中のランキングタブ
+	 *
+	 * @var int
+	 */
     public $ranking_tab_display = null;
     // Add ranking tab display setting 2014/12/19 K.Matsushita --end--
     
     // Add DataCite 2015/02/09 K.Sugimoto --start--
     // PrefixID Add Flag
+	/**
+	 * ConnectID serer flag
+	 * IDServer連携フラグ
+	 *
+	 * @var int
+	 */
     public $prefix_flag = null;
     // Add DataCite 2015/02/09 K.Sugimoto --end--
 
     // Auto Input Metadata by CrossRef DOI 2015/03/02 K.Sugimoto --start--
+	/**
+	 * CrossRef service account
+	 * CrossRefのアカウント情報
+	 *
+	 * @var string
+	 */
     public $CrossRefQueryServicesAccount = null;
     // Auto Input Metadata by CrossRef DOI 2015/03/02 K.Sugimoto --end--
     
+    /**
+     * Value of type of author search
+     * 著者名検索の設定値
+     *
+     * @var int
+     */
+    public $author_search_type = null;
+    
+    /**
+     * List of external author ID prefix name
+     * 外部著者IDのプレフィックス名一覧
+     *
+     * @var array array[$ii]
+     */
+    public $external_author_id_prefix_list = null;
+    
+    /**
+     * List of external author ID prefix ID
+     * 外部著者IDのプレフィックスID一覧
+     *
+     * @var array array[$ii]
+     */
+    public $external_author_id_prefix_list_id = null;
+    
+    /**
+     * List of external author ID prefix url
+     * 外部著者IDのプレフィックスURL一覧
+     *
+     * @var array array[$ii]
+     */
+    public $external_author_id_prefix_list_url = null;
+
 	/**
-	 * @access  public
+	 * Execute
+	 * 実行
+	 *
+	 * @return string "success"/"error" success/failed 成功/失敗
+	 * @throws RepositoryException
 	 */
 	function executeApp()
 	{
@@ -473,6 +1062,12 @@ class Repository_Action_Edit_Admineditrow extends RepositoryAction
             }
             $admin_params["path_mecab"]["param_value"] = $this->path_mecab;
             // Add external search word 2014/05/23 K.Matsuo -end-
+            // Server environment : pass to PHP
+            if(strlen($this->path_php) > 0 && $this->path_php[strlen($this->path_php) - 1] != DIRECTORY_SEPARATOR){
+                $this->path_php .= DIRECTORY_SEPARATOR;
+            }
+            $admin_params["path_php"]["param_value"] = $this->path_php;
+            
 			// wvHtml
 			if($admin_params['path_wvWare']['param_value']!=""){ 
 	            if(file_exists($admin_params['path_wvWare']['param_value']."wvHtml") || 
@@ -556,6 +1151,17 @@ class Repository_Action_Edit_Admineditrow extends RepositoryAction
                 $admin_params['path_mecab']['path'] = "false";
             }
             // Add external search word 2014/05/23 K.Matsuo -end-
+            // PHP
+            if($admin_params['path_php']['param_value'] != ""){
+                if(file_exists($admin_params['path_php']['param_value']. "php") || 
+                   file_exists($admin_params['path_php']['param_value']. "php.exe")){
+                    $admin_params['path_php']['path'] = "true";
+                } else {
+                    $admin_params['path_php']['path'] = "false";
+                }
+            } else {
+                $admin_params['path_php']['path'] = "false";
+            }
             
 			// Add privatetree setting 2013/04/05 K.Matsuo -start-
 			
@@ -704,16 +1310,6 @@ class Repository_Action_Edit_Admineditrow extends RepositoryAction
             $admin_params["ip_sitelicense_to"]["param_value"] = $this->ip_sitelicense_to;
             $admin_params["sitelicense_mail"]["param_value"] = $this->sitelicense_mail;
             
-			if(!isset($this->sitelicenseSendMailActivateFlag))
-            {
-                $admin_params["send_sitelicense_mail_activate_flg"]["param_value"] = "0";
-            }
-            else
-            {
-                $admin_params["send_sitelicense_mail_activate_flg"]["param_value"] = "1";
-            }
-			// Add mail address for feedback mail 2014/04/11 T.Ichikawa --end--
-			
 			// Add AWSAccessKeyId 2008/11/18 A.Suzuki --start--
 			$admin_params["AWSAccessKeyId"]["param_value"] = $this->AWSAccessKeyId;
 			// Add AWSAccessKeyId 2008/11/18 A.Suzuki --end--
@@ -835,12 +1431,9 @@ class Repository_Action_Edit_Admineditrow extends RepositoryAction
 	        
 			$admin_params["log_exclusion"]["param_value"] = $this->log_exclusion;
 			
-			$admin_params["author_id_prefix"]["text"] = $this->external_author_id_prefix_text;
 			$admin_params["author_id_prefix"]["list"] = array();
-			$author_id_prefix_text_array = explode("|", $this->external_author_id_prefix_text);
-			for($ii=0;$ii<count($author_id_prefix_text_array);$ii++){
-			    $data = explode(",", $author_id_prefix_text_array[$ii]);
-			    $author_id_prefix_array = array("prefix_id"=>$data[0], "prefix_name"=>$data[1]);
+			for($ii=0;$ii<count($this->external_author_id_prefix_list);$ii++){
+			    $author_id_prefix_array = array("prefix_id"=>$this->external_author_id_prefix_list_id[$ii], "prefix_name"=>$this->external_author_id_prefix_list[$ii], "url"=>$this->external_author_id_prefix_list_url[$ii]);
 			    array_push($admin_params["author_id_prefix"]["list"], $author_id_prefix_array);
 			}
 			
@@ -870,7 +1463,7 @@ class Repository_Action_Edit_Admineditrow extends RepositoryAction
                 // Replace double-byte space to half space
                 $this->harvesting_set_param[$ii] = str_replace("　", " ", $this->harvesting_set_param[$ii]);
                 // When harvesting_set_param is only half space, change to empty
-                if($this->harvesting_set_param[$ii] == " ");
+                if($this->harvesting_set_param[$ii] == " ")
                 {
                     $this->harvesting_set_param[$ii] = "";
                 }
@@ -1234,6 +1827,9 @@ class Repository_Action_Edit_Admineditrow extends RepositoryAction
 		    // Auto Input Metadata by CrossRef DOI 2015/03/02 K.Sugimoto --start--
             $admin_params["CrossRefQueryServicesAccount"]["param_value"] = $this->CrossRefQueryServicesAccount;
 		    // Auto Input Metadata by CrossRef DOI 2015/03/02 K.Sugimoto --end--
+            
+            // 著者名検索設定
+            $admin_params["author_search_type"]["param_value"] = $this->author_search_type;
             
             $this->Session->setParameter("admin_params", $admin_params);
             

@@ -1,62 +1,183 @@
 <?php
+
+/**
+ * Action class for downloading privileges and billing set add and delete column
+ * ダウンロード権限・課金設定欄追加・削除用アクションクラス
+ *
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Setprice.class.php 53594 2015-05-28 05:25:53Z kaede_matsushita $
+// $Id: Setprice.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
-// Copyright (c) 2007 - 2008, National Institute of Informatics, 
+// Copyright (c) 2007 - 2008, National Institute of Informatics,
 // Research and Development Center for Scientific Information Resources
 //
 // This program is licensed under a Creative Commons BSD Licence
 // http://creativecommons.org/licenses/BSD/
 //
 // --------------------------------------------------------------------
-
-/* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
+/**
+ * Item register class
+ * アイテム登録クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/ItemRegister.class.php';
 
 /**
+ * Action class for downloading privileges and billing set add and delete column
+ * ダウンロード権限・課金設定欄追加・削除用アクションクラス
  * 
- *
- * @package     [[package名]]
- * @access      public
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class Repository_Action_Main_Item_Setprice extends RepositoryAction
 {	
 	// リクエストパラメタ
 	// ファイル以外のパラメタは本コールバック関数で処理する。
+	/**
+	 * file license array
+	 * ファイルライセンス配列
+	 *
+	 * @var array
+	 */
 	var $licence = null;				// ファイルのライセンス配列, アップロード済みアイテムの数に対応
+	/**
+	 * file license free input array
+	 * ファイルライセンス自由記述配列
+	 *
+	 * @var array
+	 */
 	var $freeword = null;				// ファイルのライセンス自由記述欄配列, " "の場合、未入力
+	/**
+	 * Embargo year
+	 * エンバーゴ年
+	 *
+	 * @var int
+	 */
 	var $embargo_year = null;			// エンバーゴ年
+	/**
+	 * Embargo month
+	 * エンバーゴ月
+	 *
+	 * @var int
+	 */
 	var $embargo_month = null;			// エンバーゴ月
+	/**
+	 * Embargo day
+	 * エンバーゴ日
+	 *
+	 * @var int
+	 */
 	var $embargo_day = null;			// エンバーゴ日
+	/**
+	 * Embargo flag(0: item publish date, 1: original setting date)
+	 * エンバーゴフラグ(0: アイテム公開日, 1:公開日独自設定)
+	 *
+	 * @var int
+	 */
 	var $embargo_flag = null;			// エンバーゴフラグ(0:公開日をアイテム公開日に合わせる, 1:公開日を独自に設定する)
 	
 	// Add file price Y.Nakao 2008/08/28 --start--
+	/**
+	 * Selected room ID array
+	 * 選択されたグループID配列
+	 *
+	 * @var array
+	 */
 	var $room_ids = null;				// 選択されたグループのID配列
+	/**
+	 * Set price array
+	 * 設定されたか各配列
+	 *
+	 * @var array
+	 */
 	var $price_value = null;			// 設定された価格配列
-	var $setting_flg = null;			// 1:Add 2:Delete 
+	/**
+	 * set mode)1: Add, 2: Delete)
+	 * 設定モード(1: 追加, 2: 削除)
+	 *
+	 * @var int
+	 */
+	var $setting_flg = null;			// 1:Add 2:Delete
+	/**
+	 * Target delete row
+	 * 削除対象行
+	 *
+	 * @var string
+	 */
 	var $target_row = null;				// 削除対象
 	// Add file price Y.Nakao 2008/08/28 --end--
 	
     // Add file authority T.Ichikawa 2015/03/20 --start--
+	/**
+	 * User authority room ID
+	 * ユーザーの所属するグループID配列
+	 *
+	 * @var array
+	 */
     var $auth_room_ids = null;
     // Add file authority T.Ichikawa 2015/03/20 --end--
 	
 	// Extend file type A.Suzuki 2010/02/04 --start--
+	/**
+	 * Display type
+	 * 表示タイプ
+	 *
+	 * @var int
+	 */
 	var $display_type = null;
+	/**
+	 * Display name
+	 * 表示名
+	 *
+	 * @var string
+	 */
 	var $display_name = null;
+	/**
+	 * Flash embargo year
+	 * フラッシュファイルエンバーゴ年
+	 *
+	 * @var int
+	 */
 	var $flash_embargo_year = null;			// フラッシュファイルエンバーゴ年
+	/**
+	 * Flash embargo month
+	 * フラッシュファイルエンバーゴ月
+	 *
+	 * @var int
+	 */
 	var $flash_embargo_month = null;		// フラッシュファイルエンバーゴ月
+	/**
+	 * Flash embargo day
+	 * フラッシュファイルエンバーゴ日
+	 *
+	 * @var int
+	 */
 	var $flash_embargo_day = null;			// フラッシュファイルエンバーゴ日
+	/**
+	 * Flash embargo flag(0: item publish date, 1: original setting date)
+	 * フラッシュエンバーゴフラグ(0: アイテム公開日, 1:公開日独自設定)
+	 *
+	 * @var int
+	 */
 	var $flash_embargo_flag = null;			// フラッシュファイルエンバーゴフラグ(0:公開日をアイテム公開日に合わせる, 1:公開日を独自に設定する)
 	// Extend file type A.Suzuki 2010/02/04 --end--
-    
-    /**
-     * action/main/item/edittextから流用
-     *
-     * @access  public
-     */
+
+	/**
+	 * Execute
+	 * 実行
+	 *
+	 * @return string "success"/"error" success/failed 成功/失敗
+	 * @throws RepositoryException
+	 */
     function execute()
     {
        	try {    		
@@ -317,7 +438,7 @@ class Repository_Action_Main_Item_Setprice extends RepositoryAction
 	            $this->failTrans();                             //トランザクション失敗を設定(ROLLBACK)
 	            throw $exception;
 			}
-			
+			$this->finalize();
 	    	return 'success';
 	    	
         } catch ( RepositoryException $Exception) {

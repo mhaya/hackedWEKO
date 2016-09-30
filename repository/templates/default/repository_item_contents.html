@@ -1,6 +1,6 @@
 <!--// ---------------------------------------------------------------------->
 <!--//                                                                     -->
-<!--// $Id: repository_item_contents.html 47574 2015-02-02 07:33:54Z tomohiro_ichikawa $          -->
+<!--// $Id: repository_item_contents.html 68946 2016-06-16 09:47:19Z tatsuya_koyasu $          -->
 <!--//                                                                     -->
 <!--// Copyright (c) 2007 - 2008, National Institute of Informatics,        -->
 <!--// Research and Development Center for Scientific Information Resources -->
@@ -160,7 +160,7 @@
 						<!-- heading **start** -->
 						<{if strlen($heading[0]) > 0 || strlen($heading[1]) > 0 || strlen($heading[2]) > 0 || strlen($heading[3]) > 0}>
 							<{if $i==0 || ( $i>0 && ($heading[0]!=$heading_prev[0] || $heading[1]!=$heading_prev[1] || $heading[2]!=$heading_prev[2] || $heading[3]!=$heading_prev[3]) )}>
-								<div class="panelbar large text_color mt10">
+								<div class="panelbar large text_color mt10 clear">
 									<!-- heading -->
 									<{if $heading[0] != "" || $heading[1] != ""}>
 										<{if $smarty.session._lang=="japanese"}>
@@ -200,23 +200,93 @@
 						<{assign var="heading_prev" value=$action.heading[i]}>
 						<!-- heading **end** -->
 						
-						<div class="pt05 lh15">
+						<div class="pt05 lh15 clear">
 							<!-- title **start** -->
-							<div class="item_title bold pl01em">
+							<{assign var="item_attr_type" value=$metadata.item_attr_type}>
+							<{assign var="item_attr" value=$metadata.item_attr}>
+							
+							<{section name=j loop=$item_attr_type}>
+								<{if $item_attr_type[j].input_type=="biblio_info"}>
+									<{assign var="start_page" value=$item_attr[j][0].start_page}>
+									<{assign var="end_page" value=$item_attr[j][0].end_page}>
+								<{/if}>
+							<{/section}>
+							
+							<div class=<{if strlen($start_page) > 0 || strlen($end_page) > 0}>"dotImage pb40"<{else}>"pb40"<{/if}>>
 								<!-- hidden : other lang title -->
 								<{if strlen($title) > 0 || strlen($title_en) > 0}>
 									<{if $smarty.session._lang=="japanese"}>
 									<{* Modify Directory specification BASE_URL K.Matsuo 2011/9/2 --start--  *}>
 										<{if strlen($title) > 0}>
-											<a href="<{$smarty.const.BASE_URL}>/?action=repository_uri&item_id=<{$item.item_id}>"><{$action.array_title[i]}></a>
+											<p class="item_title bold pl01em bg_fff fl" style="max-width:80%">
+												<a href="<{$smarty.const.BASE_URL}>/?action=repository_uri&item_id=<{$item.item_id}>"><{$action.array_title[i]}></a>
+											</p>
+											<{if strlen($start_page) > 0 && strlen($end_page) > 0}>
+												<p class="fr ar bg_fff pr10" style="padding-top: 8px">
+													<{$start_page}>-<{$end_page}>
+												</p>
+											<{elseif strlen($start_page) > 0}>
+												<p class="fr ar bg_fff pr10" style="padding-top: 8px">
+													<{$start_page}>
+												</p>
+											<{elseif strlen($end_page) > 0}>
+												<p class="fr ar bg_fff pr10" style="padding-top: 8px">
+													<{$end_page}>
+												</p>
+											<{/if}>
 										<{else}>
-											<a href="<{$smarty.const.BASE_URL}>/?action=repository_uri&item_id=<{$item.item_id}>"><{$action.array_title_english[i]}></a>
+											<p class="item_title bold pl01em bg_fff fl" style="max-width:80%">
+												<a href="<{$smarty.const.BASE_URL}>/?action=repository_uri&item_id=<{$item.item_id}>"><{$action.array_title_english[i]}></a>
+											</p>
+											<{if strlen($start_page) > 0 && strlen($end_page) > 0}>
+												<p class="fr ar bg_fff pr10" style="padding-top: 8px">
+													<{$start_page}>-<{$end_page}>
+												</p>
+											<{elseif strlen($start_page) > 0}>
+												<p class="fr ar bg_fff pr10" style="padding-top: 8px">
+													<{$start_page}>
+												</p>
+											<{elseif strlen($end_page) > 0}>
+												<p class="fr ar bg_fff pr10" style="padding-top: 8px">
+													<{$end_page}>
+												</p>
+											<{/if}>
 										<{/if}>
 									<{else}>
 										<{if strlen($title_en) > 0}>
-											<a href="<{$smarty.const.BASE_URL}>/?action=repository_uri&item_id=<{$item.item_id}>"><{$action.array_title_english[i]}></a>
+											<p class="item_title bold pl01em bg_fff fl" style="max-width:80%">
+												<a href="<{$smarty.const.BASE_URL}>/?action=repository_uri&item_id=<{$item.item_id}>"><{$action.array_title_english[i]}></a>
+											</p>
+											<{if strlen($start_page) > 0 && strlen($end_page) > 0}>
+												<p class="fr ar bg_fff pr10" style="padding-top: 8px">
+													<{$start_page}>-<{$end_page}>
+												</p>
+											<{elseif strlen($start_page) > 0}>
+												<p class="fr ar bg_fff pr10" style="padding-top: 8px">
+													<{$start_page}>
+												</p>
+											<{elseif strlen($end_page) > 0}>
+												<p class="fr ar bg_fff pr10" style="padding-top: 8px">
+													<{$end_page}>
+												</p>
+											<{/if}>
 										<{else}>
-											<a href="<{$smarty.const.BASE_URL}>/?action=repository_uri&item_id=<{$item.item_id}>"><{$action.array_title[i]}></a>
+											<p class="item_title bold pl01em bg_fff fl" style="max-width:80%">
+												<a href="<{$smarty.const.BASE_URL}>/?action=repository_uri&item_id=<{$item.item_id}>"><{$action.array_title[i]}></a>
+											</p>
+											<{if strlen($start_page) > 0 && strlen($end_page) > 0}>
+												<p class="fr ar bg_fff pr10" style="padding-top: 8px">
+													<{$start_page}>-<{$end_page}>
+												</p>
+											<{elseif strlen($start_page) > 0}>
+												<p class="fr ar bg_fff pr10" style="padding-top: 8px">
+													<{$start_page}>
+												</p>
+											<{elseif strlen($end_page) > 0}>
+												<p class="fr ar bg_fff pr10" style="padding-top: 8px">
+													<{$end_page}>
+												</p>
+											<{/if}>
 										<{/if}>
 									<{/if}>
 									<{* Modify Directory specification BASE_URL K.Matsuo 2011/9/2 --end-- *}>
@@ -225,10 +295,7 @@
 							<!-- title **end** -->
 							
 							<!-- attr data **start** -->
-							<{assign var="item_attr_type" value=$metadata.item_attr_type}>
-							<{assign var="item_attr" value=$metadata.item_attr}>
-							
-							<div class="repository_contents_metadata pl02em">
+							<div class="repository_contents_metadata pl02em clear">
 								
 								<{assign var=flg_name value="false"}>
 								<{section name=j loop=$item_attr_type}>

@@ -1,7 +1,15 @@
 <?php
+
+/**
+ * Item registration number acquiring action of every public situation
+ * 公開状況毎のアイテム登録数取得アクション
+ * 
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Getpublicitem.class.php 48455 2015-02-16 10:53:40Z atsushi_suzuki $
+// $Id: Getpublicitem.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -10,13 +18,31 @@
 // http://creativecommons.org/licenses/BSD/
 //
 // --------------------------------------------------------------------
- 
+
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
+/**
+ * DB object wrapper Class
+ * DBオブジェクトラッパークラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryDbAccess.class.php';
+/**
+ * The number of registered items aggregate common classes
+ * 登録アイテム数集計共通クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAggregateCalculation.class.php';
 
 /**
- * Getpublicitem action
+ * Item registration number acquiring action of every public situation
+ * 公開状況毎のアイテム登録数取得アクション
+ * 
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class Repository_Action_Common_Getpublicitem extends RepositoryAction
 {
@@ -24,36 +50,48 @@ class Repository_Action_Common_Getpublicitem extends RepositoryAction
     // Request parameters
     //----------------------------
     /**
-     * login_id
+     * Administrator login ID
+     * 管理者ログインID
      *
      * @var string
      */
     public $login_id = null;
     /**
-     * password to login
+     * Administrator password
+     * 管理者パスワード
      *
      * @var string
      */
     public $password = null;
     /**
-     * output format of total items
+     * The output format of the item registration status
+     * アイテム登録状況の出力形式
      *
-     * @var string
+     * @var string "xml" xml format xml形式
+     *             "JSON" JSON format JSON形式
      */
     public $format = null;
     /**
-     * user base auth
+     * User of the base level of authority
+     * ユーザのベース権限レベル
      *
-     * @var int
+     * @var string
      */
     public $user_authority_id = 0;
     /**
-     * user room auth
+     * User of room privilege level
+     * ユーザのルーム権限レベル
      *
-     * @var int
+     * @var string
      */
     public $authority_id = 0;
     
+    /**
+     * And outputs the number of items registered every public situation in the response
+     * 公開状況毎のアイテム登録数をレスポンスに出力する
+     *
+     * @return boolean Unauthorized access 不正アクセス
+     */
     function executeApp() {
         // login check
         $result = null;

@@ -1,7 +1,15 @@
 <?php
+
+/**
+ * Index rights management common classes
+ * インデックス権限管理共通クラス
+ * 
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: RepositoryIndexAuthorityManager.class.php 53594 2015-05-28 05:25:53Z kaede_matsushita $
+// $Id: RepositoryIndexAuthorityManager.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics,
 // Research and Development Center for Scientific Information Resources
@@ -10,30 +18,83 @@
 // http://creativecommons.org/licenses/BSD/
 //
 // --------------------------------------------------------------------
-
-/* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
-
+/**
+ * WEKO Logic abstract class
+ * WEKOロジック基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryLogicBase.class.php';
+/**
+ * user authority manager class
+ * ユーザー権限管理クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryUserAuthorityManager.class.php';
 
+/**
+ * Index rights management common classes
+ * インデックス権限管理共通クラス
+ * 
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
+ */
 class RepositoryIndexAuthorityManager extends RepositoryLogicBase
 {
-    private $defaultAccessRoleIds_ = "";
-    private $defaultAccessRoleRoom_ = _AUTH_CHIEF;
-    private $defaultAccessGroups_ = '';
-    private $defaultExclusiveAclRoleIds_ = '';
-    private $defaultExclusiveAclRoleRoom_ = RepositoryConst::TREE_DEFAULT_EXCLUSIVE_ACL_ROLE_ROOM;
-    private $defaultExclusiveAclGroups_ = '';
-    
     /**
+     * Default  access role ids
+     * アクセス可能ベース権限初期値
+     *
+     * @var string
+     */
+    private $defaultAccessRoleIds_ = "";
+    /**
+     * Default access role room
+     * アクセス可能ルーム権限初期値
+     *
+     * @var int
+     */
+    private $defaultAccessRoleRoom_ = _AUTH_CHIEF;
+    /**
+     * Default  access group id
+     * アクセス可能グループ初期値
+     *
+     * @var string
+     */
+    private $defaultAccessGroups_ = '';
+    /**
+     * Default  excluseive access role ids
+     * アクセス不可能ベース権限初期値
+     *
+     * @var string
+     */
+    private $defaultExclusiveAclRoleIds_ = '';
+    /**
+     * Default exclusive access role room
+     * アクセス不可能ルーム権限初期値
+     *
+     * @var int
+     */
+    private $defaultExclusiveAclRoleRoom_ = RepositoryConst::TREE_DEFAULT_EXCLUSIVE_ACL_ROLE_ROOM;
+    /**
+     * Default excluseive access group id
+     * アクセス不可能グループ初期値
+     *
+     * @var string
+     */
+    private $defaultExclusiveAclGroups_ = '';
+
+    // Mod OpenDepo 2014/01/31 S.Arata --start--
+    /**
+     * To get a list of the index ID with a viewing authority
      * 閲覧権限のあるインデックスIDのリストを取得する
      *
-     * @param var $harvestFlag harvest flag
-     * @param var $adminBaseAuth admin base auth
-     * @param var $adminRoomAuth admin room auth
-     * @param int $indexId index_id
+     * @param int $harvestFlag harvest flag ハーベスト公開フラグ
+     * @param int $adminBaseAuth admin base auth 管理者ベース権限
+     * @param int $adminRoomAuth admin room auth 管理者ルーム権限
+     * @param int $indexId index_id インデックスID
+     * @return array index list インデックスリスト
+     *                array[$ii]["index_is"|...]
      */
-    // Mod OpenDepo 2014/01/31 S.Arata --start--
     public function getPublicIndex($harvestFlag, $adminBaseAuth, $adminRoomAuth, $indexId = null){
         $query = $this->getPublicIndexQuery($harvestFlag, $adminBaseAuth, $adminRoomAuth, $indexId);
         $result = $this->dbAccess->executeQuery($query);
@@ -55,25 +116,28 @@ class RepositoryIndexAuthorityManager extends RepositoryLogicBase
     
     /**
      * initialize
+     * 初期化
      *
-     * @param var $session session
-     * @param var $dbAccess dbAccess
-     * @param string $transStartDate transStartDate
+     * @param Session $session session セッションオブジェクト
+     * @param RepositoryDbAccess $dbAccess db object DBオブジェクト
+     * @param string $transStartDate process start date 処理開始時間
      */
     public function __construct($session, $dbAccess, $transStartDate)
     {
         parent::__construct($session, $dbAccess, $transStartDate);
     }
 
+    // Mod OpenDepo 2014/01/31 S.Arata --start--
     /**
      * create query that get index ID of viewable
+     * 閲覧可能なインデックスIDを取得するクエリを取得する
      *
-     * @param var $harvestFlag harvest flag
-     * @param var $adminBaseAuth admin base auth
-     * @param var $adminRoomAuth admin room auth
-     * @param int $indexId index_id
+     * @param int $harvestFlag harvest flag ハーベスト公開フラグ
+     * @param int $adminBaseAuth admin base auth 管理者ベース権限
+     * @param int $adminRoomAuth admin room auth 管理者ルーム権限
+     * @param int $indexId index_id インデックスID
+     * @return string query クエリ
      */
-    // Mod OpenDepo 2014/01/31 S.Arata --start--
     public function getPublicIndexQuery($harvestFlag, $adminBaseAuth, $adminRoomAuth, $indexId = null)
     {
         // get user_id and
@@ -167,15 +231,17 @@ class RepositoryIndexAuthorityManager extends RepositoryLogicBase
 
     /**
      * get authority of index
+     * インデックス権限を取得する
      *
-     * @param var $indexId index ID
-     * @param var $exclusive_acl_role_id
-     * @param var $exclusive_acl_room_auth
-     * @param var $exclusive_acl_group
-     * @param var $publicState
-     * @param var $publicDate
-     * @param var $harvestPublicState
-     * @param var $logFh log file handle
+     * @param int $indexId index ID インデックスID
+     * @param int $exclusive_acl_role_id exclusive base authority 除外ベース権限
+     * @param int $exclusive_acl_room_auth exclusive room authority 除外ルーム権限
+     * @param int $exclusive_acl_group exclusice group id 除外グループ
+     * @param int $publicState public state 公開状態
+     * @param string $publicDate public date 公開日
+     * @param int $harvestPublicState harvest public state ハーベスト公開状態
+     * @param resource $logFh log file handle ログファイルハンドラ
+     * @return null
      */
     public function getBrowsingAuth($indexId, &$exclusive_acl_role_id, &$exclusive_acl_room_auth, &$exclusive_acl_group, &$publicState, &$publicDate, &$harvestPublicState, $logFh=null)
     {
@@ -271,12 +337,14 @@ class RepositoryIndexAuthorityManager extends RepositoryLogicBase
     }
 
     /**
-     * 投稿権限があるインデックスである
-     * @param string $auth_id auth_id
-     * @param string $user_id user_id
-     * @param string $indexId インデックスID
-     * @param boolean $isError エラー発生
-     * @return boolean true:投稿権限がある false:投稿権限がない
+     * Determining whether the index you have posts authority
+     * 投稿権限があるインデックスであるか判定
+     *
+     * @param string $auth_id auth_id ベース権限
+     * @param string $user_id user_id ユーザーID
+     * @param string $indexId index ID インデックスID
+     * @param boolean $isError error flag エラー発生
+     * @return boolean true/false can register/or not 投稿可能/不可
      */
     public function isRegistItemToIndex($auth_id, $user_id, $indexId, &$isError)
     {
@@ -328,21 +396,22 @@ class RepositoryIndexAuthorityManager extends RepositoryLogicBase
     }
 
     /**
-     * get lower authority
+     * Decide authority
+     * 閲覧権限を計算する
      *
-     * @param var $parentExclusiveBaseAuth base authority of parant index
-     * @param var $parentExclusiveRoomAuth room authority of parant index
+     * @param int $parentExclusiveBaseAuth base authority of parant index 親インデックスの除外ベース権限
+     * @param int $parentExclusiveRoomAuth room authority of parant index 親インデックスの除外ルーム権限
      * @param string $parentExclusiveGroup array of exclusive parent index 「,」区切で閲覧対象外のグループIDが入った文字列
-     * @param var $parentPublicState public state
-     * @param var $parentPublicDate public date
-     * @param var $parentHarvestPublicState harvest public state
-     * @param var $childExclusiveBaseAuth base authority of child index
-     * @param var $childExclusiveRoomAuth room authority of child index
+     * @param int $parentPublicState public state 親インデックスの公開状態
+     * @param string $parentPublicDate public date 親インデックスの公開日
+     * @param int $parentHarvestPublicState harvest public state 親インデックスのハーベスト公開状態
+     * @param int $childExclusiveBaseAuth base authority of child index 子インデックスの除外ベース権限
+     * @param int $childExclusiveRoomAuth room authority of child index 子インデックスの除外ルーム権限
      * @param string $childExclusiveGroup array of exclusive child index 「,」区切で閲覧対象外のグループIDが入った文字列
-     * @param var $childPublicState public state
-     * @param var $childPublicDate public date
-     * @param var $childHarvestPublicState harvest public state
-     * @param var $logFh log file handle
+     * @param int $childPublicState public state 子インデックスの公開状態
+     * @param string $childPublicDate public date 子インデックスの公開日
+     * @param int $childHarvestPublicState harvest public state 子インデックスのはベースと公開状態
+     * @param resource $logFh log file handle ログファイルハンドラ
      */
     private function decideBrowsingAuth($parentExclusiveBaseAuth,
                                         $parentExclusiveRoomAuth,
@@ -403,21 +472,22 @@ class RepositoryIndexAuthorityManager extends RepositoryLogicBase
 
     /**
      * update exclusive authority
+     * 閲覧権限を更新する
      *
-     * @param var $indexId index ID
-     * @param var $parentExclusiveBaseAuth base authority of parant index
-     * @param var $parentExclusiveBaseAuth room authority of parant index
-     * @param var $parentExclusiveGroup array of exclusive parent index
-     * @param var $parentPublicState public state
-     * @param var $parentPublicDate public date
-     * @param var $parentHarvestPublicState harvest public state
-     * @param var $childExclusiveBaseAuth base authority of child index
-     * @param var $childExclusiveRoomAuth room authority of child index
-     * @param array $childExclusiveGroup array of exclusive child index 閲覧対象外のグループIDが入った配列
-     * @param var $childPublicState public state
-     * @param var $childPublicDate public date
-     * @param var $childHarvestPublicState harvest public state
-     * @param var $logFh log file handle
+     * @param int $indexId index ID インデックスID
+     * @param int $parentExclusiveBaseAuth base authority of parant index 親インデックスの除外ベース権限
+     * @param int $parentExclusiveRoomAuth room authority of parant index 親インデックスの除外ルーム権限
+     * @param string $parentExclusiveGroup array of exclusive parent index 「,」区切で閲覧対象外のグループIDが入った文字列
+     * @param int $parentPublicState public state 親インデックスの公開状態
+     * @param string $parentPublicDate public date 親インデックスの公開日
+     * @param int $parentHarvestPublicState harvest public state 親インデックスのハーベスト公開状態
+     * @param int $childExclusiveBaseAuth base authority of child index 子インデックスの除外ベース権限
+     * @param int $childExclusiveRoomAuth room authority of child index 子インデックスの除外ルーム権限
+     * @param string $childExclusiveGroup array of exclusive child index 「,」区切で閲覧対象外のグループIDが入った文字列
+     * @param int $childPublicState public state 子インデックスの公開状態
+     * @param string $childPublicDate public date 子インデックスの公開日
+     * @param int $childHarvestPublicState harvest public state 子インデックスのはベースと公開状態
+     * @param resource $logFh log file handle ログファイルハンドラ
      */
     public function updateBrowsingAuth( $indexId,
                                         $parentExclusiveBaseAuth,
@@ -595,8 +665,9 @@ class RepositoryIndexAuthorityManager extends RepositoryLogicBase
 
     /**
      * delete exclusive authority
+     * 閲覧権限を削除する
      *
-     * @param var $indexId index ID
+     * @param int $indexId index ID インデックスID
      *
      */
     public function deleteBrowsingAuth ($indexId)
@@ -626,8 +697,10 @@ class RepositoryIndexAuthorityManager extends RepositoryLogicBase
 
     /**
      * check public state
+     * 公開状態をチェックする
      *
-     * @param var $indexId index ID
+     * @param int $indexId index ID インデックスID
+     * @return bool true/false public/close 公開/非公開
      */
     public function checkPublicState ($indexId)
     {
@@ -650,6 +723,9 @@ class RepositoryIndexAuthorityManager extends RepositoryLogicBase
 
     /**
      * get harvest public index query
+     * ハーベスト公開状態取得クエリを取得する
+     *
+     * @return string query クエリ
      */
     public function getHarvestPublicIndexQuery(){
         $query = " SELECT DISTINCT index_id ".
@@ -659,7 +735,8 @@ class RepositoryIndexAuthorityManager extends RepositoryLogicBase
     }
     
     /**
-     * delete all record from index browsing authority 
+     * delete all record from index browsing authority
+     * インデックス閲覧権限を全て削除する
      */
     private function deleteAllRecordFromIndexBrowsingAuthority(){
         $query = " TRUNCATE ".DATABASE_PREFIX."repository_index_browsing_authority ;";
@@ -668,6 +745,7 @@ class RepositoryIndexAuthorityManager extends RepositoryLogicBase
     
     /**
      * delete all record from index browsing groups
+     * インデックス閲覧可能グループ情報を全て削除する
      */
     private function deleteAllRecordFromIndexBrowsingGroups(){
         $query = " TRUNCATE ".DATABASE_PREFIX."repository_index_browsing_groups ;";
@@ -676,6 +754,7 @@ class RepositoryIndexAuthorityManager extends RepositoryLogicBase
     
     /**
      * delete all record from index browsing groups
+     * インデックス関連の権限を全て再作成する
      */
     public function reconstructIndexAuthorityTable(){
         $this->deleteAllRecordFromIndexBrowsingAuthority();
@@ -688,15 +767,13 @@ class RepositoryIndexAuthorityManager extends RepositoryLogicBase
     }
     
     /**
-     * NetCommonsに登録されている全グループを取得し、
-     * 投稿権限のあるグループID、グループ名、投稿権限のないグループID、グループ名のリストを取得する。
-     * 
-     * get edit index access group list
+     * Acquired all of the groups that are registered in the NetCommons, group ID with post authority, group name, post unauthorized group ID, to get a list of group names.
+     * NetCommonsに登録されている全グループを取得し、投稿権限のあるグループID、グループ名、投稿権限のないグループID、グループ名のリストを取得する。
      *
-     * @param $access_group_id access OK group room ids
-     * @param $exclusive_acl_group acl NG group room ids
-     * @param $edit_index add result in this parameter
-     * @return true or false
+     * @param int $access_group_id access OK group room ids 閲覧可能グループID
+     * @param int $exclusive_acl_group_id NG group room ids 閲覧不可グループID
+     * @param int $edit_index add result in this parameter 編集中のインデックスID
+     * @return true/false success/failed 成功/失敗
      */
     function getAccessGroupData($access_group_id, $exclusive_acl_group_id, &$edit_index)
     {
@@ -789,14 +866,13 @@ class RepositoryIndexAuthorityManager extends RepositoryLogicBase
     }
     
     /**
-     * NetCommonsに登録されている全権限を取得し、
-     * 投稿権限のある権限ID、権限名、投稿権限のない権限ID、権限名のリストを取得する。
-     * 
-     * get edit index access auth list
+     * Acquired all the rights that are registered in NetCommons, authorization ID with post authority, authority name, post unauthorized authorization ID, to get a list of the authority name.
+     * NetCommonsに登録されている全権限を取得し、投稿権限のある権限ID、権限名、投稿権限のない権限ID、権限名のリストを取得する。
      *
-     * @param $access_role_id access OK group room ids
-     * @param $edit_index add result in this parameter
-     * @return true or false
+     * @param int $access_role access OK role id 閲覧可能ベース権限
+     * @param int $exclusive_acl_role NG role id　閲覧不可能ベース権限
+     * @param int $edit_index add result in this parameter 編集中のインデックスID
+     * @return true/false success/failed 成功/失敗
      */
     function getAccessAuthData($access_role, $exclusive_acl_role, &$edit_index){
         // Add config management authority 2010/02/23 Y.Nakao --start--
@@ -976,8 +1052,13 @@ class RepositoryIndexAuthorityManager extends RepositoryLogicBase
     
     // Add file price 2008/08/28 Y.Nakao --start--
     /**
+     * Get a list of the groups that exist on the NC
      * NC上に存在するグループの一覧を取得
-     * @return $Result_List['groupe_list'][ii]['～']形式で値が帰る
+     *
+     * @param array group list グループリスト
+     *                array["group_list"][$ii]
+     * @param string $error_msg error message エラーメッセージ
+     * @return bool true/false success/failed 成功/失敗
      */
     function getGroupList(&$all_group, &$error_msg){
         // get List from pages Table
@@ -1005,10 +1086,12 @@ class RepositoryIndexAuthorityManager extends RepositoryLogicBase
 
     
     /**
+     * Get index access group
      * アクセスグループの取得
-     * @param string $indexID インデックスID
-     * @param boolean $isError エラー発生か否か
-     * @return string access_group
+     *
+     * @param string $indexID index IDインデックスID
+     * @param bool $isError error or not エラー発生か否か
+     * @return string access_group アクセス可能グループ
      */
     private function getIndexAccessGroupFromDb($indexID,&$isError)
     {
@@ -1036,9 +1119,12 @@ class RepositoryIndexAuthorityManager extends RepositoryLogicBase
     }
 
     /**
+     * Get access role
      * アクセスロールの取得
-     * @param string $indexID インデックスID
-     * @param boolean $isError エラー発生か否か
+     *
+     * @param string $indexID index ID インデックスID
+     * @param bool $isError error or not エラー発生か否か
+     * @return string access role アクセスロール
      */
     private function getIndexAccessRoleFromDb($indexID,&$isError)
     {
@@ -1057,10 +1143,12 @@ class RepositoryIndexAuthorityManager extends RepositoryLogicBase
     }
 
     /**
+     * ownerであるインデックスがあるか判定
      * 対象インデックスのowner_user_idの個数確認
-     * @param unknown $indexId インデックスID
-     * @param unknown $user_id userID
-     * @return boolean 0個以上存在するか否か
+     *
+     * @param int $indexId index ID インデックスID
+     * @param string $user_id userID ユーザーID
+     * @return bool true/false exist/not exist ある/ない
      */
     private function isIndexOwner($indexId,$user_id)
     {
@@ -1081,12 +1169,12 @@ class RepositoryIndexAuthorityManager extends RepositoryLogicBase
     }
 
     /**
+     * Get role authority ID
      * role_authority_idの取得
-     * @param string $user_id
-     * @param string $base_auth
-     * @param string $room_auth
-     * @param string $auth_id
-     * @return string
+     *
+     * @param string $user_id user ID ユーザーID
+     * @param bool $isError error or not エラー発生か否か
+     * @return string　role authority ID 権限ID
      */
     private function getRoleAuthorityIdFromDb($user_id,&$isError)
     {
@@ -1110,7 +1198,13 @@ class RepositoryIndexAuthorityManager extends RepositoryLogicBase
     }
 
     /**
+     * Get user's group
      * ユーザの登録グループ一覧を取得する
+     *
+     * @param array $user_group user group ユーザーグループ
+     *               array[$ii]
+     * @param string $error_msg error message エラーメッセージ
+     * @return bool true/false success/failed 成功/失敗
      */
     private function getUsersGroupList(&$user_group, &$error_msg){
         $userAuthorityManager = new RepositoryUserAuthorityManager($this->Session, $this->dbAccess, $this->transStartDate);
@@ -1118,11 +1212,13 @@ class RepositoryIndexAuthorityManager extends RepositoryLogicBase
     }
 
     /**
+     * Divide authority to base and room
      * access_roleをBase権限とRoom権限に分ける
-     * @param string $access_role access_role
-     * @param string $base_auth Base権限
-     * @param string $room_auth Room権限
-     * @return boolean 分けられたか否か
+     *
+     * @param string $access_role access_role アクセスロール
+     * @param string $base_auth base authority Base権限
+     * @param string $room_auth room autority Room権限
+     * @return bool true/false success/failed 成功/失敗
      */
     private function explodeBaseAndRoom($access_role,&$base_auth,&$room_auth)
     {

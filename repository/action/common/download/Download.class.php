@@ -1,7 +1,15 @@
 <?php
+
+/**
+ * Download Action class of registered file in WEKO
+ * WEKOに登録されたファイルのダウンロードアクションクラス
+ * 
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Download.class.php 58644 2015-10-10 08:01:18Z tomohiro_ichikawa $
+// $Id: Download.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -13,53 +21,181 @@
 
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
 
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
+/**
+ * Common class file download
+ * ファイルダウンロード共通クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryDownload.class.php';
 
 /**
- * [[機能説明]]
- *
- * @package     [[package名]]
- * @access      public
+ * Download Action class of registered file in WEKO
+ * WEKOに登録されたファイルのダウンロードアクションクラス
+ * 
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class Repository_Action_Common_Download extends RepositoryAction
 {
-    // リクエストパラメータ
+    /**
+     * Item id
+     * アイテムID
+     *
+     * @var int
+     */
     var $item_id = null;
+    
+    /**
+     * Item serial number
+     * アイテム通番
+     *
+     * @var int
+     */
     var $item_no = null;
+    
+    /**
+     * Attribute id
+     * 属性ID
+     *
+     * @var int
+     */
     var $attribute_id = null;
+    
+    /**
+     * File number
+     * ファイル通番
+     *
+     * @var int
+     */
     var $file_no = null;
+    
+    /**
+     * Thumbnail download flag
+     * サムネイルダウンロードフラグ
+     *
+     * @var string|null string Thumbnail display to "true" when setting "true"設定時にサムネイル表示
+     *                  null Not performed downloaded thumbnail サムネイルのダウンロードを実施しない
+     */
     var $img = null;    // true設定時にサムネイル表示
     
+    /**
+     * Item type icon download flag
+     * アイテムタイプアイコンダウンロードフラグ
+     *
+     * @var int|null int Item type ID アイテムタイプID
+     *               null Do not download the item type icon アイテムタイプアイコンをダウンロードしない
+     */
     var $item_type_id = null; // アイテムタイプアイコン追加　 2008/07/16 Y.Nakao
+    
+    /**
+     * File preview image Download flag
+     * ファイルプレビュー画像ダウンロードフラグ
+     *
+     * @var string|null string "True" file preview image to download when setting "true"設定時にファイルプレビュー画像をダウンロード
+     *                  null Do not download files preview image ファイルプレビュー画像をダウンロードしない
+     */
     var $file_prev = null;    // サムネイル追加 2008/07/22 Y.Nakao
+    
+    /**
+     * FLASH file download flag
+     * FLASHファイルダウンロードフラグ
+     *
+     * @var string|null string The FLASH file downloaded to the "true" when setting "true"設定時にFLASHファイルをダウンロード
+     *                  null Do not download the FLASH file FLASHファイルをダウンロードしない
+     */
     var $flash = null;        // フラッシュ追加 2010/01/05 A.Suzuki
     
+    /**
+     * Block ID of arranged WEKO to NC2
+     * NC2に配置されたWEKOのブロックID
+     *
+     * @var int
+     */
     public $block_id = "";  // ブロックID追加2011/10/13 K.Matsuo
+    
+    /**
+     * ID of the page WEKO is located
+     * WEKOが配置されているページのID
+     *
+     * @var int
+     */
     public $page_id = "";   // ページID追加2011/10/13 K.Matsuo
     
     // オブジェクト類
+    /**
+     * Upload table display object
+     * アップロードテーブル表示用オブジェクト
+     *
+     * @var Uploads_View
+     */
     var $uploadsView = null;
+    
+    /**
+     * Session management objects
+     * Session管理オブジェクト
+     *
+     * @var Session
+     */
     var $Session = null;
     
     // Add index thumbnail 2010/08/11 Y.Nakao --start--
+    /**
+     * Index thumbnail download flag
+     * インデックスサムネイルダウンロードフラグ
+     *
+     * @var int|null int IndexID インデックスID
+     *               null Do not download the index thumbnail インデックスサムネイルをダウンロードしない
+     */
     public $index_id = null;
     // Add index thumbnail 2010/08/11 Y.Nakao --end--
     
+    /**
+     * The name of the download to FLASH files
+     * ダウンロードするFLASHファイルの名称
+     *
+     * @var string
+     */
     public $flashpath = null;
     
     // Add PDF cover page 2012/06/13 A.Suzuki --start--
+    /**
+     * PDF cover page header image download flag
+     * PDFカバーページヘッダ画像ダウンロードフラグ
+     *
+     * @var string|null string PDF cover page header image downloaded to the "true" when setting "true"設定時にPDFカバーページヘッダ画像をダウンロード
+     *                  null Do not download PDF cover page header image PDFカバーページヘッダ画像をダウンロードしない
+     */
     public $pdf_cover_header = null;
     // Add PDF cover page 2012/06/13 A.Suzuki --end--
     
     // Add advanced image thubnail 2014/02/13 R.Matsurua --start--
+    /**
+     * Download flag of the image file FLASH display is specified
+     * FLASH表示が指定された画像ファイルのダウンロードフラグ
+     *
+     * @var string|null string The image file FLASH display downloaded to the "true" when setting "true"設定時にFLASH表示が指定された画像ファイル
+     *                  null Do not download the image file FLASH display FLASH表示が指定された画像ファイルをダウンロードしない
+     */
     public $image_slide = null;
     // Add advanced image thubnail 2014/02/13 R.Matsurua --end--
     
     /**
-     * [[機能説明]]
+     * Version information for specifying the saved old file
+     * 退避した古いファイルを特定するためのバージョン情報
      *
-     * @access  public
+     * @var int
+     */
+    public $ver = null;
+    
+    /**
+     * Download the file specified by the request parameter
+     * リクエストパラメータで指定されたファイルをダウンロード
      */
     function executeApp()
     {
@@ -118,31 +254,48 @@ class Repository_Action_Common_Download extends RepositoryAction
         // ### Add for Test K.Matsuo 2011/11/1
         $this->Session->removeParameter("testPay");
         
+        $this->exitFlag = true;
+        
         /////////////// view flash ///////////////
         // Add flash 2010/01/05 A.Suzuki --start--
         if($this->flash == "true"){
-            // Add multiple FLASH files download 2011/02/04 Y.Nakao --start--
-            $flashDir = $this->getFlashFolder();
-            if(strlen($flashDir) > 0 && file_exists($flashDir)){
-                $flashPath = $flashDir.DIRECTORY_SEPARATOR.$this->flashpath;
-                if( file_exists($flashPath) ){
-                    $mimetype = "";
-                    if( preg_match("/*\.flv$/", $this->flashpath) === 1 )
-                    {
-                        $mimetype = "video/x-flv";
-                    }
-                    else
-                    {
-                        $mimetype = "application/x-shockwave-flash";
-                    }
-                    $repositoryDownload = new RepositoryDownload();
-                    $repositoryDownload->downloadFile($flashPath, $this->flashpath, $mimetype);
-                } else {
-                    header("HTTP/1.0 404 Not Found");
-                }
-            } else {
+            // Add File replace T.Koyasu 2016/02/29 --start--
+            // 一時ディレクトリ作成
+            $businessWorkdirectory = BusinessFactory::getFactory()->getBusiness("businessWorkdirectory");
+            $tmpDirPath = $businessWorkdirectory->create();
+            
+            // flashファイル名を取得
+            $flashFilePaths = explode("/", rtrim($this->flashpath, "/"));
+            $flashFileName = $flashFilePaths[count($flashFilePaths)-1];
+            
+            // コピー先ファイルパス
+            $flashPath = $tmpDirPath.$flashFileName;
+            
+            // 一時ディレクトリへflashファイルをコピー
+            $business = BusinessFactory::getFactory()->getBusiness("businessContentfiletransaction");
+            try{
+                $business->copyPreviewTo($this->item_id, $this->attribute_id, $this->file_no, $flashFileName, $flashPath);
+            } catch (AppException $e){
                 header("HTTP/1.0 404 Not Found");
+                $error_msg = "Download file is not exist : ".$this->flashpath;
+                $this->errorLog($error_msg, __FILE__, __CLASS__, __LINE__);
+                return;
             }
+            // Add File replace T.Koyasu 2016/02/29 --end--
+            
+            // Add multiple FLASH files download 2011/02/04 Y.Nakao --start--
+            $mimetype = "";
+            if( preg_match("/*\.flv$/", $flashFileName) === 1 )
+            {
+                $mimetype = "video/x-flv";
+            }
+            else
+            {
+                $mimetype = "application/x-shockwave-flash";
+            }
+            
+            $repositoryDownload = new RepositoryDownload();
+            $repositoryDownload->downloadFile($flashPath, $flashFileName, $mimetype);
             // Add multiple FLASH files download 2011/02/04 Y.Nakao --end--
             return;
         }
@@ -194,31 +347,46 @@ class Repository_Action_Common_Download extends RepositoryAction
         
         $this->infoLog("businessPdfcover", __FILE__, __CLASS__, __LINE__);
         $pdfCover = BusinessFactory::getFactory()->getBusiness("businessPdfcover");
-        if($ret[0]['extension'] == "pdf"){
+        if(strtolower($ret[0]['extension']) == "pdf"){
             // create pdf cover page
             $download_file_path = "";
-            $download_file_path = $pdfCover->grantPdfCover($this->item_id, $this->item_no, $this->attribute_id, $this->file_no, $tmpDirPath);
+            $download_file_path = $pdfCover->grantPdfCover($this->item_id, $this->item_no, $this->attribute_id, $this->file_no, $tmpDirPath, $this->ver);
             if(file_exists($download_file_path) === TRUE){
+                // 古いバージョンのファイルである場合、ファイル名などが異なる可能性があるため、データベースから取得する
+                $fileName = $ret[0]['file_name'];
+                $mimeType = $ret[0]['mime_type'];
+                if(isset($this->ver) && $this->ver > 0){
+                    $this->selectVersionFileDownloadInfo($this->item_id, $this->attribute_id, $this->file_no, $this->ver, $fileName, $mimeType);
+                }
+                
                 $repositoryDownload = new RepositoryDownload();
                 $repositoryDownload->downloadFile(
                         $download_file_path,
-                        $ret[0]['file_name'],
-                        $ret[0]['mime_type']
+                        $fileName,
+                        $mimeType
                 );
             }
         }
         else 
         {
             // 一時ディレクトリにfilesからコピー
-            $copy_path = $this->getCopyFilePath($ret[0]['extension'], $tmpDirPath);
+            $copy_path = $this->copyToTempDir($ret[0]['extension'], $tmpDirPath, $this->item_id, $this->item_no, $this->attribute_id, $this->file_no, $this->ver);
             if($copy_path === false) {
                 $error_msg = "Download file is not exist";
                 $this->errorLog($error_msg, __FILE__, __CLASS__, __LINE__);
                 throw new AppException($error_msg);
             }
+            
+            // 古いバージョンのファイルである場合、ファイル名などが異なる可能性があるため、データベースから取得する
+            $fileName = $ret[0]['file_name'];
+            $mimeType = $ret[0]['mime_type'];
+            if(isset($this->ver) && $this->ver > 0){
+                $this->selectVersionFileDownloadInfo($this->item_id, $this->attribute_id, $this->file_no, $this->ver, $fileName, $mimeType);
+            }
+            
             // Add RepositoryDownload action 2010/03/30 A.Suzuki --start--
             $repositoryDownload = new RepositoryDownload();
-            $repositoryDownload->downloadFile($copy_path, $ret[0]['file_name'], $ret[0]['mime_type']);
+            $repositoryDownload->downloadFile($copy_path, $fileName, $mimeType);
             // Add RepositoryDownload action 2010/03/30 A.Suzuki --end--
         }
         // Add delete pdf cover 2015/01/27 K.Matsushita -end-
@@ -238,8 +406,8 @@ class Repository_Action_Common_Download extends RepositoryAction
     
     // アイテムタイプアイコン追加 2008/07/16 Y.Nakao --start--
     /**
-     * アイテムタイプ種類を示すアイコン情報をDBからダウンロードする
-     *
+     * Get the item type of icon information from the DB, and download
+     * アイテムタイプのアイコン情報をDBから取得し、ダウンロードする
      */
     private function getItemTypeIcom(){
         $query = "SELECT icon, icon_name, icon_mime_type ".
@@ -271,6 +439,10 @@ class Repository_Action_Common_Download extends RepositoryAction
     // アイテムタイプアイコン追加 2008/07/16 Y.Nakao --end--
     
     // Add index thumbnail 2010/08/11 Y.Nakao --start--
+    /**
+     * To get the thumbnail of the index from the DB, and download
+     * インデックスのサムネイルをDBから取得し、ダウンロードする
+     */
     private function getIndexThumbnail(){
         $query = "SELECT thumbnail, thumbnail_name, thumbnail_mime_type  ".
                  "FROM ". DATABASE_PREFIX ."repository_index ".
@@ -302,6 +474,10 @@ class Repository_Action_Common_Download extends RepositoryAction
     // Add index thumbnail 2010/08/11 Y.Nakao --end--
     
     // Add PDF cover page 2012/06/13 A.Suzuki --start--
+    /**
+     * Get the PDF cover page image from the DB, and download
+     * PDFカバーページ画像をDBから取得し、ダウンロードする
+     */
     private function getPdfCoverImage(){
         $query = "SELECT ".RepositoryConst::DBCOL_REPOSITORY_PDF_COVER_PARAMETER_IMAGE.", ".
                  RepositoryConst::DBCOL_REPOSITORY_PDF_COVER_PARAMETER_TEXT.", ".
@@ -332,7 +508,10 @@ class Repository_Action_Common_Download extends RepositoryAction
         
     }
     // Add PDF cover page 2012/06/13 A.Suzuki --end--
-    
+    /**
+     * Get a preview image of the file from the DB, and download
+     * ファイルのプレビュー画像をDBから取得し、ダウンロードする
+     */
     private function getFilePreview()
     {
         $query = "SELECT file_prev, file_prev_name ";
@@ -366,6 +545,10 @@ class Repository_Action_Common_Download extends RepositoryAction
         return;
     }
     
+    /**
+     * To get the thumbnail from the DB, and download
+     * サムネイルをDBから取得し、ダウンロードする
+     */
     private function getThumbnail()
     {
         $query = "SELECT file, file_name, mime_type ".
@@ -402,9 +585,10 @@ class Repository_Action_Common_Download extends RepositoryAction
     
     // Add delete pdf cover 2015/01/27 K.Matsushita -start-
     /**
-     * Get defaut temporary directory path
+     * Create a temporary directory and returns its path
+     * 一時ディレクトリを作成し、そのパスを返す
      *
-     * @return string
+     * @return string Temporary directory path 一時ディレクトリパス
      */
     private function getDefaltTmpDirPath()
     {
@@ -419,49 +603,67 @@ class Repository_Action_Common_Download extends RepositoryAction
     }
     
     /**
-     * Get copy path of download file 
+     * Copy the temporary directory to the specified download file, returning a path
+     * ダウンロードファイルを指定された一時ディレクトリにコピーし、パスを返す
      * 
-     * @param string $extension
-     * @param string $tmpDirPath
-     * @return string
+     * @param string $extension Extension 拡張子
+     * @param string $tmpDirPath Temporary directory path 一時ディレクトリパス
+     * @param int $itemId Item ID for identifying the file ファイルを特定するためのアイテムID
+     * @param int $itemNo Item sequence number for identifying the file ファイルを特定するためのアイテム通番
+     * @param int $attrId Attribute ID for identifying the file ファイルを特定するための属性ID
+     * @param int $fileNo File sequence number for identifying the file ファイルを特定するためのファイル通番
+     * @param int $ver Version for identifying the file ファイルを特定するためのバージョン
+     * @return string Destination path コピー先パス
      */
-    private function getCopyFilePath($extension, $tmpDirPath){
-        
-        // throw file contents for user
-        // Add separate file from DB 2009/04/21 Y.Nakao --start--
-        // get contents save path
-        $contents_path = $this->getFileSavePath("file");
-        if(strlen($contents_path) == 0){
-            // default directory
-            $contents_path = BASE_DIR.'/webapp/uploads/repository/files';
-        }
-        // check directory exists
-        if( !(file_exists($contents_path)) ){
-            return false;
-        }
-        // Add separate file from DB 2009/04/21 Y.Nakao --end--
-        
-        $file_path = $contents_path.DIRECTORY_SEPARATOR.
-        $this->item_id.'_'.
-        $this->attribute_id.'_'.
-        $this->file_no.'.'.
-        $extension;
-        // check file exists
-        if( !(file_exists($file_path)) ){
-            return false;
-        }
-        $copy_path = $tmpDirPath.
+    private function copyToTempDir($extension, $tmpDirPath, $itemId, $itemNo, $attrId, $fileNo, $ver){
+        $destPath = $tmpDirPath.
                 $this->item_id.'_'.
                 $this->attribute_id.'_'.
                 $this->file_no.'.'.
                 $extension;
-        // コンテンツ本体コピー
-        copy($file_path, $copy_path);
         
-        return $copy_path;
+        $businessName = "businessContentfiletransaction";
+        $business = BusinessFactory::getFactory()->getBusiness($businessName);
+        
+        if(!isset($ver) || $ver < 0){
+            $ver = 0;
+        }
+        $business->copyTo($itemId, $attrId, $fileNo, $ver, $destPath);
+        
+        return $destPath;
     }
-    
-    
     // Add delete pdf cover 2015/01/27 K.Matsushita -end-
+    
+    /**
+     * In order to use at the time of download, to get the file name and file type of the old version of the file
+     * ダウンロード時に利用するため、古いバージョンのファイルのファイル名およびファイル種別を取得する
+     *
+     * @param int $itemId Item ID for identifying the file ファイルを特定するためのアイテムID
+     * @param int $attrId Attribute ID for identifying the file ファイルを特定するための属性ID
+     * @param int $fileNo File sequence number for identifying the file ファイルを特定するためのファイル通番
+     * @param int $ver Version for identifying the file ファイルを特定するためのバージョン
+     * @param string $fileName File name ファイル名
+     * @param string $mimeType mimetype Mimetype
+     */
+    private function selectVersionFileDownloadInfo($itemId, $attrId, $fileNo, $ver, &$fileName, &$mimeType){
+        $query = "SELECT physical_file_name, mime_type ". 
+                 " FROM ". DATABASE_PREFIX. "repository_file_update_history ". 
+                 " WHERE item_id = ? ". 
+                 " AND item_no = ? ". 
+                 " AND attribute_id = ? ". 
+                 " AND file_no = ? ". 
+                 " AND version = ? ". 
+                 " AND is_delete = ?;";
+        $params = array();
+        $params[] = $itemId;
+        $params[] = 1;
+        $params[] = $attrId;
+        $params[] = $fileNo;
+        $params[] = $ver;
+        $params[] = 0;
+        $result = $this->executeSql($query, $params);
+        $fileName = $result[0]["physical_file_name"];
+        $mimeType = $result[0]["mime_type"];
+    }
 }
 ?>

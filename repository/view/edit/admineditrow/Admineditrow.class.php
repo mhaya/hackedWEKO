@@ -1,7 +1,15 @@
 <?php
+
+/**
+ * Management screen display item add view class
+ * 管理画面表示項目追加ビュークラス
+ * 
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Admineditrow.class.php 53594 2015-05-28 05:25:53Z kaede_matsushita $
+// $Id: Admineditrow.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -13,59 +21,176 @@
 
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
 
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
+/**
+ * Handle management common classes
+ * ハンドル管理共通クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryHandleManager.class.php';
 
 /**
- * [[機能説明]]
- *
- * @package     [[package名]]
- * @access      public
+ * Management screen display item add view class
+ * 管理画面表示項目追加ビュークラス
+ * 
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class Repository_View_Edit_Admineditrow extends RepositoryAction
 {
 	// 表示タブ情報
+    /**
+     * active tab info
+     * 選択されているタブ情報
+     *
+     * @var int
+     */
 	var $admin_active_tab = null;
+    /**
+     * Error message
+     * エラーメッセージ
+     *
+     * @var string
+     */
     public $error_msg = null;
 	
+    /**
+     * List of detail search information
+     * search_setup[N]
+     *   type_id:   search contents id
+     *   show_name: show name
+     *   use_flag:  use flag(not use:0 use:1)
+     *   default_flag: default flag(not default:0 default:1)
+     *   mapping:   mapping
+     * 詳細検索項目
+     * 
+     * @var array[$ii]["type_id"|"show_name"|"use_flag"|"default_flag"|"mapping"]
+     */
 	public $search_setup = null;
 	
     // bug fix return from this class, no set prefix 2014/07/03 T.Koyasu --start--
+    /**
+     * JaLC DOI prefix
+     * JaLC DOI prefix
+     *
+     * @var string
+     */
     public $prefixJalcDoi = null;
+    /**
+     * CrossRef DOI prefix
+     * CrossRef DOI prefix
+     *
+     * @var string
+     */
     public $prefixCrossRef = null;
     // Add DataCite 2015/02/10 K.Sugimoto --start--
+    /**
+     * DataCite DOI prefix
+     * DataCite DOI prefix
+     *
+     * @var string
+     */
     public $prefixDataCite = null;
     // Add DataCite 2015/02/10 K.Sugimoto --end--
+    /**
+     * CNRI prefix
+     * CNRI prefix
+     *
+     * @var string
+     */
     public $prefixCnri = null;
+    /**
+     * Y handle prefix
+     * Y handle prefix
+     *
+     * @var string
+     */
     public $prefixYHandle = null;
     // bug fix return from this class, no set prefix 2014/07/03 T.Koyasu --end--
     
     // OAI-PMH Output Flag
+    /**
+     * OAI-PMH output flag
+     * OAI-PMH出力フラグ
+     *
+     * @var string
+     */
     public $oaipmh_output_flag = null;
     
     // Institution Name
+    
+    /**
+     * Institution name
+     * 機関名
+     *
+     * @var string
+     */
     public $institutionName = null;
 	
 	// Add Default Search Type 2014/12/03 K.Sugimoto --start--
     // Default Search Type
+    /**
+     * Default search type
+     * デフォルト検索設定
+     *
+     * @var boolean
+     */
     public $default_search_type = null;
 	// Add Default Search Type 2014/12/03 K.Sugimoto --end--
 
     // Add Usage Statistics link display setting 2014/12/16 K.Matsushita --start--
+    /**
+     * Usagestatics feedback mail flag
+     * フィードバックメール送信機能設定
+     *
+     * @var boolean
+     */
     public $usagestatistics_link_display = null;
     // Add Usage Statistics link display setting 2014/12/16 K.Matsushita --end--
 
     // Add ranking tab display setting 2014/12/19 K.Matsushita --start--
+    /**
+     * Ranking tab display flag
+     * ランキングタブ表示フラグ
+     *
+     * @var boolean
+     */
     public $ranking_tab_display = null;
     // Add ranking tab display setting 2014/12/19 K.Matsushita --end--
 	
     // Add DataCite 2015/02/12 K.Sugimoto --start--
+    /**
+     * Prefix display flag
+     * Prefix表示フラグ
+     *
+     * @var boolean
+     */
     public $prefix_flag = null;
+    /**
+     * Doi granted item flag
+     * DOI付与アイテムフラグ
+     *
+     * @var boolean
+     */
     public $exist_doi_item = null;
     // Add DataCite 2015/02/12 K.Sugimoto --end--
     
     /**
-     * [[機能説明]]
+     * Value of type of author search
+     * 著者名検索の設定値
+     *
+     * @var int
+     */
+    public $author_search_type = null;
+    
+    /**
+     * Display magnagement screen
+     * 管理画面表示
      *
      * @access  public
      */
@@ -257,11 +382,15 @@ class Repository_View_Edit_Admineditrow extends RepositoryAction
         }
         // Add DataCite 2015/02/10 K.Sugimoto --end--
 
+        // 著者名検索設定
+        $this->author_search_type = $admin_params["author_search_type"]["param_value"];
+        
     	return 'success';
     }
     
     /**
      * get search setup data
+     * 有効詳細検索項目取得
      */
     private function getSearchSetting()
     {
@@ -283,7 +412,10 @@ class Repository_View_Edit_Admineditrow extends RepositoryAction
     // Bug Fix WEKO-2014-039 no inherit prefix from html 2014/07/11 --start--
     /**
      * get each prefix
-     *
+     * prefix取得
+     * 
+     * @param arrau $admin_params Prefix list prefix一覧
+     *                            array["prefixCnri"|"prefixJalcDoi"|"prefixCrossRef"|"prefixDataCite"]["param_value"]
      */
     private function getEachPrefix(&$admin_params)
     {

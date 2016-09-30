@@ -1,6 +1,6 @@
 <!--// ---------------------------------------------------------------------->
 <!--//                                                                     -->
-<!--// $Id: repository_item_edit_files.html 53594 2015-05-28 05:25:53Z kaede_matsushita $          -->
+<!--// $Id: repository_item_edit_files.html 64555 2016-03-11 08:31:44Z tatsuya_koyasu $          -->
 <!--//                                                                     -->
 <!--// Copyright (c) 2007 - 2008, National Institute of Informatics,        -->
 <!--// Research and Development Center for Scientific Information Resources -->
@@ -67,13 +67,13 @@
 <div class="ac">
 	<div class="mt10" align=center> <{*編集中の場合はアイテムタイプ選択まで戻れない*}>
 		<{if $smarty.session.ej_workflow_flag == "true"}>
-		<input type="button" class="btn_next" value="<{$lang.repository_return}>" onclick="javascript: backToEJWEKO(); return false;">
+		    <input type="button" class="btn_next" value="<{$lang.repository_return}>" onclick="javascript: backToEJWEKO(); return false;">
 		<{elseif $smarty.session.return_screen == "1"}>
-		<input type="button" class="btn_back" value="<{$lang.repository_return}>" onclick="location.reload();">
+		    <input type="button" class="btn_back" value="<{$lang.repository_return}>" onclick="location.reload();">
 		<{elseif $smarty.session.return_screen == "2"}>
-		<input type="button" class="btn_back" value="<{$lang.repository_return}>" onclick="commonCls.sendView('<{$id}>', 'repository_view_main_workflow'); return false;">
+		    <input type="button" class="btn_back" value="<{$lang.repository_return}>" onclick="commonCls.sendView('<{$id}>', 'repository_view_main_workflow'); return false;">
 		<{else}>
-		<input type="button" class="btn_back" value="<{$lang.repository_return}>" onclick="commonCls.sendView('<{$id}>', 'repository_view_main_item_selecttype'); return false;">
+		    <input type="button" class="btn_back" value="<{$lang.repository_return}>" onclick="commonCls.sendView('<{$id}>', 'repository_view_main_item_selecttype'); return false;">
 		<{/if}>
 		<input type="button" class="btn_blue" value="<{$lang.repository_save}>" onclick="repositoryCls['<{$id}>'].repositoryItemUploadFiles('stay'); return false;">
 		<input type="button" class="btn_next" value="<{$lang.repository_page_next}>" onclick="repositoryCls['<{$id}>'].repositoryItemUploadFiles('next'); return false;">
@@ -83,14 +83,14 @@
     <{if $action.errMsg != null && count($action.errMsg) > 0}>
     <div class="error_msg al">
         <{foreach from=$action.errMsg item=msg}>
-        <{$msg|smarty:nodefaults}><br/>
+            <{$msg|smarty:nodefaults}><br/>
         <{/foreach}>
     </div>
     <{/if}>
     <{if $action.warningMsg != null && count($action.warningMsg) > 0}>
     <div class="warning_msg al">
         <{foreach from=$action.warningMsg item=msg}>
-        <{$msg|smarty:nodefaults}><br/>
+            <{$msg|smarty:nodefaults}><br/>
         <{/foreach}>
     </div>
     <{/if}>
@@ -100,158 +100,165 @@
 		<form id="attachment_form<{$id}>" target="attachment_form<{$id}>" enctype="multipart/form-data">
 			<table class="tb01 box_center">
 				<{section name=i loop=$smarty.session.item_attr_type}>
-				<{assign var="attr_type" value=$smarty.session.item_attr_type}>
-				<{assign var="item_attr" value=$smarty.session.item_attr}>
-				<{assign var="num_attr" value=$smarty.session.item_num_attr}>
-				<{assign var="cnt1" value=$smarty.section.i.index}>    
-				<{*アイテム属性値の表示 : file*}>
-				<{*アイテム属性値の表示 : file_price追加*}>
-				<{if $attr_type[i].input_type == 'file' || $attr_type[i].input_type == 'file_price'}>
-					<{if $attr_type[i].plural_enable==1}>
-					<tr ondragover="repositoryCls['<{$id}>'].repositoryDragOver(event)"
-							ondrop="repositoryCls['<{$id}>'].repositoryDropFiles(event, '<{$page_id}>', '<{$block_id}>','<{$cnt1}>','file',true)">
-					<{else}>
-					<tr ondragover="repositoryCls['<{$id}>'].repositoryDragOver(event)"
-						ondrop="repositoryCls['<{$id}>'].repositoryDropFiles(event, '<{$page_id}>', '<{$block_id}>','<{$cnt1}>', 'file', false)">
-					<{/if}>
-					<th class="item_edit_list">
-						<b><{$attr_type[i].attribute_name}></b> <{if $attr_type[i].is_required == 1}> <font color="red">*</font> <{/if}>
-					</th>
-					<td class="item_edit_list al"><{*全ファイル属性に関するループ*}>
-						<{section name=j loop=$item_attr[i]}>
-						<{assign var="cnt2" value=$smarty.section.j.index}>
-						
-						<{* デザイン修正 A.Jin 2013/5/21 --start--*}>
-						<table class="full tb00">
-						<tr>
-						<td>
-							<{if $attr_type[i].plural_enable==1}><{$smarty.section.j.index_next}>.<{/if}>
-							<{*j-thファイルが既にアップロード済みの場合*}>
-							<{if $item_attr[i][j].upload.file_name != ""}>
-							<{*input_ids[] : [i][j]個送信。入力済みは"TILL", 未入力は"NO", 入力は"YES"*}>
-							<{$item_attr[i][j].upload.file_name}>
-						</td>
-						<td class="ar">
-							<input type="hidden" id="file_<{$cnt1}>_<{$cnt2}>" name="input_ids_file[]" value="TILL" >
-							<input type="button" class="btn_delete" value="<{$lang.repository_delete}>" onclick="repositoryCls['<{$id}>'].repositoryItemUploadFiles('delete_file','<{$cnt1}>', '<{$cnt2}>'); return false;">
-							<{*複数可の場合は↑↓ボタンを表示*}>
-							<{if $attr_type[i].plural_enable==1}> 
-							<input type="button" class="btn_white" value="<{$lang.repository_up}>" <{if $smarty.section.j.index==0}>disabled<{/if}> onclick="repositoryCls['<{$id}>'].repositoryItemUploadFiles('up_row','<{$cnt1}>', '<{$cnt2}>'); return false;"> 
-							<input type="button" class="btn_white" value="<{$lang.repository_dw}>" <{if $smarty.section.j.index==$num_attr[i]-1}>disabled<{/if}> onclick="repositoryCls['<{$id}>'].repositoryItemUploadFiles('down_row','<{$cnt1}>', '<{$cnt2}>'); return false;">   
-							<{/if}>
-						</td>
-						<{* デザイン修正 A.Jin 2013/5/21 --end--*}>
-						
-						<{else}>
-						<{*j-thファイルが未入力の場合*}>
-							<{if $attr_type[i].plural_enable==1}>
-							<input type="file" id="file_inputs" name="upload[]" size=43 value="" onchange="document.getElementById('file_<{$cnt1}>_<{$cnt2}>').value = 'YES';">
-							<input type="hidden" id="file_<{$cnt1}>_<{$cnt2}>" name="input_ids_file[]" value="NO" >
-							<{else}>
-	                        <input type="file" id="file_inputs_un_plural" name="upload[]" size=46 value="" onchange="document.getElementById('file_<{$cnt1}>_<{$cnt2}>').value = 'YES';">
-	                        <input type="hidden" id="file_<{$cnt1}>_<{$cnt2}>" name="input_ids_file[]" value="NO" >
-							<{/if}>
-						<{/if}> 
-						
-						<{* デザイン修正 A.Jin 2013/5/21 --start--*}>
-						</tr>
-						</table>
-						<{* デザイン修正 A.Jin 2013/5/21 --end--*}>
-						
-						<!--<{$item_attr[i][j].file_no}>__<{$item_attr[i][j].new_file_no}>--> 
-						
-						<{/section}>
-						<span id="hidden_area_<{$cnt1}>"></span>
-						<{*複数可の場合はmore inputボタンを表示*}>
-						<{if $attr_type[i].plural_enable==1}>
-						<!--br-->
-						<input type="button" class="btn_white" value="<{$lang.repository_item_addrow}>" onclick="repositoryCls['<{$id}>'].repositoryItemUploadFiles('add_row','<{$cnt1}>'); return false;">
-						<{/if}>
-					</td>
-				</tr>
-				<{*アイテム属性値の表示 : thumbnail*}>
-				<{elseif $attr_type[i].input_type == 'thumbnail' }>
-					<{if $attr_type[i].plural_enable==1}>
-					<tr ondragover="repositoryCls['<{$id}>'].repositoryDragOver(event)"
-							ondrop="repositoryCls['<{$id}>'].repositoryDropFiles(event, '<{$page_id}>', '<{$block_id}>','<{$cnt1}>','thumnail',true)">
-					<{else}>
-					<tr ondragover="repositoryCls['<{$id}>'].repositoryDragOver(event)"
-						ondrop="repositoryCls['<{$id}>'].repositoryDropFiles(event, '<{$page_id}>', '<{$block_id}>','<{$cnt1}>', 'thumnail', false)">
-					<{/if}>
-					<th class="item_edit_list w175px"><!-- old td class="td_repos" width="175px" -->
-						<b><{$attr_type[i].attribute_name}></b><{if $attr_type[i].is_required == 1}> <span class="red">*</span><{/if}>
-					</th>
-					<td class="item_edit_list al pd23" ><{*全サムネイル属性に関するループ*}>
-						<{section name=j loop=$item_attr[i]}>
-						<{assign var="cnt2" value=$smarty.section.j.index}>   
-						
-						<{* デザイン修正 A.Jin 2013/5/21 --start--*}>
-						<table class="full tb00">
-						<tr>
-						<td>
-							<{if $attr_type[i].plural_enable==1}><{$smarty.section.j.index_next}>.<{/if}>
-							<{*j-thサムネイルが既にアップロード済みの場合*}>
-							<{if $item_attr[i][j].upload.file_name != ""}>
-							<{*input_ids[] : [i][j]個送信。入力済みは"TILL", 未入力は"NO", 入力は"YES"*}>
-							<{$item_attr[i][j].upload.file_name}>
-						</td>
-						<td class="ar">
-							<input type="hidden" id="thumbnail_<{$cnt1}>_<{$cnt2}>" name="input_ids_thumbnail[]" value="TILL" >
-							<input type="button" class="btn_delete" value="<{$lang.repository_delete}>" onclick="repositoryCls['<{$id}>'].repositoryItemUploadFiles('delete_file','<{$cnt1}>', '<{$cnt2}>'); return false;">
-							<{*複数可の場合は↑↓ボタンを表示*}>
-							<{if $attr_type[i].plural_enable==1}>
-								<input type="button" class="btn_white" value="<{$lang.repository_up}>" <{if $smarty.section.j.index==0}>disabled<{/if}> onclick="repositoryCls['<{$id}>'].repositoryItemUploadFiles('up_row','<{$cnt1}>', '<{$cnt2}>'); return false;">
-								<input type="button" class="btn_white" value="<{$lang.repository_dw}>" <{if $smarty.section.j.index==$num_attr[i]-1}>disabled<{/if}> onclick="repositoryCls['<{$id}>'].repositoryItemUploadFiles('down_row','<{$cnt1}>', '<{$cnt2}>'); return false;">  
-							<{/if}>
-						</td>
-						</tr>
-						<tr>
-						<td colspan="2" class="al">
-						
-						<{else}>
-						<{*j-thサムネイルが未入力の場合*}>
-						<input type="file" name="upload[]" size=43 value="" onchange="document.getElementById('thumbnail_<{$cnt1}>_<{$cnt2}>').value = 'YES';">
-						<input type="hidden" id="thumbnail_<{$cnt1}>_<{$cnt2}>" name="input_ids_thumbnail[]" value="NO" >
-						<{/if}>
-						
-						<{* Bug Fix WEKO-2014-034 K.Sugimoto 2014/08/08 --start--*}>
-						<tr>
-							<td colspan="2">
-								<{$lang.repository_item_edit_files_upload_file_attention|smarty:nodefaults}>
-							</td>
-						</tr>
-						<{* Bug Fix WEKO-2014-034 K.Sugimoto 2014/08/08 --end--*}>
-						
-						<!-- {if $item_attr[i][j] != null} br/ -->
-						<{if $item_attr[i][j].upload != null}> <br/>
-							<{*サムネイルテーブルに登録済み => サムネイルテーブルからメモリ展開して表示*}> 
-							<{* Modify Directory specification BASE_URL K.Matsuo 2011/9/2 *}>
-							<img vspace="0" hspace="0" class="item_edit_confirm_img" alt="thumbnail"
-								<{if $item_attr[i][j].width >= $item_attr[i][j].height}>
-									width="100px"
-								<{else}>
-									height="100px"
-								<{/if}> 
-								src="<{$smarty.const.BASE_URL}>/index.php?action=repository_action_common_download&item_id=<{$item_attr[i][j].item_id}>&item_no=<{$item_attr[i][j].item_no}>&attribute_id=<{$item_attr[i][j].attribute_id}>&file_no=<{$item_attr[i][j].file_no}>&img=true&<{$smarty.now}>"/>
-						<{/if}> 
-						
-						<!--<{$item_attr[i][j].file_no}>__<{$item_attr[i][j].new_file_no}>--> 
-						
-						<{* デザイン修正 A.Jin 2013/5/21 --start--*}>
-						</td>
-						</tr>
-						</table>
-						<{* デザイン修正 A.Jin 2013/5/21 --end--*}>
-						
-						<{/section}>
-						<span id="hidden_area_<{$cnt1}>"></span>
-						<{*複数可の場合はmore inputボタンを表示*}>
-						<{if $attr_type[i].plural_enable==1}>
-						<!--br-->
-						<input type="button" class="btn_white" value="<{$lang.repository_item_addrow}>" onclick="repositoryCls['<{$id}>'].repositoryItemUploadFiles('add_row','<{$cnt1}>'); return false;">
-						<{/if}> </td>
-				</tr>
-				<{/if}>
+				    <{assign var="attr_type" value=$smarty.session.item_attr_type}>
+				    <{assign var="item_attr" value=$smarty.session.item_attr}>
+				    <{assign var="num_attr" value=$smarty.session.item_num_attr}>
+				    <{assign var="cnt1" value=$smarty.section.i.index}>    
+				    <{*アイテム属性値の表示 : file*}>
+				    <{*アイテム属性値の表示 : file_price追加*}>
+				    <{if $attr_type[i].input_type == 'file' || $attr_type[i].input_type == 'file_price'}>
+				    	<{if $attr_type[i].plural_enable==1}>
+				    	<tr ondragover="repositoryCls['<{$id}>'].repositoryDragOver(event)"
+				    			ondrop="repositoryCls['<{$id}>'].repositoryDropFiles(event, '<{$page_id}>', '<{$block_id}>','<{$cnt1}>','file',true)">
+				    	<{else}>
+				    	<tr ondragover="repositoryCls['<{$id}>'].repositoryDragOver(event)"
+				    		ondrop="repositoryCls['<{$id}>'].repositoryDropFiles(event, '<{$page_id}>', '<{$block_id}>','<{$cnt1}>', 'file', false)">
+				    	<{/if}>
+				    	    <th class="item_edit_list">
+				    	    	<b><{$attr_type[i].attribute_name}></b> <{if $attr_type[i].is_required == 1}> <font color="red">*</font> <{/if}>
+				    	    </th>
+				    	    <td class="item_edit_list al"><{*全ファイル属性に関するループ*}>
+				    	    	<{section name=j loop=$item_attr[i]}>
+				    	    	    <{assign var="cnt2" value=$smarty.section.j.index}>
+				    	    	    
+				    	    	    <{* デザイン修正 A.Jin 2013/5/21 --start--*}>
+				    	    	    <table class="full tb00">
+				    	    	        <{*j-thファイルが既にアップロード済みの場合*}>
+				    	    	        <{if $item_attr[i][j].upload.file_name != ""}>
+				    	    	            <tr>
+				    	    	                <td class="full">
+				    	    	                    <{*input_ids[] : [i][j]個送信。入力済みは"TILL", 未入力は"NO", 入力は"YES"*}>
+				    	    	                    <div id="file_name_<{$cnt1}>_<{$cnt2}>">
+				    	    	                        <{if $attr_type[i].plural_enable==1}><{$smarty.section.j.index_next}>.<{/if}>
+				    	    	                        <{$item_attr[i][j].upload.file_name}>
+				    	    	                    </div>
+				    	    	                    <input type="file" id="replace_file_<{$cnt1}>_<{$cnt2}>" name="" style="display:none" 
+				    	    	                           onchange="javascript: replaceFileName(this.value, document.getElementById('file_name_<{$cnt1}>_<{$cnt2}>'), <{if $attr_type[i].plural_enable==1}><{$smarty.section.j.index_next}><{else}>0<{/if}>, document.getElementById('replace_file_<{$cnt1}>_<{$cnt2}>')); 
+				    	    	                                                 document.getElementById('file_<{$cnt1}>_<{$cnt2}>').value = 'YES';
+				    	    	                                                 return false;">
+				    	    	                </td>
+				    	    	                <td class="ar">
+				    	    	                    <input type="hidden" id="file_<{$cnt1}>_<{$cnt2}>" name="input_ids_file[]" value="TILL" >
+				    	    	                    <input type="button" class="btn_delete" value="<{$lang.repository_delete}>" onclick="repositoryCls['<{$id}>'].repositoryItemUploadFiles('delete_file','<{$cnt1}>', '<{$cnt2}>'); return false;">
+				    	    	                    <{*複数可の場合は↑↓ボタンを表示*}>
+				    	    	                    <{if $attr_type[i].plural_enable==1}> 
+				    	    	                        <input type="button" class="btn_white" value="<{$lang.repository_up}>" <{if $smarty.section.j.index==0}>disabled<{/if}> onclick="repositoryCls['<{$id}>'].repositoryItemUploadFiles('up_row','<{$cnt1}>', '<{$cnt2}>'); return false;"> 
+				    	    	                        <input type="button" class="btn_white" value="<{$lang.repository_dw}>" <{if $smarty.section.j.index==$num_attr[i]-1}>disabled<{/if}> onclick="repositoryCls['<{$id}>'].repositoryItemUploadFiles('down_row','<{$cnt1}>', '<{$cnt2}>'); return false;">   
+				    	    	                    <{/if}>
+				    	    	                </td>
+                                                <{* ファイルの差し替えボタン 2015/06/23 T.Ichikawa --start-- *}>
+                                                <td>
+                                                    <label for="replace_file_<{$cnt1}>_<{$cnt2}>">
+                                                        <span class="btn_blue"><{$lang.repository_replace}></span>
+                                                    </label>
+                                                </td>
+                                                <{* ファイルの差し替えボタン 2015/06/23 T.Ichikawa --end-- *}>
+                                            </tr>
+				    	    	            <{* デザイン修正 A.Jin 2013/5/21 --end--*}>
+				    	    	        <{*j-thファイルが未入力の場合*}>
+				    	    	        <{else}>
+				    	    	            <tr>
+				    	    	                <td>
+				    	    	                    <{if $attr_type[i].plural_enable==1}><{$smarty.section.j.index_next}>.<{/if}>
+				    	    	                    <{if $attr_type[i].plural_enable==1}>
+				    	    	                        <input type="file" id="file_inputs" name="upload[]" size=43 value="" onchange="document.getElementById('file_<{$cnt1}>_<{$cnt2}>').value = 'YES';">
+				    	    	                        <input type="hidden" id="file_<{$cnt1}>_<{$cnt2}>" name="input_ids_file[]" value="NO" >
+				    	    	                    <{else}>
+	                                                    <input type="file" id="file_inputs_un_plural" name="upload[]" size=46 value="" onchange="document.getElementById('file_<{$cnt1}>_<{$cnt2}>').value = 'YES';">
+	                                                    <input type="hidden" id="file_<{$cnt1}>_<{$cnt2}>" name="input_ids_file[]" value="NO" >
+				    	    	                    <{/if}>
+				    	    	                </td>
+				    	    	            </tr>
+				    	    	        <{/if}> 
+				    	    	    </table>
+				    	    	<{/section}>
+				    	    	<span id="hidden_area_<{$cnt1}>"></span>
+				    	    	<{*複数可の場合はmore inputボタンを表示*}>
+				    	    	<{if $attr_type[i].plural_enable==1}>
+				    	    	    <input type="button" class="btn_white" value="<{$lang.repository_item_addrow}>" onclick="repositoryCls['<{$id}>'].repositoryItemUploadFiles('add_row','<{$cnt1}>'); return false;">
+				    	    	<{/if}>
+				    	    </td>
+				        </tr>
+				    <{*アイテム属性値の表示 : thumbnail*}>
+				    <{elseif $attr_type[i].input_type == 'thumbnail' }>
+				    	<{if $attr_type[i].plural_enable==1}>
+				    	<tr ondragover="repositoryCls['<{$id}>'].repositoryDragOver(event)"
+				    			ondrop="repositoryCls['<{$id}>'].repositoryDropFiles(event, '<{$page_id}>', '<{$block_id}>','<{$cnt1}>','thumnail',true)">
+				    	<{else}>
+				    	<tr ondragover="repositoryCls['<{$id}>'].repositoryDragOver(event)"
+				    		ondrop="repositoryCls['<{$id}>'].repositoryDropFiles(event, '<{$page_id}>', '<{$block_id}>','<{$cnt1}>', 'thumnail', false)">
+				    	<{/if}>
+				    	    <th class="item_edit_list w175px"><!-- old td class="td_repos" width="175px" -->
+				    	    	<b><{$attr_type[i].attribute_name}></b><{if $attr_type[i].is_required == 1}> <span class="red">*</span><{/if}>
+				    	    </th>
+				    	    <td class="item_edit_list al pd23" ><{*全サムネイル属性に関するループ*}>
+				    	        <{section name=j loop=$item_attr[i]}>
+				    	            <{assign var="cnt2" value=$smarty.section.j.index}>   
+				    	            
+				    	            <{* デザイン修正 A.Jin 2013/5/21 --start--*}>
+				    	            <table class="full tb00">
+				    	                <tr>
+				    	                    <td>
+				    	                    	<{if $attr_type[i].plural_enable==1}><{$smarty.section.j.index_next}>.<{/if}>
+				    	                    	<{*j-thサムネイルが既にアップロード済みの場合*}>
+				    	                    	<{if $item_attr[i][j].upload.file_name != ""}>
+				    	                                	<{*input_ids[] : [i][j]個送信。入力済みは"TILL", 未入力は"NO", 入力は"YES"*}>
+				    	                                	<{$item_attr[i][j].upload.file_name}>
+				    	                                </td>
+				    	                                <td class="ar">
+				    	                                	<input type="hidden" id="thumbnail_<{$cnt1}>_<{$cnt2}>" name="input_ids_thumbnail[]" value="TILL" >
+				    	                                	<input type="button" class="btn_delete" value="<{$lang.repository_delete}>" onclick="repositoryCls['<{$id}>'].repositoryItemUploadFiles('delete_file','<{$cnt1}>', '<{$cnt2}>'); return false;">
+				    	                                	<{*複数可の場合は↑↓ボタンを表示*}>
+				    	                                	<{if $attr_type[i].plural_enable==1}>
+				    	                                		<input type="button" class="btn_white" value="<{$lang.repository_up}>" <{if $smarty.section.j.index==0}>disabled<{/if}> onclick="repositoryCls['<{$id}>'].repositoryItemUploadFiles('up_row','<{$cnt1}>', '<{$cnt2}>'); return false;">
+				    	                                		<input type="button" class="btn_white" value="<{$lang.repository_dw}>" <{if $smarty.section.j.index==$num_attr[i]-1}>disabled<{/if}> onclick="repositoryCls['<{$id}>'].repositoryItemUploadFiles('down_row','<{$cnt1}>', '<{$cnt2}>'); return false;">  
+				    	                                	<{/if}>
+				    	                                </td>
+				    	                            </tr>
+				    	                            <tr>
+				    	                                <td colspan="2" class="al">
+				    	                                
+				    	                        <{else}>
+				    	                            <{*j-thサムネイルが未入力の場合*}>
+				    	                            <input type="file" name="upload[]" size=43 value="" onchange="document.getElementById('thumbnail_<{$cnt1}>_<{$cnt2}>').value = 'YES';">
+				    	                            <input type="hidden" id="thumbnail_<{$cnt1}>_<{$cnt2}>" name="input_ids_thumbnail[]" value="NO" >
+				    	                        <{/if}>
+				    	                    
+				    	                <{* Bug Fix WEKO-2014-034 K.Sugimoto 2014/08/08 --start--*}>
+				    	                <tr>
+				    	                    <td colspan="2">
+				    	                    	<{$lang.repository_item_edit_files_upload_file_attention|smarty:nodefaults}>
+				    	                    </td>
+				    	                </tr>
+				    	                <{* Bug Fix WEKO-2014-034 K.Sugimoto 2014/08/08 --end--*}>
+				    	                    
+				    	                    <!-- {if $item_attr[i][j] != null} br/ -->
+				    	                    <{if $item_attr[i][j].upload != null}> <br/>
+				    	                    	<{*サムネイルテーブルに登録済み => サムネイルテーブルからメモリ展開して表示*}> 
+				    	                    	<{* Modify Directory specification BASE_URL K.Matsuo 2011/9/2 *}>
+				    	                    	<img vspace="0" hspace="0" class="item_edit_confirm_img" alt="thumbnail"
+				    	                    		<{if $item_attr[i][j].width >= $item_attr[i][j].height}>
+				    	                    			width="100px"
+				    	                    		<{else}>
+				    	                    			height="100px"
+				    	                    		<{/if}> 
+				    	                    		src="<{$smarty.const.BASE_URL}>/index.php?action=repository_action_common_download&item_id=<{$item_attr[i][j].item_id}>&item_no=<{$item_attr[i][j].item_no}>&attribute_id=<{$item_attr[i][j].attribute_id}>&file_no=<{$item_attr[i][j].file_no}>&img=true&<{$smarty.now}>"/>
+				    	                    <{/if}> 
+				    	                    
+				    	                    <{* デザイン修正 A.Jin 2013/5/21 --start--*}>
+				    	                    </td>
+				    	                </tr>
+				    	            </table>
+				    	            <{* デザイン修正 A.Jin 2013/5/21 --end--*}>
+				    	        <{/section}>
+				    	        <span id="hidden_area_<{$cnt1}>"></span>
+				    	        <{*複数可の場合はmore inputボタンを表示*}>
+				    	        <{if $attr_type[i].plural_enable==1}>
+				    	            <input type="button" class="btn_white" value="<{$lang.repository_item_addrow}>" onclick="repositoryCls['<{$id}>'].repositoryItemUploadFiles('add_row','<{$cnt1}>'); return false;">
+				    	        <{/if}>
+				    	    </td>
+				        </tr>
+				    <{/if}>
 				<{/section}>
 			</table>
 		</form>
@@ -259,13 +266,13 @@
 </div>
 <div align=center> <{*編集中の場合はアイテムタイプ選択まで戻れない*}>
 	<{if $smarty.session.ej_workflow_flag == "true"}>
-	<input type="button" class="btn_next" value="<{$lang.repository_return}>" onclick="javascript: backToEJWEKO(); return false;">
+	    <input type="button" class="btn_next" value="<{$lang.repository_return}>" onclick="javascript: backToEJWEKO(); return false;">
 	<{elseif $smarty.session.return_screen == "1"}>
-	<input type="button" class="btn_back" value="<{$lang.repository_return}>" onclick="location.reload();">
+	    <input type="button" class="btn_back" value="<{$lang.repository_return}>" onclick="location.reload();">
 	<{elseif $smarty.session.return_screen == "2"}>
-	<input type="button" class="btn_back" value="<{$lang.repository_return}>" onclick="commonCls.sendView('<{$id}>', 'repository_view_main_workflow'); return false;">
+	    <input type="button" class="btn_back" value="<{$lang.repository_return}>" onclick="commonCls.sendView('<{$id}>', 'repository_view_main_workflow'); return false;">
 	<{else}>
-	<input type="button" class="btn_back" value="<{$lang.repository_return}>" onclick="commonCls.sendView('<{$id}>', 'repository_view_main_item_selecttype'); return false;">
+	    <input type="button" class="btn_back" value="<{$lang.repository_return}>" onclick="commonCls.sendView('<{$id}>', 'repository_view_main_item_selecttype'); return false;">
 	<{/if}>
 	<input type="button" class="btn_blue" value="<{$lang.repository_save}>" onclick="repositoryCls['<{$id}>'].repositoryItemUploadFiles('stay'); return false;">
 	<input type="button" class="btn_next" value="<{$lang.repository_page_next}>" onclick="repositoryCls['<{$id}>'].repositoryItemUploadFiles('next'); return false;">
@@ -284,4 +291,21 @@
 	location.href=location_str.replace(/&amp;/ig,"&");
  }
  repositoryCls['<{$id}>'].repositoryShowDropText();
+</script> 
+
+<script class="nc_script" type="text/javascript">
+replaceFileName = function(fileName, nameObj, fileNo, inputTag){
+    var textValue = "";
+    if(fileNo > 0) {
+        textValue = fileNo + '.' + fileName;
+    } else {
+        textValue = fileName;
+    }
+    
+    nameObj.innerHTML = textValue;
+    nameObj.className = "list_title";
+    
+    // ファイルのリストに追加
+    inputTag.name = "upload[]";
+}
 </script> 

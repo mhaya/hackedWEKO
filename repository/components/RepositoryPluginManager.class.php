@@ -1,7 +1,15 @@
 <?php
+
+/**
+ * Plugin manager class
+ * プラグイン管理クラス
+ *
+ * @package     WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: RepositoryPluginManager.class.php 42307 2014-09-29 06:18:07Z tomohiro_ichikawa $
+// $Id: RepositoryPluginManager.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics,
 // Research and Development Center for Scientific Information Resources
@@ -10,25 +18,36 @@
 // http://creativecommons.org/licenses/BSD/
 //
 // --------------------------------------------------------------------
-/* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
+/**
+ * WEKO logic abstract class
+ * WEKOロジック基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryLogicBase.class.php';
 
 /**
- * repository handle IDs management class
- * 
+ * Plugin manager class
+ * プラグイン管理クラス
+ *
+ * @package     WEKO
+ * @copyright   (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license     http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access      public
  */
 class RepositoryPluginManager extends RepositoryLogicBase
 {
-    // search query plugin
+    /**
+     * Search query plugin parameter name
+     * 検索クエリプラグインパラメータ名
+     */
     const SEARCH_QUERY_COLUMN = "search_query_plugin";
-    
     
     /**
      * Constructor
+     * コンストラクタ
      *
-     * @param var $session
-     * @param var $dbAccess
-     * @param string $TransStartDate
+     * @param Session $session session object セッションオブジェクト
+     * @param RepositoryDbAccess $dbAccess DB object DBオブジェクト
+     * @param string $transStartDate process start date 処理開始時間
      */
     public function __construct($session, $dbAccess, $transStartDate)
     {
@@ -40,11 +59,11 @@ class RepositoryPluginManager extends RepositoryLogicBase
     }
     
     /**
-     * Register Y handle prefix
+     * Get plugin instance
+     * プラグインのインスタンスを取得する
      * 
-     * @param string $path_name
-     * 
-     * @return bool
+     * @param string $plugin_param plugin parameter name プラグインのパラメータ名
+     * @return object plugin object プラグインオブジェクト
      */
     public function getPlugin($plugin_param)
     {

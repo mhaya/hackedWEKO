@@ -1,30 +1,53 @@
 <?php
+
+/**
+ * Item registration: input processing action class from the file license input screen
+ * アイテム登録：ファイルライセンス設定画面からの入力処理アクションクラス
+ *
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Editfileslicense.class.php 53594 2015-05-28 05:25:53Z kaede_matsushita $
+// $Id: Editfileslicense.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
-// Copyright (c) 2007 - 2008, National Institute of Informatics, 
+// Copyright (c) 2007 - 2008, National Institute of Informatics,
 // Research and Development Center for Scientific Information Resources
 //
 // This program is licensed under a Creative Commons BSD Licence
 // http://creativecommons.org/licenses/BSD/
 //
 // --------------------------------------------------------------------
-
-/* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
+/**
+ * Item register manager class
+ * アイテム登録管理クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/ItemRegister.class.php';
+/**
+ * ID server connect class
+ * IDサーバー連携クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/IDServer.class.php';
 
 /**
- * アイテム登録：ファイルライセンス設定画面からの入力処理アクション
+ * Item registration: input processing action class from the file license input screen
+ * アイテム登録：ファイルライセンス設定画面からの入力処理アクションクラス
  *
- * @access      public
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class Repository_Action_Main_Item_Editfileslicense extends RepositoryAction
 {   
     // リクエストパラメーター
     /**
+     * Process mode
      * 処理モード
      *   'selecttype'   : アイテムタイプ選択画面
      *   'files'        : ファイル選択画面
@@ -39,107 +62,139 @@ class Repository_Action_Main_Item_Editfileslicense extends RepositoryAction
     public $save_mode = null;
     
     /**
-     * ファイルのライセンス配列
-     *   アップロード済みアイテムの数に対応
+     * License array of files (corresponding to the number of uploaded items)
+     * ファイルのライセンス配列(アップロード済みアイテムの数に対応)
+     *
      * @var array
      */
     public $licence = null;
     
     /**
+     * file license free input array
      * ファイルのライセンス自由記述欄配列
-     *   " "の場合、未入力
+     *
      * @var array
      */
     public $freeword = null;
     
     /**
+     * Embargo year array
      * エンバーゴ年配列
+     *
      * @var array
      */
     public $embargo_year = null;
     
     /**
+     * Embargo month array
      * エンバーゴ月配列
+     *
      * @var array
      */
     public $embargo_month = null;
     
     /**
+     * Embargo day array
      * エンバーゴ日配列
+     *
      * @var array
      */
     public $embargo_day = null;
     
     /**
-     * エンバーゴフラグ配列
-     *   0:公開日をアイテム公開日に合わせる
-     *   1:公開日を独自に設定する
+     * Embargo flag array (0: match the release date to the item publication date, 1: own to set the publication date)
+     * エンバーゴフラグ配列(0:公開日をアイテム公開日に合わせる, 1:公開日を独自に設定する)
+     *
      * @var array
      */
     public $embargo_flag = null;
     
     /**
+     * Selected group ID array
      * 選択されたグループのID配列
+     *
      * @var array
      */
     public $room_ids = null;
     
     /**
+     * Set price array
      * 設定された価格配列
+     *
      * @var array
      */
     public $price_value = null;
     
     /**
+     * Display format array
      * 表示形式配列
+     *
      * @var array
      */
     public $display_type = null;
     
     /**
+     * Display name array
      * 表示名配列
+     *
      * @var array
      */
     public $display_name = null;
     
     /**
+     * Download permission group ID array
      * ダウンロード許可グループID配列
+     *
      * @var array
      */
     public $auth_room_ids = null;
     
     /**
+     * Flash file Embargo year array
      * フラッシュファイルエンバーゴ年配列
+     *
      * @var array
      */
     public $flash_embargo_year = null;
     
     /**
+     * Flash file Embargo month array
      * フラッシュファイルエンバーゴ月配列
+     *
      * @var array
      */
     public $flash_embargo_month = null;
     
     /**
+     * Flash file Embargo day array
      * フラッシュファイルエンバーゴ日配列
+     *
      * @var array
      */
     public $flash_embargo_day = null;
     
     /**
-     * フラッシュファイルエンバーゴフラ配列
-     *   0:公開日をアイテム公開日に合わせる
-     *   1:公開日を独自に設定する
+     * Flash file Embargo flag array (0: match the release date to the item publication date, 1: own to set the publication date)
+     * フラッシュファイルエンバーゴフラグ配列(0:公開日をアイテム公開日に合わせる, 1:公開日を独自に設定する)
      * @var array
      */
     public $flash_embargo_flag = null;
     
     // メンバ変数
+    /**
+     * Warning message
+     * 警告メッセージ
+     *
+     * @var array
+     */
     private $warningMsg = array();  // 警告メッセージ
 
     /**
-     * 実行処理
-     * @see RepositoryAction::executeApp()
+     * Execute
+     * 実行
+     *
+     * @return string "success"/"error" success/failed 成功/失敗
+     * @throws AppException
      */
     protected function executeApp()
     {

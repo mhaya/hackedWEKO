@@ -1,41 +1,71 @@
 <?php
+
+/**
+ * View for item type icon edit
+ * アイテムタイプアイコン編集画面表示クラス
+ *
+ * @package     WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Icon.class.php 53594 2015-05-28 05:25:53Z kaede_matsushita $
+// $Id: Icon.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
-// Copyright (c) 2007 - 2008, National Institute of Informatics, 
+// Copyright (c) 2007 - 2008, National Institute of Informatics,
 // Research and Development Center for Scientific Information Resources
 //
 // This program is licensed under a Creative Commons BSD Licence
 // http://creativecommons.org/licenses/BSD/
 //
 // --------------------------------------------------------------------
-
-/* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
-// Set help icon setting 2010/02/10 K.Ando --start--
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
-// Set help icon setting 2010/02/10 K.Ando --end--
+
 
 /**
- * [[機能説明]]
+ * View for item type icon edit
+ * アイテムタイプアイコン編集画面表示クラス
  *
- * @package     [[package名]]
+ * @package     WEKO
+ * @copyright   (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license     http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
  * @access      public
  */
 class Repository_View_Edit_Itemtype_Icon extends RepositoryAction 
 {
+	/**
+	 * Session management objects
+	 * Session管理オブジェクト
+	 *
+	 * @var Session
+	 */
 	var $Session = null;
+	/**
+	 * Database management objects
+	 * データベース管理オブジェクト
+	 *
+	 * @var DbObjectAdodb
+	 */
 	var $Db = null;
 	
-    // Set help icon setting 2010/02/10 K.Ando --start--
-    var $help_icon_display =  null;
-    // Set help icon setting 2010/02/10 K.Ando --end--
+	/**
+	 * Help icon dispplay flag
+	 * ヘルプアイコン表示フラグ
+	 *
+	 * @var bool
+	 */
+	var $help_icon_display =  null;
 	
 	/**
-     * [[機能説明]]
-     *
-     * @access  public
-     */
+	 * Execute
+	 * 実行
+	 *
+	 * @return string "success"/"error" success/failed 成功/失敗
+	 * @throws RepositoryException
+	 */
     function executeApp()
     {
         // Add theme_name for image file Y.Nakao 2011/08/03 --start--

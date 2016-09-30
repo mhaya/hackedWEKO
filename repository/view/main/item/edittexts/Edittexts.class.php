@@ -1,24 +1,46 @@
 <?php
+
+/**
+ * Item register: View for input metadata
+ * アイテム登録：メタデータ入力画面表示
+ *
+ * @package     WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Edittexts.class.php 54835 2015-06-25 04:10:46Z keiya_sugimoto $
+// $Id: Edittexts.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
-// Copyright (c) 2007 - 2008, National Institute of Informatics, 
+// Copyright (c) 2007 - 2008, National Institute of Informatics,
 // Research and Development Center for Scientific Information Resources
 //
 // This program is licensed under a Creative Commons BSD Licence
 // http://creativecommons.org/licenses/BSD/
 //
 // --------------------------------------------------------------------
-
-/* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/common/WekoAction.class.php';
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
+/**
+ * Name authority manager class
+ * 氏名メタデータ管理クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/NameAuthority.class.php';
 
 /**
+ * Item register: View for input metadata
  * アイテム登録：メタデータ入力画面表示
  *
+ * @package     WEKO
+ * @copyright   (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license     http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
  * @access      public
  */
 class Repository_View_Main_Item_Edittexts extends WekoAction
@@ -26,94 +48,124 @@ class Repository_View_Main_Item_Edittexts extends WekoAction
     // 表示用パラメーター
     
     /**
+     * Item publish date: month option array
      * アイテム公開日：月 選択肢配列
+     *
      * @var array
      */
     public $month_option_pub = array();
     
     /**
+     * Item publish date: day option array
      * アイテム公開日：日 選択肢配列
+     *
      * @var array
      */
     public $day_option_pub = array();
     
     /**
+     * Biblio info: date of issued month option array
      * 書誌情報：発行年月日 月 選択肢配列
+     *
      * @var array
      */
     public $month_of_issued = array();
     
     /**
+     * Biblio info: date of issued day option array
      * 書誌情報：発行年月日 日 選択肢配列
+     *
      * @var array
      */
     public $day_of_issued = array();
     
     /**
+     * date: month option array
      * 日付：月 選択肢配列
+     *
      * @var array
      */
     public $month_of_date = array();
     
     /**
+     * date: day option array
      * 日付：日 選択肢配列
+     *
      * @var array
      */
     public $day_of_date = array();
     
     /**
+     *  biblio info existing flag
      * 書誌情報の存在チェックフラグ
+     *
      * @var bool
      */
     public $biblio_info_check = false;
     
     /**
+     * AWSAccessKeyId existing flag
      * AWSAccessKeyIdの存在チェックフラグ
+     *
      * @var bool
      */
     public $access_key_check = false;
     
     /**
+     * Link metadata array
      * link情報配列
+     *
      * @var array
      */
     public $link_data = array();
     
     /**
+     * Heading metadata array
      * heading情報配列
+     *
      * @var array
      */
     public $heading = array();
     
     /**
+     * Author ID prefix array
      * author_id_prefix配列
      * @var array
      */
     public $author_id_prefix_list = array();
     // Auto Input Metadata by CrossRef DOI 2015/03/02 K.Sugimoto --start--
     /**
-     * crossrefフラグ
+     * CrossRef flag
+     * CrossRefフラグ
+     *
      * @var bool
      */
     public $crossref_flg = false;
     // Auto Input Metadata by CrossRef DOI 2015/03/02 K.Sugimoto --end--
     
     /**
+     * Display help icon flag
      * ヘルプアイコン表示フラグ
+     *
      * @var string
      */
     public $help_icon_display =  "";
     
     // リクエストパラメーター
     /**
+     * Warning message
      * 警告メッセージ配列
+     *
      * @var array
      */
     public $warningMsg = null;
     
     /**
-     * 実行処理
-     * @see ActionBase::executeApp()
+     * Execute
+     * 実行
+     *
+     * @return string "success"/"error" success/failed 成功/失敗
+     * @throws AppException
      */
     protected function executeApp()
     {
@@ -124,8 +176,6 @@ class Repository_View_Main_Item_Edittexts extends WekoAction
         $repositoryAction->dbAccess = $this->Db;
         $repositoryAction->TransStartDate = $this->accessDate;
         $repositoryAction->setLangResource();
-        
-        $NameAuthority = new NameAuthority($this->Session, $this->Db);
         
         // セッションから現在のアイテム公開日を取得
         $item_pub_date = $this->Session->getParameter('item_pub_date');
@@ -251,15 +301,7 @@ class Repository_View_Main_Item_Edittexts extends WekoAction
         $this->Session->removeParameter("view_open_node_index_id_item_link");
         
         // Get author ID prefix list 2010/11/04 A.Suzuki --start--
-        $result = $NameAuthority->getExternalAuthorIdPrefixList();
-        if($result === false) {
-            $tmpErrorMsg = "Cannot get external authorID prefix list.";
-            $this->errorLog($tmpErrorMsg, __FILE__, __CLASS__, __LINE__);
-            $exception = new AppException($tmpErrorMsg);
-            $exception->addError($tmpErrorMsg);
-            throw $exception;
-        }
-        $this->author_id_prefix_list = $result;
+        $this->author_id_prefix_list = $this->loadExternalAuthorIdPrefixList();
         // Get author ID prefix list 2010/11/04 A.Suzuki --end--
         
         // Check ichushi connect staus 2012/12/05 A.Jin --start--
@@ -342,6 +384,45 @@ class Repository_View_Main_Item_Edittexts extends WekoAction
         }
         
         return 'success';
+    }
+    
+    /**
+     * Load list of external author id prefix data
+     * 外部著者IDのプレフィックス情報一覧を取得する
+     * 
+     * @return array List of external author id prefix data
+     *               外部著者IDのプレフィックス情報一覧
+     *               array[$ii]["prefix_id"|"prefix_name"|"url"|...]
+     * @throws AppException
+     */
+    private function loadExternalAuthorIdPrefixList()
+    {
+        $NameAuthority = new NameAuthority($this->Session, $this->Db);
+        $result = $NameAuthority->getExternalAuthorIdPrefixList();
+        if($result === false) {
+            $tmpErrorMsg = "Cannot get external authorID prefix list.";
+            $this->errorLog($tmpErrorMsg, __FILE__, __CLASS__, __LINE__);
+            $exception = new AppException($tmpErrorMsg);
+            $exception->addError($tmpErrorMsg);
+            throw $exception;
+        }
+        
+        for($ii = 0; $ii < count($result); $ii++)
+        {
+            if(preg_match("/^(https?|ftp)(:\/\/[-_.!~*\'()a-zA-Z0-9;\/?:\@&=+\$,%#]+)$/", $result[$ii]["url"]) && strpos($result[$ii]["url"], "##"))
+            {
+                $url_explode = explode("##", $result[$ii]["url"], 2);
+                $result[$ii]["url_start"] = $url_explode[0];
+                $result[$ii]["url_end"] = $url_explode[1];
+            }
+            else
+            {
+                $result[$ii]["url_start"] = "";
+                $result[$ii]["url_end"] = "";
+            }
+        }
+        
+        return $result;
     }
 }
 ?>

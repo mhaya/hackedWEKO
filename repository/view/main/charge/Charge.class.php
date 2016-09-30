@@ -1,7 +1,15 @@
 <?php
+
+/**
+ * View class for usage details screen display
+ * 利用明細画面表示用ビュークラス
+ *
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Charge.class.php 41863 2014-09-22 08:45:13Z yuko_nakao $
+// $Id: Charge.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -12,23 +20,54 @@
 // --------------------------------------------------------------------
 
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
 
 /**
- * view charge list
+ * View class for usage details screen display
+ * 利用明細画面表示用ビュークラス
  *
- * @package     WEKO
- * @access      public
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class Repository_View_Main_Charge extends RepositoryAction
 {
     // component
+    /**
+     * Session management objects
+     * Session管理オブジェクト
+     *
+     * @var Session
+     */
     var $Session = null;
+    /**
+     * Database management objects
+     * データベース管理オブジェクト
+     *
+     * @var DbObject
+     */
     var $Db = null;
     
     // member
+    /**
+     * Use specification confirmation URL
+     * 利用明細確認URL
+     *
+     * @var string
+     */
     var $charge_url = "";
     
+    /**
+     * Usage details Display
+     * 利用明細表示
+     *
+     * @return string Result 結果
+     */
     function execute()
     {
         
@@ -54,7 +93,7 @@ class Repository_View_Main_Charge extends RepositoryAction
             $exception = new RepositoryException( "ERR_MSG_xxx-xxx3", 1 );
             throw $exception;
         }
-        
+        $this->finalize();
         return 'success';
         
     }

@@ -1,7 +1,15 @@
 <?php
+
+/**
+ * ELS registration common classes
+ * ELS登録共通クラス
+ * 
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: ElsCommon.class.php 36236 2014-05-26 07:53:04Z satoshi_arata $
+// $Id: ElsCommon.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -11,20 +19,63 @@
 //
 // --------------------------------------------------------------------
 
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
 
-
-
+/**
+ * ELS registration common classes
+ * ELS登録共通クラス
+ * 
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
+ */
 class ElsCommon extends RepositoryAction
 {
 	// component
+    /**
+     * Session management objects
+     * Session管理オブジェクト
+     *
+     * @var Session
+     */
 	var $Session = null;
+    /**
+     * Database management objects
+     * データベース管理オブジェクト
+     *
+     * @var DbObject
+     */
 	var $Db = null;
+    /**
+     * Language Resource Management object
+     * 言語リソース管理オブジェクト
+     *
+     * @var Smarty
+     */
 	var $smartyAssign = null;
 	
 	// member
+	/**
+	 * Display language
+	 * 表示言語
+	 *
+	 * @var string
+	 */
 	var $lang = null;
 	
+	/**
+	 * Constructor
+	 * コンストラクタ
+	 *
+     * @param Session $Session Session management objects Session管理オブジェクト
+     * @param Dbobject $Db Database management objects データベース管理オブジェクト
+	 * @param 言語リソース管理オブジェクト $smartyAssign Language Resource Management object 言語リソース管理オブジェクト
+	 */
 	function ElsCommon($session, $db, $smartyAssign){
 		if($session!=null){
 			$this->Session = $session;
@@ -46,14 +97,18 @@ class ElsCommon extends RepositoryAction
 		// set lang
 		$this->lang = $this->Session->getParameter("_lang");
 	}
+	
 	/**
-	 * create tvs data for Els
+	 * To create a TSV data
+	 * TSVデータを作成する
 	 *
-	 * @param $els_item
-	 * @param $buf
-	 * @param $result_message
-	 * @param $els_file_data
-	 * @return true or false
+	 * @param array $els_item Registration item list 登録アイテム一覧
+	 *                        array[$ii]["item_id"|"item_no"]
+	 * @param string $buf Buffer バッファ
+	 * @param string $result_message Result message 結果メッセージ
+	 * @param array $els_file_data File list ファイル一覧
+	 *                             array[$ii]
+	 * @return boolean Execution result 実行結果
 	 */
 	function createElsData($els_item, &$buf, &$result_message, &$els_file_data){
 		/////////////// Change ELS Mapping to ELS Format ///////////////
@@ -172,11 +227,24 @@ class ElsCommon extends RepositoryAction
 	}
 	
 	/**
-	 * an item info change to ELS format
+	 * An item info change to ELS format
+	 * アイテム情報をELS形式に変換する
 	 *
-	 * @param $Result_List an item info
-	 * @param $els_text an item ELS format info
-	 * @param $Ret_Msg result message
+	 * @param array $Result_List Item information アイテム情報
+     *                     array["item"][$ii]["item_id"|"item_no"|"revision_no"|"item_type_id"|"prev_revision_no"|"title"|"title_english"|"language"|"review_status"|"review_date"|"shown_status"|"shown_date"|"reject_status"|"reject_date"|"reject_reason"|"serch_key"|"serch_key_english"|"remark"|"uri"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                     array["item_type"][$ii]["item_type_id"|"item_type_name"|"item_type_short_name"|"explanation"|"mapping_info"|"icon_name"|"icon_mime_type"|"icon_extension"|"icon"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                     array["item_attr_type"]["item_type_id"|"attribute_id"|"show_order"|"attribute_name"|"attribute_short_name"|"input_type"|"is_required"|"plural_enable"|"line_feed_enable"|"list_view_enable"|"hidden"|"junii2_mapping"|"dublin_core_mapping"|"lom_mapping"|"lido_mapping"|"spase_mapping"|"display_lang_type"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                     array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"personal_name_no"|"family"|"name"|"family_ruby"|"name_ruby"|"e_mail_address"|"item_type_id"|"author_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                     array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"show_order"|"mime_type"|"extension"|"file"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                     array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"display_name"|"display_type"|"show_order"|"mime_type"|"extension"|"prev_id"|"file_prev"|"file_prev_name"|"license_id"|"license_notation"|"pub_date"|"flash_pub_date"|"item_type_id"|"browsing_flag"|"cover_created_flag"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                     array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"biblio_no"|"biblio_name"|"biblio_name_english"|"volume"|"issue"|"start_page"|"end_page"|"date_of_issued"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                     array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"display_name"|"display_type"|"show_order"|"mime_type"|"extension"|"prev_id"|"file_prev"|"file_prev_name"|"license_id"|"license_notation"|"pub_date"|"flash_pub_date"|"item_type_id"|"browsing_flag"|"cover_created_flag"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"|"price"]
+     *                     array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"supple_no"|"item_type_id"|"supple_weko_item_id"|"supple_title"|"supple_title_en"|"uri"|"supple_item_type_name"|"mime_type"|"file_id"|"supple_review_status"|"supple_review_date"|"supple_reject_status"|"supple_reject_date"|"supple_reject_reason"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                     array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"attribute_no"|"attribute_value"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+	 * @param array $els_text Els format data ELS形式データ
+	 *                        array[$ii]
+	 * @param result $Ret_Msg Message メッセージ
+	 * @return boolean Execution result 実行結果
 	 */
 	function getElsText($Result_List, &$els_text, &$Ret_Msg){
 		/////////// an item info change to ELS format //////////
@@ -824,9 +892,11 @@ class ElsCommon extends RepositoryAction
 	/**
 	 * check Els format
 	 *  show : http://www.nii.ac.jp/nels/man/man12.html#12.0
+	 * ELS形式をチェックする
 	 * 
-	 * @param $els_text text format Els
-	 * @param $Ret_Msg error string
+	 * @param string $els_text Text format Els ELS形式データ
+	 * @param string $Ret_Msg Error string エラーメッセージ
+	 * @return boolean Check result チェック結果
 	 */
 	function checkElsText(&$els_text, &$Ret_Msg){
 		
@@ -970,12 +1040,14 @@ class ElsCommon extends RepositoryAction
 		}
 	}
 	
+	// Add remediation change Language Format To Els 2009/08/21 K.Ito --start--
 	/**
 	 * change lang to ELS format
+     * 言語をELS形式に変換する
 	 *
-	 * @return kang of ELS format
+     * @param string $getlang Language 言語
+     * @return string Language after conversion 変換後の言語
 	 */
-	// Add remediation change Language Format To Els 2009/08/21 K.Ito --start--
 	function changeLangFormatToEls($getlang){
 		// WEKO's language is repository/lang/***** of *****
 		// 2008/09/30 now langage is japanese and english only

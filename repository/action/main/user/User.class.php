@@ -1,7 +1,15 @@
 <?php
+
+/**
+ * Action class for peer review result notification e-mail reception setting
+ * 査読結果通知メール受信設定用アクションクラス
+ *
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: User.class.php 38124 2014-07-01 06:56:02Z rei_matsuura $
+// $Id: User.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -12,32 +20,72 @@
 // --------------------------------------------------------------------
 
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
 
 /**
- * repository module admin action
+ * Action class for peer review result notification e-mail reception setting
+ * 査読結果通知メール受信設定用アクションクラス
  *
- * @package	 NetCommons
- * @author	  IVIS
- * @copyright   2006-2009 NetCommons Project
- * @license	 http://www.netcommons.org/license.txt  NetCommons License
- * @project	 NetCommons Project, supported by National Institute of Informatics
- * @access	  public
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class Repository_Action_Main_User extends RepositoryAction
 {
 	// component
+    /**
+     * Session management objects
+     * Session管理オブジェクト
+     *
+     * @var Session
+     */
 	var $Session = null;
+    /**
+     * Database management objects
+     * データベース管理オブジェクト
+     *
+     * @var DbObject
+     */
 	var $Db = null;
+    /**
+     * Mail management objects
+     * メール管理オブジェクト
+     *
+     * @var Mail_Main
+     */
 	var $mailMain = null;
 	
 	// request parameter
+	/**
+	 * Whether or not to receive a peer review result notification e-mail.
+	 * 査読結果通知メールを受信するか否か
+	 *
+	 * @var string
+	 */
 	var $check = null;
+	/**
+	 * The calling page (1: Workflow, 2: Supplemental content)
+	 * 呼び出し元のページ(1:ワークフロー、2:サプリメンタルコンテンツ)
+	 *
+	 * @var int
+	 */
 	var $setting = null;
+	/**
+	 * Or which tabs were open at the time of the call
+	 * 呼び出し時にどのタブを開いていたか
+	 *
+	 * @var int
+	 */
 	var $tab = null;
 	
 	/**
-	 * @access  public
+	 * To implement the peer review result notification e-mail settings
+	 * 査読結果通知メール設定を実施する
 	 */
 	function execute()
 	{
@@ -134,6 +182,7 @@ class Repository_Action_Main_User extends RepositoryAction
 				throw $exception;
 			}
 			
+			$this->finalize();
 			if($this->setting == 2){
 				$this->Session->setParameter("supple_workflow_active_tab", $this->tab);
 				return 'supple';

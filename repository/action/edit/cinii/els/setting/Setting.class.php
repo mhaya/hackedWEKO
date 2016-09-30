@@ -1,7 +1,15 @@
 <?php
+
+/**
+ * ELS setting action class
+ * ELS設定アクションクラス
+ * 
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Setting.class.php 945 2010-07-05 06:09:05Z atsushi_suzuki $
+// $Id: Setting.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -10,23 +18,70 @@
 // http://creativecommons.org/licenses/BSD/
 //
 // --------------------------------------------------------------------
-
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
-
+/**
+ * ELS setting action class
+ * ELS設定アクションクラス
+ * 
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
+ */
 class Repository_Action_Edit_Cinii_Els_Setting extends RepositoryAction
 {
 	// component
+    /**
+     * Session management objects
+     * Session管理オブジェクト
+     *
+     * @var Session
+     */
 	var $Session = null;
+    /**
+     * Database management objects
+     * データベース管理オブジェクト
+     *
+     * @var DbObject
+     */
 	var $Db = null;
 	
+    /**
+     * ELS login id
+     * ELSログインID
+     *
+     * @var string
+     */
 	var $els_login_id = null;
+	/**
+	 * Automatic registration flag
+	 * 自動登録フラグ
+	 *
+	 * @var string
+	 */
 	var $auto_entry = null;
+	/**
+	 * SSH path
+	 * SSHパス
+	 *
+	 * @var string
+	 */
 	var $path_ssh = null;
+    /**
+     * SCP path
+     * SCPパス
+     *
+     * @var string
+     */
 	var $path_scp = null;
 	
 	/**
-	 *
-	 * @access  public
+	 * Carry out the ELS settings
+	 * ELSの設定を行う
 	 */
 	function execute()
 	{

@@ -1,0 +1,94 @@
+<!--// ---------------------------------------------------------------------->
+<!--//                                                                     -->
+<!--// $Id: repository_item_file_history.html 68946 2016-06-16 09:47:19Z tatsuya_koyasu $          -->
+<!--//                                                                     -->
+<!--// Copyright (c) 2007 - 2008, National Institute of Informatics,        -->
+<!--// Research and Development Center for Scientific Information Resources -->
+<!--//                                                                     -->
+<!--// This program is licensed under a Creative Commons BSD Licence       -->
+<!--// http://creativecommons.org/licenses/BSD/                            -->
+<!--//                                                                     -->
+<!--// ---------------------------------------------------------------------->
+<table class="tb01 w850px mr10 ml10 box_center">
+    <tr>
+        <th class="th_col_repos">
+            <{$lang.repository_file_history_version}>
+        </th>
+        <th class="th_col_repos">
+            <{$lang.repository_file_history_update_date}>
+        </th>
+        <th class="th_col_repos">
+            <{$lang.repository_file_history_file_name}>
+        </th>
+        <th class="th_col_repos">
+            <{$lang.repository_file_history_user_name}>
+        </th>
+        <{if $action.isChangeShownState == true}>
+            <th class="th_col_repos">
+                <{$lang.repository_file_history_management}>
+            </th>
+        <{/if}>
+    </tr>
+    <{section name=i loop=$action.fileList}>
+        <tr>
+            <td class="item_edit_list">
+                <{$action.fileList[i].version}>
+            </td>
+            <td class="item_edit_list">
+                <{$action.fileList[i].modDate|replace:".000":""}>
+            </td>
+            <td class="item_edit_list">
+                <{* 実ファイルがない時、ダウンロードリンクを表示しない *}>
+                <{if $action.fileList[i].downloadLink|count_characters:false > 0}>
+                    <a href="<{$action.fileList[i].downloadLink}>"><{$action.fileList[i].fileName}></a>
+                <{else}>
+                    <{$action.fileList[i].fileName}>
+                <{/if}>
+            </td>
+            <td class="item_edit_list">
+                <{$action.fileList[i].userName}>
+            </td>
+            <{if $action.isChangeShownState == true}>
+                <td class="item_edit_list">
+                    <{if $action.fileList[i].isCurrent == false}>
+                        <{if $action.fileList[i].isChange == true}>
+                            <label>
+                                <input type="radio" <{if $action.fileList[i].shownState == 1}>checked<{/if}> name="shownState_<{$action.fileList[i].version}>" onChange="javascript:changeShownState(<{$action.item_id}>,<{$action.item_no}>,<{$action.attribute_id}>,<{$action.file_no}>,<{$action.fileList[i].version}>,1);return false;"><{$lang.repository_file_history_public}>
+                            </label>
+                            <label>
+                                <input type="radio" <{if $action.fileList[i].shownState == 0}>checked<{/if}> name="shownState_<{$action.fileList[i].version}>" onChange="javascript:changeShownState(<{$action.item_id}>,<{$action.item_no}>,<{$action.attribute_id}>,<{$action.file_no}>,<{$action.fileList[i].version}>,0);return false;"><{$lang.repository_file_history_private}>
+                            </label>
+                        <{/if}>
+                    <{/if}>
+                </td>
+            <{/if}>
+        </tr>
+    <{/section}>
+</table>
+
+<script class="nc_script" type="text/javascript">
+changeShownState = function(item_id, item_no, attr_id, file_no, version, value){
+    var id = this.id;
+    var top_el = $(this.id);
+    
+    var pars="action=repository_action_main_history";
+    pars += "&item_id=" + item_id;
+    pars += "&item_no=" + item_no;
+    pars += "&attr_id=" + attr_id;
+    pars += "&file_no=" + file_no;
+    pars += "&version=" + version;
+    pars += "&shown_state=" + value;
+    pars += '&page_id=<{$page_id}>';
+    pars += '&block_id=<{$block_id}>';
+    var url = _nc_base_url + "/index.php";
+    var myAjax = new Ajax.Request(
+                    url,
+                    {
+                        method: 'post',
+                        parameters: pars, 
+                        onComplete: function(res) {
+                        }
+                    }
+                );
+}
+</script>

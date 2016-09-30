@@ -1,7 +1,44 @@
 <?php
-/* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
+
+/**
+ * Mecab library operator class
+ * Mecabライブラリ操作クラス
+ *
+ * @package     WEKO
+ */
+
+// --------------------------------------------------------------------
+//
+// $Id: LibMecab.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
+//
+// Copyright (c) 2007 - 2008, National Institute of Informatics,
+// Research and Development Center for Scientific Information Resources
+//
+// This program is licensed under a Creative Commons BSD Licence
+// http://creativecommons.org/licenses/BSD/
+//
+// --------------------------------------------------------------------
+
+/**
+ * Mecab library operator class
+ * Mecabライブラリ操作クラス
+ *
+ * @package     WEKO
+ * @copyright   (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license     http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access      public
+ */
 class libmecab
-{   
+{
+  /**
+   * Execute mecab
+   * Mecab実行
+   *
+   * @param string $input input string 入力文字列
+   * @param string $mecab_bin mecab command path Mecabコマンドパス
+   * @return array mecab result Mecab実行結果
+   *                array["hinshi"|"hinshi1"|"hinshi2"|"hinshi3"|"katuyoukei"|"genkei"|"yomi"|"hatsuon"]
+   */
   public static function mecab( $input , $mecab_bin)
   {
     $result = false;

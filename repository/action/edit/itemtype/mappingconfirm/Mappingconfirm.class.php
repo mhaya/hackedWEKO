@@ -1,42 +1,96 @@
 <?php
+/**
+ * Action class to save the mapping that has been set on the screen
+ * 画面上で設定されたマッピングを保存するためのアクションクラス
+ *
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Mappingconfirm.class.php 53594 2015-05-28 05:25:53Z kaede_matsushita $
+// $Id: Mappingconfirm.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
-// Copyright (c) 2007 - 2008, National Institute of Informatics, 
+// Copyright (c) 2007 - 2008, National Institute of Informatics,
 // Research and Development Center for Scientific Information Resources
 //
 // This program is licensed under a Creative Commons BSD Licence
 // http://creativecommons.org/licenses/BSD/
 //
 // --------------------------------------------------------------------
-
-/* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
 
 /**
- * [[機能説明]]
+ * Action class to save the mapping that has been set on the screen
+ * 画面上で設定されたマッピングを保存するためのアクションクラス
  *
- * @package     [[package名]]
- * @access      public
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class Repository_Action_Edit_Itemtype_Mappingconfirm extends RepositoryAction
 {
 	// リクエストパラメタ
-	var $niitype = null;			// type選択値
-	var $dublin_core = null;		// Dublin Core選択値
-	var $junii2 = null;				// JuNii2選択値
-	var $lom = null;                // lom選択値
+	/**
+	 * NII type
+	 * NIIタイプ選択値
+	 *
+	 * @var int
+	 */
+	var $niitype = null;
+	/**
+	 * Array of set Dublin Core mapping
+	 * 設定されたDublinCoreマッピングの配列
+	 *
+	 * @var array
+	 */
+	var $dublin_core = null;
+	/**
+	 * Array of set JuNii2 mapping
+	 * 設定されたJuNii2マッピングの配列
+	 *
+	 * @var array
+	 */
+	var $junii2 = null;
+	/**
+	 * Array of set LoM mapping
+	 * 設定されたLoMマッピングの配列
+	 *
+	 * @var array
+	 */
+	var $lom = null;
+	/**
+	 * Array of set LIDO mapping
+	 * 設定されたLIDOマッピングの配列
+	 *
+	 * @var array
+	 */
 	public $lido = null;
-//	var $junii2_child = null;		// JuNii2選択値(子)=>廃止
-
-	var $disp_lang = null;			// 表示言語選択値
-	
     /**
-     * [[機能説明]]
+     * Array of set SPACE mapping
+     * 設定されたSPASEマッピングの配列
      *
-     * @access  public
+     * @var array
      */
+    public $spase = null;
+	/**
+	 * Array of set language
+	 * 設定された表示言語の配列
+	 *
+	 * @var array
+	 */
+	var $disp_lang = null;
+	
+	/**
+	 * Execute
+	 * 実行
+	 *
+	 * @return string "success"/"error" success/failed 成功/失敗
+	 */
     function executeApp()
     {
     	// セッションからアイテムタイプ情報を取得
@@ -84,7 +138,18 @@ class Repository_Action_Edit_Itemtype_Mappingconfirm extends RepositoryAction
 	    	    $arrays[$ii]['lido_mapping'] = "";
 	    	}
 	    	// Add LIDO 2014/04/15 R.Matsuura --end--
-	    	
+
+			// Add SPASE
+	    	if($this->spase[$ii] != "0")
+	    	{
+	    		$arrays[$ii]['spase_mapping'] = $this->spase[$ii];
+	    	}
+	    	else
+	    	{
+	    		$arrays[$ii]['spase_mapping'] = "";
+	    	}
+	    	// Add SPASE
+
 	    	///// junii2 mapping & Language type /////
     		// 書誌情報の場合
     		if($arrays[$ii]['input_type'] == "biblio_info"){

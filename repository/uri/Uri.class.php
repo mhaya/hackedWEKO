@@ -1,7 +1,15 @@
 <?php
+
+/**
+ * Simple WEKO access action class
+ * 簡易WEKOアクセスアクションクラス
+ *
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Uri.class.php 53594 2015-05-28 05:25:53Z kaede_matsushita $
+// $Id: Uri.class.php 71165 2016-08-22 09:20:28Z keiya_sugimoto $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -13,33 +21,76 @@
 
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
 
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
 
 /**
- * ********************************************************
- * this action is called by ID Server redirect.
- * When request parameter dosen't have "attribute_id", 
- * this action redirect to item detail action.
- * When request parameter has "attribute_id", 
- * this action redirect to item download.
- * ********************************************************
+ * Simple WEKO access action class
+ * 簡易WEKOアクセスアクションクラス
+ *
+ * @package WEKO
+ * @copyright (c) 2007 - 2008, National Institute of Informatics, Research and Development Center for Scientific Information Resources.
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class Repository_Uri extends RepositoryAction
 {
 	// component
+    /**
+     * Session management objects
+     * Session管理オブジェクト
+     *
+     * @var Session
+     */
 	var $Session = null;
+    /**
+     * Database management objects
+     * データベース管理オブジェクト
+     *
+     * @var DbObject
+     */
 	var $Db = null;
 	
 	// Request param
+    /**
+     * Item ID of the file to be displayed
+     * 表示するファイルのアイテムID
+     *
+     * @var int
+     */
 	var $item_id = null;
 	//var $attribute_id = null;
+    /**
+     * Attribute ID of the file to be downloaded
+     * 表示するファイルの属性ID
+     *
+     * @var int
+     */
 	var $file_id = null; // this parameter is equal attribute_id 
+    /**
+     * File serial number of the file to be downloaded
+     * ダウンロードするファイルのファイル通番
+     *
+     * @var int
+     */
 	var $file_no = null; // file no
 	
+    /**
+     * Version information for specifying the saved old file
+     * 退避した古いファイルを特定するためのバージョン情報
+     *
+     * @var int
+     */
+    public $ver = null;
+    
 	/**
-	 * 
+	 * To implement the screen access or download in accordance with the request parameters
+	 * リクエストパラメータに従い画面アクセスまたはダウンロードを実施する
 	 */
-	function execute()
+	function executeApp()
 	{
 		// check Session and Db Object
 		if($this->Session == null){
@@ -49,18 +100,7 @@ class Repository_Uri extends RepositoryAction
 		if($this->Db== null){
 			$container =& DIContainerFactory::getContainer();
 			$this->Db =& $container->getComponent("DbObject");
-		}		
-		//アクション初期化処理
-        $result = $this->initAction();
-    	if ( $result === false ) {
-            $exception = new RepositoryException( ERR_MSG_xxx-xxx1, xxx-xxx1 );	//主メッセージとログIDを指定して例外を作成
-            $DetailMsg = null;                              //詳細メッセージ文字列作成
-            //sprintf( $DetailMsg, ERR_DETAIL_xxx-xxx1);
-            $exception->setDetailMsg( $DetailMsg );             //詳細メッセージ設定
-            $this->failTrans();                                        //トランザクション失敗を設定(ROLLBACK)
-            $user_error_msg = 'initで既に・・・';
-            throw $exception;
-        }
+		}
 		
 		// get block_id and page_id
 		$block_info = $this->getBlockPageId();
@@ -73,14 +113,18 @@ class Repository_Uri extends RepositoryAction
 		$redirect_url = BASE_URL;
         if($_SERVER["REQUEST_METHOD"] == HTTP_REQUEST_METHOD_PUT){
             // Execute sword update
-            $this->executeSwordUpdate($redirect_url, $block_info);
-            $this->exitAction();
-            exit();
+            $result = $this->executeSwordUpdate($redirect_url, $block_info);
+            $this->exitFlag = true;
+            if($result === false)
+            {
+                throw new AppException("ERROR: Failed to SWORD Update by function executeSwordUpdate");
+            }
+            return;
         } else if($_SERVER["REQUEST_METHOD"] == HTTP_REQUEST_METHOD_DELETE){
             // Execute sword update
             $this->executeSwordDelete($redirect_url, $block_info);
-            $this->exitAction();
-            exit();
+            $this->exitFlag = true;
+            return;
         } else if(strlen($this->file_id) == 0){
 			// go to item detail
 			$redirect_url .= "/?action=pages_view_main".
@@ -124,12 +168,16 @@ class Repository_Uri extends RepositoryAction
 							 "&item_no=1".
 							 "&attribute_id=". $this->file_id .
 							 "&file_no=".$this->file_no; 
+            // Add file update history 2016/02/26 T.Koyasu --start--
+            // ファイル更新履歴
+            if(isset($this->ver)){
+                $redirect_url .= "&ver=". $this->ver;
+            }
+            // Add file update history 2016/02/26 T.Koyasu --end--
 		}
        
 		$redirect_url .= "&page_id=". $block_info["page_id"] .
 						 "&block_id=". $block_info["block_id"];
-		//アクション終了処理
-		$result = $this->exitAction();     // トランザクションが成功していればCOMMITされる
 		
 		// redirect
 		header("HTTP/1.1 301 Moved Permanently");
@@ -140,7 +188,11 @@ class Repository_Uri extends RepositoryAction
     
     /**
      * Execute sword update
-     *
+     * SWORD一括更新を実施する
+     * 
+     * @param string $redirect_url Redirect URL リダイレクトURL
+     * @param array $block_info Block information ブロック情報
+     * @return boolean Result 結果
      */
     private function executeSwordUpdate($redirect_url, $block_info)
     {
@@ -174,7 +226,7 @@ class Repository_Uri extends RepositoryAction
             // エラーで終了してheaderに値詰めて返す
             $error_list[] = new DetailErrorInfo(0, "", "Update index is not set");
             $swordUpdate->setHeader(500, $error_list);
-            return;
+            return true;
         }
         // Add for error check 2014/09/16 T.Ichikawa --end--
         
@@ -186,15 +238,21 @@ class Repository_Uri extends RepositoryAction
         
         // Fix check index_id Y.Nakao 2013/06/07
         
+        // Check DOI change mode
+        $changeDoiFlag = 0;
+        if(isset($_SERVER['HTTP_CHANGE_SELFDOI'])) {
+            $changeDoiFlag = $_SERVER['HTTP_CHANGE_SELFDOI'];
+        }
+        
         // Init
-        $swordUpdate->init($this->item_id, 1, $authUser, $authPw, $insertIndex, $newIndex, $owner);
+        $swordUpdate->init($this->item_id, 1, $authUser, $authPw, $insertIndex, $newIndex, $changeDoiFlag, $owner);
         
         // Login check
         $result = $swordUpdate->checkSwordLogin($statusCode, $userId);
         if(!$result)
         {
             $swordUpdate->setHeader($statusCode);
-            return;
+            return true;
         }
         
         // Get upload file data
@@ -205,19 +263,22 @@ class Repository_Uri extends RepositoryAction
         {
             $swordUpdate->setHeader($statusCodeMsg);
 
-            return;
+            return true;
         }
         $this->Session->setParameter("swordFileData", $fileData);
         
         // Execute update
-        $swordUpdate->executeSwordUpdate($statusCode, $error_list);
+        $result = $swordUpdate->executeSwordUpdate($statusCode, $error_list);
         $swordUpdate->setHeader($statusCode, $error_list);
-        return;
+        return $result;
     }
     
     /**
      * Execute sword delete
+     * SWORD削除を行う
      *
+     * @param string $redirect_url Redirect URL リダイレクトURL
+     * @param array $block_info Block information ブロック情報
      */
     private function executeSwordDelete($redirect_url, $block_info)
     {

@@ -1,7 +1,15 @@
 <?php
+
+/**
+ * Item bulk export action class
+ * アイテム一括エクスポートアクションクラス
+ * 
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Listdownload.class.php 56716 2015-08-19 14:05:15Z tomohiro_ichikawa $
+// $Id: Listdownload.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -12,34 +20,80 @@
 // --------------------------------------------------------------------
 
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
-
+/**
+ * ZIP file manipulation library
+ * ZIPファイル操作ライブラリ
+ */
 include_once MAPLE_DIR.'/includes/pear/File/Archive.php';
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
+/**
+ * Item export processing common classes
+ * アイテムエクスポート処理共通クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/action/main/export/ExportCommon.class.php';
+/**
+ * Common class file download
+ * ファイルダウンロード共通クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryDownload.class.php';
+/**
+ * ELS registration common classes
+ * ELS登録共通クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/action/edit/cinii/ElsCommon.class.php';
+/**
+ * SCfW metadata file output common classes
+ * SCfWメタデータファイル出力共通クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryOutputTSV.class.php';
 
+/**
+ * Item bulk export action class
+ * アイテム一括エクスポートアクションクラス
+ * 
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
+ */
 class Repository_Action_Main_Export_Listdownload extends RepositoryAction
 {
 
     // ダウンロード用メンバ
+    /**
+     * Data upload objects
+     * データアップロードオブジェクト
+     *
+     * @var Uploads_View
+     */
     var $uploadsView = null;
     
     /**
-     * ダウンロード形式のタイプ
+     * Download format
+     * 0・・・WEKOImport format
+     * 1・・・BIBTEX format
+     * 2・・・OAI-PMH format
+     * 3・・・SWRC format
+     * 4・・・ELS format
+     * 5・・・TSV format
+     * ダウンロード形式
      * 0・・・WEKOImport形式
      * 1・・・BIBTEX形式
      * 2・・・OAI-PMH形式
      * 3・・・SWRC形式
      * 4・・・ELS形式
      * 5・・・TSV形式
-     * 
-     * @var integer
+     *
+     * @var int
      */
     public $select_export= null;
     
     /**
+     * export target of item ID list
      * export対象のアイテムID一覧
      *
      * @var array
@@ -47,6 +101,7 @@ class Repository_Action_Main_Export_Listdownload extends RepositoryAction
     public $exportItemId = null;
     
     /**
+     * export target of item no list
      * export対象のアイテムNO一覧
      *
      * @var array
@@ -54,6 +109,7 @@ class Repository_Action_Main_Export_Listdownload extends RepositoryAction
     public $exportItemNo = null;
     
     /**
+     * Newline (Linux)
      * 改行(Linux)
      *
      * @var string
@@ -61,6 +117,7 @@ class Repository_Action_Main_Export_Listdownload extends RepositoryAction
     private $LF = "\n";
     
     /**
+     * Newline (Windows)
      * 改行(Windouws)
      *
      * @var string
@@ -68,25 +125,29 @@ class Repository_Action_Main_Export_Listdownload extends RepositoryAction
     private $CRLF = "\r\n";
     
     /**
+     * Server name
      * サーバー名
      *
      * @var string
      */
     private $server_name = null;
     /**
+     * now date
      * 現在日時
      *
-     * @var Date
+     * @var string
      */
     private $responseDate = null;
     /**
-     * SettionのsmartyAssignを格納するオブジェクト
+     * Language Resource Management object
+     * 言語リソース管理オブジェクト
      *
-     * @var Object
+     * @var Smarty
      */
     private $smartyAssign = null;
     
     /**
+     * It became a display target of the list screen, item information
      * 一覧画面の表示対象となった、アイテム情報
      *
      * @var array
@@ -94,6 +155,7 @@ class Repository_Action_Main_Export_Listdownload extends RepositoryAction
     private $item_infos = null;
     
     /**
+     * Working directory
      * 作業用ディレクトリ
      *
      * @var string
@@ -101,12 +163,16 @@ class Repository_Action_Main_Export_Listdownload extends RepositoryAction
     private $tmp_dir = null;
     
     /**
-     * [[機能説明]]
+     * Bulk export items
+     * アイテムを一括エクスポートする
      *
      * @access  public
+     * @return boolean Result 結果
      */
     function executeApp()
     {
+        $this->exitFlag = true;
+        
         ini_set('memory_limit', -1);
         // セッション情報が設定されていない場合は、異常終了とする
         if ($this->Session != null) {
@@ -190,15 +256,17 @@ class Repository_Action_Main_Export_Listdownload extends RepositoryAction
             print "終了処理失敗";
         }
         
-        // zipファイル損傷対応 2008/08/25 Y.Nakao --start--
-        exit();
-        // zipファイル損傷対応 2008/08/25 Y.Nakao --end--
     }
 
-    /*
-     * DBから指定された条件でExport情報を取得する
-     * $query   ：クエリ
-     * $param   ：パラメータ
+    /**
+     * To get the Export information under the specified conditions
+     * 指定された条件でExport情報を取得する
+     *
+     * @param string $query Query クエリ
+     * @param array $param Query parameter クエリパラメータ
+     *                     array[$ii]
+     * @return array Query execution result クエリ実行結果
+     *               array[$ii]
      */
     function getExportInfo($query, $param){
 
@@ -233,11 +301,12 @@ class Repository_Action_Main_Export_Listdownload extends RepositoryAction
         return $export_infos;
     }
     /**
+     * From Body string, the process of cutting the specified tag part
      * Body文字列から、指定されたタグ部分を切り取る処理
      *
-     * @param string $body Body文字列
-     * @param string $startStr 切り取り開始文字列
-     * @param string $endStr 切り取り終了後削除する文字列
+     * @param string $body Body string Body文字列
+     * @param string $tagStr Tag name タグ名
+     * @return string Cut-out string 切り出された文字列
      */
     private function getTagContent($body,$tagStr){
         // 改行を削除
@@ -255,10 +324,11 @@ class Repository_Action_Main_Export_Listdownload extends RepositoryAction
     }
     
     /**
+     * The date and time Y-m-d H: i: to convert to s format
      * 日時をY-m-d H:i:s形式に変換する
      *
-     * @param integer 0
-     * @return Y-m-d H:i:s形式の日時
+     * @param int $tmp The difference from Greenwich Mean Time グリニッジ標準時から差
+     * @return string Y-m-d H:i:s format date and time of Y-m-d H:i:s形式の日時
      */
     private function dateGet ($tmp) {
         if ($tmp=='') {
@@ -280,10 +350,11 @@ class Repository_Action_Main_Export_Listdownload extends RepositoryAction
     }
 
     /**
+     * To convert to s format: the time H: i
      * 時間をH:i:s形式に変換する
      *
-     * @param Y-m-d 00:00:00+0形式の日時
-     * @return Y-m-d H:i:s形式の日時
+     * @param string 00:00:00 + 0 format date and time of 00:00:00+0形式の日時
+     * @return string Y-m-d H: i: s format date and time of Y-m-d H:i:s形式の日時
      */
     private function dateChg ($tmp) {
         if (ereg("^[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]$", $tmp)) {
@@ -304,8 +375,8 @@ class Repository_Action_Main_Export_Listdownload extends RepositoryAction
     }
     
     /**
+     * WEKO Export file creation / download process
      * WEKOImportファイル作成/ダウンロード処理
-     *
      */
     private function downloadWekoimportFile(){
         // Exportファイルはimport.xml（仮）とする
@@ -338,13 +409,14 @@ class Repository_Action_Main_Export_Listdownload extends RepositoryAction
         
         // 指定されているアイテムから付随する情報を取得する
         $output_files = array();
+        $dirCountForFile = 1;
         foreach ($this->item_infos as $key => $value){
 
             // アイテムを取得する
             if(!array_key_exists("export_flg", $value) || (array_key_exists("export_flg", $value) && isset($value["export_flg"]) && $value["export_flg"])){
                 // Exportファイル生成
                 // 2008/07/09 Y.Nakao --start--
-                $export_info = $export_common->createExportFile($value, $this->tmp_dir, $file_flg, "", true);
+                $export_info = $export_common->createExportFile($value, $this->tmp_dir, $file_flg, "", true, $dirCountForFile);
                 // 2008/07/09 Y.Nakao --end--
                 $buf .= $export_info["buf"];
                 array_push( $output_files, $export_info["output_files"] );
@@ -371,21 +443,24 @@ class Repository_Action_Main_Export_Listdownload extends RepositoryAction
         // 出力したファイルをZip形式で圧縮する
         array_push( $output_files, $filename );
 
+        $businessWorkdirectory = BusinessFactory::getFactory()->getBusiness("businessWorkdirectory");
+        $tmp_dir_zip = $businessWorkdirectory->create();
+        
         File_Archive::extract(
-            $output_files,
-            File_Archive::toArchive($zip_file, File_Archive::toFiles( $this->tmp_dir ))
+            File_Archive::read($this->tmp_dir),
+            File_Archive::toArchive($zip_file, File_Archive::toFiles( $tmp_dir_zip ))
         );
         
         //ダウンロードアクション処理
         // Add RepositoryDownload action 2010/03/30 A.Suzuki --start--
         $repositoryDownload = new RepositoryDownload();
-        $repositoryDownload->downloadFile($this->tmp_dir.$zip_file, "export.zip");
+        $repositoryDownload->downloadFile($tmp_dir_zip.$zip_file, "export.zip");
         // Add RepositoryDownload action 2010/03/30 A.Suzuki --end--
     }
 
     /**
+     * BIBTEX file creation / download process
      * BIBTEXファイル作成/ダウンロード処理
-     *
      */
     private function downloadBibtexFile(){
         $buf = "";  //出力文字列
@@ -474,8 +549,8 @@ class Repository_Action_Main_Export_Listdownload extends RepositoryAction
     }
     
     /**
+     * OAI-PMH file creation / download process
      * OAI-PMHファイル作成/ダウンロード処理
-     *
      */
     private function downloadOaiPmhFile(){
         // Exportファイルはoai_pmh.xmlとする
@@ -505,7 +580,7 @@ class Repository_Action_Main_Export_Listdownload extends RepositoryAction
         
         $item_infos_cnt = count($this->item_infos);
         if($item_infos_cnt ==1){
-            $item_id = sprintf("%08d",$item_infos[0]["item_id"]);
+            $item_id = sprintf("%08d",$this->item_infos[0]["item_id"]);
             $temp_host = "oai:".$_SERVER['HTTP_HOST'].":".$item_id;
             $oai_hissu = ' verb="GetRecord" metadataPrefix="junii2" identifier="oai:'.$_SERVER['HTTP_HOST'].':'.$item_id.'"';
             $recode_type_start = '<GetRecord>';
@@ -573,14 +648,6 @@ class Repository_Action_Main_Export_Listdownload extends RepositoryAction
                     continue;   // 無視して次のレコードへ
                 }
                 
-                ////TODO:2012/3/12 OAI-PMHテストコード jin add--start--
-                //if(strstr($tempbuf,"metadata") === false){
-                //    $tempbuf = "";
-                //}else{
-                //    $isDownloadFlg = true;
-                //}
-                ////TODO:2012/3/12 OAI-PMHテストコード jin add--end--
-                
                 //download is OK?
                 if(strlen($tempbuf)>=1){
                     $isDownloadFlg = true;
@@ -619,8 +686,8 @@ class Repository_Action_Main_Export_Listdownload extends RepositoryAction
     }
     
     /**
+     * SWRC file creation / download process
      * SWRCファイル作成/ダウンロード処理
-     *
      */
     private function downloadSwrcFile(){
         // Exportファイルはswrc.xmlとする
@@ -732,8 +799,8 @@ class Repository_Action_Main_Export_Listdownload extends RepositoryAction
     }
     
     /**
+     * ELS file creation / download process
      * ELSファイル作成/ダウンロード処理
-     *
      */
     private function downloadElsFile(){
         // Exportファイルはels.tsvとする
@@ -787,8 +854,8 @@ class Repository_Action_Main_Export_Listdownload extends RepositoryAction
         $repositoryDownload->downloadFile($filepath, $filename);
     }
     /**
+     * TSV file creation / download process
      * TSVファイル作成/ダウンロード処理
-     *
      */
     private function downloadTsvFile(){
         $filename = "export.tsv";
@@ -809,20 +876,28 @@ class Repository_Action_Main_Export_Listdownload extends RepositoryAction
         $output_files = array();
         array_push( $output_files, $filepath );
         $zip_file = "export.zip";
-        $this->createExportZipFile($output_files, $zip_file);
+        
+        // zip用の一時ディレクトリを作成
+        $businessWorkdirectory = BusinessFactory::getFactory()->getBusiness("businessWorkdirectory");
+        $tmp_dir_zip = $businessWorkdirectory->create();
+        
+        $this->createExportZipFile($output_files, $zip_file, $tmp_dir_zip);
         //ダウンロードアクション処理
         $repositoryDownload = new RepositoryDownload();
-        $repositoryDownload->downloadFile($this->tmp_dir.$zip_file, "exportTSV.zip");
+        $repositoryDownload->downloadFile($tmp_dir_zip.$zip_file, "exportTSV.zip");
         
     }
     
     /**
+     * zip file creation processing
      * zipファイル作成処理
      *
-     * @param output_files zipファイルにするファイルリスト(エクスポートアイテムのファイル以外を追加しておく)
-     * @param zipFileName zipファイル名
+     * @param array output_files zipファイルにするファイルリスト(エクスポートアイテムのファイル以外を追加しておく)
+     * @param string zip file name zipファイル名
+     * @param string $tmp_dir_zip Path of temp directory for zip file
+     *                            zipファイル用一時ディレクトリのパス
      */
-    private function createExportZipFile($output_files, $zipFileName){
+    private function createExportZipFile($output_files, $zipFileName, $tmp_dir_zip){
         // new export common class
         $export_common = new ExportCommon($this->Db, $this->Session, $this->TransStartDate);
         if($export_common === null){
@@ -843,21 +918,22 @@ class Repository_Action_Main_Export_Listdownload extends RepositoryAction
         } else {
             $file_flg = false;
         }
-    
+        
+        $dirCountForFile = 1;
         // 指定されているアイテムから付随する情報を取得する
         foreach ($this->item_infos as $key => $value){
             // アイテムを取得する
             if(!array_key_exists("export_flg", $value) || (array_key_exists("export_flg", $value) && isset($value["export_flg"]) && $value["export_flg"])){
                 // Exportファイル生成
-                $export_info = $export_common->createExportFile($value, $this->tmp_dir, $file_flg, "", true);
+                $export_info = $export_common->createExportFile($value, $this->tmp_dir, $file_flg, "", true, $dirCountForFile);
                 array_push( $output_files, $export_info["output_files"] );
             }
 
         } // アイテムのループ
-
+        
         File_Archive::extract(
-            $output_files,
-            File_Archive::toArchive($zipFileName, File_Archive::toFiles( $this->tmp_dir ))
+            File_Archive::read($this->tmp_dir),
+            File_Archive::toArchive($zipFileName, File_Archive::toFiles( $tmp_dir_zip ))
         );
     }
     

@@ -1,65 +1,99 @@
 <?php
+
+/**
+ * Item register: View for item type select
+ * アイテム登録：アイテムタイプ選択画面表示
+ *
+ * @package     WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Selecttype.class.php 53594 2015-05-28 05:25:53Z kaede_matsushita $
+// $Id: Selecttype.class.php 70936 2016-08-09 09:53:57Z keiya_sugimoto $
 //
-// Copyright (c) 2007 - 2008, National Institute of Informatics, 
+// Copyright (c) 2007 - 2008, National Institute of Informatics,
 // Research and Development Center for Scientific Information Resources
 //
 // This program is licensed under a Creative Commons BSD Licence
 // http://creativecommons.org/licenses/BSD/
 //
 // --------------------------------------------------------------------
-
-/* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/common/WekoAction.class.php';
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
-require_once WEBAPP_DIR. '/modules/repository/components/Checkdoi.class.php';
+/**
+ * Check grant doi business class
+ * DOI付与チェックビジネスクラス
+ */
+require_once WEBAPP_DIR. '/modules/repository/components/business/doi/Checkdoi.class.php';
+/**
+ * Item type manager class
+ * アイテムタイプ管理クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/ItemtypeManager.class.php';
 
 /**
+ * Item register: View for item type select
  * アイテム登録：アイテムタイプ選択画面表示
  *
- * @package     [[package名]]
+ * @package     WEKO
+ * @copyright   (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license     http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
  * @access      public
- * @version 1.0 新規作成
- *          2.0 登録フロー表示改善対応 2008/06/26 Y.Nakao  
  */
 class Repository_View_Main_Item_Selecttype extends WekoAction
 {
     // 表示用パラメーター
     /**
      * item type data
+     * アイテムタイプ情報
      *   0: item type id
      *   1: item type name
      *   2: flag thag the item type is able to grant doi or not
      *      can grant:1, cannot grant:0
+     *
      * @var array
      */
     public $itemtype_data = array();
     
     /**
+     * Exist file attribute flag array
      * アイテムタイプの属性にファイルが含まれているか否かを示す配列
+     *
      * @var array
      */
     public $itemtype_file = array();
     
     /**
+     * Display help icon flag
      * ヘルプアイコン表示フラグ
+     *
      * @var string
      */
     public $help_icon_display = "";
     
     // リクエストパラメーター
     /**
+     * Warning message array
      * 警告メッセージ配列
+     *
      * @var array
      */
     public $warningMsg = null;
     
     /**
-     * 実行処理
-     * @see ActionBase::executeApp()
+     * Execute
+     * 実行
+     *
+     * @return string "success"/"error" success/failed 成功/失敗
+     * @throws AppException
      */
     protected function executeApp()
     {
@@ -153,11 +187,11 @@ class Repository_View_Main_Item_Selecttype extends WekoAction
         // 登録フローに表示されるファイル登録部分の改善対応 2008/06/26 Y.Nakao --end--
         
         for($cnt = 0; $cnt < count($this->itemtype_data); $cnt++){
-            $CheckDoi = new Repository_Components_Checkdoi($this->Session, $this->Db, $this->accessDate);
-            if( $CheckDoi->checkDoiGrantItemtype($this->itemtype_data[$cnt][0], Repository_Components_Checkdoi::TYPE_JALC_DOI) ||
-                $CheckDoi->checkDoiGrantItemtype($this->itemtype_data[$cnt][0], Repository_Components_Checkdoi::TYPE_CROSS_REF) ||
-                $CheckDoi->checkDoiGrantItemtype($this->itemtype_data[$cnt][0], Repository_Components_Checkdoi::TYPE_LIBRARY_JALC_DOI) ||
-                $CheckDoi->checkDoiGrantItemtype($this->itemtype_data[$cnt][0], Repository_Components_Checkdoi::TYPE_DATACITE))
+            $CheckDoi = BusinessFactory::getFactory()->getBusiness("businessCheckdoi");
+            if( $CheckDoi->checkDoiGrantItemtype($this->itemtype_data[$cnt][0], Repository_Components_Business_Doi_Checkdoi::TYPE_JALC_DOI) ||
+                $CheckDoi->checkDoiGrantItemtype($this->itemtype_data[$cnt][0], Repository_Components_Business_Doi_Checkdoi::TYPE_CROSS_REF) ||
+                $CheckDoi->checkDoiGrantItemtype($this->itemtype_data[$cnt][0], Repository_Components_Business_Doi_Checkdoi::TYPE_LIBRARY_JALC_DOI) ||
+                $CheckDoi->checkDoiGrantItemtype($this->itemtype_data[$cnt][0], Repository_Components_Business_Doi_Checkdoi::TYPE_DATACITE))
             {
                 array_push($this->itemtype_data[$cnt], 1);
             } else {
@@ -179,6 +213,7 @@ class Repository_View_Main_Item_Selecttype extends WekoAction
     }
     
     /**
+     * Initialize session parameter
      * セッションパラメーターの初期化
      */
     private function initSessionParams(){

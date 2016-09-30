@@ -1,45 +1,97 @@
 <?php
+
+/**
+ * View for item type edit confirm
+ * アイテムタイプ編集決定画面表示クラス
+ *
+ * @package     WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Confirm.class.php 53594 2015-05-28 05:25:53Z kaede_matsushita $
+// $Id: Confirm.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
-// Copyright (c) 2007 - 2008, National Institute of Informatics, 
+// Copyright (c) 2007 - 2008, National Institute of Informatics,
 // Research and Development Center for Scientific Information Resources
 //
 // This program is licensed under a Creative Commons BSD Licence
 // http://creativecommons.org/licenses/BSD/
 //
 // --------------------------------------------------------------------
-
-/* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
-// Set help icon setting 2010/02/10 K.Ando --start--
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
-// Set help icon setting 2010/02/10 K.Ando --end--
 
 /**
- * [[機能説明]]
+ * View for item type edit confirm
+ * アイテムタイプ編集決定画面表示クラス
  *
- * @package     [[package名]]
+ * @package     WEKO
+ * @copyright   (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license     http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
  * @access      public
  */
 class Repository_View_Edit_Itemtype_Confirm extends RepositoryAction 
 {
 	// メタデータ表示用メンバ
-	var $metadata_array = null;		// メタデータ表示内容配列
-	var $metadata_title = null;		// メタデータ項目名配列
-	var $metadata_type = null;		// メタデータタイプ配列
-	var $metadata_required = null;	// メタデータ必須フラグ列
-	var $metadata_disp = null;		// メタデータ一覧表示フラグ列
-	var $itemtype_name = null;		//前画面で入力したアイテムタイプ名
-	
-    // Set help icon setting 2010/02/10 K.Ando --start--
-    var $help_icon_display =  null;
-    // Set help icon setting 2010/02/10 K.Ando --end--
-	
-	/**
-     * [[機能説明]]
+    /**
+     * Metadata display body array
+     * メタデータ表示内容配列
      *
-     * @access  public
+     * @var array
+     */
+	var $metadata_array = null;		// メタデータ表示内容配列
+    /**
+     * Metadata title array
+     * メタデータ項目配列
+     *
+     * @var array
+     */
+	var $metadata_title = null;		// メタデータ項目名配列
+    /**
+     * Metadata type array
+     * メタデータタイプ配列
+     *
+     * @var array
+     */
+	var $metadata_type = null;		// メタデータタイプ配列
+    /**
+     * Metadata required flag array
+     * メタデータ必須フラグ配列
+     *
+     * @var array
+     */
+	var $metadata_required = null;	// メタデータ必須フラグ列
+    /**
+     * Metadata show list flag array
+     * メタデータ一覧表示フラグ配列
+     *
+     * @var array
+     */
+	var $metadata_disp = null;		// メタデータ一覧表示フラグ列
+    /**
+     * Input item type name
+     * 入力アイテムタイプ名
+     *
+     * @var string
+     */
+	var $itemtype_name = null;		//前画面で入力したアイテムタイプ名
+    /**
+     * Help icon dispplay flag
+     * ヘルプアイコン表示フラグ
+     *
+     * @var bool
+     */
+    var $help_icon_display =  null;
+
+    /**
+     * Execute
+     * 実行
+     *
+     * @return string "success"/"error" success/failed 成功/失敗
+     * @throws RepositoryException
      */
     function executeApp()
     {

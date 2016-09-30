@@ -1,9 +1,17 @@
 <?php
+
+/**
+ * Add in abstract class
+ * アドイン基底クラス
+ *
+ * @package     WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: RepositoryAddinBaseAbstract.class.php 20287 2012-11-20 04:59:31Z yuko_nakao $
+// $Id: RepositoryAddinBaseAbstract.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
-// Copyright (c) 2007 - 2008, National Institute of Informatics, 
+// Copyright (c) 2007 - 2008, National Institute of Informatics,
 // Research and Development Center for Scientific Information Resources
 //
 // This program is licensed under a Creative Commons BSD Licence
@@ -11,20 +19,31 @@
 //
 // --------------------------------------------------------------------
 
+/**
+ * Add in abstract class
+ * アドイン基底クラス
+ *
+ * @package     WEKO
+ * @copyright   (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license     http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access      public
+ */
 class RepositoryAddinBaseAbstract
 {
     
     /**
      * invoker class
+     * 呼び出し元クラス
      *
      * @var object
      */
     protected $invoker = null;
     
     /**
-     * setter for invoker_
+     * Set invoker class
+     * 呼び出し元クラスを設定する
      *
-     * @param object $value
+     * @param object $value caller class 呼び出し元クラス
      */
     public function setInvoker($value)
     {
@@ -52,8 +71,8 @@ class RepositoryAddinBaseAbstract
     }
     
     /**
-     * preExecute
-     *
+     * pre Execute
+     * 実行前処理
      */
     public function preExecute()
     {
@@ -61,8 +80,8 @@ class RepositoryAddinBaseAbstract
     }
     
     /**
-     * postExecute
-     *
+     * post Execute
+     * 実行後処理
      */
     public function postExecute()
     {

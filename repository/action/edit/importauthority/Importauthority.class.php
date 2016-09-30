@@ -1,7 +1,15 @@
 <?php
+
+/**
+ * Name authority import action class
+ * 著者名典拠インポートアクションクラス
+ * 
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Importauthority.class.php 53594 2015-05-28 05:25:53Z kaede_matsushita $
+// $Id: Importauthority.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -13,35 +21,140 @@
 
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
 
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
+/**
+ * Name authority common classes
+ * 著者名典拠共通クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/NameAuthority.class.php';
 
 /**
- * Import Authority action
+ * Name authority import action class
+ * 著者名典拠インポートアクションクラス
+ * 
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class Repository_Action_Edit_Importauthority extends RepositoryAction
 {
     // component
+    /**
+     * Session management objects
+     * Session管理オブジェクト
+     *
+     * @var Session
+     */
     public $Session = null;
+    /**
+     * Database management objects
+     * データベース管理オブジェクト
+     *
+     * @var DbObject
+     */
     public $Db = null;
     
     // menber
+    /**
+     * DError message
+     * エラーメッセージ
+     *
+     * @var string
+     */
     private $error_msg = null;
+    /**
+     * Line num
+     * 行数
+     *
+     * @var int
+     */
     private $lineNum = 0;
     
     // Const
+    /**
+     * Author id
+     * 著者ID
+     *
+     * @var string
+     */
     const AUTHOR_ID = "author_id";
+    /**
+     * Language
+     * 言語
+     *
+     * @var string
+     */
     const LANGUAGE = "language";
+    /**
+     * Last name
+     * 姓
+     *
+     * @var string
+     */
     const FAMILY = "family";
+    /**
+     * Name
+     * 名
+     *
+     * @var string
+     */
     const NAME = "name";
+    /**
+     * Last name(read)
+     * 姓(ヨミ)
+     *
+     * @var string
+     */
     const FAMILY_RUBY = "family_ruby";
+    /**
+     * Name(read)
+     * 名(ヨミ)
+     *
+     * @var string
+     */
     const NAME_RUBY = "name_ruby";
+    /**
+     * External author id
+     * 外部著者ID
+     *
+     * @var string
+     */
     const EXTERNAL_AUTHOR_ID = "external_author_id";
+    /**
+     * Prefix ID
+     * Prefix ID
+     *
+     * @var string
+     */
     const PREFIX_ID = "prefix_id";
+    /**
+     * Suffix
+     * Suffix
+     *
+     * @var string
+     */
     const SUFFIX = "suffix";
     
+    /**
+     * Import file path
+     * インポートファイルパス
+     *
+     * @var string
+     */
     const IMPORT_FILE_NAME = "/import.tsv";
     
+    /**
+     * Constructor
+     * コンストラクタ
+     *
+     * @param Session $session Session management objects Session管理オブジェクト
+     * @param Dbobject $db Database management objects データベース管理オブジェクト
+     */
     public function __construct($session, $db){
         if(isset($session)){
             $this->Session = $session;
@@ -51,6 +164,12 @@ class Repository_Action_Edit_Importauthority extends RepositoryAction
         }
     }
     
+    /**
+     * Name authority import run
+     * 著者名典拠インポート実行
+     *
+     * @return string Result 結果
+     */
     function executeApp()
     {
         // get import.tsv file
@@ -102,10 +221,11 @@ class Repository_Action_Edit_Importauthority extends RepositoryAction
     }
     
 	/**
-     * read file
+     * Read file
+     * ファイル読込
      *
-     * @param $tmpFile
-     * @return importArray;
+     * @param string $tmpFile Temporary file path 一時ファイルパス
+     * @return array[$ii]
      */
     public function readFile($tmpFile)
     {
@@ -125,9 +245,12 @@ class Repository_Action_Edit_Importauthority extends RepositoryAction
     
     /**
      * divide tsv to array
+     * tsvファイルを分割する
      *
-     * @param array $importArray
-     * @param array $dividedArray
+     * @param array $importArray Import data インポートデータ
+     *                           array[$ii]
+     * @param array $dividedArray Divide result 分割結果
+     *                            array[$ii]
      */
     public function divideTsvToArray($importArray, &$dividedData)
     {
@@ -144,9 +267,10 @@ class Repository_Action_Edit_Importauthority extends RepositoryAction
      * set metadata for name authority
      * this method expect the data array is
      * 0:name 1:family 2:e_mail_address 3:name_ruby 4:family_ruby 5orLater:external_author_id
+     * 著者名典拠にメタデータを設定する
      *
-     * @param dividedData
-     * @param metadataNameAuthority
+     * @param dividedData Divided data 分割データ
+     * @param metadataNameAuthority Name authority data 著者名典拠データ
      */
     public function createMetadataForNameAuthority($dividedData, &$metadataNameAuthority)
     {

@@ -1,7 +1,15 @@
 <?php
+
+/**
+ * Upload file acquisition action class on the management screen
+ * 管理画面でのアップロードファイル取得アクションクラス
+ * 
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Adminupload.class.php 18290 2012-06-25 07:05:42Z atsushi_suzuki $
+// $Id: Adminupload.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -14,19 +22,41 @@
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
 
 /**
- * [[機能説明]]
- *
- * @package     [[package名]]
- * @access      public
+ * Upload file acquisition action class on the management screen
+ * 管理画面でのアップロードファイル取得アクションクラス
+ * 
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class Repository_Action_Edit_Adminupload
 {
+    /**
+     * Session management objects
+     * Session管理オブジェクト
+     *
+     * @var Session
+     */
     public $Session = null;
+    /**
+     * DB object
+     * Dbコンポーネントを受け取る
+     *
+     * @var DbObjectAdodb
+     */
     public $Db = null;
+    /**
+     * Upload file management objects
+     * アップロードファイル管理オブジェクト
+     *
+     * @var Uploads_Action
+     */
     public $uploadsAction = null;
 
     /**
-     * [[機能説明]]
+     * Upload file acquisition
+     * アップロードファイル取得
      *
      * @access  public
      */

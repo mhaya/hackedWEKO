@@ -1,9 +1,17 @@
 <?php
+
+/**
+ * Import XML validator class
+ * インポートされたXMLのバリデートクラス
+ *
+ * @package     WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: RepositoryImportXmlValidator.class.php 47749 2015-02-04 04:03:14Z tomohiro_ichikawa $
+// $Id: RepositoryImportXmlValidator.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
-// Copyright (c) 2007 - 2008, National Institute of Informatics, 
+// Copyright (c) 2007 - 2008, National Institute of Informatics,
 // Research and Development Center for Scientific Information Resources
 //
 // This program is licensed under a Creative Commons BSD Licence
@@ -11,66 +19,239 @@
 //
 // --------------------------------------------------------------------
 
-/* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
-
+/**
+ * Import XML validator class
+ * インポートされたXMLのバリデートクラス
+ *
+ * @package     WEKO
+ * @copyright   (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license     http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access      public
+ */
 class RepositoryImportXmlValidator
 {
     
     // Error Type
+    /**
+     * Erro: no XML
+     * XMLが存在しないエラー
+     */
     const ERROR_NO_XML = "XML is not found";
+    /**
+     * Error: parse XML
+     * XML解釈エラー
+     */
     const ERROR_PARSE_XML = "Failed to parse XML";
+    /**
+     * Error: tag number
+     * タグ個数エラー
+     */
     const ERROR_TAG_NUM = "The number of tags is invalid";
+    /**
+     * Error: Title is not input
+     * タイトル未入力エラー
+     */
     const ERROR_ITEM_TITLE = "Both title is not input";
+    /**
+     * Error: public date is invalid format
+     * 公開日フォーマットエラー
+     */
     const ERROR_ITEM_SHOWN_DATE = "Shown date format is invalid";
+    /**
+     * Error: there is not shown date
+     * 公開日が存在しないエラー
+     */
     const ERROR_ITEM_NO_SHOWN_DATE = "Shown date is not exist";
+    /**
+     * Error: required
+     * 必須項目未入力エラー
+     */
     const ERROR_ITEM_ATTR_IS_REQUIRED = "Required metadata is not input";
+    /**
+     * Error: attribute not exist
+     * アイテム属性が存在しないエラー
+     */
     const ERROR_ITEM_ATTR_TYPE = "This attribute does not exist";
+    /**
+     * Error: link display name is not exist
+     * リンク表示名が存在しないエラー
+     */
     const ERROR_ITEM_ATTR_LINK = "Link name is not input";
+    /**
+     * Error: date format
+     * 日付フォーマットエラー
+     */
     const ERROR_ITEM_ATTR_DATE = "Date format is invalid";
+    /**
+     * Error: candidate is not exist
+     * 選択肢が存在しないエラー
+     */
     const ERROR_ITEM_ATTR_CANDIDATE = "This candidate does not exist";
+    /**
+     * Error: biblio public date is not exist
+     * 書誌情報公開日フォーマットエラー
+     */
     const ERROR_BIBLIO_PUB_DATE = "Biblio issue date format is invalid";
+    /**
+     * Error: thumbnail file is not exist
+     * サムネイルファイルが存在しないエラー
+     */
     const ERROR_THUMBNAIL_NOT_EXIST = "Thumbnail file does not exist";
+    /**
+     * Error: attached file is not exist error
+     * 添付ファイルが存在しないエラー
+     */
     const ERROR_FILE_NOT_EXIST = "Content file does not exist";
+    /**
+     * Error: file public date format
+     * ファイル公開日フォーマットエラー
+     */
     const ERROR_FILE_PUB_DATE = "File publication date format is invalid";
+    /**
+     * Error: FLASH public date format
+     * FLASHファイル公開日フォーマットエラー
+     */
     const ERROR_FILE_FLASH_PUB_DATE = "Flash publication date format is invalid";
+    /**
+     * Error: item type is not exist
+     * アイテムタイプが存在しないエラー
+     */
     const ERROR_ITEM_TYPE = "This itemtype does not exist";
+    /**
+     * Error: edit item URL does not match
+     * 編集アイテムのWEKOURL不一致エラー
+     */
     const ERROR_EDIT_ITEM_URL = "Domain name is not match";
+    /**
+     * Error: tag number error
+     * タグが複数存在エラー
+     */
     const ERROR_EDIT_ITEM_NUM = "Edit tags there are more than 1";
     
     // Add for import error list 2014/11/04 T.Koyasu --start--
+    /**
+     * Attribute name: title
+     * 属性名：タイトル
+     */
     const ERROR_ATTR_NAME_TITLE = "title";
+    /**
+     * Attribute name: shown_date
+     * 属性名：公開日
+     */
     const ERROR_ATTR_NAME_SHOWN_DATE = "shown_date";
     
     // language resorce id for show error message in import select
+    /**
+     * Error numbers
+     * エラーナンバー
+     */
     const ERROR_NUM_NO_XML = 1;
+    /**
+     * Error numbers
+     * エラーナンバー
+     */
     const ERROR_NUM_PARSE_XML = 2;
+    /**
+     * Error numbers
+     * エラーナンバー
+     */
     const ERROR_NUM_TAG_NUM = 3;
+    /**
+     * Error numbers
+     * エラーナンバー
+     */
     const ERROR_NUM_ITEM_TITLE = 4;
+    /**
+     * Error numbers
+     * エラーナンバー
+     */
     const ERROR_NUM_ITEM_SHOWN_DATE = 5;
+    /**
+     * Error numbers
+     * エラーナンバー
+     */
     const ERROR_NUM_ITEM_NO_SHOWN_DATE = 6;
+    /**
+     * Error numbers
+     * エラーナンバー
+     */
     const ERROR_NUM_ITEM_ATTR_IS_REQUIRED = 7;
+    /**
+     * Error numbers
+     * エラーナンバー
+     */
     const ERROR_NUM_ITEM_ATTR_TYPE = 8;
+    /**
+     * Error numbers
+     * エラーナンバー
+     */
     const ERROR_NUM_ITEM_ATTR_LINK = 9;
+    /**
+     * Error numbers
+     * エラーナンバー
+     */
     const ERROR_NUM_ITEM_ATTR_DATE = 10;
+    /**
+     * Error numbers
+     * エラーナンバー
+     */
     const ERROR_NUM_ITEM_ATTR_CANDIDATE = 11;
+    /**
+     * Error numbers
+     * エラーナンバー
+     */
     const ERROR_NUM_BIBLIO_PUB_DATE = 12;
+    /**
+     * Error numbers
+     * エラーナンバー
+     */
     const ERROR_NUM_THUMBNAIL_NOT_EXIST = 13;
+    /**
+     * Error numbers
+     * エラーナンバー
+     */
     const ERROR_NUM_FILE_NOT_EXIST = 14;
+    /**
+     * Error numbers
+     * エラーナンバー
+     */
     const ERROR_NUM_FILE_PUB_DATE = 15;
+    /**
+     * Error numbers
+     * エラーナンバー
+     */
     const ERROR_NUM_FILE_FLASH_PUB_DATE = 16;
+    /**
+     * Error numbers
+     * エラーナンバー
+     */
     const ERROR_NUM_ITEM_TYPE = 17;
+    /**
+     * Error numbers
+     * エラーナンバー
+     */
     const ERROR_NUM_EDIT_ITEM_URL = 18;
+    /**
+     * Error numbers
+     * エラーナンバー
+     */
     const ERROR_NUM_EDIT_ITEM_NUM = 19;
     // Add for import error list 2014/11/04 T.Koyasu --end--
     // Add for itemtype check 2014/01/08 T.Ichikawa --start--
+    /**
+     * Error numbers
+     * エラーナンバー
+     */
     const ERROR_NUM_CAN_NOT_USEITEM_TYPE = 20;
     // Add for itemtype check 2014/01/08 T.Ichikawa --end--
     
     /**
      * execute check XML
+     * XMLのチェックを行う
      *
-     * @param string $tmp_dir    xml path
-     * @param Array  $error_list class array
+     * @param string $tmp_dir    xml path XMLファイルのパス
+     * @param array  $error_list class array エラーオブジェクト配列
+     *                array[$ii]
      */
     public function validateXml($tmp_dir, &$error_list)
     {
@@ -108,9 +289,11 @@ class RepositoryImportXmlValidator
     
     /**
      * compare nodes
+     * ノード数の比較を行う
      *
-     * @param Object $item_nodes       item node list
-     * @param Object $item_type_nodes  item type node list
+     * @param object $item_nodes       item node list アイテムノードリスト
+     * @param object $item_type_nodes  item type node list アイテムタイプノードリスト
+     * @param array $error_list error list エラーリスト
      */
     private function compareNodeNum($item_nodes, $item_type_nodes, &$error_list) {
         // Add for item type check 2014/12/22 T.Ichikawa --start--
@@ -129,12 +312,13 @@ class RepositoryImportXmlValidator
     }
     
     /**
-     * execute check XML
+     * Check Item node
+     * アイテムノードをチェックする
      *
-     * @param Object $xpath             xml element
-     * @param Object $item              item node
-     * @param string $xml_file_path     xml path
-     * @param Array  &$error_list       class array
+     * @param object $xpath             xml element XPathオブジェクト
+     * @param object $item              item node アイテムノード
+     * @param string $xml_file_path     xml path XMLファイルパス
+     * @param array  &$error_list       class array エラーリスト
      */
     private function checkItem($xpath, $item, $xml_file_path, &$error_list) {
         // アイテムID
@@ -236,14 +420,15 @@ class RepositoryImportXmlValidator
     
     /**
      * execute check item attribute type is required
+     * 必須メタデータチェック
      *
-     * @param Object $xpath         xml element
-     * @param string $item_id       item id
-     * @param string $item_type_id  item type id
-     * @param string $attribute_id  attribute_id
-     * @param string $title         title
-     * @param Array  &$error_list   class array
-     * @param string $attr_name     attribute_name
+     * @param object $xpath         xml element XPathオブジェクト
+     * @param string $item_id       item id アイテムID
+     * @param string $item_type_id  item type id アイテムタイプID
+     * @param string $attribute_id  attribute_id 属性ID
+     * @param string $title         title タイトル
+     * @param array  &$error_list   class array エラーリスト
+     * @param string $attr_name     attribute_name 属性名
      */
     private function checkItemAttrTypeIsRequired($xpath, $item_id, $item_type_id, $attribute_id, $title, &$error_list, $attr_name) {
         // 必須属性のチェック
@@ -275,12 +460,13 @@ class RepositoryImportXmlValidator
     
     /**
      * execute check item attribute
+     * 属性値ノードのチェック
      *
-     * @param Object $xpath         xml element
-     * @param string $item_id       item id
-     * @param string $title         title
-     * @param Object $item_attr     item attribute node
-     * @param Array  &$error_list   class array
+     * @param object $xpath         xml element XPathオブジェクト
+     * @param string $item_id       item id アイテムID
+     * @param string $title         title タイトル
+     * @param object $item_attr     item attribute node 属性ノード
+     * @param array  &$error_list   class array エラーリスト
      */
     private function checkItemAttr($xpath, $item_id, $title, $item_attr, &$error_list) {
         // アイテム属性ノードの入力タイプを検索
@@ -334,13 +520,14 @@ class RepositoryImportXmlValidator
     
     /**
      * check biblio information
+     * 書誌情報ノードのチェック
      *
-     * @param Object $xpath         xml element
-     * @param string $item_id       item id
-     * @param string $title         title
-     * @param Object $biblio_info   biblio information node
-     * @param Array  &$error_list   class array
-     * @param string $item_type_id  item_type_id
+     * @param object $xpath         xml element XPathオブジェクト
+     * @param string $item_id       item id アイテムID
+     * @param string $title         title タイトル
+     * @param Object $biblio_info   biblio information node 書誌情報ノード
+     * @param array  &$error_list   class array エラーリスト
+     * @param string $item_type_id  item_type_id アイテムタイプID
      */
     private function checkBiblioInfo($xpath, $item_id, $title, $biblio_info, &$error_list, $item_type_id) {
         // 書誌情報の発行年月日フォーマットチェック(YYYY-MM-DD, YYYY-MM, YYYY)
@@ -356,14 +543,15 @@ class RepositoryImportXmlValidator
     
     /**
      * check thumbnail
+     * サムネイルノードのチェック
      *
-     * @param Object $xpath             xml element
-     * @param string $item_id       item id
-     * @param string $title         title
-     * @param Object $thumbnail         thumbnail node
-     * @param string $xml_file_path     xml path
-     * @param Array  &$error_list       class array
-     * @param string $item_type_id      item_type_id
+     * @param object $xpath         xml element XPathオブジェクト
+     * @param string $item_id       item id アイテムID
+     * @param string $title         title タイトル
+     * @param object $thumbnail         thumbnail node サムネイルノード
+     * @param string $xml_file_path     xml path XMLファイルパス
+     * @param array  &$error_list   class array エラーリスト
+     * @param string $item_type_id  item_type_id アイテムタイプID
      */
     private function checkThumbnail($xpath, $item_id, $title, $thumbnail, $xml_file_path, &$error_list, $item_type_id) {
         // サムネイル存在チェック
@@ -379,14 +567,15 @@ class RepositoryImportXmlValidator
     
     /**
      * check file
+     * ファイルノードのチェック
      *
-     * @param Object $xpath             xml element
-     * @param string $item_id       item id
-     * @param string $title         title
-     * @param Object $file              file node
-     * @param string $xml_file_path     xml path
-     * @param Array  &$error_list       class array
-     * @param string $item_type_id      item_type_id
+     * @param object $xpath         xml element XPathオブジェクト
+     * @param string $item_id       item id アイテムID
+     * @param string $title         title タイトル
+     * @param Object $file              file node ファイルノード
+     * @param string $xml_file_path     xml path XMLファイルパス
+     * @param array  &$error_list   class array エラーリスト
+     * @param string $item_type_id  item_type_id アイテムタイプID
      */
     private function checkFile($xpath, $item_id, $title, $file, $xml_file_path, &$error_list, $item_type_id) {
         // Add for import error list 2014/11/04 T.Koyasu --start--
@@ -425,11 +614,11 @@ class RepositoryImportXmlValidator
     
     /**
      * check item title
+     * タイトルのチェック
      *
-     * @param string $title         title
-     * @param string $title_english english title 
-     *
-     * return bool
+     * @param string $title         title タイトル
+     * @param string $title_english english title タイトル(英)
+     * @return bool true/false exist/not exist 入力済/未入力
      */
     private function checkItemTitle($title, $title_english) {
         // タイトルの入力チェック
@@ -442,10 +631,10 @@ class RepositoryImportXmlValidator
     
     /**
      * check item attribute link
+     * リンク表示名チェック
      *
-     * @param string $link      link
-     *
-     * return bool
+     * @param string $link      link リンク
+     * @return bool true/false exist/not exist 入力済/未入力
      */
     private function checkItemAttrLink($link) {
         // リンクのフォーマットチェック
@@ -459,10 +648,10 @@ class RepositoryImportXmlValidator
     
     /**
      * check item attribute date
+     * 日付フォーマットチェック
      *
-     * @param string $date      date
-     *
-     * return bool
+     * @param string $date      date 日付文字列
+     * @return bool true/false exist/not exist 問題無し/あり
      */
     private function checkItemAttrDate($date) {
         // 公開日のフォーマットチェック
@@ -502,13 +691,14 @@ class RepositoryImportXmlValidator
     
     /**
      * execute check item attribute candidate
+     * 選択肢をチェックする
      *
-     * @param Object $xpath         xml element
-     * @param string $item_id       item id
-     * @param string $title         title
-     * @param Object $item_attr     item attribute node
-     * @param Array  &$error_list   class array
-     * @param string $attr_name      attribute name
+     * @param object $xpath         xml element XPathオブジェクト
+     * @param string $item_id       item id アイテムID
+     * @param string $title         title タイトル
+     * @param object $item_attr     item attribute node 属性値ノード
+     * @param array  &$error_list   class array エラーリスト
+     * @param string $attr_name     attribute name 属性名
      */
     private function checkItemAttrCandidate($xpath, $item_id, $title, $item_attr, &$error_list, $attr_name) {
         // アイテム属性選択候補タグを検索
@@ -537,10 +727,10 @@ class RepositoryImportXmlValidator
     
     /**
      * check shown date
+     * 公開日のフォーマットチェックをする
      *
-     * @param string $date      date
-     *
-     * return bool
+     * @param string $date      date 日付文字列
+     * @return bool true/false exist/not exist 問題無し/あり
      */
     private function checkShownDate($date) {
         // アイテム公開日のフォーマットチェック(YYYY-MM-DD HH:ii:ss.mmm, YYYY-MM-DD)
@@ -585,11 +775,11 @@ class RepositoryImportXmlValidator
     
     /**
      * check exist file
+     * ファイル存在チェック
      *
-     * @param string $file_name     file name
-     * @param string $file_path     xml path
-     *
-     * return bool
+     * @param string $file_name     file name ファイル名
+     * @param string $file_path     file path ファイルパス
+     * @return bool true/false exist/not exist 存在する/存在しない
      */
     private function checkExistFile($file_name, $file_path) {
         // WEKO-2014-103 暫定対応
@@ -604,11 +794,12 @@ class RepositoryImportXmlValidator
     
     /**
      * execute check edit item url
+     * アイテム編集URLのチェックを行う
      *
-     * @param string $url           url
-     * @param string $item_id       item id
-     * @param string $title         title
-     * @param Array  &$error_list   class array
+     * @param string $url           url 編集対象のアイテム詳細画面URL
+     * @param string $item_id       item id アイテムID
+     * @param string $title         title タイトル
+     * @param array  &$error_list   class array エラーリスト
      */
     private function checkEditItemUrl($url, $item_id, $title, &$error_list) {
         $server_domain = $_SERVER["SERVER_NAME"];
@@ -623,10 +814,12 @@ class RepositoryImportXmlValidator
     }
     
     /**
-     * execute check item attribute candidate
+     * execute check item type
+     * アイテムタイプのチェックを行う
      *
-     * @param Object $xpath         xml element
-     * @param string $item_type_id       item type id
+     * @param object $xpath         xml element XPathオブジェクト
+     * @param string $item_type_id       item type id アイテムタイプID
+     * @return bool true/false exist/not exist 問題無し/あり
      */
     private function checkItemType($xpath, $item_type_id) {
         // アイテム属性選択候補タグを検索
@@ -641,11 +834,12 @@ class RepositoryImportXmlValidator
     // Add for import error list 2014/11/04 T.Koyasu --start--
     /**
      * get attibute_name by node_list(thumbnail, biblio, file, etc.)
+     * 属性名を取得す津
      *
-     * @param Object $xpath         xml element
-     * @param Object $xml_node_list DomNode(thumbnail, biblio, file, etc.)
-     * @param string $item_type_id  item_type_id
-     * @return unknown
+     * @param object $xpath         xml element XPathオブジェクト
+     * @param object $xml_node_list DomNode(thumbnail, biblio, file, etc.) XML全体のノード
+     * @param string $item_type_id  item_type_id アイテムタイプID
+     * @return string attribute name 属性名
      */
     private function getAttributeName($xpath, $xml_node_list, $item_type_id)
     {
@@ -662,28 +856,80 @@ class RepositoryImportXmlValidator
     // Add for import error list 2014/11/04 T.Koyasu --end--
 }
 
+/**
+ * Import XML error info class
+ * インポートされたXMLで発生したエラーの詳細情報クラス
+ *
+ * @package     WEKO
+ * @copyright   (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license     http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access      public
+ */
 class DetailErrorInfo
 {
+    /**
+     * Item ID
+     * アイテムID
+     *
+     * @var int
+     */
     public $item_id = null;
+    /**
+     * Item title
+     * タイトル
+     *
+     * @var string
+     */
     public $title = null;
+    /**
+     * Erro info
+     * エラー内容
+     *
+     * @var string
+     */
     public $error = null;
     // Add for import error list 2014/11/04 T.Koyasu --start--
+    /**
+     * Attribute name
+     * 属性名
+     *
+     * @var string
+     */
     public $attr_name = null;
+    /**
+     * Input value
+     * 入力値
+     *
+     * @var string
+     */
     public $input_value = null;
+    /**
+     * Registered value
+     * 登録済値
+     *
+     * @var string
+     */
     public $regist_value = null;
+    /**
+     * Erro number
+     * エラー番号
+     *
+     * @var int
+     */
     public $error_no = 0;
     // Add for import error list 2014/11/04 T.Koyasu --end--
     
     /**
      * construct
+     * コンストラクタ
      *
-     * @param int $item_id
-     * @param string $title
-     * @param string $error
-     * @param string $attr_name
-     * @param string $input_value
-     * @param string $regist_value
-     * @param int    $error_no
+     * @param int $item_id item ID アイテムID
+     * @param string $title item title タイトル
+     * @param string $error error エラー内容
+     * @param string $attr_name attribute name 属性名
+     * @param string $input_value input value 入力値
+     * @param string $regist_value registered value 登録された値
+     * @param int    $error_no error number エラー番号
      */
     function __construct($item_id, $title, $error, $attr_name, $input_value, $regist_value, $error_no) {
         $this->item_id = $item_id;

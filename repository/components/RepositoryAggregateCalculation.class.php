@@ -1,7 +1,15 @@
 <?php
+
+/**
+ * The number of registered items aggregate common classes
+ * 登録アイテム数集計共通クラス
+ *
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: RepositoryAggregateCalculation.class.php 43113 2014-10-21 04:02:44Z yuko_nakao $
+// $Id: RepositoryAggregateCalculation.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -11,21 +19,36 @@
 //
 // --------------------------------------------------------------------
 
-/**
- * RepositoryAggregateCalculation
+ /**
+ * WEKO logic-based base class
+ * WEKOロジックベース基底クラス
  */
- 
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryLogicBase.class.php';
+
+/**
+ * DB object wrapper Class
+ * DBオブジェクトラッパークラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryDbAccess.class.php';
 
+/**
+ * The number of registered items aggregate common classes
+ * 登録アイテム数集計共通クラス
+ *
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
+ */
 class RepositoryAggregateCalculation extends RepositoryLogicBase
 {
     /**
-     * initialize
+     * Constructor
+     * コンストラクタ
      *
-     * @param var $session session
-     * @param var $dbAccess dbAccess
-     * @param string $transStartDate transStartDate
+     * @param Session $session Session management objects Session管理オブジェクト
+     * @param DbObject $dbAccess DB object wrapper Class DBオブジェクトラッパークラス
+     * @param string $transStartDate Transaction start date and time トランザクション開始日時
      */
     public function __construct($session, $dbAccess, $transStartDate)
     {
@@ -33,9 +56,11 @@ class RepositoryAggregateCalculation extends RepositoryLogicBase
     }
     
     /**
-     * countItem 
+     * Number of items every public situation summary
+     * 公開状況毎のアイテム数集計
      * 
-     * @return array $items
+     * @return array $items The number of items of every public situation 公開状況毎のアイテム数
+     *                      array["total"|"public"|"private"|"includeFulltext"|"excludeFulltext"]
      */
     public function countItem()
     {
@@ -51,9 +76,10 @@ class RepositoryAggregateCalculation extends RepositoryLogicBase
     }
     
     /**
+     * Retrieve items total number
      * アイテム総数を取得
      * 
-     * @return アイテム総数
+     * @return int Items total number アイテム総数
      */
     private function cntTotalItems()
     {
@@ -69,9 +95,10 @@ class RepositoryAggregateCalculation extends RepositoryLogicBase
     }
     
     /**
-     * アイテムの所属インデックスに対してグループごとの閲覧権限が設定されているか
+     * Whether or not the inspection authority of each group has been set for the affiliation index of the item
+     * アイテムの所属インデックスに対してグループごとの閲覧権限が設定されているか否か
      * 
-     * @return boolean ture:グループに対して閲覧権限が設定されている
+     * @return boolean Whether or not the viewing rights has been set 閲覧権限が設定されているか否か
      */
     private function isIndexBrowsingGroups()
     {
@@ -86,6 +113,12 @@ class RepositoryAggregateCalculation extends RepositoryLogicBase
         return $notNullGroupTable;
     }
     
+    /**
+     * The number of public items aggregate
+     * 公開アイテム数集計
+     *
+     * @return int The number of public items 公開アイテム数
+     */
     private function cntPublicItems()
     {
         $notNullGroupTable = $this->isIndexBrowsingGroups();
@@ -144,9 +177,10 @@ class RepositoryAggregateCalculation extends RepositoryLogicBase
     }
     
     /**
-     * 本文ありのアイテム数
+     * Body has the number of items aggregate
+     * 本文ありのアイテム数集計
      * 
-     * @return 本文ありアイテム数
+     * @return int Body has the number of items 本文ありアイテム数
      */
     private function cntFileExistsItems()
     {

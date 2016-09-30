@@ -1,7 +1,15 @@
 <?php
+
+/**
+ * Upload file acquisition action class
+ * アップロードファイル取得アクションクラス
+ * 
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Uploadfiles.class.php 53594 2015-05-28 05:25:53Z kaede_matsushita $
+// $Id: Uploadfiles.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -12,28 +20,62 @@
 // --------------------------------------------------------------------
 
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
+
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
 
 /**
- * [[機能説明]]
- *
- * @package     [[package名]]
- * @access      public
+ * Upload file acquisition action class
+ * アップロードファイル取得アクションクラス
+ * 
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class Repository_Action_Main_Item_Uploadfiles extends RepositoryAction
 {	
 	// 使用コンポーネントを受け取るため
+	/**
+	 * Upload file management objects
+	 * アップロードファイル管理オブジェクト
+	 *
+	 * @var Uploads_Action
+	 */
 	var $uploadsAction = null;
 
 	// リクエスト
-	var $mode = null;	// mode 
+	/**
+	 * Whether the action is being performed by any operation
+	 * アクションがどの操作によって実行されているか
+	 *
+	 * @var string
+	 */
+	var $mode = null;	// mode
+	/**
+	 * D & D target of metadata items
+	 * D&D対象のメタデータ項目
+	 *
+	 * @var string
+	 */ 
 	var $target = null;
+	/**
+	 * The number of uploaded files in the D & D
+	 * D&Dでアップロードされたファイルの数
+	 *
+	 * @var string
+	 */
 	var $drop_num = null;
 
     /**
-     * [[機能説明]]
+     * To save the information of the uploaded file to the session
+     * アップロードされたファイルの情報をセッションに保存する
      *
-     * @access  public
+     * @return boolean Execution result 実行結果
+	 * @throws AppException
      */
     function executeApp()
     {	
@@ -67,7 +109,34 @@ class Repository_Action_Main_Item_Uploadfiles extends RepositoryAction
 					$attribute_id = $item_attr[$idx][$ii]['attribute_id'];
 				}
 				if($file_no <= $item_attr[$idx][$ii]["file_no"]){
-					$file_no = $item_attr[$idx][$ii]["file_no"] + 1;
+                    // Bug Fix No.81 When Drag&Drop, occured Duplicate key entry T.Koyasu 2016/01/07 --start--
+                    $tmp1_file_no = $item_attr[$idx][$ii]["file_no"] + 1;
+                    if(isset($item_attr[$idx][$attridx]['item_id']))
+                    {
+                        $tmp2_file_no = $this->getFileNo($item_attr[$idx][$attridx]['item_id'], 
+                                                         $item_attr[$idx][$attridx]['item_no'], 
+                                                         $item_attr[$idx][$attridx]['attribute_id'], 
+                                                         $error);
+                        if($tmp2_file_no===false){
+                            $this->errorLog($error, __FILE__, __CLASS__, __LINE__);
+                            $exception = new AppException($error);
+                            $exception->addError($error);
+                            throw $exception;
+                        }
+                        if($tmp1_file_no > $tmp2_file_no)
+                        {
+                            $file_no = $tmp1_file_no;
+                        }
+                        else
+                        {
+                            $file_no = $tmp2_file_no;
+                        }
+                    }
+                    else 
+                    {
+                        $file_no = $tmp1_file_no;
+                    }
+                    // Bug Fix No.81 When Drag&Drop, occured Duplicate key entry T.Koyasu 2016/01/07 --end--
 				}
 				if($show_order <= $item_attr[$idx][$ii]["show_order"]){
 					$show_order = $item_attr[$idx][$ii]["show_order"] + 1;

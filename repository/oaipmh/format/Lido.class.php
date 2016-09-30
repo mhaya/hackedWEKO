@@ -1,4 +1,12 @@
 <?php
+
+/**
+ * Item information output class in LIDO
+ * LIDOでのアイテム情報出力クラス
+ *
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
 // $Id: Lido.class.php 36348 2014-05-28 01:34:51Z rei_matsuura $
@@ -10,37 +18,177 @@
 // http://creativecommons.org/licenses/BSD/
 //
 // --------------------------------------------------------------------
+/**
+ * OAI-PMH item information output base class
+ * OAI-PMHアイテム情報出力基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/oaipmh/format/FormatAbstract.class.php';
 
+/**
+ * Item information output class in LIDO
+ * LIDOでのアイテム情報出力クラス
+ *
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
+ */
 class Repository_Oaipmh_Lido extends Repository_Oaipmh_FormatAbstract
 {
-    /*
-     * 各タグ変数
+    /**
+     * DOM object
+     * DOMオブジェクト
+     *
+     * @var DOMDocument
      */
     private $domDocument = null;
+    /**
+     * Tag count
+     * タグ数
+     *
+     * @var int
+     */
     private $numObjectWorkTypeConceptID = 0;
+    /**
+     * Tag count
+     * タグ数
+     *
+     * @var int
+     */
     private $numObjectWorkTypeTerm = 0;
+    /**
+     * Tag count
+     * タグ数
+     *
+     * @var int
+     */
     private $numClassificationConceptID = 0;
+    /**
+     * Tag count
+     * タグ数
+     *
+     * @var int
+     */
     private $numClassificationTerm = 0;
+    /**
+     * Tag count
+     * タグ数
+     *
+     * @var int
+     */
     private $numReposotorySetName = 0;
+    /**
+     * Tag count
+     * タグ数
+     *
+     * @var int
+     */
     private $numReposotorySetLink = 0;
+    /**
+     * Tag count
+     * タグ数
+     *
+     * @var int
+     */
     private $numReposotorySetID = 0;
+    /**
+     * Tag count
+     * タグ数
+     *
+     * @var int
+     */
     private $numEventSetDisplayEvent = 0;
+    /**
+     * Tag count
+     * タグ数
+     *
+     * @var int
+     */
     private $numEventSetTypeTerm = 0;
+    /**
+     * Tag count
+     * タグ数
+     *
+     * @var int
+     */
     private $numEventSetActor = 0;
+    /**
+     * Tag count
+     * タグ数
+     *
+     * @var int
+     */
     private $numEventSetDisplayDate = 0;
+    /**
+     * Tag count
+     * タグ数
+     *
+     * @var int
+     */
     private $numEventSetEarliestDate = 0;
+    /**
+     * Tag count
+     * タグ数
+     *
+     * @var int
+     */
     private $numEventSetLatestDate = 0;
+    /**
+     * Tag count
+     * タグ数
+     *
+     * @var int
+     */
     private $numEventSetPeriodName = 0;
+    /**
+     * Tag count
+     * タグ数
+     *
+     * @var int
+     */
     private $numEventSetDisplayPlace = 0;
+    /**
+     * Tag count
+     * タグ数
+     *
+     * @var int
+     */
     private $numEventSetPlaceGml = 0;
+    /**
+     * Tag count
+     * タグ数
+     *
+     * @var int
+     */
     private $numEventSetMaterisalsTech = 0;
+    /**
+     * Tag count
+     * タグ数
+     *
+     * @var int
+     */
     private $numRecodInfoSetLink = 0;
+    /**
+     * Tag count
+     * タグ数
+     *
+     * @var int
+     */
     private $numRecodInfoSetDate = 0;
     
+    /**
+     * Item language
+     * アイテム言語
+     *
+     * @var string
+     */
     private $item_language = 'ja';
-    /*
-     * construct
+    /**
+     * Constructor
+     * コンストラクタ
+     * 
+     * @param Session $Session Session management objects Session管理オブジェクト
+     * @param Dbobject $Db Database management objects データベース管理オブジェクト
      */
     public function __construct($Session, $Db)
     {
@@ -50,6 +198,7 @@ class Repository_Oaipmh_Lido extends Repository_Oaipmh_FormatAbstract
     
     /**
      * init member for count
+     * 初期化
      */
     private function initMember()
     {
@@ -76,9 +225,21 @@ class Repository_Oaipmh_Lido extends Repository_Oaipmh_FormatAbstract
 
     /**
      * output OAI-PMH metadata Tag format LIDO
+     * LIDO形式のOAI-PMHを出力
      *
-     * @param array $itemData $this->getItemData return
-     * @return string xml
+     * @param array $itemData Item information アイテム情報
+     *                        array["item"][$ii]["item_id"|"item_no"|"revision_no"|"item_type_id"|"prev_revision_no"|"title"|"title_english"|"language"|"review_status"|"review_date"|"shown_status"|"shown_date"|"reject_status"|"reject_date"|"reject_reason"|"serch_key"|"serch_key_english"|"remark"|"uri"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_type"][$ii]["item_type_id"|"item_type_name"|"item_type_short_name"|"explanation"|"mapping_info"|"icon_name"|"icon_mime_type"|"icon_extension"|"icon"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_attr_type"][$ii]["item_type_id"|"attribute_id"|"show_order"|"attribute_name"|"attribute_short_name"|"input_type"|"is_required"|"plural_enable"|"line_feed_enable"|"list_view_enable"|"hidden"|"junii2_mapping"|"dublin_core_mapping"|"lom_mapping"|"lido_mapping"|"spase_mapping"|"display_lang_type"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"personal_name_no"|"family"|"name"|"family_ruby"|"name_ruby"|"e_mail_address"|"item_type_id"|"author_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"show_order"|"mime_type"|"extension"|"file"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"display_name"|"display_type"|"show_order"|"mime_type"|"extension"|"prev_id"|"file_prev"|"file_prev_name"|"license_id"|"license_notation"|"pub_date"|"flash_pub_date"|"item_type_id"|"browsing_flag"|"cover_created_flag"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"biblio_no"|"biblio_name"|"biblio_name_english"|"volume"|"issue"|"start_page"|"end_page"|"date_of_issued"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"display_name"|"display_type"|"show_order"|"mime_type"|"extension"|"prev_id"|"file_prev"|"file_prev_name"|"license_id"|"license_notation"|"pub_date"|"flash_pub_date"|"item_type_id"|"browsing_flag"|"cover_created_flag"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"|"price"]
+     *                        array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"supple_no"|"item_type_id"|"supple_weko_item_id"|"supple_title"|"supple_title_en"|"uri"|"supple_item_type_name"|"mime_type"|"file_id"|"supple_review_status"|"supple_review_date"|"supple_reject_status"|"supple_reject_date"|"supple_reject_reason"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"attribute_no"|"attribute_value"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     * 
+     * @return string Output string 出力文字列
      */
     public function outputRecord($itemData)
     {
@@ -129,9 +290,6 @@ class Repository_Oaipmh_Lido extends Repository_Oaipmh_FormatAbstract
         {
             return '';
         }
-
-        // mhaya
-        $this->fixOutputFormat();
         
         // convert DOMDocument to XML string
         $xml = $this->domDocument->saveXML();
@@ -146,6 +304,7 @@ class Repository_Oaipmh_Lido extends Repository_Oaipmh_FormatAbstract
     
     /**
      * output header
+     * ヘッダ出力
      */
     private function outputHeader()
     {
@@ -172,9 +331,20 @@ class Repository_Oaipmh_Lido extends Repository_Oaipmh_FormatAbstract
     
     /**
      * output metadata
+     * メタデータ出力
      * 
-     * @param array $itemData 
-     * @param DOMElement $domElement
+     * @param array $itemData Item data アイテムデータ
+     *                        array["item"][$ii]["item_id"|"item_no"|"revision_no"|"item_type_id"|"prev_revision_no"|"title"|"title_english"|"language"|"review_status"|"review_date"|"shown_status"|"shown_date"|"reject_status"|"reject_date"|"reject_reason"|"serch_key"|"serch_key_english"|"remark"|"uri"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_type"][$ii]["item_type_id"|"item_type_name"|"item_type_short_name"|"explanation"|"mapping_info"|"icon_name"|"icon_mime_type"|"icon_extension"|"icon"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_attr_type"]["item_type_id"|"attribute_id"|"show_order"|"attribute_name"|"attribute_short_name"|"input_type"|"is_required"|"plural_enable"|"line_feed_enable"|"list_view_enable"|"hidden"|"junii2_mapping"|"dublin_core_mapping"|"lom_mapping"|"lido_mapping"|"spase_mapping"|"display_lang_type"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"personal_name_no"|"family"|"name"|"family_ruby"|"name_ruby"|"e_mail_address"|"item_type_id"|"author_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"show_order"|"mime_type"|"extension"|"file"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"display_name"|"display_type"|"show_order"|"mime_type"|"extension"|"prev_id"|"file_prev"|"file_prev_name"|"license_id"|"license_notation"|"pub_date"|"flash_pub_date"|"item_type_id"|"browsing_flag"|"cover_created_flag"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"biblio_no"|"biblio_name"|"biblio_name_english"|"volume"|"issue"|"start_page"|"end_page"|"date_of_issued"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"display_name"|"display_type"|"show_order"|"mime_type"|"extension"|"prev_id"|"file_prev"|"file_prev_name"|"license_id"|"license_notation"|"pub_date"|"flash_pub_date"|"item_type_id"|"browsing_flag"|"cover_created_flag"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"|"price"]
+     *                        array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"supple_no"|"item_type_id"|"supple_weko_item_id"|"supple_title"|"supple_title_en"|"uri"|"supple_item_type_name"|"mime_type"|"file_id"|"supple_review_status"|"supple_review_date"|"supple_reject_status"|"supple_reject_date"|"supple_reject_reason"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"attribute_no"|"attribute_value"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     * @param DOMElement $domElement DOMElement object DOMElementオブジェクト
      */
     private function outputMetadata($itemData, $domElement)
     {
@@ -231,10 +401,22 @@ class Repository_Oaipmh_Lido extends Repository_Oaipmh_FormatAbstract
     
     /**
      * set attribute value
+     * 属性設定
      * 
-     * @param array $itemAttrType
-     * @param array $itemAttr 
-     * @param DOMElement $domElement
+     * @param array $itemAttrType Metadata information メタデータ項目情報
+     *                            array[$ii]["item_type_id"|"attribute_id"|"show_order"|"attribute_name"|"attribute_short_name"|"input_type"|"is_required"|"plural_enable"|"line_feed_enable"|"list_view_enable"|"hidden"|"junii2_mapping"|"dublin_core_mapping"|"lom_mapping"|"lido_mapping"|"spase_mapping"|"display_lang_type"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     * @param array $itemAttr Item data アイテムデータ
+     *                        array["item"][$ii]["item_id"|"item_no"|"revision_no"|"item_type_id"|"prev_revision_no"|"title"|"title_english"|"language"|"review_status"|"review_date"|"shown_status"|"shown_date"|"reject_status"|"reject_date"|"reject_reason"|"serch_key"|"serch_key_english"|"remark"|"uri"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_type"][$ii]["item_type_id"|"item_type_name"|"item_type_short_name"|"explanation"|"mapping_info"|"icon_name"|"icon_mime_type"|"icon_extension"|"icon"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_attr_type"]["item_type_id"|"attribute_id"|"show_order"|"attribute_name"|"attribute_short_name"|"input_type"|"is_required"|"plural_enable"|"line_feed_enable"|"list_view_enable"|"hidden"|"junii2_mapping"|"dublin_core_mapping"|"lom_mapping"|"lido_mapping"|"spase_mapping"|"display_lang_type"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"personal_name_no"|"family"|"name"|"family_ruby"|"name_ruby"|"e_mail_address"|"item_type_id"|"author_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"show_order"|"mime_type"|"extension"|"file"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"display_name"|"display_type"|"show_order"|"mime_type"|"extension"|"prev_id"|"file_prev"|"file_prev_name"|"license_id"|"license_notation"|"pub_date"|"flash_pub_date"|"item_type_id"|"browsing_flag"|"cover_created_flag"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"biblio_no"|"biblio_name"|"biblio_name_english"|"volume"|"issue"|"start_page"|"end_page"|"date_of_issued"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"display_name"|"display_type"|"show_order"|"mime_type"|"extension"|"prev_id"|"file_prev"|"file_prev_name"|"license_id"|"license_notation"|"pub_date"|"flash_pub_date"|"item_type_id"|"browsing_flag"|"cover_created_flag"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"|"price"]
+     *                        array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"supple_no"|"item_type_id"|"supple_weko_item_id"|"supple_title"|"supple_title_en"|"uri"|"supple_item_type_name"|"mime_type"|"file_id"|"supple_review_status"|"supple_review_date"|"supple_reject_status"|"supple_reject_date"|"supple_reject_reason"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"attribute_no"|"attribute_value"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     * @param DOMElement $domElement DOMElement object DOMElementオブジェクト
      */
     private function setAttributeValue($itemAttrType, $itemAttr, $domElement)
     {
@@ -272,10 +454,12 @@ class Repository_Oaipmh_Lido extends Repository_Oaipmh_FormatAbstract
     
     /**
      * output Tag
+     * タグ出力
      * 
-     * @param string $tag_name
-     * @param array $metadata_array 
-     * @param DOMElement $domElement
+     * @param string $tag_name Tag name タグ名
+     * @param array $metadata_array Metadata list メタデータ一覧
+     *                              array[$ii]["value"|"type"]
+     * @param DOMElement $domElement DOMElement object DOMElementオブジェクト
      */
     private function outputTag($tag_name, $metadata_array, $domElement)
     {
@@ -339,11 +523,13 @@ class Repository_Oaipmh_Lido extends Repository_Oaipmh_FormatAbstract
     }
     
     /**
-     * output Tag
+     * Output tag
+     * 通常タグ出力
      * 
-     * @param string $tag_name
-     * @param array $metadata_array 
-     * @param DOMElement $domElement
+     * @param string $tag_name Tag name タグ名
+     * @param array $metadata_array Metadata list メタデータ一覧
+     *                              array[$ii]["value"|"type"]
+     * @param DOMElement $domElement DOMElement object DOMElementオブジェクト
      */
     private function outputNormalTag($tag_name, $metadata_array, $domElement)
     {
@@ -383,10 +569,12 @@ class Repository_Oaipmh_Lido extends Repository_Oaipmh_FormatAbstract
     
     /**
      * output Object Work Type Tag
+     * Object Work Typeタグ出力
      * 
-     * @param string $tag_name
-     * @param array $metadata_array 
-     * @param DOMElement $domElement
+     * @param string $tag_name Tag name タグ名
+     * @param array $metadata_array Metadata list メタデータ一覧
+     *                              array[$ii]["value"|"type"]
+     * @param DOMElement $domElement DOMElement object DOMElementオブジェクト
      */
     private function outputObjectWorkTypeTag($tag_name, $metadata_array, $domElement)
     {
@@ -448,10 +636,12 @@ class Repository_Oaipmh_Lido extends Repository_Oaipmh_FormatAbstract
     
     /**
      * output Classification Tag
+     * Classificationタグ出力
      * 
-     * @param string $tag_name
-     * @param array $metadata_array 
-     * @param DOMElement $domElement
+     * @param string $tag_name Tag name タグ名
+     * @param array $metadata_array Metadata list メタデータ一覧
+     *                              array[$ii]["value"|"type"]
+     * @param DOMElement $domElement DOMElement object DOMElementオブジェクト
      */
     private function outputClassificationTag($tag_name, $metadata_array, $domElement)
     {
@@ -513,10 +703,12 @@ class Repository_Oaipmh_Lido extends Repository_Oaipmh_FormatAbstract
     
     /**
      * output Repository Set Tag
+     * Repository Setタグ出力
      * 
-     * @param string $tag_name
-     * @param array $metadata_array 
-     * @param DOMElement $domElement
+     * @param string $tag_name Tag name タグ名
+     * @param array $metadata_array Metadata list メタデータ一覧
+     *                              array[$ii]["value"|"type"]
+     * @param DOMElement $domElement DOMElement object DOMElementオブジェクト
      */
     private function outputRepositorySetTag($tag_name, $metadata_array, $domElement)
     {
@@ -607,10 +799,12 @@ class Repository_Oaipmh_Lido extends Repository_Oaipmh_FormatAbstract
     
     /**
      * output Event Set Tag
+     * Event Setタグ出力
      * 
-     * @param string $tag_name
-     * @param array $metadata_array 
-     * @param DOMElement $domElement
+     * @param string $tag_name Tag name タグ名
+     * @param array $metadata_array Metadata list メタデータ一覧
+     *                              array[$ii]["value"|"type"]
+     * @param DOMElement $domElement DOMElement object DOMElementオブジェクト
      */
     private function outputEventSetTag($tag_name, $metadata_array, $domElement)
     {
@@ -895,10 +1089,12 @@ class Repository_Oaipmh_Lido extends Repository_Oaipmh_FormatAbstract
     
     /**
      * output RecordInfoSet Tag
+     * RecordInfoSetタグ出力
      * 
-     * @param string $tag_name
-     * @param array $metadata_array 
-     * @param DOMElement $domElement
+     * @param string $tag_name Tag name タグ名
+     * @param array $metadata_array Metadata list メタデータ一覧
+     *                              array[$ii]["value"|"type"]
+     * @param DOMElement $domElement DOMElement object DOMElementオブジェクト
      */
     private function outputRecordInfoSetTag($tag_name, $metadata_array, $domElement)
     {
@@ -961,10 +1157,12 @@ class Repository_Oaipmh_Lido extends Repository_Oaipmh_FormatAbstract
     
     /**
      * output LinkResource Tag
+     * LinkResourceタグ出力
      * 
-     * @param string $tag_name
-     * @param array $metadata_array 
-     * @param DOMElement $domElement
+     * @param string $tag_name Tag name タグ名
+     * @param array $metadata_array Metadata list メタデータ一覧
+     *                              array[$ii]["value"|"type"]
+     * @param DOMElement $domElement DOMElement object DOMElementオブジェクト
      */
     private function outputLinkResourceTag($tag_name, $metadata_array, $domElement)
     {
@@ -1007,10 +1205,12 @@ class Repository_Oaipmh_Lido extends Repository_Oaipmh_FormatAbstract
     
     /**
      * output value
+     * 値を出力する
      * 
-     * @param string $tag_name
-     * @param array $metadata_array 
-     * @param DOMElement $domElement
+     * @param string $tag_name Tag name タグ名
+     * @param array $metadata_array Metadata list メタデータ一覧
+     *                              array[$ii]["value"|"type"]
+     * @param DOMElement $domElement DOMElement object DOMElementオブジェクト
      */
     private function outputValue($tag_name, $metadata_array, $domElement)
     {
@@ -1037,9 +1237,11 @@ class Repository_Oaipmh_Lido extends Repository_Oaipmh_FormatAbstract
     
     /**
      * create element and return new element
+     * DOMElementオブジェクトを作成する
      * 
-     * @param string $tag_name
-     * @return DOMElement $new_element
+     * @param string $tag_name Tag name タグ名
+     * @param DOMElement $domElement DOMElement object DOMElementオブジェクト
+     * @return DOMElement Create result 生成結果
      */
     private function createNodeElement($tag_name, $domElement)
     {
@@ -1079,9 +1281,7 @@ class Repository_Oaipmh_Lido extends Repository_Oaipmh_FormatAbstract
     
     /**
      * create gml tags
-     * 
-     * @param string $tag_name
-     * @return DOMElement $new_element
+     * GMLタグ作成
      */
     private function createGml()
     {
@@ -1132,10 +1332,12 @@ class Repository_Oaipmh_Lido extends Repository_Oaipmh_FormatAbstract
     
     /**
      * output gml value
+     * GML値を出力
      * 
-     * @param string $tag_name
-     * @param array $metadata_array 
-     * @param DOMElement $domElement
+     * @param string $tag_name Tag name タグ名
+     * @param array $metadata_array Metadata list メタデータ一覧
+     *                              array[$ii]["value"|"type"]
+     * @param DOMElement $domElement DOMElement object DOMElementオブジェクト
      */
     private function outputGmlValue($tag_name, $metadata_array, $domElement)
     {
@@ -1160,231 +1362,4 @@ class Repository_Oaipmh_Lido extends Repository_Oaipmh_FormatAbstract
         }
     }
 }
-
-
-//mhaya
-     /**
-     *
-     * LODO Schemaの妥当性検証パスするための暫定対応
-     *
-     **/
-    private function fixOutputFormat(){
-        $this->domDocument->normalizeDocument();
-
-        // sequence暫定対応(lido:descriptiveMetadata)
-        $descmeta = $this->domDocument->getElementsByTagName(RepositoryConst::LIDO_TAG_NAMESPACE.RepositoryConst::LIDO_TAG_DESCRIPTIVE_METADATA);
-        if($descmeta->length===1){
-            $descmeta = $descmeta->item(0);
-
-            $obj_cls_wrap = $descmeta->getElementsByTagName(RepositoryConst::LIDO_TAG_NAMESPACE.RepositoryConst::LIDO_TAG_OBJECT_CLASSIFICATION_WRAP)->item(0);
-            $obj_ident_wrap = $descmeta->getElementsByTagName(RepositoryConst::LIDO_TAG_NAMESPACE.RepositoryConst::LIDO_TAG_OBJECT_IDENTIFICATION_WRAP)->item(0);
-            $event_wrap = $descmeta->getElementsByTagName(RepositoryConst::LIDO_TAG_NAMESPACE.RepositoryConst::LIDO_TAG_EVENT_WRAP)->item(0);
-            $obj_rel_wrap = $descmeta->getElementsByTagName(RepositoryConst::LIDO_TAG_NAMESPACE.RepositoryConst::LIDO_TAG_OBJECT_RELATION_WRAP)->item(0);
-
-            $descmeta->removeChild($obj_cls_wrap);
-            $descmeta->removeChild($obj_ident_wrap);
-            $descmeta->removeChild($event_wrap);
-            $descmeta->removeChild($obj_rel_wrap);
-
-            $descmeta->appendChild($obj_cls_wrap);
-            $descmeta->appendChild($obj_ident_wrap);
-            $descmeta->appendChild($event_wrap);
-            $descmeta->appendChild($obj_rel_wrap);
-        }
-
-        // sequence暫定対応(lido:objectIdentificationWrap)
-        $obj_ident_wrap = $this->domDocument->getElementsByTagName(RepositoryConst::LIDO_TAG_NAMESPACE.RepositoryConst::LIDO_TAG_OBJECT_IDENTIFICATION_WRAP);
-        if($obj_ident_wrap->length ===1 ){
-            $obj_ident_wrap = $obj_ident_wrap->item(0);
-
-            $title_wrap = $obj_ident_wrap->getElementsByTagName(RepositoryConst::LIDO_TAG_NAMESPACE.RepositoryConst::LIDO_TAG_TITLE_WRAP)->item(0);
-            $repo_wrap = $obj_ident_wrap->getElementsByTagName(RepositoryConst::LIDO_TAG_NAMESPACE.RepositoryConst::LIDO_TAG_REPOSITORY_WRAP)->item(0);
-            $obj_desc_wrap =  $obj_ident_wrap->getElementsByTagName(RepositoryConst::LIDO_TAG_NAMESPACE.RepositoryConst::LIDO_TAG_OBJECT_DESCRIPTION_WRAP)->item(0);
-            $obj_mesure_wrap = $obj_ident_wrap->getElementsByTagName(RepositoryConst::LIDO_TAG_NAMESPACE.RepositoryConst::LIDO_TAG_OBJECT_MEASUREMENTS_WRAP)->item(0);
-            /*
-            $obj_ident_wrap->removeChild($title_wrap);
-            $obj_ident_wrap->removeChild($repo_wrap);
-            $obj_ident_wrap->removeChild($obj_desc_wrap);
-            $obj_ident_wrap->removeChild($obj_mesure_wrap);
-            */
-            $obj_ident_wrap->appendChild($title_wrap);
-            $obj_ident_wrap->appendChild($repo_wrap);
-            $obj_ident_wrap->appendChild($obj_desc_wrap);
-            $obj_ident_wrap->appendChild($obj_mesure_wrap);
-        }
-
-        // sequence暫定対応(lido:objectWorkType)
-        $obj_work_type = $this->domDocument->getElementsByTagName(RepositoryConst::LIDO_TAG_NAMESPACE.RepositoryConst::LIDO_TAG_OBJECT_WORK_TYPE);
-        foreach($obj_work_type as $node){
-            //$id = $node->getElementsByTagName(RepositoryConst::LIDO_TAG_NAMESPACE.RepositoryConst::LIDO_TAG_CONCEPT_ID);
-            $term = $node->getElementsByTagName(RepositoryConst::LIDO_TAG_NAMESPACE.RepositoryConst::LIDO_TAG_TERM);
-            if($term->length >0 ){
-                foreach($term as $node2){
-                    //       $node->removeChild($node2);
-                    $node->appendChild($node2);
-                }
-            }
-        }
-
-
-        //eventID 0..*            
-        //eventType 
-        //roleInEvent 0..*
-        //eventName 0..*
-        //eventActor 0..*
-        //culture 0..*
-        //eventDate 0..*
-        //periodName 0..*
-        //eventPlace 0..*
-        //eventMethod 0..*
-        //eventMaterialsTech 0..*
-        //thingPresent 0..*
-        //relatedEventSet 0..*
-        //eventDescriptionSet 0..*
-        $eventTag = $this->domDocument->getElementsByTagName(RepositoryConst::LIDO_TAG_NAMESPACE.RepositoryConst::LIDO_TAG_EVENT);
-        if($eventTag->length === 1){
-            $tmp = $eventTag->item(0);
-            //            $event_id = $tmp->getElementsByTagName(RepositoryConst::LIDO_TAG_NAMESPACE.RepositoryConst::LIDO_TAG_EVENT_ID);
-            $event_type = $tmp->getElementsByTagName(RepositoryConst::LIDO_TAG_NAMESPACE.RepositoryConst::LIDO_TAG_EVENT_TYPE);
-            $event_actorTag = $tmp->getElementsByTagName(RepositoryConst::LIDO_TAG_NAMESPACE.RepositoryConst::LIDO_TAG_EVENT_ACTOR);
-            $event_date = $tmp->getElementsByTagName(RepositoryConst::LIDO_TAG_NAMESPACE.RepositoryConst::LIDO_TAG_EVENT_DATE);
-            $period_name = $tmp->getElementsByTagName(RepositoryConst::LIDO_TAG_NAMESPACE.RepositoryConst::LIDO_TAG_PERIOD_NAME);
-            $event_place = $tmp->getElementsByTagName(RepositoryConst::LIDO_TAG_NAMESPACE.RepositoryConst::LIDO_TAG_EVENT_PLACE); 
-            $event_materialstech = $tmp->getElementsByTagName(RepositoryConst::LIDO_TAG_NAMESPACE.RepositoryConst::LIDO_TAG_EVENT_MATERIALS_TECH);
-            
-            /*
-            foreach($event_id as $node) {
-                $tmp->appendChild($node);
-            }
-            */
-            // lido:event_type は lido:eventでは必須
-            if($event_type->length === 0 ){
-                $node = $this->domDocument->createElement(RepositoryConst::LIDO_TAG_NAMESPACE.RepositoryConst::LIDO_TAG_EVENT_TYPE);
-                $tmp->appendChild($node);
-            }
-            foreach($event_type as $node) {
-                $tmp->appendChild($node);
-            }           
-            foreach($event_actorTag as $node) {
-                $tmp->appendChild($node);
-            }
-            foreach($event_date as $node) {
-                $tmp->appendChild($node);
-            }
-            foreach($period_name as $node) {
-                $tmp->appendChild($node);
-            }
-            foreach($event_place as $node) {
-                $tmp->appendChild($node);
-            }
-            foreach($event_materialstech as $node) {
-                $tmp->appendChild($node);
-            }
-        }
-        
-        // RecordWrap
-        $record_wrap = $this->domDocument->getElementsByTagName(RepositoryConst::LIDO_TAG_NAMESPACE.RepositoryConst::LIDO_TAG_RECORD_WRAP);
-        if($record_wrap->length === 1 ){
-            $tmp = $record_wrap->item(0);
-            // recordID 1..*            
-            $rec_id = $tmp->getElementsByTagName(RepositoryConst::LIDO_TAG_NAMESPACE.RepositoryConst::LIDO_TAG_RECORD_ID);
-            // recordType            
-            $rec_type = $tmp->getElementsByTagName(RepositoryConst::LIDO_TAG_NAMESPACE.RepositoryConst::LIDO_TAG_RECORD_TYPE);
-            // recordSource 1..*
-            $rec_src = $tmp->getElementsByTagName(RepositoryConst::LIDO_TAG_NAMESPACE.RepositoryConst::LIDO_TAG_RECORD_SOURCE);
-            // recordRights 0..*
-            //$rec_right = $tmp->getElementsByTagName(RepositoryConst::LIDO_TAG_NAMESPACE.RepositoryConst::LIDO_TAG_RECORD_);
-
-            // recordInfoSet 0..*
-            $rec_infoset = $tmp->getElementsByTagName(RepositoryConst::LIDO_TAG_NAMESPACE.RepositoryConst::LIDO_TAG_RECORD_INFO_SET);
-
-            if($rec_id->length === 0 ){
-                $node = $this->domDocument->createElement(RepositoryConst::LIDO_TAG_NAMESPACE.RepositoryConst::LIDO_TAG_RECORD_ID);
-                $tmp->appendChild($node);
-            }
-
-            if($rec_type->length === 0){
-                $node = $this->domDocument->createElement(RepositoryConst::LIDO_TAG_NAMESPACE.RepositoryConst::LIDO_TAG_RECORD_TYPE);
-                $tmp->appendChild($node);
-            }
-
-            if($rec_src->length === 0 ){
-                $node = $this->domDocument->createElement(RepositoryConst::LIDO_TAG_NAMESPACE.RepositoryConst::LIDO_TAG_RECORD_SOURCE);
-                $tmp->appendChild($node);
-            }
-            
-            $newDoc = new DOMDocument();
-            $root = $newDoc->createElement(RepositoryConst::LIDO_TAG_NAMESPACE.RepositoryConst::LIDO_TAG_RECORD_WRAP);
-            $newDoc->appendChild($root);
-            foreach($rec_id as $node){
-                $root->appendChild($newDoc->importNode($node,true));
-            }
-            foreach($rec_type as $node){
-                $root->appendChild($newDoc->importNode($node,true));
-            }
-            foreach($rec_src as $node){
-                $root->appendChild($newDoc->importNode($node,true));
-            }
-            
-            foreach($rec_infoset as $node){
-                $root->appendChild($newDoc->importNode($node,true));
-            }
-            $this->deleteChildren($record_wrap->item(0));
-            $newNode = $this->domDocument->importNode($root,true);
-            $record_wrap->item(0)->parentNode->replaceChild($newNode,$record_wrap->item(0));
-            
-            
-        }
-
-        //resourceSet
-        //resourceID 0..1
-        //resourceRepresentation 0..*
-        //resourceType 0..1
-        //resourceRelType 0..*
-        //resourcePerspective 0..*
-        //resourceDescription 0..*
-        //resourceDateTaken 0..1
-        //resourceSource 0..*
-        //rightsResource 0..*
-        $resourceSet = $this->domDocument->getElementsByTagName(RepositoryConst::LIDO_TAG_NAMESPACE.RepositoryConst::LIDO_TAG_RESOURCE_SET);
-        foreach($resourceSet as $node){
-            $res_rep = $node->getElementsByTagName(RepositoryConst::LIDO_TAG_NAMESPACE.RepositoryConst::LIDO_TAG_RESOURCE_REPRESENTATION);
-            $res_desc = $node->getElementsByTagName(RepositoryConst::LIDO_TAG_NAMESPACE.RepositoryConst::LIDO_TAG_RESOURCE_DESCRIPTION);
-            $res_src = $node->getElementsByTagName(RepositoryConst::LIDO_TAG_NAMESPACE.RepositoryConst::LIDO_TAG_RESOURCE_SOURCE);
-            $res_right = $node->getElementsByTagName(RepositoryConst::LIDO_TAG_NAMESPACE.RepositoryConst::LIDO_TAG_RIGHT_RESOURCE);
-            
-            foreach($res_rep as $n) {
-                $node->appendChild($n);
-            }
-            foreach($res_desc as $n){
-                $node->appendChild($n);
-            }
-            foreach($res_src as $n){
-                $node->appendChild($n);
-            }
-            foreach($res_right as $n){
-                $node->appendChild($n);
-            }
-        }
-        
-              
-    }
-
-    private function deleteNode($node) { 
-        $this->deleteChildren($node); 
-        $parent = $node->parentNode; 
-        $oldnode = $parent->removeChild($node); 
-    } 
-
-    private function deleteChildren($node) {
-        while (isset($node->firstChild)) { 
-            $this->deleteChildren($node->firstChild); 
-            $node->removeChild($node->firstChild); 
-        } 
-    } 
-
-// end mhaya 
-
-
-
 ?>

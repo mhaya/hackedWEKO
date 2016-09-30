@@ -1,6 +1,6 @@
 <!--// ---------------------------------------------------------------------->
 <!--//                                                                     -->
-<!--// $Id: repository_item_edit_texts.html 57381 2015-08-31 00:32:36Z tatsuya_koyasu $          -->
+<!--// $Id: repository_item_edit_texts.html 65776 2016-04-11 09:56:19Z keiya_sugimoto $          -->
 <!--//                                                                     -->
 <!--// Copyright (c) 2007 - 2008, National Institute of Informatics,        -->
 <!--// Research and Development Center for Scientific Information Resources -->
@@ -391,20 +391,33 @@
                                                             <option value="<{$action.author_id_prefix_list[l].prefix_id}>" <{if $item_attr[i][j].external_author_id[k].prefix_id==$action.author_id_prefix_list[l].prefix_id}>SELECTED<{/if}>><{$action.author_id_prefix_list[l].prefix_name}></option>
                                                         <{/section}>
                                                     </select></td>
-						<td class="pt00 pb00" colspan="2" align="right">
 						<{strip}>
-						<input type="text" id="item_attr_name_author_id_suffix_<{$smarty.section.i.index}>_<{$smarty.section.j.index}>_<{$smarty.section.k.index}>" name="item_attr_name_author_id_suffix[]" value="<{if $item_attr[i][j].external_author_id[k].suffix != null && $item_attr[i][j].external_author_id[k].prefix_id > 0}><{$item_attr[i][j].external_author_id[k].suffix}><{/if}>" <{if $item_attr[i][j].external_author_id[k].prefix_id==0 || $item_attr[i][j].external_author_id[k].prefix_id==''}>style="width:70%;display:none;"<{else}>style="width:70%;"<{/if}> /> 
-						<input type="text" id="item_attr_name_author_id_suffix_hidden_<{$smarty.section.i.index}>_<{$smarty.section.j.index}>_<{$smarty.section.k.index}>" value="" disabled="disabled" <{if $item_attr[i][j].external_author_id[k].prefix_id!=0 && $item_attr[i][j].external_author_id[k].prefix_id!=''}>style="width:70%;display:none;"<{else}>style="width:70%;"<{/if}>/>
-						<span id="item_attr_name_fill_button_<{$smarty.section.i.index}>_<{$smarty.section.j.index}>_<{$smarty.section.k.index}>"></span>
-						<{* Modify Directory specification BASE_URL K.Matsuo 2011/9/2 *}>
+						<td class="pt00 pb00" align="right" id="item_attr_name_author_id_url_start_<{$smarty.section.i.index}>_<{$smarty.section.j.index}>_<{$smarty.section.k.index}>">
+	                        <{section name=l loop=$action.author_id_prefix_list}>
+	                            <{if $item_attr[i][j].external_author_id[k].prefix_id==$action.author_id_prefix_list[l].prefix_id}><{$action.author_id_prefix_list[l].url_start}><{/if}>
+	                        <{/section}>
+						</td>
+						<td class="pt00 pb00" align="right">
+							<input type="text" id="item_attr_name_author_id_suffix_<{$smarty.section.i.index}>_<{$smarty.section.j.index}>_<{$smarty.section.k.index}>" name="item_attr_name_author_id_suffix[]" value="<{if $item_attr[i][j].external_author_id[k].suffix != null && $item_attr[i][j].external_author_id[k].prefix_id > 0}><{$item_attr[i][j].external_author_id[k].suffix}><{/if}>" <{if $item_attr[i][j].external_author_id[k].prefix_id==0 || $item_attr[i][j].external_author_id[k].prefix_id==''}>style="width:100%;display:none;"<{else}>style="width:100%;"<{/if}> /> 
+							<input type="text" id="item_attr_name_author_id_suffix_hidden_<{$smarty.section.i.index}>_<{$smarty.section.j.index}>_<{$smarty.section.k.index}>" value="" disabled="disabled" <{if $item_attr[i][j].external_author_id[k].prefix_id!=0 && $item_attr[i][j].external_author_id[k].prefix_id!=''}>style="width:100%;display:none;"<{else}>style="width:100%;"<{/if}>/>
+						</td>
+						<td class="pt00 pb00" align="left" id="item_attr_name_author_id_url_end_<{$smarty.section.i.index}>_<{$smarty.section.j.index}>_<{$smarty.section.k.index}>">
+	                        <{section name=l loop=$action.author_id_prefix_list}>
+	                            <{if $item_attr[i][j].external_author_id[k].prefix_id==$action.author_id_prefix_list[l].prefix_id}><{$action.author_id_prefix_list[l].url_end}><{/if}>
+	                        <{/section}>
+						</td>
+						<td class="pt00 pb00" align="right">
+							<span id="item_attr_name_fill_button_<{$smarty.section.i.index}>_<{$smarty.section.j.index}>_<{$smarty.section.k.index}>"></span>
+							<{* Modify Directory specification BASE_URL K.Matsuo 2011/9/2 *}>
 
-						<input type="button" style="width:23%;" class="btn_white nobr" value="<{$lang.repository_item_fill}>"
-						      onclick="this.style.display='none';
-						      $('item_attr_name_fill_button_<{$smarty.section.i.index}>_<{$smarty.section.j.index}>_<{$smarty.section.k.index}>').style.paddingLeft='16px';
-						      $('item_attr_name_fill_button_<{$smarty.section.i.index}>_<{$smarty.section.j.index}>_<{$smarty.section.k.index}>').style.paddingRight='16px';
-						      $('item_attr_name_fill_button_<{$smarty.section.i.index}>_<{$smarty.section.j.index}>_<{$smarty.section.k.index}>').innerHTML='<img src=&quot;<{$smarty.const.CORE_BASE_URL}>/images/common/indicator.gif&quot;/>';
-						      repositoryCls['<{$id}>'].repositoryItemEditFillAuthor('fill', '',$('item_attr_name_author_id_prefix_<{$smarty.section.i.index}>_<{$smarty.section.j.index}>_<{$smarty.section.k.index}>').value,$('item_attr_name_author_id_suffix_<{$smarty.section.i.index}>_<{$smarty.section.j.index}>_<{$smarty.section.k.index}>').value,'<{$smarty.section.i.index}>', '<{$smarty.section.j.index}>');return false;" />
-						<{/strip}></td>
+							<input type="button" class="btn_white nobr" value="<{$lang.repository_item_fill}>"
+							      onclick="this.style.display='none';
+							      $('item_attr_name_fill_button_<{$smarty.section.i.index}>_<{$smarty.section.j.index}>_<{$smarty.section.k.index}>').style.paddingLeft='16px';
+							      $('item_attr_name_fill_button_<{$smarty.section.i.index}>_<{$smarty.section.j.index}>_<{$smarty.section.k.index}>').style.paddingRight='16px';
+							      $('item_attr_name_fill_button_<{$smarty.section.i.index}>_<{$smarty.section.j.index}>_<{$smarty.section.k.index}>').innerHTML='<img src=&quot;<{$smarty.const.CORE_BASE_URL}>/images/common/indicator.gif&quot;/>';
+							      repositoryCls['<{$id}>'].repositoryItemEditFillAuthor('fill', '',$('item_attr_name_author_id_prefix_<{$smarty.section.i.index}>_<{$smarty.section.j.index}>_<{$smarty.section.k.index}>').value,$('item_attr_name_author_id_suffix_<{$smarty.section.i.index}>_<{$smarty.section.j.index}>_<{$smarty.section.k.index}>').value,'<{$smarty.section.i.index}>', '<{$smarty.section.j.index}>');return false;" />
+						</td>
+						<{/strip}>
 					</tr>
 					<{/section}>
 					<tr>
@@ -1018,13 +1031,27 @@
     var prefix = "item_attr_name_author_id_prefix_" + i_index + "_" + j_index + "_" + k_index;
 	var suffix = "item_attr_name_author_id_suffix_" + i_index + "_" + j_index + "_" + k_index;
 	var hidden = "item_attr_name_author_id_suffix_hidden_" + i_index + "_" + j_index + "_" + k_index;
+	var url_start = "item_attr_name_author_id_url_start_" + i_index + "_" + j_index + "_" + k_index;
+	var url_end = "item_attr_name_author_id_url_end_" + i_index + "_" + j_index + "_" + k_index;
+	var prefix_url_start_list = new Array();
+	var prefix_url_end_list = new Array();
+	<{section name=i loop=$action.author_id_prefix_list}>
+		prefix_url_start_list[<{$action.author_id_prefix_list[i].prefix_id}>] = '<{$action.author_id_prefix_list[i].url_start}>'
+	<{/section}>
+	<{section name=i loop=$action.author_id_prefix_list}>
+		prefix_url_end_list[<{$action.author_id_prefix_list[i].prefix_id}>] = '<{$action.author_id_prefix_list[i].url_end}>'
+	<{/section}>
     if(prefix_value=='0'){
         $(suffix).value = "";
         $(suffix).style.display = "none";
         $(hidden).style.display = "";
+        $(url_start).innerHTML="";
+        $(url_end).innerHTML="";
     } else {
         $(suffix).style.display = "";
         $(hidden).style.display = "none";
+        $(url_start).innerHTML=prefix_url_start_list[prefix_value];
+        $(url_end).innerHTML=prefix_url_end_list[prefix_value];
         if($(prefix)!=null){
             var alert_flag = false;
             for(var ii=0; ii<parseInt(length); ii++){
@@ -1042,6 +1069,8 @@
                 $(suffix).value = "";
 		        $(suffix).style.display = "none";
 		        $(hidden).style.display = "";
+		        $(url_start).innerHTML="";
+		        $(url_end).innerHTML="";
             }
         }
     }

@@ -1,7 +1,15 @@
 <?php
+
+/**
+ * Item information output class in Dublin Core
+ * Dublin Coreでのアイテム情報出力クラス
+ *
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: DublinCore.class.php 38124 2014-07-01 06:56:02Z rei_matsuura $
+// $Id: DublinCore.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -10,19 +18,38 @@
 // http://creativecommons.org/licenses/BSD/
 //
 // --------------------------------------------------------------------
+/**
+ * OAI-PMH item information output base class
+ * OAI-PMHアイテム情報出力基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/oaipmh/format/FormatAbstract.class.php';
 
+
+/**
+ * Item information output class in Dublin Core
+ * Dublin Coreでのアイテム情報出力クラス
+ *
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
+ */
 class Repository_Oaipmh_DublinCore extends Repository_Oaipmh_FormatAbstract
 {
     /**
-     * output DATE flag
-     *   DATE tag is indispensable.
+     * Data output flag
+     * データ出力フラグ
      *
+     * @var boolean
      */
     private $outputDateFlg = false;
     
     /**
+     * constructor
      * コンストラクタ
+     *
+     * @param Session $sesssion Session management objects Session管理オブジェクト
+     * @param DbObject $db Database management objects データベース管理オブジェクト
      */
     public function __construct($session, $db)
     {
@@ -30,8 +57,8 @@ class Repository_Oaipmh_DublinCore extends Repository_Oaipmh_FormatAbstract
     }
     
     /**
-     * initialize
-     *
+     * Initialization
+     * 初期化
      */
     private function initialize()
     {
@@ -39,10 +66,21 @@ class Repository_Oaipmh_DublinCore extends Repository_Oaipmh_FormatAbstract
     }
     
     /**
-     * output OAI-PMH metadata Tag format DublinCore
+     * Output item information
+     * アイテム情報を出力
      *
-     * @param array $itemData $this->getItemData return
-     * @return string xml
+     * @param array $itemData Item data アイテムデータ
+     *                        array["item"][$ii]["item_id"|"item_no"|"revision_no"|"item_type_id"|"prev_revision_no"|"title"|"title_english"|"language"|"review_status"|"review_date"|"shown_status"|"shown_date"|"reject_status"|"reject_date"|"reject_reason"|"serch_key"|"serch_key_english"|"remark"|"uri"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_type"][$ii]["item_type_id"|"item_type_name"|"item_type_short_name"|"explanation"|"mapping_info"|"icon_name"|"icon_mime_type"|"icon_extension"|"icon"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_attr_type"]["item_type_id"|"attribute_id"|"show_order"|"attribute_name"|"attribute_short_name"|"input_type"|"is_required"|"plural_enable"|"line_feed_enable"|"list_view_enable"|"hidden"|"junii2_mapping"|"dublin_core_mapping"|"lom_mapping"|"lido_mapping"|"spase_mapping"|"display_lang_type"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"personal_name_no"|"family"|"name"|"family_ruby"|"name_ruby"|"e_mail_address"|"item_type_id"|"author_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"show_order"|"mime_type"|"extension"|"file"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"display_name"|"display_type"|"show_order"|"mime_type"|"extension"|"prev_id"|"file_prev"|"file_prev_name"|"license_id"|"license_notation"|"pub_date"|"flash_pub_date"|"item_type_id"|"browsing_flag"|"cover_created_flag"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"biblio_no"|"biblio_name"|"biblio_name_english"|"volume"|"issue"|"start_page"|"end_page"|"date_of_issued"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"display_name"|"display_type"|"show_order"|"mime_type"|"extension"|"prev_id"|"file_prev"|"file_prev_name"|"license_id"|"license_notation"|"pub_date"|"flash_pub_date"|"item_type_id"|"browsing_flag"|"cover_created_flag"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"|"price"]
+     *                        array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"supple_no"|"item_type_id"|"supple_weko_item_id"|"supple_title"|"supple_title_en"|"uri"|"supple_item_type_name"|"mime_type"|"file_id"|"supple_review_status"|"supple_review_date"|"supple_reject_status"|"supple_reject_date"|"supple_reject_reason"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"attribute_no"|"attribute_value"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     * @return string The output string 出力文字列
      */
     public function outputRecord($itemData)
     {
@@ -96,9 +134,10 @@ class Repository_Oaipmh_DublinCore extends Repository_Oaipmh_FormatAbstract
     }
     
     /**
+     * The output of the header part
      * ヘッダー部分の出力
      *
-     * @return string
+     * @return string The output string 出力文字列
      */
     private function outputHeader()
     {
@@ -113,10 +152,12 @@ class Repository_Oaipmh_DublinCore extends Repository_Oaipmh_FormatAbstract
     }
     
     /**
-     * item basic data output
+     * The output of the item basic information
+     * アイテム基本情報の出力
      *
-     * @param array $baseData
-     * @return string
+     * @param array $baseData Item basic information アイテム基本情報
+     *              array["item_id"|"item_no"|"revision_no"|"item_type_id"|"prev_revision_no"|"title"|"title_english"|"language"|"review_status"|"review_date"|"shown_status"|"shown_date"|"reject_status"|"reject_date"|"reject_reason"|"serch_key"|"serch_key_english"|"remark"|"uri"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     * @return string The output string 出力文字列
      */
     private function outputBasicData($baseData)
     {
@@ -161,14 +202,43 @@ class Repository_Oaipmh_DublinCore extends Repository_Oaipmh_FormatAbstract
         $url = $baseData[RepositoryConst::DBCOL_REPOSITORY_ITEM_URI];
         $xml .= $this->outputIdentifier($url);
         
+        // Permalink
+        $xml .= $this->outputPermalinkCnriOrYhandle($baseData[RepositoryConst::DBCOL_REPOSITORY_ITEM_ITEM_ID], $baseData[RepositoryConst::DBCOL_REPOSITORY_ITEM_ITEM_NO]);
+        
         return $xml;
     }
     
     /**
-     * output NIIType
+     * Output permalink CNRI or YHandle by Dublin Core xml
+     * CNRIまたはYハンドルのPermalinkをDublin CoreのXMLで出力する
      *
-     * @param string $niiType
-     * @return string
+     * @param int $item_id Item ID アイテムID
+     * @param int $item_no Item No アイテム通番
+     * @return string Output of permalink CNRI or YHandle by xml CNRIまたはYハンドルのPermalinkのXML出力
+     */
+    private function outputPermalinkCnriOrYhandle($item_id, $item_no)
+    {
+        if(strlen($this->RepositoryAction->TransStartDate) == 0){
+            $date = new Date();
+            $this->RepositoryAction->TransStartDate = $date->getDate().".000";
+        }
+        $repositoryHandleManager = new RepositoryHandleManager($this->Session, $this->Db, $this->RepositoryAction->TransStartDate);
+        
+        $permalink = $repositoryHandleManager->createUriForDublinCore($item_id, $item_no);
+        
+        if(strlen($permalink) == 0)
+        {
+            return "";
+        }
+        return $this->outputIdentifier($permalink);
+    }
+    
+    /**
+     * NII type output
+     * NII type出力
+     *
+     * @param string $niiType NIItype NIItype
+     * @return string The output string 出力文字列
      */
     private function outputNIIType($niiType)
     {
@@ -194,11 +264,20 @@ class Repository_Oaipmh_DublinCore extends Repository_Oaipmh_FormatAbstract
     }
     
     /**
-     * output metadata
+     * Metadata output
+     * メタデータ出力
      *
-     * @param array $itemAttrType mapping info. マッピング情報
-     * @param array $itemAttr metadata ingo. メタデータ情報
-     * @return string
+     * @param array $itemAttrType Mapping info. マッピング情報
+     *                            array["item_type_id"|"attribute_id"|"show_order"|"attribute_name"|"attribute_short_name"|"input_type"|"is_required"|"plural_enable"|"line_feed_enable"|"list_view_enable"|"hidden"|"junii2_mapping"|"dublin_core_mapping"|"lom_mapping"|"lido_mapping"|"spase_mapping"|"display_lang_type"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     * @param array $itemAttr Metadata ingo. メタデータ情報
+     *                        array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"personal_name_no"|"family"|"name"|"family_ruby"|"name_ruby"|"e_mail_address"|"item_type_id"|"author_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"show_order"|"mime_type"|"extension"|"file"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"display_name"|"display_type"|"show_order"|"mime_type"|"extension"|"prev_id"|"file_prev"|"file_prev_name"|"license_id"|"license_notation"|"pub_date"|"flash_pub_date"|"item_type_id"|"browsing_flag"|"cover_created_flag"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"biblio_no"|"biblio_name"|"biblio_name_english"|"volume"|"issue"|"start_page"|"end_page"|"date_of_issued"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"file_no"|"file_name"|"display_name"|"display_type"|"show_order"|"mime_type"|"extension"|"prev_id"|"file_prev"|"file_prev_name"|"license_id"|"license_notation"|"pub_date"|"flash_pub_date"|"item_type_id"|"browsing_flag"|"cover_created_flag"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"|"price"]
+     *                        array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"supple_no"|"item_type_id"|"supple_weko_item_id"|"supple_title"|"supple_title_en"|"uri"|"supple_item_type_name"|"mime_type"|"file_id"|"supple_review_status"|"supple_review_date"|"supple_reject_status"|"supple_reject_date"|"supple_reject_reason"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     *                        array["item_attr"][$ii][$jj]["item_id"|"item_no"|"attribute_id"|"attribute_no"|"attribute_value"|"item_type_id"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     * @return string The output string 出力文字列
      */
     private function outputMetadta($itemAttrType, $itemAttr)
     {
@@ -257,10 +336,12 @@ class Repository_Oaipmh_DublinCore extends Repository_Oaipmh_FormatAbstract
     }
     
     /**
-     * output item reference link
+     * And outputs the reference item information
+     * 参照アイテム情報を出力する
      *
-     * @param array $reference
-     * @return string
+     * @param array $reference Item Reference Information アイテム参照情報
+     *                         array[$ii]["item_id"|"item_no"]
+     * @return string The output string 出力文字列
      */
     private function outputReference($reference)
     {
@@ -277,11 +358,12 @@ class Repository_Oaipmh_DublinCore extends Repository_Oaipmh_FormatAbstract
     }
     
     /**
-     * output xml for mapping info.
+     * To output the XML in accordance with mapping settings
+     * マッピング設定に従いXMLを出力する
      *
-     * @param string $mapping
-     * @param string $value
-     * @return string
+     * @param string $mapping Mapping マッピング
+     * @param string $value Metadata メタデータ
+     * @return string The output string 出力文字列
      */
     private function outputAttributeValue($mapping, $value)
     {
@@ -341,10 +423,11 @@ class Repository_Oaipmh_DublinCore extends Repository_Oaipmh_FormatAbstract
     }
     
     /**
-     * output "title" tag
+     * Title tag output
+     * Titleタグ出力
      *
-     * @param string $title
-     * @return string
+     * @param string $title Title タイトル
+     * @return string The output string 出力文字列
      */
     private function outputTitle($title)
     {
@@ -354,10 +437,11 @@ class Repository_Oaipmh_DublinCore extends Repository_Oaipmh_FormatAbstract
     }
     
     /**
-     * output "creator" tag
+     * Creator tag output
+     * Creatorタグ出力
      *
-     * @param string $creator
-     * @return string
+     * @param string $creator Creaotr 作成者
+     * @return string The output string 出力文字列
      */
     private function outputCreator($creator)
     {
@@ -367,10 +451,11 @@ class Repository_Oaipmh_DublinCore extends Repository_Oaipmh_FormatAbstract
     }
     
     /**
-     * subject "subject" tag
+     * Subject tag output
+     * Subjectタグ出力
      *
-     * @param string $subject
-     * @return string
+     * @param string $subject Subject 著者キーワード
+     * @return string The output string 出力文字列
      */
     private function outputSubject($subject)
     {
@@ -379,11 +464,13 @@ class Repository_Oaipmh_DublinCore extends Repository_Oaipmh_FormatAbstract
         return $this->outputElement($tag, $subject);
     }
     
+    
     /**
-     * subject "description" tag
+     * Description tag output
+     * Descriptionタグ出力
      *
-     * @param string $description
-     * @return string
+     * @param string $description Description 内容
+     * @return string The output string 出力文字列
      */
     private function outputDescription($description)
     {
@@ -393,10 +480,11 @@ class Repository_Oaipmh_DublinCore extends Repository_Oaipmh_FormatAbstract
     }
     
     /**
-     * subject "publisher" tag
+     * Publisher tag output
+     * Publisherタグ出力
      *
-     * @param string $publisher
-     * @return string
+     * @param string $publisher Publisher 公開者
+     * @return string The output string 出力文字列
      */
     private function outputPublisher($publisher)
     {
@@ -406,10 +494,11 @@ class Repository_Oaipmh_DublinCore extends Repository_Oaipmh_FormatAbstract
     }
     
     /**
-     * subject "contributor" tag
+     * Contributor tag output
+     * Contributorタグ出力
      *
-     * @param string $contributor
-     * @return string
+     * @param string $contributor Contributor 寄与者
+     * @return string The output string 出力文字列
      */
     private function outputContributor($contributor)
     {
@@ -419,10 +508,11 @@ class Repository_Oaipmh_DublinCore extends Repository_Oaipmh_FormatAbstract
     }
     
     /**
-     * subject "date" tag
+     * Date tag output
+     * Dateタグ出力
      *
-     * @param string $date
-     * @return string
+     * @param string $date Date 日付
+     * @return string The output string 出力文字列
      */
     private function outputDate($date)
     {
@@ -435,10 +525,11 @@ class Repository_Oaipmh_DublinCore extends Repository_Oaipmh_FormatAbstract
     }
     
     /**
-     * subject "type" tag
+     * Type tag output
+     * Typeタグ出力
      *
-     * @param string $type
-     * @return string
+     * @param string $type Type タイプ
+     * @return string The output string 出力文字列
      */
     private function outputType($type)
     {
@@ -448,10 +539,11 @@ class Repository_Oaipmh_DublinCore extends Repository_Oaipmh_FormatAbstract
     }
     
     /**
-     * subject "format" tag
+     * Format tag output
+     * Formatタグ出力
      *
-     * @param string $format
-     * @return string
+     * @param string $format Format フォーマット
+     * @return string The output string 出力文字列
      */
     private function outputFormat($format)
     {
@@ -461,10 +553,11 @@ class Repository_Oaipmh_DublinCore extends Repository_Oaipmh_FormatAbstract
     }
     
     /**
-     * subject "identifier" tag
+     * Identifier tag output
+     * Identifierタグ出力
      *
-     * @param string $identifier
-     * @return string
+     * @param string $identifier Identifier 識別子
+     * @return string The output string 出力文字列
      */
     private function outputIdentifier($identifier)
     {
@@ -474,10 +567,11 @@ class Repository_Oaipmh_DublinCore extends Repository_Oaipmh_FormatAbstract
     }
     
     /**
-     * subject "source" tag
+     * Source tag output
+     * Sourceタグ出力
      *
-     * @param string $source
-     * @return string
+     * @param string $source Source ソース
+     * @return string The output string 出力文字列
      */
     private function outputSource($source)
     {
@@ -487,10 +581,11 @@ class Repository_Oaipmh_DublinCore extends Repository_Oaipmh_FormatAbstract
     }
     
     /**
-     * subject "language" tag
+     * Language tag output
+     * Languageタグ出力
      *
-     * @param string $language
-     * @return string
+     * @param string $language Language 言語
+     * @return string The output string 出力文字列
      */
     private function outputLanguage($language)
     {
@@ -505,10 +600,11 @@ class Repository_Oaipmh_DublinCore extends Repository_Oaipmh_FormatAbstract
     }
     
     /**
-     * subject "relation" tag
+     * Relation tag output
+     * Relationタグ出力
      *
-     * @param string $relation
-     * @return string
+     * @param string $relation Relation 関連
+     * @return string The output string 出力文字列
      */
     private function outputRelation($relation)
     {
@@ -518,10 +614,11 @@ class Repository_Oaipmh_DublinCore extends Repository_Oaipmh_FormatAbstract
     }
     
     /**
-     * subject "coverage" tag
+     * Coverage tag output
+     * Coverageタグ出力
      *
-     * @param string $coverage
-     * @return string
+     * @param string $coverage Coverage 範囲
+     * @return string The output string 出力文字列
      */
     private function outputCoverage($coverage)
     {
@@ -531,10 +628,11 @@ class Repository_Oaipmh_DublinCore extends Repository_Oaipmh_FormatAbstract
     }
     
     /**
-     * subject "rights" tag
+     * Rights tag output
+     * Rightsタグ出力
      *
-     * @param string $rights
-     * @return string
+     * @param string $rights Rights 権利
+     * @return string The output string 出力文字列
      */
     private function outputRights($rights)
     {
@@ -544,11 +642,12 @@ class Repository_Oaipmh_DublinCore extends Repository_Oaipmh_FormatAbstract
     }
     
     /**
-     * return XML element.
+     * Tag output
+     * タグ出力
      *
-     * @param string $tag
-     * @param string $value
-     * @return string
+     * @param string $tag Tag name タグ名
+     * @param string $value Metadata メタデータ
+     * @return string The output string 出力文字列
      */
     private function outputElement($tag, $value)
     {
@@ -562,9 +661,10 @@ class Repository_Oaipmh_DublinCore extends Repository_Oaipmh_FormatAbstract
     }
     
     /**
-     * output footer
+     * Footer output
+     * フッター出力
      *
-     * @return string
+     * @return string The output string 出力文字列
      */
     private function outputFooter()
     {

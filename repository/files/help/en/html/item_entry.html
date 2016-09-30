@@ -1,6 +1,6 @@
 <!--// ---------------------------------------------------------------------->
 <!--//                                                                     -->
-<!--// $Id: item_entry.html 53594 2015-05-28 05:25:53Z kaede_matsushita $        -->
+<!--// $Id: item_entry.html 71165 2016-08-22 09:20:28Z keiya_sugimoto $        -->
 <!--//                                                                     -->
 <!--// Copyright (c) 2007 - 2008, National Institute of Informatics,        -->
 <!--// Research and Development Center for Scientific Information Resources -->
@@ -73,6 +73,11 @@
 						<br/>
 						<center><img src="./img/file_entry_02.png" alt="ファイル操作"></center><br/>
 						<br/>
+						「差替」ボタンを押下するとアップロードファイル選択ダイアログが表示されます。<br/>
+						差替えを行うローカルファイルを選択し、「一時保存」ボタンまたは「次へ」ボタンを押下するとファイルが変更されます。<br/>
+						<br/>
+						<center><img src="./img/file_entry_04.png" alt="ファイル差替"></center><br/>
+						<br/>
 					</div>
 					<br/>
 					<h4><a name="lisence">ライセンス設定</a></h4>
@@ -120,10 +125,15 @@
 								PrefixIDの取得方法は、<a href="./setting.html#server_prefix">WEKO管理</a>をご参照ください。
 							</li>
 							<li>
-								「Flash表示」を選択できるファイル形式はpdf、swf、doc、docx、xls、xlsx、ppt、pptx、emf、wmf、bmp、png、gif、tiff、jpg、jp2です。
+								「Flash表示」を選択できるファイル形式はpdf、swf、doc、docx、xls、xlsx、ppt、pptx、emf、wmf、bmp、png、gif、tiff、jpg、jp2、mp3、wav、avi、mpg、mpeg、flvです。
 							</li>
 							<li>
 								「Flash表示」選択時にファイルのflash変換に失敗した場合は、詳細表示となります。
+							</li>
+							<li>
+								動画ファイル、音楽ファイルも「Flash表示」を選択できますが、「ffmpeg」の外部コマンドの絶対パスを設定する必要があります。
+								<br/>
+								設定方法は、<a href="./setting.html#server_path">WEKO管理</a>をご参照ください。
 							</li>
 						</ul>
 						<br/>
@@ -771,7 +781,7 @@
 				
 				<h3><a name="doi">DOI付与</a></h3>
 				<div class="page_list">
-					<h4><a name="input_type">付与条件</a></h4>
+					<h4><a name="doi_conditions">付与条件</a></h4>
 					<div class="page_list">
 						下記の条件を満たしている場合、DOIを付与することができます。<br/>
 						<font color="#f00">一度付与されたDOIは変更ができません。</font><br/>
@@ -788,13 +798,38 @@
 						<center><img src="./img/item_entry_DOI_condition.png" width="1200" border="0"/></center></br>
 					</div>
 					
-					<h4><a name="input_type">DOI付与</a></h4>
+					<h4><a name="doi_grant">DOI付与</a></h4>
 					<div class="page_list">
-						DOIは一度だけ付与することができます。<br/>
+						付与条件を満たしている場合、DOIを一度だけ付与することができます。<br/>
+						repository/config/define.inc.phpの_REPOSITORY_WEKO_DOISUFFIX_FREEに応じて<a href="#doi_auto_departure">自動発番</a>か<a href="#doi_free_input">自由入力</a>のいずれかでDOIを付与することができます。<br/>
+						<a href="#doi_auto_departure">自動発番</a>の場合はfalseに、<a href="#doi_free_input">自由入力</a>の場合はtrueに設定する必要があります。<br/>
 						<br/>
-						<center><img src="./img/item_entry_DOI_add.png" width="600" border="0"/></center></br>
 						<br/>
-						DOIが付与されると、詳細画面にDOIが表示されます<br/>
+						<a name="doi_auto_departure"><b>自動発番</b></a><br/>
+						<div class="page_list">
+							自動発番では、IDサーバー(http://id.nii.ac.jp/)のSuffixと同一のDOIを付与します。
+							<br/>
+							<br/>
+							<center><img src="./img/item_entry_DOI_add.png" width="600" border="0"/></center></br>
+							<br/>
+						</div>
+						<br/>
+						<a name="doi_free_input"><b>自由入力</b></a><br/>
+						<div class="page_list">
+							自由入力では、下記の条件を満たしている入力値をDOIとして付与します。
+							<ul>
+								<li>半角数字8桁でない</li>
+								<li>半角英数字または半角記号「_-.;()/」のみ入力されている</li>
+								<li>「info:doi/[DOIのPrefix]/[入力値]」が300文字以内である</li>
+								<li>他のアイテムで既に使用されているDOIではない</li>
+								<li>取り下げられたDOIではない</li>
+							</ul>
+							<br/>
+							<center><img src="./img/item_entry_DOI_add_free_input.png" width="600" border="0"/></center></br>
+							<br/>
+						</div>
+						
+						DOIが付与されると、詳細画面にDOIが表示されます。<br/>
 						<br/>
 						<center><img src="./img/item_entry_DOI_view.png" width="600" border="0"/></center></br>
 						<br/>
@@ -805,7 +840,7 @@
 						</ul>
 					</div>
 					
-					<h4><a name="input_type">DOI取り下げ</a></h4>
+					<h4><a name="doi_withdrawal">DOI取り下げ</a></h4>
 					<div class="page_list">
 						付与したDOIは取り下げることができます。<br/>
 						<br/>

@@ -1,7 +1,15 @@
 <?php
+
+/**
+ * Common class that manages the search keyword taken out from the external search engine as an external search keyword
+ * 外部検索エンジンから取り出した検索キーワードを外部検索キーワードとして管理する共通クラス
+ * 
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: RepositoryExternalSearchWordManager.class.php 53594 2015-05-28 05:25:53Z kaede_matsushita $
+// $Id: RepositoryExternalSearchWordManager.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics,
 // Research and Development Center for Scientific Information Resources
@@ -11,23 +19,38 @@
 //
 // --------------------------------------------------------------------
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
+/**
+ * WEKO logic-based base class
+ * WEKOロジックベース基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryLogicBase.class.php';
 
 /**
- * repository handle IDs management class
+ * Common class that manages the search keyword taken out from the external search engine as an external search keyword
+ * 外部検索エンジンから取り出した検索キーワードを外部検索キーワードとして管理する共通クラス
  * 
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class Repository_Components_RepositoryExternalSearchWordManager extends RepositoryLogicBase
 {
-    
+    /**
+     * Database management objects
+     * データベース管理オブジェクト
+     *
+     * @var DbObject
+     */
     var $db = null;
     
     /**
      * Constructor
+     * コンストラクタ
      *
-     * @param var $session
-     * @param var $db
-     * @param string $transStartDate
+     * @param Session $session session object セッション
+     * @param DbObject $db DB object DBオブジェクト
+     * @param string $tranceStartDate process start date 処理開始時間
      */
     public function __construct($session, $db, $transStartDate)
     {
@@ -37,10 +60,11 @@ class Repository_Components_RepositoryExternalSearchWordManager extends Reposito
     
     /**
      * insert external search word from url
+     * refererから外部検索エンジンで利用された検索キーワードを登録する
      *
-     * @param int $item_id    item id
-     * @param int $item_no    item no
-     * @param string $referer referer url
+     * @param int $item_id Item id アイテムID
+     * @param int $item_no Item serial number アイテム通番
+     * @param string $referer referer referer
      */
     public function insertExternalSearchWordFromURL($item_id, $item_no, $referer)
     {
@@ -91,8 +115,10 @@ class Repository_Components_RepositoryExternalSearchWordManager extends Reposito
     
     /**
      * get search word
+     * 検索キーワードを取得する
      *
-     * @param string referer referer url
+     * @param string $referer referer referer
+     * @return string Search keyword 検索キーワード
      */
     private function getSearchWord($referer)
     {
@@ -144,10 +170,11 @@ class Repository_Components_RepositoryExternalSearchWordManager extends Reposito
     
     /**
      * check search word
+     * 検索キーワードをチェックする
      *
-     * @param Array $splitExternalSearchWord      splited external search word
-     * 
-     * return Array
+     * @param array $splitExternalSearchWord splited external search word 分割された外部検索キーワード
+     * @return array Register external search keyword 登録する外部検索キーワード
+     *               array[$ii]
      */
     private function checkSearchWord($splitExternalSearchWord)
     {
@@ -177,11 +204,12 @@ class Repository_Components_RepositoryExternalSearchWordManager extends Reposito
     
     /**
      * check stop word
+     * ストップワードをチェックする
      *
-     * @param string $externalSearchWord external search word
-     * @param int $stopWordFlg           stop word flag
-     * 
-     * return Array
+     * @param string $externalSearchWord external search word 外部検索キーワード
+     * @param int $stopWordFlg stop word flag ストップワードフラグ
+     * return array external search word 外部検索キーワード
+     *              array[$ii]
      */
     private function checkStopWord($externalSearchWord, $stopWordFlg)
     {
@@ -267,10 +295,11 @@ class Repository_Components_RepositoryExternalSearchWordManager extends Reposito
     
     /**
      * update external search stop word
+     * ストップワードを更新する
      *
-     * @param string $allStopWord stop word strings
-     * @param int $stopWordStatus stop word use flag
-     * @param int $tagCloudFlg    tag cloud display flag
+     * @param string $allStopWord stop word strings 全ストップワード
+     * @param int $stopWordStatus stop word use flag ストップワードの状態
+     * @param int $tagCloudFlg tag cloud display flag 詳細画面タグクラウド表示フラグ
      */
     public function updateExternalSearchStopWord(&$allStopWord, &$stopWordStatus, &$tagCloudFlg)
     {
@@ -353,11 +382,11 @@ class Repository_Components_RepositoryExternalSearchWordManager extends Reposito
         $this->dbAccess->executeQuery($query, $params);
     }
     /**
-     * update external search stop word
+     * Examine the part of speech
+     * 品詞を調べる
      *
-     * @param string $allStopWord stop word strings
-     * @param int $stopWordStatus stop word use flag
-     * @param int $tagCloudFlg    tag cloud display flag
+     * @param string $speech Speech 品詞
+     * @return int Speech id 品詞ID
      */
     private function checkPartOfSpeech($speech)
     {

@@ -1,32 +1,68 @@
 <?php
-require_once WEBAPP_DIR.'/modules/repository/components/FW/IO/Stream.class.php';
-require_once WEBAPP_DIR.'/modules/repository/components/FW/IO/IOException.class.php';
 
 /**
- * $Id: FileStream.class.php 48455 2015-04-08 10:53:40Z yuuya_yamazawa $
+ * Stream operation common classes
+ * Stream操作共通クラス
  *
- * ファイルストリームクラス
+ * @package WEKO
+ */
+
+// --------------------------------------------------------------------
+//
+// $Id: AppException.class.php 68416 2016-06-03 07:39:44Z tomohiro_ichikawa $
+//
+// Copyright (c) 2007 - 2008, National Institute of Informatics,
+// Research and Development Center for Scientific Information Resources
+//
+// This program is licensed under a Creative Commons BSD Licence
+// http://creativecommons.org/licenses/BSD/
+//
+// --------------------------------------------------------------------
+
+/**
+ * Stream base class
+ * ストリーム基底クラス
+ */
+require_once WEBAPP_DIR.'/modules/repository/components/FW/IO/Stream.class.php';
+/**
+ * Input and output expansion exception class
+ * 入出力拡張例外クラス
+ */
+require_once WEBAPP_DIR.'/modules/repository/components/FW/IO/IOException.class.php';
+
+
+/**
+ * Stream operation common classes
+ * Stream操作共通クラス
  *
- * @author IVIS
- *
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class FileStream extends Stream
 {
     /**
+     * File path
      * ファイルパス
-     * @var string ファイルパス名
+     * 
+     * @var string
      */
     private $filePath = "";
 
     /**
+     * File pointer after the fopen
      * fopenした後のファイルポインタ
+     * 
      * @var resource
      */
     private $fp = null;
 
     /**
+     * Get File Path
      * ファイルパスの取得
-     * @return string ファイルパス
+     * 
+     * @return string File path ファイルパス
      */
     public function getFilePath()
     {
@@ -34,8 +70,11 @@ class FileStream extends Stream
     }
 
     /**
+     * Constructor
      * コンストラクタ
-     * @param string $filePath ファイルパス
+     * 
+     * @param resource $fp Opened Stream オープンされたStream
+     * @param string $filePath File path ファイルパス
      */
     protected function __construct($fp,$filePath)
     {
@@ -44,12 +83,12 @@ class FileStream extends Stream
     }
 
     /**
+     * To open a file or URL
      * ファイルまたは URL をオープンする
-     * @param string $filePath ファイルパス
-     * @param string $mode アクセス形式 fopen参照
-     * @throws InvalidArgumentException
-     * @throws IOException
-     * @return FileStream FileStreamクラス
+     * 
+     * @param string $filePath File path ファイルパス
+     * @param string $mode Access format (see fopen) アクセス形式(fopen参照)
+     * @return FileStream Opened Stream オープンしたStream
      */
     public static function open($filePath ,$mode)
     {
@@ -72,9 +111,10 @@ class FileStream extends Stream
     }
 
     /**
+     * Reading of Stream
      * Streamの読み込み
-     * @param int $length 何バイト読み込むか
-     * IOException 読み込み失敗時
+     * 
+     * @param int $length The number of bytes read 読込むバイト数
      */
     public function read($length)
     {
@@ -95,11 +135,11 @@ class FileStream extends Stream
     }
 
     /**
+     * Write to the Stream
      * Streamへの書き込み
-     * @param string $string 書き込む文字列
-     * @param int $length  一度に書き込む最大バイト数
-     * IOException 書き込み失敗時
-     * @return string|boolean 書き込んだバイト数、または、fopenした時のファイルポインタがfalseの場合はfalse
+     * 
+     * @param string $string String to be written 書き込む文字列
+     * @param int $length Number of write bytes 書き込むバイト数
      */
     public function write($string,$length = null)
     {
@@ -129,8 +169,10 @@ class FileStream extends Stream
     }
 
     /**
+     * Examine whether the file pointer opened in fopen has reached the end-of-file
      * fopenで開いたファイルポインタがファイル終端に達しているかどうか調べる
-     * @return boolean EOF に達している場合はtrue その他はfalse
+     * 
+     * @return boolean Whether or not it is the end (true if you have reached the EOF, others are false) 終端であるか否か(EOF に達している場合はtrue、その他はfalse)
      */
     public function eof()
     {
@@ -143,8 +185,9 @@ class FileStream extends Stream
     }
 
     /**
+     * Close the Stream
      * Streamをクローズする
-    */
+     */
     public function close()
     {
         if($this->fp === false)

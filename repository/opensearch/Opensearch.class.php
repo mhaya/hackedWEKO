@@ -1,7 +1,15 @@
 <?php
+
+/**
+ * Opensearch output action class
+ * Opensearch出力アクションクラス
+ *
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Opensearch.class.php 53594 2015-05-28 05:25:53Z kaede_matsushita $
+// $Id: Opensearch.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics,
 // Research and Development Center for Scientific Information Resources
@@ -10,30 +18,108 @@
 // http://creativecommons.org/licenses/BSD/
 //
 // --------------------------------------------------------------------
+/**
+ * Search common classes
+ * 検索共通クラス
+ */
 require_once WEBAPP_DIR."/modules/repository/components/RepositorySearch.class.php";
 /**
- * Open search class
+ * WEKO business factory class
+ * WEKO用ビジネスファクトリークラス
+ */
+require_once WEBAPP_DIR.'/modules/repository/components/FW/WekoBusinessFactory.class.php';
+
+/**
+ * Opensearch output action class
+ * Opensearch出力アクションクラス
  *
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class Repository_Opensearch extends RepositorySearch
 {
     ///// const /////
+    /**
+     * Simple display
+     * 簡易表示
+     * 
+     * @var string
+     */
     const DATA_FILTER_SIMPLE = "simple";
+    /**
+     * Detail display
+     * 詳細表示
+     * 
+     * @var string
+     */
     const DATA_FILTER_DETAIL = "detail";
     
+    /**
+     * Output prefix flag
+     * prefix出力フラグ
+     * 
+     * @var string
+     */
     const IS_OUTPUT_PREFIX = "true";
     
+    /**
+     * log_term request
+     * log_termリクエスト
+     * 
+     * @var string
+     */
     const REQUEST_LOG_TERM = "log_term";
+    /**
+     * dataFilter request
+     * dataFilterリクエスト
+     * 
+     * @var string
+     */
     const REQUEST_DATA_FILTER = "dataFilter";
+    /**
+     * prefix request
+     * prefixリクエスト
+     * 
+     * @var string
+     */
     const REQUEST_PREFIX = "prefix";
     
+    /**
+     * format request
+     * formatリクエスト
+     * 
+     * @var string
+     */
     const REQUEST_OUTPUT_FORMAT="format";
+    /**
+     * recursive request
+     * recursiveリクエスト
+     * 
+     * @var string
+     */
     const REQUEST_RECURSIVE="recursive";
-    // add 2015/12/1 mhaya
+    // add 2015/12/1 mhaya start ---
+    /**
+     * count request
+     *
+     * @var int
+     */
     const REQUEST_COUNT = "count";
+    // add 2015/12/1 mhaya end ---
+    /**
+     * Format of output by JSON
+     * JSON形式出力用のフォーマット
+     *
+     * @var string
+     */
+    const FORMAT_JSON = "json";
+    
     /**
      * outuput type
      * when isset this parameter, return "text"
+     * 出力形式
      * 
      * @var string
      */
@@ -41,13 +127,15 @@ class Repository_Opensearch extends RepositorySearch
     
     /**
      * log data collection period
+     * ログ集計年月
      *
      * @var string YYYY-MM-DD
      */
     public $log_term = null;
     
     /**
-     * Enter description here...
+     * Metadata output content
+     * メタデータ出力内容
      *
      * @var string  simple:output list metadata
      *              detail：output all metadata (default)
@@ -56,14 +144,16 @@ class Repository_Opensearch extends RepositorySearch
     
     /**
      * output PrefixId 
+     * prefix出力フラグ
      *
-     * @var bool true: output IDServer prefixId
+     * @var boolean true: output IDServer prefixId
      */
     public $prefix = null;
     
     // Add index recursive search. 2014/08/12 Y.Nakao --start--
     /**
      * recursive index seach
+     * インデックス再帰検索フラグ
      *
      * @var int 1: index search including child indices
      */
@@ -72,6 +162,7 @@ class Repository_Opensearch extends RepositorySearch
     
     /**
      * execute
+     * Opensearch実行
      */
     public function execute()
     {
@@ -82,7 +173,7 @@ class Repository_Opensearch extends RepositorySearch
         
         // validate request parameter.
         $this->setRequestParameter();
-
+        
         // Add index recursive search. 2014/08/12 Y.Nakao --start--
         // When recursive and index not set, recursive is not run.再帰検索でもインデックス未指定の場合は再帰検索をしない
         if($this->recursive == 1 && isset($this->search_term[self::REQUEST_IDX]) && strlen($this->search_term[self::REQUEST_IDX]) > 0)
@@ -141,13 +232,13 @@ class Repository_Opensearch extends RepositorySearch
         
         // switch format.
         $outputXml = "";
+        $outputJson = "";
         $redirectUrl = "";
-
         // Fix count paramter bug 2015/12/1 mhaya ---start
         $this->list_view_num = isset($this->_request[self::REQUEST_COUNT]) ? $this->_request[self::REQUEST_COUNT] : $this->list_view_num;
         // Fix count paramter bug 2015/12/1 mhaya ---end
 
-        switch($this->format)
+	switch($this->format)
         {
             case RepositorySearchRequestParameter::FORMAT_DESCRIPTION:
                 // description
@@ -175,6 +266,7 @@ class Repository_Opensearch extends RepositorySearch
                 $blockid = $this->RepositoryAction->getBlockPageId();
                 $outputClass = new Repository_OpenSearch_Atom($this->Session, $this->Db,$blockid);
                 /* end mhaya*/
+
                 $searchResult = $this->search();
                 $requestParam = $this->getRequestParameter();
                 $requestParam[self::REQUEST_LOG_TERM] = $this->log_term;
@@ -198,6 +290,17 @@ class Repository_Opensearch extends RepositorySearch
                                                         $this->getTotal(), 
                                                         $this->getStartIndex(), 
                                                         $searchResult);
+                break;
+            case self::FORMAT_JSON:
+                // output JSON
+                require_once WEBAPP_DIR.'/modules/repository/opensearch/format/Json.class.php';
+                $outputClass = new Repository_OpenSearch_Json($this->Session, $this->Db);
+                $searchResult = $this->search();
+                $requestParam = $this->getRequestParameter();
+                $outputJson = $outputClass->generateOutputJson(   $requestParam, 
+                                                                  $this->getTotal(), 
+                                                                  $this->getStartIndex(), 
+                                                                  $searchResult);
                 break;
             default:
 
@@ -250,6 +353,10 @@ class Repository_Opensearch extends RepositorySearch
             $outputXml = mb_convert_encoding($outputXml, "UTF-8", "ASCII,JIS,UTF-8,EUC-JP,SJIS");
             echo $outputXml;
         }
+        else if(strlen($outputJson) > 0)
+        {
+            echo $outputJson;
+        }
         else if(strlen($redirectUrl) > 0)
         {
             // redirect
@@ -263,7 +370,8 @@ class Repository_Opensearch extends RepositorySearch
     }
     
     /**
-     * set components
+     * Initialize
+     * 初期化
      *
      */
     private function initialize()
@@ -279,10 +387,13 @@ class Repository_Opensearch extends RepositorySearch
         // Fix 別の不具合にて同様の修正あり
         $this->RepositoryAction->setConfigAuthority();
         // Fix 別の不具合にて同様の修正あり
+        
+        WekoBusinessFactory::initialize($this->Session, $this->Db, $DATE->getDate().".000");
     }
     
     /**
      * validate for opensearch request parameter
+     * リクエストパラメータ精査
      *
      */
     private function validateRequestParameter()
@@ -309,10 +420,10 @@ class Repository_Opensearch extends RepositorySearch
     }
     
     /**
-     * description
+     * Output OpenSearch description document
      * OpenSearch description document(記述文書)を出力する
      * 
-     * @return $xml
+     * @return string XML string XML文字列
      */
     public function getDescription()
     {

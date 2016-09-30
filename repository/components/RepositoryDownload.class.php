@@ -1,7 +1,15 @@
 <?php
+
+/**
+ * Common class file download
+ * ファイルダウンロード共通クラス
+ * 
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: RepositoryDownload.class.php 31589 2014-02-12 02:00:46Z tomohiro_ichikawa $
+// $Id: RepositoryDownload.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -11,24 +19,40 @@
 //
 // --------------------------------------------------------------------
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
+
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
 
+/**
+ * Common class file download
+ * ファイルダウンロード共通クラス
+ * 
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
+ */
 class RepositoryDownload extends RepositoryAction
 {
 	/**
-	 * INIT
+	 * Constructor
+	 * コンストラクタ
 	 */
 	function RepositoryDownload() {
 		
     }
     
     /**
-     * download binary
+     * To implement the download of the file
+     * ファイルのダウンロードを実施する
      *
-     * @param string $data file data (binary)
-     * @param string $filename
-     * @param string $mimetype
-     * @param string $str_code
+     * @param string $data file data (binary) ファイルデータ
+     * @param string $filename File name ファイル名
+     * @param string $mimetype MIMEtype MIMEtype
+     * @param string $str_code Character code 文字コード
      */
 	function download($data, $filename, $mimetype = null, $str_code=null) {
 		if($mimetype == null) {
@@ -40,12 +64,13 @@ class RepositoryDownload extends RepositoryAction
     }
     
     /**
-     * download file
+     * Read the file, to implement the download(Large file support)
+     * ファイルを読み込み、ダウンロードを実施する(大容量ファイル対応)
      *
-     * @param string $filepath file path
-     * @param string $fileName
-     * @param string $mimetype
-     * @param string $str_code
+     * @param string $filepath File path ファイルパス
+     * @param string $fileName File name ファイル名
+     * @param string $mimetype MIMEtype MIMEtype
+     * @param string $str_code Character code 文字コード
      */
     function downloadFile($filepath, $filename, $mimetype = null, $str_code=null)
     {
@@ -95,8 +120,17 @@ class RepositoryDownload extends RepositoryAction
         // Fix 大容量ファイルのダウンロード 2013/07/10 Y.Nakao --end--
     }
 	
+    /**
+     * And it outputs a header response at the time of download
+     * ダウンロード時のヘッダレスポンスを出力する
+     *
+     * @param string $fileName File name ファイル名
+     * @param int $filesize File size ファイルサイズ
+     * @param string $mimetype MIMEtype MIMEtype
+     * @param string $str_code Character code 文字コード
+     */
 	function _headerOutput($filename, $filesize, $mimetype, $str_code) {
-    	if (stristr($_SERVER['HTTP_USER_AGENT'], "MSIE") || stristr($_SERVER['HTTP_USER_AGENT'], "Trident")) {
+    	if (stristr($_SERVER['HTTP_USER_AGENT'], "MSIE") || stristr($_SERVER['HTTP_USER_AGENT'], "Trident") || stristr($_SERVER['HTTP_USER_AGENT'], "Edge")) {
 			// IEの場合
 			//header("Content-disposition: inline; filename=\"".mb_convert_encoding($filename, "SJIS", _CHARSET)."\"");
 			header("Content-disposition: attachment; filename=\"".mb_convert_encoding($filename, "SJIS", _CHARSET)."\"");
@@ -119,7 +153,7 @@ class RepositoryDownload extends RepositoryAction
 		//システム設定等にローカルキャッシュを有効にする設定を設ける？？
     	//header("Cache-Control: no-store, no-cache, must-revalidate");
 		//header("Pragma: no-cache");
-		if(stristr($_SERVER['HTTP_USER_AGENT'], "MSIE") || stristr($_SERVER['HTTP_USER_AGENT'], "Trident")){
+		if(stristr($_SERVER['HTTP_USER_AGENT'], "MSIE") || stristr($_SERVER['HTTP_USER_AGENT'], "Trident") || stristr($_SERVER['HTTP_USER_AGENT'], "Edge")){
 			if ( (false === empty($_SERVER['HTTPS']))&&('off' !==$_SERVER['HTTPS'])) {
 				// HTTPS
 				header("Pragma: public");
@@ -147,10 +181,12 @@ class RepositoryDownload extends RepositoryAction
     }
     
     /**
+     * Mime type acquisition
 	 * Mimeタイプ取得
-	 * @param int key(type or icon)
-	 * @return string mime_type
-	 * @access	public
+	 * 
+	 * @param string $key Key name(type or icon) キー名(type or icon)
+     * @param string $filename File name ファイル名
+	 * @return string $filename File name ファイル名
 	 */
     function mimeinfo($key, $filename) {
 	    $mimeinfo = array (

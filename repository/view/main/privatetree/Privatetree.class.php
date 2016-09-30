@@ -1,4 +1,12 @@
 <?php
+
+/**
+ * View class for private tree edit screen display
+ * プライベートツリー編集画面表示用ビュークラス
+ *
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
 // $Id: Tree.class.php 15374 2012-02-10 12:41:17Z yuko_nakao $
@@ -12,32 +20,70 @@
 // --------------------------------------------------------------------
 
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
-
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
+
+/**
+ * View class for index editing screen display
+ * インデックス編集画面表示用ビュークラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/view/edit/tree/Tree.class.php';
 
 /**
- * [[機能説明]]
+ * View class for private tree edit screen display
+ * プライベートツリー編集画面表示用ビュークラス
  *
- * @package     [[package名]]
- * @access      public
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class Repository_View_Main_Privatetree extends RepositoryAction
 {
     // member
+    /**
+     * Error flag
+     * エラーフラグ
+     *
+     * @var boolean
+     */
     public $error_flg = null;
+    /**
+     * 
+     * 更新成功ポップアップ表示
+     *
+     * @var string
+     */
     public $view_popup = null;
     
     // Set help icon setting 2010/02/10 K.Ando --start--
+    
+    /**
+     * Help icon display flag
+     * ヘルプアイコン表示フラグ
+     *
+     * @var int
+     */
     public $help_icon_display =  null;
     // Set help icon setting 2010/02/10 K.Ando --end--
     
+    /**
+     * Tree error message
+     * ツリーエラーメッセージ
+     *
+     * @var unknown_type
+     */
     public $tree_error_msg = '';
     
     /**
-     * [[機能説明]]
+     * Display the private tree screen
+     * プライベートツリー画面表示
      *
      * @access  public
+     * @return strgin Result 結果
      */
     function execute()
     {
@@ -87,13 +133,16 @@ class Repository_View_Main_Privatetree extends RepositoryAction
         }
         $this->Session->setParameter("MyPrivateTreeRootId", $privateTreeIndexId);
         $this->exitAction();
+        $this->finalize();
         return $result;
     }
    
     /**
-     * [[アクション初期化処理]]
+     * Initialize
+     * 初期化
      *
      * @access  public
+     * @return string Result 結果
      */
     function initAction()
     {
@@ -167,9 +216,11 @@ class Repository_View_Main_Privatetree extends RepositoryAction
     }
     
     /**
-     * [[アクション終了処理]]
+     * Finalize
+     * 終了処理
      *
      * @access  public
+     * @return string Result 結果
      */
     function exitAction()
     {

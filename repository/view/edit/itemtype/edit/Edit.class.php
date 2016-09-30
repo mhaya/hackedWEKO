@@ -1,66 +1,156 @@
 <?php
+
+/**
+ * View for item type edit
+ * アイテムタイプ編集画面表示クラス
+ *
+ * @package     WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Edit.class.php 53594 2015-05-28 05:25:53Z kaede_matsushita $
+// $Id: Edit.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
-// Copyright (c) 2007 - 2008, National Institute of Informatics, 
+// Copyright (c) 2007 - 2008, National Institute of Informatics,
 // Research and Development Center for Scientific Information Resources
 //
 // This program is licensed under a Creative Commons BSD Licence
 // http://creativecommons.org/licenses/BSD/
 //
 // --------------------------------------------------------------------
-
-/* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
-// Set help icon setting 2010/02/10 K.Ando --start--
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
-// Set help icon setting 2010/02/10 K.Ando --end--
+/**
+ * Handle manager class
+ * ハンドル管理クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryHandleManager.class.php';
 
 /**
- * repositoryモジュール アイテムタイプ作成 編集画面表示前に呼ばれるアクション
+ * View for item type edit
+ * アイテムタイプ編集画面表示クラス
  *
- * @package     NetCommons
- * @author      S.Kawasaki(IVIS)
- * @copyright   2006-2008 NetCommons Project
- * @license     http://www.netcommons.org/license.txt  NetCommons License
- * @project     NetCommons Project, supported by National Institute of Informatics
+ * @package     WEKO
+ * @copyright   (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license     http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
  * @access      public
  */
 class Repository_View_Edit_Itemtype_Edit extends RepositoryAction 
 {	
 	// 使用コンポーネントを受け取るため
-	var $Session = null;			// sessionコンポーネント
+	/**
+	 * Session management objects
+	 * Session管理オブジェクト
+	 *
+	 * @var Session
+	 */
+	var $Session = null;
+	/**
+	 * Database management objects
+	 * データベース管理オブジェクト
+	 *
+	 * @var DbObjectAdodb
+	 */
 	var $Db = null;
 	//リクエストパラメータを受け取るため
 
 	// メタデータ表示用メンバ
 	// (追加項目分はここに詰めるが、基本属性分も他のメンバに持たせておく必要あり多分。)
-	var $metadata_array = null;		// メタデータ表示内容配列
-	var $metadata_title = null;		// メタデータ項目名配列
-	var $metadata_type = null;		// メタデータタイプ配列
-	var $metadata_required = null;	// メタデータ必須フラグ列
-	var $metadata_disp = null;		// メタデータ一覧表示フラグ列
+	/**
+	 * Metadata display body array
+	 * メタデータ表示内容配列
+	 *
+	 * @var array
+	 */
+	var $metadata_array = null;
+	/**
+	 * Metadata title array
+	 * メタデータ項目配列
+	 *
+	 * @var array
+	 */
+	var $metadata_title = null;
+	/**
+	 * Metadata type array
+	 * メタデータタイプ配列
+	 *
+	 * @var array
+	 */
+	var $metadata_type = null;
+	/**
+	 * Metadata required flag array
+	 * メタデータ必須フラグ配列
+	 *
+	 * @var array
+	 */
+	var $metadata_required = null;
+	/**
+	 * Metadata show list flag array
+	 * メタデータ一覧表示フラグ配列
+	 *
+	 * @var array
+	 */
+	var $metadata_disp = null;
+	/**
+	 * Input item type name
+	 * 入力アイテムタイプ名
+	 *
+	 * @var string
+	 */
 	var $item_type_name = null;		//前画面で入力したアイテムタイプ名
+	/**
+	 * Metadata candidate array
+	 * メタデータ選択候補配列
+	 *
+	 * @var array
+	 */
 	var $metadata_candidate = null;	// 選択肢
+	/**
+	 * Metadata plural enable flag array
+	 * メタデータ複数可否フラグ配列
+	 *
+	 * @var array
+	 */
 	var $metadata_plural = null;	// メタデータ複数可否 2008/03/04 追加
+	/**
+	 * Metadata new line flag array
+	 * メタデータ改行指定配列
+	 *
+	 * @var array
+	 */
 	var $metadata_newline = null;	// メタデータ改行指定 2008/03/13
+	/**
+	 * Metadata hidden flag array
+	 * メタデータ非表示フラグ配列
+	 *
+	 * @var array
+	 */
 	var $metadata_hidden = null;	// メタデータ非表示指定 2009/01/27
-	
+	/**
+	 * Item type data array
+	 * 既存アイテムタイプ情報配列
+	 *
+	 * @var array
+	 */
 	var $item_type_data = null;		// 既存アイテムタイプロード用のため追加 2008/09/01 Y.Nakao
-
-    // Set help icon setting 2010/02/10 K.Ando --start--
+	/**
+	 * Help icon dispplay flag
+	 * ヘルプアイコン表示フラグ
+	 *
+	 * @var bool
+	 */
     var $help_icon_display =  null;
-    // Set help icon setting 2010/02/10 K.Ando --end--
-	
-//	var $menba = null;
-//	var $menba2 = null;
 
-    /**
-     * [[機能説明]]
-     *
-     * @access  public
-     */
+	/**
+	 * Execute
+	 * 実行
+	 *
+	 * @return string "success"/"error" success/failed 成功/失敗
+	 * @throws RepositoryException
+	 */
     function executeApp()
     {
         

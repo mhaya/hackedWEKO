@@ -1,7 +1,15 @@
 <?php
+
+/**
+ * Action for item metadata fill class
+ * アイテムメタデータフィルクラス
+ *
+ * @package     WEKO
+ */
+
 // --------------------------------------------------------------------
 //
-// $Id: Filldata.class.php 58745 2015-10-13 05:55:10Z tatsuya_koyasu $
+// $Id: Filldata.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics,
 // Research and Development Center for Scientific Information Resources
@@ -10,134 +18,583 @@
 // http://creativecommons.org/licenses/BSD/
 //
 // --------------------------------------------------------------------
-
-/* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
+/**
+ * JSON library class
+ * JSONライブラリクラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/JSON.php';
+/**
+ * Name metadata manager class
+ * 氏名メタデータ管理クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/NameAuthority.class.php';
+/**
+ * Index authority manager class
+ * インデックス権限管理クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryIndexAuthorityManager.class.php';
+/**
+ * Handle manager class
+ * ハンドル管理クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryHandleManager.class.php';
 
 /**
- * Fill biblio info from other site.
- * Site List
- *  - PubMed
- *  - Amazon
- *  - CiNii
- *  - WEKO Item ID
- *  - CrossRef DOI
+ * Action for item metadata fill class
+ * アイテムメタデータフィルクラス
  *
+ * @package     WEKO
+ * @copyright   (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license     http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access      public
  */
 class Repository_Action_Main_Item_Filldata extends RepositoryAction
 {
+    /**
+     * Fill biblio info from other site.
+     * Site List
+     *  - PubMed
+     *  - Amazon
+     *  - CiNii
+     *  - WEKO Item ID
+     *  - CrossRef DOI
+     *
+     */
     // const
+    /**
+     * DOI URL
+     * DOIのURL
+     */
     const DOI_URI_PREFIX = "http://dx.doi.org/";
+    /**
+     * CrossRef URL
+     * CrossRefのURL
+     */
     const CROSSREF_URI = "http://www.crossref.org/openurl/";
     
     // requestparameter of fill
+    /**
+     * site name for dataget
+     * データ取得用のサイト名
+     *
+     * @var string
+     */
     var $type_fill = null;                    // site name for data get
+    /**
+     * ID for data get
+     * データ取得用のID
+     *
+     * @var int
+     */
     var $id_fill = null;                    // id for data get
 
     // requestparameter of edit item data
+    /**
+     * base attr parameter
+     * 基本情報パラメータ配列
+     *
+     * @var array
+     */
     var $base_attr = null;                    // 基本情報部分のリクエストパラメタ配列
+    /**
+     * text parameter array
+     * text属性パラメータ配列
+     *
+     * @var array
+     */
     var $item_attr_text = null;                // "text"属性
+    /**
+     * textarea parameter array
+     * textarea属性パラメータ配列
+     *
+     * @var array
+     */
     var $item_attr_textarea = null;            // "textarea"属性
+    /**
+     * checkbox parameter array
+     * checkbox属性パラメータ配列
+     *
+     * @var array
+     */
     var $item_attr_checkbox = null;            // "checkbox"属性
+    /**
+     * name: family parameter array
+     * name属性の姓情報パラメータ配列
+     *
+     * @var array
+     */
     var $item_attr_name_family = null;        // "name"属性, 姓
+    /**
+     * name: name parameter array
+     * name属性の名前情報パラメータ配列
+     *
+     * @var array
+     */
     var $item_attr_name_given = null;        // "name"属性, 名
+    /**
+     * name: e-mail parameter array
+     * name属性のメールアドレス情報パラメータ配列
+     *
+     * @var array
+     */
     var $item_attr_name_email = null;        // "name"属性, E-mail
+    /**
+     * select parameter array
+     * select属性パラメータ配列
+     *
+     * @var array
+     */
     var $item_attr_select = null;            // "select"属性
+    /**
+     * link: URL parameter array
+     * link属性のURL情報パラメータ配列
+     *
+     * @var array
+     */
     var $item_attr_link = null;                // "link"属性 : URL
+    /**
+     * link: display name parameter array
+     * text属性の表示名情報パラメータ配列
+     *
+     * @var array
+     */
     var $item_attr_link_name = null;        // "link"属性 : 表示名
+    /**
+     * radio parameter array
+     * radio属性パラメータ配列
+     *
+     * @var array
+     */
     var $item_attr_radio = null;            // "radio"属性
-    
+    /**
+     * item publish year parameter array
+     * アイテム公開日の年情報パラメータ配列
+     *
+     * @var array
+     */
     var $item_pub_date_year = null;            // アイテム公開日 : 年
+    /**
+     * item publish month parameter array
+     * アイテム公開日の月情報パラメータ配列
+     *
+     * @var array
+     */
     var $item_pub_date_month = null;        // アイテム公開日 : 月
-    var $item_pub_date_day = null;            // アイテム公開日 : 日    
+    /**
+     * item publish day parameter array
+     * アイテム公開日の日情報パラメータ配列
+     *
+     * @var array
+     */
+    var $item_pub_date_day = null;            // アイテム公開日 : 日
+    /**
+     * item keyword parameter array
+     * アイテムキーワードパラメータ配列
+     *
+     * @var array
+     */
     var $item_keyword = null;                // アイテムキーワード
+    /**
+     * item keyword(english) parameter array
+     * アイテムキーワード(英)パラメータ配列
+     *
+     * @var array
+     */
     var $item_keyword_english = null;        // アイテムキーワード(英)
-    // Add join set insert index and set item links 2008/12/17 Y.Nakao --start--
-    //var $OpendIds = null;                    // 開いているインデックスのID列(,区切り)
-    //var $CheckedIds = null;                    // チェックされているインデックスのID列(|区切り)
-    //var $CheckedNames = null;                // チェックされているインデックスの名前列(|区切り)
-    // Add join set insert index and set item links 2008/12/17 Y.Nakao --end--
-
+    /**
+     * biblio: name year parameter array
+     * biblio属性の雑誌名情報パラメータ配列
+     *
+     * @var array
+     */
     var $item_attr_biblio_name = null;        // 書誌情報 : 雑誌名
+    /**
+     * biblio: name(english) parameter array
+     * biblio属性の雑誌名(英)情報パラメータ配列
+     *
+     * @var array
+     */
     var $item_attr_biblio_name_english = null;        // 書誌情報 : 雑誌名(英)
+    /**
+     * biblio: volume parameter array
+     * biblio属性の巻情報パラメータ配列
+     *
+     * @var array
+     */
     var $item_attr_biblio_volume = null;    // 書誌情報 : 巻
+    /**
+     * biblio: issue parameter array
+     * biblio属性の号情報パラメータ配列
+     *
+     * @var array
+     */
     var $item_attr_biblio_issue = null;        // 書誌情報 : 号
+    /**
+     * biblio: spage parameter array
+     * biblio属性の開始ページ情報パラメータ配列
+     *
+     * @var array
+     */
     var $item_attr_biblio_spage = null;        // 書誌情報 : 開始ページ
+    /**
+     * biblio: epage parameter array
+     * biblio属性の終了ページ情報パラメータ配列
+     *
+     * @var array
+     */
     var $item_attr_biblio_epage = null;        // 書誌情報 : 終了ページ
+    /**
+     * biblio: date of issued parameter array
+     * biblio属性の発行年月日情報パラメータ配列
+     *
+     * @var array
+     */
     var $item_attr_biblio_dateofissued = null;            // 書誌情報 : 発行年月日
+    /**
+     * biblio: date of issued year parameter array
+     * biblio属性の発行年情報パラメータ配列
+     *
+     * @var array
+     */
     var $item_attr_biblio_dateofissued_year = null;        // 書誌情報 : 発行年
+    /**
+     * biblio: date of issued month parameter array
+     * biblio属性の発行月情報パラメータ配列
+     *
+     * @var array
+     */
     var $item_attr_biblio_dateofissued_month = null;    // 書誌情報 : 発行月
+    /**
+     * biblio: date of issued day parameter array
+     * biblio属性の発効日情報パラメータ配列
+     *
+     * @var array
+     */
     var $item_attr_biblio_dateofissued_day = null;        // 書誌情報 : 発行日
+    /**
+     * date parameter array
+     * date属性のパラメータ配列
+     *
+     * @var array
+     */
     var $item_attr_date = null;            // 日付
+    /**
+     * date: year parameter array
+     * date属性の年情報パラメータ配列
+     *
+     * @var array
+     */
     var $item_attr_date_year = null;    // 日付 : 年
+    /**
+     * date: month parameter array
+     * date属性の月情報パラメータ配列
+     *
+     * @var array
+     */
     var $item_attr_date_month = null;    // 日付 : 月
+    /**
+     * date: day parameter array
+     * date属性の日情報パラメータ配列
+     *
+     * @var array
+     */
     var $item_attr_date_day = null;        // 日付 : 日
     
     // Add contents page 2010/08/06 Y.Nakao --start--
+    /**
+     * heading: headline parameter array
+     * heading属性の大見出し情報パラメータ配列
+     *
+     * @var array
+     */
     var $item_attr_heading = null;          // heading
+    /**
+     * heading: headline(english) parameter array
+     * heading属性の大見出し(英)情報パラメータ配列
+     *
+     * @var array
+     */
     var $item_attr_heading_en = null;       // heading(english)
+    /**
+     * heading: subhead parameter array
+     * heading属性の小見出し情報パラメータ配列
+     *
+     * @var array
+     */
     var $item_attr_heading_sub = null;      // subheading
+    /**
+     * heading: subhead(english) parameter array
+     * heading属性の小見出し(英)情報パラメータ配列
+     *
+     * @var array
+     */
     var $item_attr_heading_sub_en = null;   // subheading(english)
     // Add contents page 2010/08/06 Y.Nakao --end--
     
     // Add author ruby 2010/11/01 A.Suzuki --start--
+    /**
+     * name: family ruby parameter array
+     * name属性の姓(ルビ)情報パラメータ配列
+     *
+     * @var array
+     */
     var $item_attr_name_family_ruby = null; // "name", surname ruby
+    /**
+     * name: name ruby parameter array
+     * name属性の名(ルビ)情報パラメータ配列
+     *
+     * @var array
+     */
     var $item_attr_name_given_ruby = null;  // "name", given name ruby
+    /**
+     * name: author ID prefix parameter array
+     * name属性の著者PrefixID情報パラメータ配列
+     *
+     * @var array
+     */
     var $item_attr_name_author_id_prefix = null; // "name", authorID prefix
+    /**
+     * name: author ID suffix parameter array
+     * name属性の著者SuffixID情報パラメータ配列
+     *
+     * @var array
+     */
     var $item_attr_name_author_id_suffix = null; // "name", authorID suffix
     // Add author ruby 2010/11/01 A.Suzuki --end--
     
     // Add fill data more 2008/11/21 Y.Nakao --end--
     // member
+    /**
+     * Title
+     * タイトル
+     *
+     * @var string
+     */
     var $title = "";                // for title
+    /**
+     * Language
+     * 言語情報
+     *
+     * @var string
+     */
     var $language = "";                // for language
+    /**
+     * Keyword
+     * 検索キーワード
+     *
+     * @var array
+     */
     var $keyword = array();            // for keyword
+    /**
+     * Title alternative
+     * 別言語のタイトル
+     *
+     * @var array
+     */
     var $alternative = array();        // for altenative
+    /**
+     * Creator
+     * 作成者
+     *
+     * @var array
+     */
     var $creator = array();            // for creator
+    /**
+     * Description
+     * 抄録
+     *
+     * @var array
+     */
     var $description = array();        // for description
-    var $jtitle = "";                // for jtitle 
-    var $volume = "";                // for volume 
+    /**
+     * Journal title
+     * 雑誌名
+     *
+     * @var string
+     */
+    var $jtitle = "";                // for jtitle
+    /**
+     * Journal volume
+     * 雑誌の巻情報
+     *
+     * @var string
+     */
+    var $volume = "";                // for volume
+    /**
+     * Journal issue
+     * 雑誌の号情報
+     *
+     * @var string
+     */
     var $issue = "";                // for issue
+    /**
+     * Journal start page
+     * 雑誌の開始ページ情報
+     *
+     * @var string
+     */
     var $spage = "";                // for spage
+    /**
+     * Journal end page
+     * 雑誌の終了ページ情報
+     *
+     * @var string
+     */
     var $epage = "";                // for epage
+    /**
+     * Journal date of issued
+     * 雑誌の発行年月日
+     *
+     * @var string
+     */
     var $dateofissued = "";            // for dateofissued
+    /**
+     * Publisher
+     * 出版者情報
+     *
+     * @var array
+     */
     var $publisher = array();        // for publisher
+    /**
+     * ISSN
+     * ISSN
+     *
+     * @var string
+     */
     var $issn = "";                    // for issn
     // 2012/11/26 A.jin --start--
+    /**
+     * e-ISSN
+     * e-ISSN
+     *
+     * @var string
+     */
     var $e_issn = "";                    // for e-issn
     // 2012/11/26 A.jin --end--
+    /**
+     * PMID
+     * PMID
+     *
+     * @var string
+     */
     var $pmid = "";                    // for pmid
+    /**
+     * DOI
+     * DOI
+     *
+     * @var string
+     */
     var $doi = "";                    // for doi
     // Add fill data more 2008/11/21 Y.Nakao --end--
     
     // add error message 2008/12/17 A.Suzuki --start--
+    /**
+     * Error message
+     * エラーメッセージ
+     *
+     * @var array
+     */
     var $error_msg = array();        // error message
+    /**
+     * Language Resource Management object
+     * 言語リソース管理オブジェクト
+     *
+     * @var Smarty
+     */
     var $smartyAssign = null;        // for get language resource
     // add error message 2008/12/17 A.Suzuki --end--
     
     // add metadata select language type 2009/08/04 A.Suzuki --start--
+    /**
+     * Title english
+     * タイトル英名
+     *
+     * @var string
+     */
     var $title_english = "";                // for title_english
+    /**
+     * Search keyword english
+     * 検索キーワード英名
+     *
+     * @var array
+     */
     var $keyword_english = array();            // for keyword_english
+    /**
+     * Creater english
+     * 作成者英名
+     *
+     * @var array
+     */
     var $creator_english = array();            // for creator in english
+    /**
+     * Description english
+     * 抄録(英)
+     *
+     * @var array
+     */
     var $description_english = array();        // for description in english
+    /**
+     * Journal name english
+     * 雑誌名英名
+     *
+     * @var string
+     */
     var $jtitle_english = "";                // for jtitle in english
+    /**
+     * Publisher english
+     * 出版者英名
+     *
+     * @var array
+     */
     var $publisher_english = array();        // for publisher in english
+    /**
+     * Item contributor
+     * アイテム所有者
+     *
+     * @var array
+     */
     var $contributor = array();                // for contributor
+    /**
+     * Item contributor english
+     * アイテム所有者英名
+     *
+     * @var array
+     */
     var $contributor_english = array();        // for contributor in english
     // add metadata select language type 2009/08/04 A.Suzuki --end--
     
     // Add flag&reult 2010/02/16 S.Nonomura --start--
+    /**
+     * Branching process flag
+     * 処理分岐フラグ
+     *
+     * @var int
+     */
     var $fill_type = 0;  // Branching process flag
+    /**
+     * Array for metadata by DB
+     * DBから取得したメタデータ格納用配列
+     *
+     * @var array
+     */
     var $Result_List = array();  // get of metadata from DB
+    /**
+     * Null check flag
+     * NULLチェックフラグ
+     *
+     * @var int
+     */
     var $null_check = 0;     // if get of metadata from DB is null
     // Add flag&reult 2010/02/16 S.Nonomura --end--
 
     /**
      * Form data : contributor radio button select
+     * 画面で選択したアイテム所有者ラジオボタンの選択値
      *
      * @var int
      */
@@ -145,6 +602,7 @@ class Repository_Action_Main_Item_Filldata extends RepositoryAction
     
     /**
      * Form data : contributor(handle)
+     * アイテム所有者ハンドル名
      *
      * @var string
      */
@@ -152,6 +610,7 @@ class Repository_Action_Main_Item_Filldata extends RepositoryAction
     
     /**
      * Form data : contributor(name)
+     * アイテム所有者ユーザー名
      *
      * @var string
      */
@@ -159,24 +618,33 @@ class Repository_Action_Main_Item_Filldata extends RepositoryAction
     
     /**
      * Form data : contributor(email)
+     * アイテム所有者メールアドレス
      *
      * @var string
      */
     public $item_contributor_email = null;
     
     // Modfy proxy 2011/12/06 Y.Nakao --start--
+    /**
+     * Proxy information
+     * プロキシ情報
+     *
+     * @var array
+     */
     private $proxy = array();
     // Modfy proxy 2011/12/06 Y.Nakao --end--
     
     // Add JuNii2 ver3 2013/09/24 R.Matsuura --start--
     /**
      * Form data : isbn
+     * ISBN値
      *
      * @var string
      */
     private $isbn = null;
     /**
      * Form data : naid
+     * NAID値
      *
      * @var string
      */
@@ -184,6 +652,7 @@ class Repository_Action_Main_Item_Filldata extends RepositoryAction
     // Add NCID 2014/04/03 A.Suzuki --start--
     /**
      * Form data : ncid
+     * NCID値
      *
      * @var string
      */
@@ -191,18 +660,21 @@ class Repository_Action_Main_Item_Filldata extends RepositoryAction
     // Add NCID 2014/04/03 A.Suzuki --end--
     /**
      * Form data : self_crossref_doi
+     * selfDOI(CrossRef)値
      *
      * @var string
      */
     private $self_crossref_doi = null;
     /**
      * Form data : self_doi
+     * selfDOI値
      *
      * @var string
      */
     private $self_doi = null;
     /**
      * Form data : ichushi_id
+     * 医中誌ID値
      *
      * @var string
      */
@@ -210,131 +682,109 @@ class Repository_Action_Main_Item_Filldata extends RepositoryAction
     // Add JuNii2 ver3 2013/09/24 R.Matsuura --end--
     
     /**
-     * [[機能説明]]
+     * Execute
+     * 実行
      *
-     * @access  public
+     * @return string "success"/"error" success/failed 成功/失敗
      */
-    function execute()
+    function executeApp()
     {
-        try {
-            ////////////////////////////////
-            // init action
-            ////////////////////////////////
-            $result = $this->initAction();
-            if ( $result === false ) {
-                $exception = new RepositoryException( ERR_MSG_xxx-xxx1, xxx-xxx1 );    //主メッセージとログIDを指定して例外を作成
-                $DetailMsg = null;                              //詳細メッセージ文字列作成
-                sprintf( $DetailMsg, ERR_DETAIL_xxx-xxx1);
-                $exception->setDetailMsg( $DetailMsg );         //詳細メッセージ設定
-                $this->failTrans();                             //トランザクション失敗を設定(ROLLBACK)
-                $user_error_msg = 'initで既に・・・';
-                throw $exception;
-            }
-            
-            // Add addin S.Arata 2012/08/02 --start--
-            $this->addin->preExecute();
-            // Add addin S.Arata 2012/08/02 --end--
-            
-            // add get lang 2008/12/17 A.Suzuki --start--
-            $this->smartyAssign = $this->Session->getParameter("smartyAssign");
-            // add get lang 2008/12/17 A.Suzuki --end--
-            
-            ////////////////////////////////
-            // edit data fill in session
-            ////////////////////////////////
-            $this->setEditData();
-            
-            // Modfy proxy 2011/12/06 Y.Nakao --start--
-            $this->proxy = $this->getProxySetting();
-            // Modfy proxy 2011/12/06 Y.Nakao --end--
-            
-            ////////////////////////////////
-            // switch data get site
-            ////////////////////////////////
-            switch ($this->type_fill){
-                case "pubmed":
-                    $result = $this->fillPubMed($this->id_fill);
-                    break;
-                case "amazon":
-                    $result = $this->fillAmazon($this->id_fill);
-                    break;
-                case "cinii":
-                    $result = $this->fillCiNii($this->id_fill);
-                    break;
-                case "itemid":
-                    $result = $this->fillItem_id($this->id_fill);
-                    break;
-                case "ichushi":
-                    $result = $this->fillIchushi($this->id_fill);
-                    break;
-			    // Auto Input Metadata by CrossRef DOI 2015/03/04 K.Sugimoto --start--
-                case "crossref":
-                    $result = $this->fillCrossRef($this->id_fill);
-                    break;
-			    // Auto Input Metadata by CrossRef DOI 2015/03/04 K.Sugimoto --end--
-                default:
-                    break;
-            }
+        // Add addin S.Arata 2012/08/02 --start--
+        $this->addin->preExecute();
+        // Add addin S.Arata 2012/08/02 --end--
 
-            if($result === false){
-                $this->Session->setParameter("error_msg", $this->error_msg);
-                return 'error';
-            }
-            
-            ////////////////////////////////
-            // set get data fill in session
-            ////////////////////////////////
-            if($this->fill_type == 0) {
-                // fill PubMed or CiNii or Amazon
-                // init edit data
-                $this->initEditData();
-                $this->setFillData();
-            } elseif($this->fill_type == 1)  {
-                // fill same item_id
-                $this->setItemIDSameData($this->Result_List);
-            }elseif($this->fill_type == 2) {
-                // fill different item_id
-                $this->setItemIDJunii2Data($this->Result_List);
-            }
-            // Add addin S.Arata 2012/08/02 --start--
-            $this->addin->postExecute();
-            // Add addin S.Arata 2012/08/02 --end--
-            return 'success';
+        // add get lang 2008/12/17 A.Suzuki --start--
+        $this->smartyAssign = $this->Session->getParameter("smartyAssign");
+        // add get lang 2008/12/17 A.Suzuki --end--
 
-        } catch ( RepositoryException $Exception) {
-            // error log
-            $this->logFile(
-                "SampleAction",
-                "execute",
-                $Exception->getCode(),
-                $Exception->getMessage(),
-                $Exception->getDetailMsg() );            
-            // end action
-            $this->exitAction(); // rollback
-            // error
-            $this->Session->setParameter("error_msg", $user_error_msg);
-            return "error";
+        ////////////////////////////////
+        // edit data fill in session
+        ////////////////////////////////
+        $this->setEditData();
+
+        // Modfy proxy 2011/12/06 Y.Nakao --start--
+        $this->proxy = $this->getProxySetting();
+        // Modfy proxy 2011/12/06 Y.Nakao --end--
+
+        ////////////////////////////////
+        // switch data get site
+        ////////////////////////////////
+        switch ($this->type_fill){
+            case "pubmed":
+                $result = $this->fillPubMed($this->id_fill);
+                break;
+            case "amazon":
+                $result = $this->fillAmazon($this->id_fill);
+                break;
+            case "cinii":
+                $result = $this->fillCiNii($this->id_fill);
+                break;
+            case "itemid":
+                $result = $this->fillItem_id($this->id_fill);
+                break;
+            case "ichushi":
+                $result = $this->fillIchushi($this->id_fill);
+                break;
+            // Auto Input Metadata by CrossRef DOI 2015/03/04 K.Sugimoto --start--
+            case "crossref":
+                $result = $this->fillCrossRef($this->id_fill);
+                break;
+            // Auto Input Metadata by CrossRef DOI 2015/03/04 K.Sugimoto --end--
+            default:
+                break;
         }
+
+        if($result === false){
+            $this->Session->setParameter("error_msg", $this->error_msg);
+            return 'error';
+        }
+
+        ////////////////////////////////
+        // set get data fill in session
+        ////////////////////////////////
+        if($this->fill_type == 0) {
+            // fill PubMed or CiNii or Amazon
+            // init edit data
+            $this->initEditData();
+            $this->setFillData();
+        } elseif($this->fill_type == 1)  {
+            // fill same item_id
+            $this->setItemIDSameData($this->Result_List);
+        }elseif($this->fill_type == 2) {
+            // fill different item_id
+            $this->setItemIDJunii2Data($this->Result_List);
+        }
+        // Add addin S.Arata 2012/08/02 --start--
+        $this->addin->postExecute();
+        // Add addin S.Arata 2012/08/02 --end--
+        return 'success';
     }
     
     /**
-     * fill from PubMed
-     *  + title (english)
-     *  + language
-     *  + keyword (english)
-     *  + creator (english)
-     *  + description (english)
-     *  + jtitle (english)
-     *  + volume
-     *  + issue
-     *  + spage
-     *  + epage
-     *  + dateofissued
-     *  + issn
-     *  + pmid
-     *  + doi
+     * Fill from PubMed
+     * PubMedからメタデータを取得する
+     *
+     * @param string $pmid PMID PMID
+     * @return bool true/false success/failed 成功/失敗
      */
     function fillPubMed( $pmid ){
+        /**
+         *  + title (english)
+         *  + language
+         *  + keyword (english)
+         *  + creator (english)
+         *  + description (english)
+         *  + jtitle (english)
+         *  + volume
+         *  + issue
+         *  + spage
+         *  + epage
+         *  + dateofissued
+         *  + issn
+         *  + pmid
+         *  + doi
+         */
+
         // check space
         $pmid = str_replace(" ", "", $pmid); // str replace space
         $pmid = str_replace("　", "", $pmid); // str replace 2byte spase
@@ -671,16 +1121,22 @@ class Repository_Action_Main_Item_Filldata extends RepositoryAction
     }
 
     /**
-     * fill from Amazon
-     *  + title (japanese, english)
-     *  + language
-     *  + publisher (japanese, english)
-     *  + jtitle (japanese, english)
-     *  + spage
-     *  + epage
-     *  + dateofissued
+     * Fill from Amazon
+     * Amazonからメタデータを取得する
+     *
+     * @param string $asin ASIN ASIN
+     * @return bool true/false success/failed 成功/失敗
      */
     function fillAmazon( $asin ){
+        /**
+         *  + title (japanese, english)
+         *  + language
+         *  + publisher (japanese, english)
+         *  + jtitle (japanese, english)
+         *  + spage
+         *  + epage
+         *  + dateofissued
+         */
         /////////////////////////////
         // check asin
         /////////////////////////////
@@ -1053,19 +1509,25 @@ class Repository_Action_Main_Item_Filldata extends RepositoryAction
     }
     
     /**
-     * fill from CiNii
-     *  + title (japanese, english)
-     *  + language
-     *  + keyword (japanese, english)
-     *  + creator (japanese, english)
-     *  + contributor (japanese, english)
-     *  + publisher (japanese, english)
-     *  + jtitle (japanese, english)
-     *  + spage
-     *  + epage
-     *  + dateofissued
+     * Fill from CiNii
+     * CiNiiからメタデータを取得する
+     *
+     * @param string $naid NAID NAID
+     * @return bool true/false success/failed 成功/失敗
      */
     function fillCiNii( $naid ){
+        /**
+         *  + title (japanese, english)
+         *  + language
+         *  + keyword (japanese, english)
+         *  + creator (japanese, english)
+         *  + contributor (japanese, english)
+         *  + publisher (japanese, english)
+         *  + jtitle (japanese, english)
+         *  + spage
+         *  + epage
+         *  + dateofissued
+         */
         // check space
         $naid = str_replace(" ", "", $naid); // str replace space
         $naid = str_replace("　", "", $naid); // str replace 2byte spase
@@ -1355,8 +1817,9 @@ class Repository_Action_Main_Item_Filldata extends RepositoryAction
      * extract prefix and suffix by crossref doi uri
      * CrossRef DOIのURIからPrefixとSuffixを抽出し返す
      *
-     * @param string $url: CrossRef DOIのURI
-     * @return string [prefix]/[suffix]
+     * @param string $url CrossRef DOI URI CrossRef DOIのURI
+     * @return string [prefix]/[suffix] [prefix]/[suffix]
+     * @throws AppException
      */
     private function extractCrossRefDoiPrefixSuffix($url){
         $prefix_suffix = "";
@@ -1420,21 +1883,28 @@ class Repository_Action_Main_Item_Filldata extends RepositoryAction
     
     // Auto Input Metadata by CrossRef DOI 2015/03/04 K.Sugimoto --start--
     /**
-     * fill from CrossRef
-     *  + title (english)
-     *  + language
-     *  + creator (english)
-     *  + contributor (english)
-     *  + jtitle (english)
-     *  + issn
-     *  + isbn
-     *  + volume
-     *  + issue
-     *  + spage
-     *  + epage
-     *  + dateofissued
+     * Fill from CrossRef
+     * CrossRefからメタデータを取得する
+     *
+     * @param string $crossref_doi CrossRef DOI CrossRef DOI
+     * @return bool true/false success/failed 成功/失敗
      */
     private function fillCrossRef( $crossref_doi ){
+        /**
+         *  + title (english)
+         *  + language
+         *  + creator (english)
+         *  + contributor (english)
+         *  + jtitle (english)
+         *  + issn
+         *  + isbn
+         *  + volume
+         *  + issue
+         *  + spage
+         *  + epage
+         *  + dateofissued
+         */
+
         // get CrossRef account
         $crossref_query_services_account = "";
         $query = "SELECT param_value ".
@@ -1729,6 +2199,9 @@ class Repository_Action_Main_Item_Filldata extends RepositoryAction
         
     /**
      * Edit data fill in session
+     * セッションに編集中のアイテムメタデータをセットする
+     *
+     * @return bool true/false success/failed 成功/失敗
      */
     function setEditData(){
         // セッション情報取得
@@ -2088,7 +2561,10 @@ class Repository_Action_Main_Item_Filldata extends RepositoryAction
     }
     
     /**
-     * set get fill data to session data 
+     * set get fill data to session data
+     * セッションにFillしたアイテムメタデータをセットする
+     *
+     * @return bool true/false success/failed 成功/失敗
      */
     function setFillData(){
         ///////////////////////////////
@@ -2366,7 +2842,10 @@ class Repository_Action_Main_Item_Filldata extends RepositoryAction
     // Add fill data more 2008/11/21 Y.Nakao --end--
     
     /**
-     * init session data 
+     * init session data
+     * セッションデータを詰め直す
+     *
+     * @return bool true/false success/failed 成功/失敗
      */
     function initEditData(){
         // セッション情報取得
@@ -2517,7 +2996,12 @@ class Repository_Action_Main_Item_Filldata extends RepositoryAction
 
     // Add fill item_id 2010/02/16 S.Nonomura --start--
     /**
+     * Fill from WEKO item ID
+     * WEKOのアイテムIDからメタデータを取得する
      *
+     * @param int $item_id WEKO item ID WEKOのアイテムID
+     * @return bool true/false success/failed 成功/失敗
+     * @throws RepositoryException
      */
     function fillItem_id( $item_id ){
         $item_type_all_info = $this->Session->getParameter("item_type_all");
@@ -2608,7 +3092,6 @@ class Repository_Action_Main_Item_Filldata extends RepositoryAction
             array_push($this->error_msg, $metadata_db_error_msg );
             $this->Session->setParameter("error_msg", $this->error_msg);
             //end action process
-            $result = $this->exitAction();     //if transaction success, do commit
             if ( $result === false) {
                 // Message and logID are specific and create Exception
                 $exception = new RepositoryException( "ERR_MSG_xxx-xxx3", 1 );    
@@ -2627,9 +3110,11 @@ class Repository_Action_Main_Item_Filldata extends RepositoryAction
 
     // Add ichushi fill 2012/11/21 A.jin --start--
     /**
-     * 医中誌書誌メタデータフィル機能
+     * Fill from Ichushi ID
+     * 医中誌からメタデータを取得する
      *
-     * @param string $ichushi_id
+     * @param string $ichushi_id Ichushi ID 医中誌ID
+     * @return bool true/false success/failed 成功/失敗
      */
     private function fillIchushi( $ichushi_id )
     {
@@ -2791,10 +3276,11 @@ class Repository_Action_Main_Item_Filldata extends RepositoryAction
     }
     
     /**
+     * Check XML Error from Ichushi
      * 医中誌レスポンスのエラーチェック
      *
-     * @param unknown_type $response_xml
-     * @return unknown
+     * @param string $response_xml Ichushi response XML 医中誌からのレスポンスXML
+     * @return bool true/false success/failed 成功/失敗
      */
     private function isSuccessResponseXml( $response_xml )
     {
@@ -2837,10 +3323,11 @@ class Repository_Action_Main_Item_Filldata extends RepositoryAction
     }
     
     /**
+     * Process for fill Ichushi metadata
      * 医中誌書誌メタデータフィルの実処理
-     * 
      *
-     * @param unknown_type $vals
+     * @param array $vals values 値
+     *                     array["value"]
      */
     private function setIchushiData($vals) {
         $creator = array();
@@ -2991,11 +3478,11 @@ class Repository_Action_Main_Item_Filldata extends RepositoryAction
     }
     
     /**
+     * shuffle author name
      * 著者名入れ替え処理
      * 
-     * @param array 著者名リスト
-     * @param string 言語
-     *
+     * @param array $creator creator list 著者名リスト
+     * @param string $language language 言語
      */
     private function orderCreator(&$creator,$language=""){
         foreach($creator as $key => $value){
@@ -3032,8 +3519,15 @@ class Repository_Action_Main_Item_Filldata extends RepositoryAction
     // Add ichushi fill 2012/11/21 A.jin --end--
     
     // ItemIDFillDataCopy(ResultList[item_type] == session[item_type]) 2010/02/16 S.Nonomura --start--
-    // Reference Source => action/main/item/editfiles.class.php
+    /**
+     * Set item id same data to session
+     * 同じアイテムIDのデータをセットする
+     *
+     * @param array $Result_List item data アイテム情報
+     *                            array["item"][$ii]["item_id"|"item_no"|"revision_no"|"item_type_id"|"prev_revision_no"|"title"|"title_english"|"language"|"review_status"|"review_date"|"shown_status"|"shown_date"|"reject_status"|"reject_date"|"reject_reason"|"serch_key"|"serch_key_english"|"remark"|"uri"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     */
     function setItemIDSameData($Result_List) {
+        // Reference Source => action/main/item/editfiles.class.php
         $NameAuthority = new NameAuthority($this->Session, $this->Db);
         $item_attr_old = $this->Session->getParameter("item_attr");
         // Base Information
@@ -3272,7 +3766,13 @@ class Repository_Action_Main_Item_Filldata extends RepositoryAction
                 // other item information
                 elseif( $item_element[$ii]['input_type'] === "thumbnail" || $item_element[$ii]['input_type'] === "file" ||
                     $item_element[$ii]['input_type'] === "file_price" || $item_element[$ii]['input_type'] === "supple") {
-                    $edit_attr[] = $item_attr_old[$ii][$jj];
+                    
+                    // Bug Fix No.67 PHP Notice Undefined offset T.Koyasu 2016/01/07 --start--
+                    // 自動入力で指定したアイテムのファイル数が、編集中アイテムのファイル数より多い場合、PHP Noticeが発生するので、それに対応
+                    if(isset($item_attr_old[$ii][$jj])){
+                        $edit_attr[] = $item_attr_old[$ii][$jj];
+                    }
+                    // Bug Fix No.67 PHP Notice Undefined offset T.Koyasu 2016/01/07 --end--
                 }else{
                     array_push($edit_attr, $Result_List['item_attr'][$ii][$jj]['attribute_value']);
                 }
@@ -3292,6 +3792,13 @@ class Repository_Action_Main_Item_Filldata extends RepositoryAction
     // ItemFillDataCopy 2010/02/16 S.Nonomura --end--
 
     // ItemIDFillDataCopy(ResultList[item_type] != session[item_type]) 2010/02/16 S.Nonomura --start--
+    /**
+     * Set item ID same JuNii2 data
+     * 同じJuNii2マッピングを持つデータをセットする
+     *
+     * @param array $Result_List item data アイテム情報
+     *                            array["item"][$ii]["item_id"|"item_no"|"revision_no"|"item_type_id"|"prev_revision_no"|"title"|"title_english"|"language"|"review_status"|"review_date"|"shown_status"|"shown_date"|"reject_status"|"reject_date"|"reject_reason"|"serch_key"|"serch_key_english"|"remark"|"uri"|"ins_user_id"|"mod_user_id"|"del_user_id"|"ins_date"|"mod_date"|"del_date"|"is_delete"]
+     */
     function setItemIDJunii2Data($Result_List) {
         // Acquisition of Session Information
         $item_type_all = $this->Session->getParameter('item_type_all');
@@ -3310,7 +3817,6 @@ class Repository_Action_Main_Item_Filldata extends RepositoryAction
         $item_old = $Result_List['item'][0];           // Reference Item Information
         $item_attr_type_old = $Result_List['item_attr_type'];  // Reference ItemType Information
         $item_attr_old = $Result_List['item_attr'];        // Reference ItemAttributes Informaiton
-        $counter_old = count($item_attr_type_old);         // Number of elements
 
         // Reference Item Title & Titl_english & language
         //          ↓replaced
@@ -3410,7 +3916,10 @@ class Repository_Action_Main_Item_Filldata extends RepositoryAction
                                       'day' => ''
                                       );
 
-            for($jj=0; $jj<$counter_old; $jj++) {
+            // 配列の中の残ったインデックス番号を取得する
+            $keys = array_keys($item_attr_type_old);
+            for($jj=0; $jj<count($keys); $jj++) {
+                $old_index = $keys[$jj];
                 // biblio_info data check
                 $spell_check = "";
                 if(($item_attr_type[$ii]["junii2_mapping"] === "jtitle"
@@ -3419,32 +3928,32 @@ class Repository_Action_Main_Item_Filldata extends RepositoryAction
                    || $item_attr_type[$ii]["junii2_mapping"] === "spage" 
                    || $item_attr_type[$ii]["junii2_mapping"] === "epage" 
                    || $item_attr_type[$ii]["junii2_mapping"] === "dateofissued")
-                   && $item_attr_type_old[$jj]["junii2_mapping"] === "jtitle,volume,issue,spage,epage,dateofissued")
+                   && $item_attr_type_old[$old_index]["junii2_mapping"] === "jtitle,volume,issue,spage,epage,dateofissued")
                   {
                    $spell_check = $item_attr_type[$ii]["junii2_mapping"];
                 }
 
-                if(($item_attr_type_old[$jj]["junii2_mapping"] === "jtitle" 
-                   || $item_attr_type_old[$jj]["junii2_mapping"] === "volume" 
-                   || $item_attr_type_old[$jj]["junii2_mapping"] === "issue" 
-                   || $item_attr_type_old[$jj]["junii2_mapping"] === "spage" 
-                   || $item_attr_type_old[$jj]["junii2_mapping"] === "epage" 
-                   || $item_attr_type_old[$jj]["junii2_mapping"] === "dateofissued")
+                if(($item_attr_type_old[$old_index]["junii2_mapping"] === "jtitle"
+                   || $item_attr_type_old[$old_index]["junii2_mapping"] === "volume" 
+                   || $item_attr_type_old[$old_index]["junii2_mapping"] === "issue" 
+                   || $item_attr_type_old[$old_index]["junii2_mapping"] === "spage" 
+                   || $item_attr_type_old[$old_index]["junii2_mapping"] === "epage" 
+                   || $item_attr_type_old[$old_index]["junii2_mapping"] === "dateofissued")
                    && $item_attr_type[$ii]["junii2_mapping"] === "jtitle,volume,issue,spage,epage,dateofissued")
                   {
-                   $spell_check = $item_attr_type_old[$jj]["junii2_mapping"];
+                   $spell_check = $item_attr_type_old[$old_index]["junii2_mapping"];
                 }
                 
                 // Compare junii2_mapping
-                if(($item_attr_type[$ii]["junii2_mapping"] === $item_attr_type_old[$jj]["junii2_mapping"] || $spell_check !== "")
-                    && $item_attr_type[$ii]["junii2_mapping"] !== "" && $item_attr_type_old[$jj]["junii2_mapping"] !== "") {
+                if(($item_attr_type[$ii]["junii2_mapping"] === $item_attr_type_old[$old_index]["junii2_mapping"] || $spell_check !== "")
+                    && $item_attr_type[$ii]["junii2_mapping"] !== "" && $item_attr_type_old[$old_index]["junii2_mapping"] !== "") {
                     // Number of elements is Singular or multiple
                     $plural_enable = $item_attr_type[$ii]["plural_enable"];
                     if($plural_cnt == 0) {
-                        $plural_cnt = count($item_attr_old[$jj]);
+                        $plural_cnt = count($item_attr_old[$old_index]);
                     }
 
-                    switch($item_attr_type_old[$jj]["input_type"]) {
+                    switch($item_attr_type_old[$old_index]["input_type"]) {
                         // if old_input_type === "textarea" or "link" or "text"
                         case "textarea":
                         case "link":
@@ -3454,7 +3963,7 @@ class Repository_Action_Main_Item_Filldata extends RepositoryAction
                                 if($item_attr_type[$ii]["input_type"] !== "textarea") {
                                     // Remove a KAIGYOU of the array and replace it with HANKAKU_SPACE
                                     for($ll=0; $ll<$plural_cnt; $ll++) {
-                                        $item_attr_old[$jj][$ll]["attribute_value"] = str_replace("\n"," ",$item_attr_old[$jj][$ll]["attribute_value"]);
+                                        $item_attr_old[$old_index][$ll]["attribute_value"] = str_replace("\n"," ",$item_attr_old[$old_index][$ll]["attribute_value"]);
                                     }
                                 }
                                 // if old_input_type === "textarea" or "link" or "text"
@@ -3463,16 +3972,16 @@ class Repository_Action_Main_Item_Filldata extends RepositoryAction
                                    || $item_attr_type[$ii]["input_type"] === "textarea"
                                    || $item_attr_type[$ii]["input_type"] === "link"){
                                     if($plural_enable == 0 && $plural_cnt != 0) {
-                                        $new_item_attr[$ii][0] = $item_attr_old[$jj][0]["attribute_value"];
-                                        unset($item_attr_old[$jj],$item_attr_type_old[$jj]);
+                                        $new_item_attr[$ii][0] = $item_attr_old[$old_index][0]["attribute_value"];
+                                        unset($item_attr_old[$old_index],$item_attr_type_old[$old_index]);
                                     }elseif($plural_enable == 1 && $plural_cnt != 0) {
                                         for($ll=0; $ll<$plural_cnt; $ll++) {
-                                            $new_item_attr[$ii][$ll] = $item_attr_old[$jj][$ll]["attribute_value"];
+                                            $new_item_attr[$ii][$ll] = $item_attr_old[$old_index][$ll]["attribute_value"];
                                             if($ll >= 1) {
                                                 $new_item_num_attr[$ii] += 1;
                                             }
                                         }
-                                        unset($item_attr_old[$jj],$item_attr_type_old[$jj]);
+                                        unset($item_attr_old[$old_index],$item_attr_type_old[$old_index]);
                                         $break_sign = 1;
                                     }
                                 // if old_input_type === "textarea" or "link" or "text"
@@ -3480,7 +3989,7 @@ class Repository_Action_Main_Item_Filldata extends RepositoryAction
                                 }elseif($item_attr_type[$ii]["input_type"] === "name"){
                                     if($plural_enable == 0) {
                                         $new_item_attr[$ii][0] = array(
-                                                                       "family" => $item_attr_old[$jj][0]["attribute_value"],
+                                                                       "family" => $item_attr_old[$old_index][0]["attribute_value"],
                                                                        "given" => "",
                                                                        "family_ruby" => "",
                                                                        "given_ruby" => "",
@@ -3489,12 +3998,12 @@ class Repository_Action_Main_Item_Filldata extends RepositoryAction
                                                                        "language" => "",
                                                                        "external_author_id" => array(array('prefix_id'=>'', 'suffix'=>'', 'old_prefix_id'=>'', 'old_suffix'=>'', 'prefix_name'=>''))
                                                                        );
-                                        unset($item_attr_old[$jj],$item_attr_type_old[$jj]);
+                                        unset($item_attr_old[$old_index],$item_attr_type_old[$old_index]);
                                         $break_sign = 1;
                                     } elseif($plural_enable == 1) {
                                         for($ll=0; $ll<$plural_cnt; $ll++) {
                                             $new_item_attr[$ii][$ll] = array(
-                                                                             "family" => $item_attr_old[$jj][$ll]["attribute_value"],
+                                                                             "family" => $item_attr_old[$old_index][$ll]["attribute_value"],
                                                                              "given" => "",
                                                                              "family_ruby" => "",
                                                                              "given_ruby" => "",
@@ -3507,7 +4016,7 @@ class Repository_Action_Main_Item_Filldata extends RepositoryAction
                                                 $new_item_num_attr[$ii] += 1;
                                             }
                                         }
-                                        unset($item_attr_old[$jj],$item_attr_type_old[$jj]);
+                                        unset($item_attr_old[$old_index],$item_attr_type_old[$old_index]);
                                         $break_sign = 1;
                                     }
                                 // if old_input_type === "textarea" or "link" or "text"
@@ -3516,44 +4025,44 @@ class Repository_Action_Main_Item_Filldata extends RepositoryAction
                                     if($spell_check === "volume"){
                                         if($edit_biblio_info["volume"] === ""){
                                             //update Dummy array
-                                            $edit_biblio_info["volume"] = $item_attr_old[$jj][0]["attribute_value"];
+                                            $edit_biblio_info["volume"] = $item_attr_old[$old_index][0]["attribute_value"];
                                             $new_item_attr[$ii][0] = $edit_biblio_info;
-                                            unset($item_attr_old[$jj],$item_attr_type_old[$jj]);
+                                            unset($item_attr_old[$old_index],$item_attr_type_old[$old_index]);
                                         }
                                     }elseif($spell_check === "issue"){
                                         if($edit_biblio_info["issue"] === ""){
                                             //update Dummy array
-                                            $edit_biblio_info["issue"] = $item_attr_old[$jj][0]["attribute_value"];
+                                            $edit_biblio_info["issue"] = $item_attr_old[$old_index][0]["attribute_value"];
                                             $new_item_attr[$ii][0] = $edit_biblio_info;
-                                            unset($item_attr_old[$jj],$item_attr_type_old[$jj]);
+                                            unset($item_attr_old[$old_index],$item_attr_type_old[$old_index]);
                                         }
                                     }elseif($spell_check === "spage"){
                                         if($edit_biblio_info["spage"] === ""){
                                             //update Dummy array
-                                            $edit_biblio_info["spage"] = $item_attr_old[$jj][0]["attribute_value"];
+                                            $edit_biblio_info["spage"] = $item_attr_old[$old_index][0]["attribute_value"];
                                             $new_item_attr[$ii][0] = $edit_biblio_info;
-                                            unset($item_attr_old[$jj],$item_attr_type_old[$jj]);
+                                            unset($item_attr_old[$old_index],$item_attr_type_old[$old_index]);
                                         }
                                     }elseif($spell_check === "epage"){
                                         if($edit_biblio_info["epage"] === ""){
                                             //update Dummy array
-                                            $edit_biblio_info["epage"] = $item_attr_old[$jj][0]["attribute_value"];
+                                            $edit_biblio_info["epage"] = $item_attr_old[$old_index][0]["attribute_value"];
                                             $new_item_attr[$ii][0] = $edit_biblio_info;
-                                            unset($item_attr_old[$jj],$item_attr_type_old[$jj]);
+                                            unset($item_attr_old[$old_index],$item_attr_type_old[$old_index]);
                                         }
                                     }elseif($spell_check === "dateofissued"){
                                         if($edit_biblio_info["year"] === ""){
                                             //update Dummy array
-                                            $edit_biblio_info["year"] = $item_attr_old[$jj][0]["attribute_value"];
+                                            $edit_biblio_info["year"] = $item_attr_old[$old_index][0]["attribute_value"];
                                             $new_item_attr[$ii][0] = $edit_biblio_info;
-                                            unset($item_attr_old[$jj],$item_attr_type_old[$jj]);
+                                            unset($item_attr_old[$old_index],$item_attr_type_old[$old_index]);
                                         }
                                     }elseif($spell_check === "jtitle"){
                                         if($edit_biblio_info["biblio_name"] === ""){
                                             //update Dummy array
-                                            $edit_biblio_info["biblio_name"] = $item_attr_old[$jj][0]["attribute_value"];
+                                            $edit_biblio_info["biblio_name"] = $item_attr_old[$old_index][0]["attribute_value"];
                                             $new_item_attr[$ii][0] = $edit_biblio_info;
-                                            unset($item_attr_old[$jj],$item_attr_type_old[$jj]);
+                                            unset($item_attr_old[$old_index],$item_attr_type_old[$old_index]);
                                         }
                                     }
                                     if($edit_biblio_info["biblio_name"] !== ""
@@ -3576,8 +4085,8 @@ class Repository_Action_Main_Item_Filldata extends RepositoryAction
                                 // if old_input_type === "radio" or "select"
                                 // if new_input_type === "textarea" or "text"
                                 if($item_attr_type[$ii]["input_type"] === "text" || $item_attr_type[$ii]["input_type"] === "textarea") {
-                                    $new_item_attr[$ii][0] = $item_attr_old[$jj][0]["attribute_value"];
-                                    unset($item_attr_old[$jj],$item_attr_type_old[$jj]);
+                                    $new_item_attr[$ii][0] = $item_attr_old[$old_index][0]["attribute_value"];
+                                    unset($item_attr_old[$old_index],$item_attr_type_old[$old_index]);
                                     $break_sign = 1;
                                 // if old_input_type === "radio" or "select"
                                 // if new_input_type === "radio" or "select" or "checkbox"
@@ -3591,7 +4100,7 @@ class Repository_Action_Main_Item_Filldata extends RepositoryAction
                                                    "WHERE item_type_id = ? and attribute_id = ? and is_delete = ?;";
                                     $params = array();
                                     $params[] = $Result_List["item"][0]["item_type_id"];    // item_type_id
-                                    $params[] = $item_element[$ii2]["attribute_id"];    // attribute_id
+                                    $params[] = $item_attr_type[$ii]["attribute_id"];    // attribute_id
                                     $params[] = 0;    // is_delete
 
                                     // get of choice from DB
@@ -3609,19 +4118,21 @@ class Repository_Action_Main_Item_Filldata extends RepositoryAction
 
                                     if($item_attr_type[$ii]["input_type"] === "radio"){
                                         for($kk=0; $kk<$num_cand ; $kk++) {
-                                            if($item_attr_old[$jj][0]["attribute_value"] === $option_values[$kk]) {
+                                            if($item_attr_old[$old_index][0]["attribute_value"] === $option_values[$kk]) {
                                                 // insert in the position as an integer.
                                                 $new_item_attr[$ii][0] = $kk;
-                                                unset($item_attr_old[$jj],$item_attr_type_old[$jj]);
+                                                unset($item_attr_old[$old_index],$item_attr_type_old[$old_index]);
                                                 $break_sign = 1;
+                                                break;
                                             }
                                         }
                                     }elseif($item_attr_type[$ii]["input_type"] === "select"){
                                         for($kk=0; $kk<$num_cand ; $kk++) {
-                                            if($item_attr_old[$jj][0]["attribute_value"] === $option_values[$kk]) {
-                                                $new_item_attr[$ii][0] = $item_attr_old[$jj][0]["attribute_value"];
-                                                unset($item_attr_old[$jj],$item_attr_type_old[$jj]);
+                                            if($item_attr_old[$old_index][0]["attribute_value"] === $option_values[$kk]) {
+                                                $new_item_attr[$ii][0] = $item_attr_old[$old_index][0]["attribute_value"];
+                                                unset($item_attr_old[$old_index],$item_attr_type_old[$old_index]);
                                                 $break_sign = 1;
+                                                break;
                                             }
                                         }
                                     }elseif($item_attr_type[$ii]["input_type"] === "checkbox"){
@@ -3632,15 +4143,16 @@ class Repository_Action_Main_Item_Filldata extends RepositoryAction
                                         $edit_option[] = 0;
                                         }
                                         for($kk=0; $kk<$num_cand ; $kk++) {
-                                            if($item_attr_old[$jj][0]["attribute_value"] === $option_values[$kk]) {
+                                            if($item_attr_old[$old_index][0]["attribute_value"] === $option_values[$kk]) {
                                                 // insert in the position as an integer.
                                                 $edit_option[$kk] = 1;
                                                 $edit_count = count($edit_option);
                                                 for($n=0; $n<$edit_count; $n++) {
                                                     $new_item_attr[$ii][$n] = $edit_option[$n];
                                                 }
-                                                unset($item_attr_old[$jj],$item_attr_type_old[$jj]);
+                                                unset($item_attr_old[$old_index],$item_attr_type_old[$old_index]);
                                                 $break_sign = 1;
+                                                break;
                                             }
                                         }
                                     }
@@ -3655,17 +4167,17 @@ class Repository_Action_Main_Item_Filldata extends RepositoryAction
                                 // if new_input_type === "text" or "textarea"
                                 if($item_attr_type[$ii]["input_type"] === "text" || $item_attr_type[$ii]["input_type"] === "textarea") {
                                     if($plural_enable == 0) {
-                                        $new_item_attr[$ii][0] = $item_attr_old[$jj][0]["attribute_value"];
-                                        unset($item_attr_old[$jj],$item_attr_type_old[$jj]);
+                                        $new_item_attr[$ii][0] = $item_attr_old[$old_index][0]["attribute_value"];
+                                        unset($item_attr_old[$old_index],$item_attr_type_old[$old_index]);
                                         $break_sign = 1;
                                     } elseif($plural_enable == 1) {
                                         for($ll=0; $ll<$plural_cnt; $ll++) {
-                                            $new_item_attr[$ii][$ll] = $item_attr_old[$jj][$ll]["attribute_value"];
+                                            $new_item_attr[$ii][$ll] = $item_attr_old[$old_index][$ll]["attribute_value"];
                                             if($ll >= 1) {
                                                 $new_item_num_attr[$ii] += 1;
                                             }
                                         }
-                                        unset($item_attr_old[$jj],$item_attr_type_old[$jj]);
+                                        unset($item_attr_old[$old_index],$item_attr_type_old[$old_index]);
                                         $break_sign = 1;
                                     }
                                 // if old_input_type === "checkbox"
@@ -3678,7 +4190,7 @@ class Repository_Action_Main_Item_Filldata extends RepositoryAction
                                                    "WHERE item_type_id = ? and attribute_id = ? and is_delete = ?;";
                                     $params = array();
                                     $params[] = $Result_List["item"][0]["item_type_id"];    // item_type_id
-                                    $params[] = $item_element[$ii2]["attribute_id"];    // attribute_id
+                                    $params[] = $item_attr_type[$ii]["attribute_id"];    // attribute_id
                                     $params[] = 0;    // is_delete
 
                                     // get of choice from DB
@@ -3702,7 +4214,7 @@ class Repository_Action_Main_Item_Filldata extends RepositoryAction
                                     if($plural_cnt != 0) {
                                         for($ll=0; $ll<$plural_cnt; $ll++) {
                                             for($kk=0; $kk<$num_cand ; $kk++) {
-                                                if($item_attr_old[$jj][$ll]["attribute_value"] === $option_values[$kk]) {
+                                                if($item_attr_old[$old_index][$ll]["attribute_value"] === $option_values[$kk]) {
                                                     // insert in the position as an integer.
                                                     $edit_option[$kk] = 1;
                                                     // update Elements exist flag
@@ -3717,7 +4229,7 @@ class Repository_Action_Main_Item_Filldata extends RepositoryAction
                                             // insert to array
                                             $new_item_attr[$ii][$n] = $edit_option[$n];
                                         }
-                                        unset($item_attr_old[$jj],$item_attr_type_old[$jj]);
+                                        unset($item_attr_old[$old_index],$item_attr_type_old[$old_index]);
                                         $break_sign = 1;
                                         }
                                     }
@@ -3732,60 +4244,60 @@ class Repository_Action_Main_Item_Filldata extends RepositoryAction
                                 // if new_input_type === "text" or "textarea"
                                 if($item_attr_type[$ii]["input_type"] === "text" || $item_attr_type[$ii]["input_type"] === "textarea") {
                                     if($plural_enable == 0) {
-                                        $new_item_attr[$ii][0] = $item_attr_old[$jj][0]["family"]." ".$item_attr_old[$jj][0]["name"]." ".$item_attr_old[$jj][0]["e_mail_address"];
-                                        unset($item_attr_old[$jj],$item_attr_type_old[$jj]);
+                                        $new_item_attr[$ii][0] = $item_attr_old[$old_index][0]["family"]." ".$item_attr_old[$old_index][0]["name"]." ".$item_attr_old[$old_index][0]["e_mail_address"];
+                                        unset($item_attr_old[$old_index],$item_attr_type_old[$old_index]);
                                         $break_sign = 1;
                                     } elseif($plural_enable == 1) {
                                         for($ll=0; $ll<$plural_cnt; $ll++) {
-                                            $new_item_attr[$ii][$ll] = $item_attr_old[$jj][$ll]["family"]." ".$item_attr_old[$jj][$ll]["name"]." ".$item_attr_old[$jj][$ll]["e_mail_address"];
+                                            $new_item_attr[$ii][$ll] = $item_attr_old[$old_index][$ll]["family"]." ".$item_attr_old[$old_index][$ll]["name"]." ".$item_attr_old[$old_index][$ll]["e_mail_address"];
                                             if($ll >= 1) {
                                                 $new_item_num_attr[$ii] += 1;
                                             }
                                         }
-                                        unset($item_attr_old[$jj],$item_attr_type_old[$jj]);
+                                        unset($item_attr_old[$old_index],$item_attr_type_old[$old_index]);
                                         $break_sign = 1;
                                     }
                                 // if old_input_type === "name"
                                 // if new_input_type === "name"
                                 }elseif($item_attr_type[$ii]["input_type"] === "name"){
                                     if($plural_enable == 0) {
-                                        $external_author_id = $NameAuthority->getExternalAuthorIdPrefixAndSuffix($item_attr_old[$jj][0]["author_id"]);
+                                        $external_author_id = $NameAuthority->getExternalAuthorIdPrefixAndSuffix($item_attr_old[$old_index][0]["author_id"]);
                                         if ($external_author_id === false) {
                                             return "error";
                                         }
                                         $new_item_attr[$ii][0] = array(
-                                                                       "family" => $item_attr_old[$jj][0]["family"],
-                                                                       "given" => $item_attr_old[$jj][0]["name"],
-                                                                       "family_ruby" => $item_attr_old[$jj][0]["family_ruby"],
-                                                                       "given_ruby" => $item_attr_old[$jj][0]["name_ruby"],
-                                                                       "email" => $item_attr_old[$jj][0]["e_mail_address"],
-                                                                       "author_id" => $item_attr_old[$jj][0]["author_id"],
-                                                                       "language" => $item_attr_type_old[$jj]["display_lang_type"],
+                                                                       "family" => $item_attr_old[$old_index][0]["family"],
+                                                                       "given" => $item_attr_old[$old_index][0]["name"],
+                                                                       "family_ruby" => $item_attr_old[$old_index][0]["family_ruby"],
+                                                                       "given_ruby" => $item_attr_old[$old_index][0]["name_ruby"],
+                                                                       "email" => $item_attr_old[$old_index][0]["e_mail_address"],
+                                                                       "author_id" => $item_attr_old[$old_index][0]["author_id"],
+                                                                       "language" => $item_attr_type_old[$old_index]["display_lang_type"],
                                                                        "external_author_id" => $external_author_id
                                                                       );
-                                        unset($item_attr_old[$jj],$item_attr_type_old[$jj]);
+                                        unset($item_attr_old[$old_index],$item_attr_type_old[$old_index]);
                                         $break_sign = 1;
                                     } elseif($plural_enable == 1 && $plural_cnt != 0) {
                                         for($ll=0; $ll<$plural_cnt; $ll++) {
-                                            $external_author_id = $NameAuthority->getExternalAuthorIdPrefixAndSuffix($item_attr_old[$jj][$ll]["author_id"]);
+                                            $external_author_id = $NameAuthority->getExternalAuthorIdPrefixAndSuffix($item_attr_old[$old_index][$ll]["author_id"]);
                                             if ($external_author_id === false) {
                                                 return "error";
                                             }
                                             $new_item_attr[$ii][$ll] = array(
-                                                                             "family" => $item_attr_old[$jj][$ll]["family"],
-                                                                             "given" => $item_attr_old[$jj][$ll]["name"],
-                                                                             "family_ruby" => $item_attr_old[$jj][$ll]["family_ruby"],
-                                                                             "given_ruby" => $item_attr_old[$jj][$ll]["name_ruby"],
-                                                                             "email" => $item_attr_old[$jj][$ll]["e_mail_address"],
-                                                                             "author_id" => $item_attr_old[$jj][$ll]["author_id"],
-                                                                             "language" => $item_attr_type_old[$jj]["display_lang_type"],
+                                                                             "family" => $item_attr_old[$old_index][$ll]["family"],
+                                                                             "given" => $item_attr_old[$old_index][$ll]["name"],
+                                                                             "family_ruby" => $item_attr_old[$old_index][$ll]["family_ruby"],
+                                                                             "given_ruby" => $item_attr_old[$old_index][$ll]["name_ruby"],
+                                                                             "email" => $item_attr_old[$old_index][$ll]["e_mail_address"],
+                                                                             "author_id" => $item_attr_old[$old_index][$ll]["author_id"],
+                                                                             "language" => $item_attr_type_old[$old_index]["display_lang_type"],
                                                                              "external_author_id" => $external_author_id
                                                                              );
                                             if($ll >= 1) {
                                                 $new_item_num_attr[$ii] += 1;
                                             }
                                         }
-                                        unset($item_attr_old[$jj],$item_attr_type_old[$jj]);
+                                        unset($item_attr_old[$old_index],$item_attr_type_old[$old_index]);
                                         $break_sign = 1;
                                     }
                                 }
@@ -3800,86 +4312,86 @@ class Repository_Action_Main_Item_Filldata extends RepositoryAction
                                 if($item_attr_type[$ii]["input_type"] === "text" || $item_attr_type[$ii]["input_type"] === "textarea") {
                                     if($spell_check === "volume"){
                                         // If the search string is not found
-                                        if($item_attr_old[$jj][0]["volume"] === ""){
+                                        if($item_attr_old[$old_index][0]["volume"] === ""){
                                             break;
                                         }
-                                        $new_item_attr[$ii][0] = $item_attr_old[$jj][0]["volume"];
-                                        $item_attr_old[$jj][0]["volume"] = "";
+                                        $new_item_attr[$ii][0] = $item_attr_old[$old_index][0]["volume"];
+                                        $item_attr_old[$old_index][0]["volume"] = "";
                                         $break_sign = 1;
                                     }elseif($spell_check === "issue"){
                                         // If the search string is not found
-                                        if($item_attr_old[$jj][0]["issue"] === ""){
+                                        if($item_attr_old[$old_index][0]["issue"] === ""){
                                             break;
                                         }
-                                        $new_item_attr[$ii][0] = $item_attr_old[$jj][0]["issue"];
-                                        $item_attr_old[$jj][0]["issue"] = "";
+                                        $new_item_attr[$ii][0] = $item_attr_old[$old_index][0]["issue"];
+                                        $item_attr_old[$old_index][0]["issue"] = "";
                                         $break_sign = 1;
                                     }elseif($spell_check === "spage"){
                                         // If the search string is not found
-                                        if($item_attr_old[$jj][0]["start_page"] === ""){
+                                        if($item_attr_old[$old_index][0]["start_page"] === ""){
                                             break;
                                         }
-                                        $new_item_attr[$ii][0] = $item_attr_old[$jj][0]["start_page"];
-                                        $item_attr_old[$jj][0]["start_page"] = "";
+                                        $new_item_attr[$ii][0] = $item_attr_old[$old_index][0]["start_page"];
+                                        $item_attr_old[$old_index][0]["start_page"] = "";
                                         $break_sign = 1;
                                     }elseif($spell_check === "epage"){
                                         // If the search string is not found
-                                        if($item_attr_old[$jj][0]["end_page"] === ""){
+                                        if($item_attr_old[$old_index][0]["end_page"] === ""){
                                             break;
                                         }
-                                        $new_item_attr[$ii][0] = $item_attr_old[$jj][0]["end_page"];
-                                        $item_attr_old[$jj][0]["end_page"] = "";
+                                        $new_item_attr[$ii][0] = $item_attr_old[$old_index][0]["end_page"];
+                                        $item_attr_old[$old_index][0]["end_page"] = "";
                                         $break_sign = 1;
                                     }elseif($spell_check === "dateofissued"){
                                         // If the search string is not found
-                                        if($item_attr_old[$jj][0]["date_of_issued"] === ""){
+                                        if($item_attr_old[$old_index][0]["date_of_issued"] === ""){
                                             break;
                                         }
-                                        $new_item_attr[$ii][0] = $item_attr_old[$jj][0]["date_of_issued"];
-                                        $item_attr_old[$jj][0]["date_of_issued"] = "";
+                                        $new_item_attr[$ii][0] = $item_attr_old[$old_index][0]["date_of_issued"];
+                                        $item_attr_old[$old_index][0]["date_of_issued"] = "";
                                         $break_sign = 1;
                                     }elseif($spell_check === "jtitle"){
                                         // If the search string is not found
-                                        if($item_attr_old[$jj][0]["biblio_name"] === "" && $item_attr_old[$jj][0]["biblio_name_english"] === ""){
+                                        if($item_attr_old[$old_index][0]["biblio_name"] === "" && $item_attr_old[$old_index][0]["biblio_name_english"] === ""){
                                             break;
                                         }
                                         if($item_attr_type[$ii]["input_type"] === "text"){
-                                            $new_item_attr[$ii][0] = $item_attr_old[$jj][0]["biblio_name"]."\n".$item_attr_old[$jj][0]["biblio_name_english"];
+                                            $new_item_attr[$ii][0] = $item_attr_old[$old_index][0]["biblio_name"]."\n".$item_attr_old[$old_index][0]["biblio_name_english"];
                                         }elseif($item_attr_type[$ii]["input_type"] === "textarea"){
-                                            $new_item_attr[$ii][0] = $item_attr_old[$jj][0]["biblio_name"]."\n".$item_attr_old[$jj][0]["biblio_name_english"];
+                                            $new_item_attr[$ii][0] = $item_attr_old[$old_index][0]["biblio_name"]."\n".$item_attr_old[$old_index][0]["biblio_name_english"];
                                         }
                                         $break_sign = 1;
-                                        $item_attr_old[$jj][0]["biblio_name"] = "";
-                                        $item_attr_old[$jj][0]["biblio_name_english"] = "";
+                                        $item_attr_old[$old_index][0]["biblio_name"] = "";
+                                        $item_attr_old[$old_index][0]["biblio_name_english"] = "";
                                     }elseif($spell_check === ""){
                                         if($item_attr_type[$ii]["input_type"] === "text"){
-                                            $new_item_attr[$ii][0] = $item_attr_old[$jj][0]["biblio_name"]." ".
-                                             $item_attr_old[$jj][0]["biblio_name_english"]." ".
-                                             $item_attr_old[$jj][0]["volume"]." ".
-                                             $item_attr_old[$jj][0]["issue"]." ".
-                                             $item_attr_old[$jj][0]["start_page"]." ".
-                                             $item_attr_old[$jj][0]["end_page"]." ".
-                                             $item_attr_old[$jj][0]["date_of_issued"];
+                                            $new_item_attr[$ii][0] = $item_attr_old[$old_index][0]["biblio_name"]." ".
+                                             $item_attr_old[$old_index][0]["biblio_name_english"]." ".
+                                             $item_attr_old[$old_index][0]["volume"]." ".
+                                             $item_attr_old[$old_index][0]["issue"]." ".
+                                             $item_attr_old[$old_index][0]["start_page"]." ".
+                                             $item_attr_old[$old_index][0]["end_page"]." ".
+                                             $item_attr_old[$old_index][0]["date_of_issued"];
                                         }elseif($item_attr_type[$ii]["input_type"] === "textarea"){
-                                            $new_item_attr[$ii][0] = $item_attr_old[$jj][0]["biblio_name"]."\n".
-                                             $item_attr_old[$jj][0]["biblio_name_english"]."\n".
-                                             $item_attr_old[$jj][0]["volume"]."\n".
-                                             $item_attr_old[$jj][0]["issue"]."\n".
-                                             $item_attr_old[$jj][0]["start_page"]."\n".
-                                             $item_attr_old[$jj][0]["end_page"]."\n".
-                                             $item_attr_old[$jj][0]["date_of_issued"];
+                                            $new_item_attr[$ii][0] = $item_attr_old[$old_index][0]["biblio_name"]."\n".
+                                             $item_attr_old[$old_index][0]["biblio_name_english"]."\n".
+                                             $item_attr_old[$old_index][0]["volume"]."\n".
+                                             $item_attr_old[$old_index][0]["issue"]."\n".
+                                             $item_attr_old[$old_index][0]["start_page"]."\n".
+                                             $item_attr_old[$old_index][0]["end_page"]."\n".
+                                             $item_attr_old[$old_index][0]["date_of_issued"];
                                         }
-                                        unset($item_attr_old[$jj],$item_attr_type_old[$jj]);
+                                        unset($item_attr_old[$old_index],$item_attr_type_old[$old_index]);
                                         $break_sign = 1;
                                     }
-                                    if($item_attr_old[$jj][0]["biblio_name"] === ""
-                                        && $item_attr_old[$jj][0]["biblio_name_english"] === ""
-                                        && $item_attr_old[$jj][0]["volume"] === ""
-                                        && $item_attr_old[$jj][0]["issue"] === ""
-                                        && $item_attr_old[$jj][0]["start_page"] === ""
-                                        && $item_attr_old[$jj][0]["end_page"] === ""
-                                        && $item_attr_old[$jj][0]["date_of_issued"] === ""){
-                                        unset($item_attr_old[$jj],$item_attr_type_old[$jj]);
+                                    if($item_attr_old[$old_index][0]["biblio_name"] === ""
+                                        && $item_attr_old[$old_index][0]["biblio_name_english"] === ""
+                                        && $item_attr_old[$old_index][0]["volume"] === ""
+                                        && $item_attr_old[$old_index][0]["issue"] === ""
+                                        && $item_attr_old[$old_index][0]["start_page"] === ""
+                                        && $item_attr_old[$old_index][0]["end_page"] === ""
+                                        && $item_attr_old[$old_index][0]["date_of_issued"] === ""){
+                                        unset($item_attr_old[$old_index],$item_attr_type_old[$old_index]);
                                         $break_sign = 1;
                                     }
 
@@ -3887,7 +4399,7 @@ class Repository_Action_Main_Item_Filldata extends RepositoryAction
                                 // if new_input_type === "biblio_info"
                                 }elseif($item_attr_type[$ii]["input_type"] === "biblio_info"){
                                     // Split a string by haihun(-)
-                                    $date = explode("-", $item_attr_old[$jj][0]["date_of_issued"]);
+                                    $date = explode("-", $item_attr_old[$old_index][0]["date_of_issued"]);
                                     if(count($date) == 2){
                                         $date[] = "";
                                     } else if(count($date) == 1){
@@ -3910,28 +4422,28 @@ class Repository_Action_Main_Item_Filldata extends RepositoryAction
                                     }
 
                                     $new_item_attr[$ii][0] = array(
-                                                                   "biblio_name" => $item_attr_old[$jj][0]["biblio_name"],
-                                                                   "biblio_name_english" => $item_attr_old[$jj][0]["biblio_name_english"],
-                                                                   "volume" => $item_attr_old[$jj][0]["volume"],
-                                                                   "issue" => $item_attr_old[$jj][0]["issue"],
-                                                                   "spage" => $item_attr_old[$jj][0]["start_page"],
-                                                                   "epage" => $item_attr_old[$jj][0]["end_page"],
-                                                                   "date_of_issued" => $item_attr_old[$jj][0]["date_of_issued"],
+                                                                   "biblio_name" => $item_attr_old[$old_index][0]["biblio_name"],
+                                                                   "biblio_name_english" => $item_attr_old[$old_index][0]["biblio_name_english"],
+                                                                   "volume" => $item_attr_old[$old_index][0]["volume"],
+                                                                   "issue" => $item_attr_old[$old_index][0]["issue"],
+                                                                   "spage" => $item_attr_old[$old_index][0]["start_page"],
+                                                                   "epage" => $item_attr_old[$old_index][0]["end_page"],
+                                                                   "date_of_issued" => $item_attr_old[$old_index][0]["date_of_issued"],
                                                                    "year" =>$date[0],
                                                                    "month" =>$date[1],
                                                                    "day" =>$date[2]
                                                                    );
-                                    unset($item_attr_old[$jj],$item_attr_type_old[$jj]);
+                                    unset($item_attr_old[$old_index],$item_attr_type_old[$old_index]);
                                     $break_sign = 1;
 
                                 // if old_input_type === "biblio_info"
                                 // if new_input_type === "date"
                                 }elseif($item_attr_type[$ii]["input_type"] === "date"){
-                                    if($item_attr_old[$jj][0]["date_of_issued"] === ""){
+                                    if($item_attr_old[$old_index][0]["date_of_issued"] === ""){
                                         break;
                                     }
                                     // Split a string by haihun(-)
-                                    $date = explode("-", $item_attr_old[$jj][0]["date_of_issued"]);
+                                    $date = explode("-", $item_attr_old[$old_index][0]["date_of_issued"]);
                                     if(count($date) == 2){
                                         $date[] = "";
                                     } else if(count($date) == 1){
@@ -3953,12 +4465,12 @@ class Repository_Action_Main_Item_Filldata extends RepositoryAction
                                         }
                                     }
                                     $new_item_attr[$ii][0] = array(
-                                                                   "date" => $item_attr_old[$jj][$kk]["attribute_value"],
+                                                                   "date" => $item_attr_old[$old_index][$kk]["attribute_value"],
                                                                    "date_year" =>$date[0],
                                                                    "date_month" =>$date[1],
                                                                    "date_day" =>$date[2]
                                                                    );
-                                    $item_attr_old[$jj][0]["date_of_issued"] = "";
+                                    $item_attr_old[$old_index][0]["date_of_issued"] = "";
                                     $break_sign = 1;
                                 }
                             }
@@ -3971,17 +4483,17 @@ class Repository_Action_Main_Item_Filldata extends RepositoryAction
                                 // if new_input_type === "text" or "textarea"
                                 if($item_attr_type[$ii]["input_type"] === "text" || $item_attr_type[$ii]["input_type"] === "textarea") {
                                     if($plural_enable == 0) {
-                                        $new_item_attr[$ii][0] = $item_attr_old[$jj][0]["attribute_value"];
-                                        unset($item_attr_old[$jj],$item_attr_type_old[$jj]);
+                                        $new_item_attr[$ii][0] = $item_attr_old[$old_index][0]["attribute_value"];
+                                        unset($item_attr_old[$old_index],$item_attr_type_old[$old_index]);
                                         $break_sign = 1;
                                     } elseif($plural_enable == 1) {
                                         for($ll=0; $ll<$plural_cnt; $ll++) {
-                                            $new_item_attr[$ii][$ll] = $item_attr_old[$jj][$ll]["attribute_value"];
+                                            $new_item_attr[$ii][$ll] = $item_attr_old[$old_index][$ll]["attribute_value"];
                                             if($ll >= 1) {
                                                 $new_item_num_attr[$ii] += 1;
                                             }
                                         }
-                                        unset($item_attr_old[$jj],$item_attr_type_old[$jj]);
+                                        unset($item_attr_old[$old_index],$item_attr_type_old[$old_index]);
                                         $break_sign = 1;
                                     }
                                 // if old_input_type === "date"
@@ -3996,7 +4508,7 @@ class Repository_Action_Main_Item_Filldata extends RepositoryAction
                                        && $edit_biblio_info["day"] === ""){
 
                                         // Split a string by haihun(-)
-                                        $date = explode("-", $item_attr_old[$jj][0]["attribute_value"]);
+                                        $date = explode("-", $item_attr_old[$old_index][0]["attribute_value"]);
                                         if(count($date) == 2){
                                             $date[] = "";
                                         } else if(count($date) == 1){
@@ -4018,14 +4530,14 @@ class Repository_Action_Main_Item_Filldata extends RepositoryAction
                                                 $date[2] = $temp_day[1];
                                             }
                                         }
-                                        $edit_biblio_info["date_of_issued"] = $item_attr_old[$jj][0]["attribute_value"];
+                                        $edit_biblio_info["date_of_issued"] = $item_attr_old[$old_index][0]["attribute_value"];
                                         $edit_biblio_info["year"] = $date[0];
                                         $edit_biblio_info["month"] = $date[1];
                                         $edit_biblio_info["day"] = $date[2];
 
                                         $new_item_attr[$ii][0] = $edit_biblio_info;
 
-                                        unset($item_attr_old[$jj],$item_attr_type_old[$jj]);
+                                        unset($item_attr_old[$old_index],$item_attr_type_old[$old_index]);
                                         if($edit_biblio_info["biblio_name"] !== ""
                                            && $edit_biblio_info["volume"] !== ""
                                            && $edit_biblio_info["issue"] !== ""
@@ -4044,7 +4556,7 @@ class Repository_Action_Main_Item_Filldata extends RepositoryAction
                                         $edit_attr = array();
                                         for($kk=0; $kk<$plural_cnt; $kk++) {
                                             // Split a string by haihun(-)
-                                            $date = explode("-", $item_attr_old[$jj][$kk]["attribute_value"]);
+                                            $date = explode("-", $item_attr_old[$old_index][$kk]["attribute_value"]);
                                             if(count($date) == 2){
                                                 $date[] = "";
                                             } else if(count($date) == 1){
@@ -4068,7 +4580,7 @@ class Repository_Action_Main_Item_Filldata extends RepositoryAction
                                         }
                                         // create Dummy elements array
                                         $date_init = array(
-                                                           "date" => $item_attr_old[$jj][$kk]["attribute_value"],
+                                                           "date" => $item_attr_old[$old_index][$kk]["attribute_value"],
                                                            "date_year" =>$date[0],
                                                            "date_month" =>$date[1],
                                                            "date_day" =>$date[2]
@@ -4079,7 +4591,7 @@ class Repository_Action_Main_Item_Filldata extends RepositoryAction
 
                                         if($plural_enable == 0) {
                                             $new_item_attr[$ii][0] = $edit_attr[0];
-                                        unset($item_attr_old[$jj],$item_attr_type_old[$jj]);
+                                        unset($item_attr_old[$old_index],$item_attr_type_old[$old_index]);
                                             $break_sign = 1;
                                         } elseif($plural_enable == 1){
                                             for($ll=0; $ll<$plural_cnt; $ll++) {
@@ -4088,7 +4600,7 @@ class Repository_Action_Main_Item_Filldata extends RepositoryAction
                                                     $new_item_num_attr[$ii] += 1;
                                                 }
                                             }
-                                            unset($item_attr_old[$jj],$item_attr_type_old[$jj]);
+                                            unset($item_attr_old[$old_index],$item_attr_type_old[$old_index]);
                                             $break_sign = 1;
                                         }
                                     }
@@ -4117,13 +4629,16 @@ class Repository_Action_Main_Item_Filldata extends RepositoryAction
     // Add JuNii2 ver3 2013/09/24 R.Matsuura --start--
     /**
      * get metadata of input type Text
+     * テキストメタデータを取得する
      * 
-     * @param string $strMapping
-     * @param string $displayLangType
-     * @param int $pluralEnable
-     * @param array $oldMetadataArray
-     * @param int $itemAttrNum
-     * @param array $metadataArray
+     * @param string $strMapping mapping info マッピング情報
+     * @param string $displayLangType display language 表示言語
+     * @param int $pluralEnable plural enable flag 複数可否フラグ
+     * @param array $oldMetadataArray registered metadata array 入力済メタデータ情報文字列
+     *                                 array[$ii]
+     * @param int $itemAttrNum item attribute count メタデータ数
+     * @param array $metadataArray metadata array メタデータ配列
+     *                              array[$ii]
      */
     private function getMetadataOfInputTypeText($strMapping, $displayLangType, $pluralEnable, $oldMetadataArray, &$itemAttrNum, &$metadataArray)
     {

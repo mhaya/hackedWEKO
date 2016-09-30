@@ -1,4 +1,12 @@
 <?php
+
+/**
+ * Action class for ServiceDocument acquisition by SWORD protocol
+ * SWORDプロトコルによるServiceDocument取得用アクションクラス
+ * 
+ * @package WEKO
+ */
+
 // --------------------------------------------------------------------
 //
 // $Id:Servicedocument.class.php 4173 2008-10-31 08:35:00Z nakao $
@@ -11,10 +19,35 @@
 //
 // --------------------------------------------------------------------
 /* vim: set expandtab tabstop=4 shiftwidth=4 softtabstop=4: */
+
+/**
+ * Action base class for the WEKO
+ * WEKO用アクション基底クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryAction.class.php';
+
+/**
+ * Common processing class for SWORD Service Document
+ * SWORD Service Document用共通処理クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/action/main/sword/SwordUtility.class.php';    // SWORD for WEKO Utility
+
+/**
+ * Item shelf registration action class by SWORD protocol
+ * SWORDプロトコルによるアイテム一括登録アクションクラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/action/main/sword/import/Import.class.php';
+
+/**
+ * Library to realize the WORD on WEKO
+ * WEKO上でSWORDを実現するライブラリ
+ */
 require_once WEBAPP_DIR. '/modules/repository/files/sword/utils.php';
+
+/**
+ * Index rights management common classes
+ * インデックス権限管理共通クラス
+ */
 require_once WEBAPP_DIR. '/modules/repository/components/RepositoryIndexAuthorityManager.class.php';
 
 //  function generateSwordElements($infos, &$response){
@@ -22,24 +55,82 @@ require_once WEBAPP_DIR. '/modules/repository/components/RepositoryIndexAuthorit
 //  }
 
 /**
- * Generate the Service Document for SWORD.
+ * Action class for ServiceDocument acquisition by SWORD protocol
+ * SWORDプロトコルによるServiceDocument取得用アクションクラス
+ * 
+ * @package WEKO
+ * @copyright (c) 2007, National Institute of Informatics, Research and Development Center for Scientific Information Resources
+ * @license http://creativecommons.org/licenses/BSD/ This program is licensed under the BSD Licence
+ * @access public
  */
 class Repository_Action_Main_Sword_Servicedocument extends RepositoryAction
 {
     // 使用コンポーネントを受け取るため
+    /**
+     * Data upload objects
+     * データアップロードオブジェクト
+     *
+     * @var Uploads_View
+     */
     var $uploadsView = null;
+    /**
+     * Session management objects
+     * Session管理オブジェクト
+     *
+     * @var Session
+     */
     var $Session = null;
+    /**
+     * Object that contains the value received in the POST / GET
+     * POST/GETで受け取った値を格納するオブジェクト
+     *
+     * @var Request
+     */
     var $request = null;        // kawa add
+    /**
+     * Objects for assisting the output
+     * 出力を補助するオブジェクト
+     *
+     * @var Responce
+     */
     var $response = null;
+    /**
+     * Data sorting the index included a hierarchical structure
+     * インデックスを階層構造込みでソートしたデータ
+     *
+     * @var array[$ii]["id"|"name"|"pid"]
+     */
     var $index_array = array(); // インデックスレコードを階層構造込みでソートた配列(表示用)
 
     // DBの結果格納
+    /**
+     * To hold the information of the items table
+     * アイテムテーブルの情報を保持する
+     *
+     * @var array
+     */
     var $result_item = null; // アイテムテーブル
+    /**
+     * Common processing object for the Service Document
+     * Service Document用共通処理オブジェクト
+     *
+     * @var SwordUtility
+     */
     var $utility = null;     // SWORD Utility
 
     // Add flag for get index info or not. 2009/05/11 Y.Nakao
+    /**
+     * Output flag of the index information ( "true": output, "false": non-output)
+     * インデックス情報の出力フラグ("true":出力,"false":非出力)
+     *
+     * @var string
+     */
     var $index_flg = null;
 
+    /**
+     * Service Document (can be registered index list) output processing
+     * Service Document(登録可能なインデックス一覧)出力処理
+     */
     function execute()
     {
         try {
@@ -79,6 +170,7 @@ class Repository_Action_Main_Sword_Servicedocument extends RepositoryAction
             //send the Service Document
             header("Content-Type: text/xml; charset=utf-8");
             echo $str_repository_xml_utf8;
+            $this->finalize();
             exit();
             //$this->uploadsView->download($str_repository_xml_utf8, "repository.xml", "application/atomsvc+xml");
 
@@ -100,7 +192,10 @@ class Repository_Action_Main_Sword_Servicedocument extends RepositoryAction
     }
 
     /**
-     * [[generate Service Document]]
+     * Service Document generation
+     * Service Document生成
+     * 
+     * @param string $str The output string 出力文字列
      */
     function generateServiceDocument(&$str){
         // ------------------------------------------------------------
@@ -124,8 +219,6 @@ class Repository_Action_Main_Sword_Servicedocument extends RepositoryAction
         //   Full level 1 compliance REQUIRES implementation of the full set of extension elements and compliance with APP [ATOMPUB] as indicated by the SWORD profile of APP specified in this document.
         //  sword:verbose (true or false): Verbose Supported
         //  sword:noOp (true or false)   : no-Op Supported
-        // change sword ns 20151113 mhaya
-        //$str .="<service xmlns:dcterms=\"http://purl.org/dc/terms/\" xmlns=\"http://www.w3.org/2007/app\" xmlns:atom=\"http://www.w3.org/2005/Atom\" xmlns:sword=\"http://purl.org/net/sword/\">" . "\n";
         $str .="<service xmlns:dcterms=\"http://purl.org/dc/terms/\" xmlns=\"http://www.w3.org/2007/app\" xmlns:atom=\"http://www.w3.org/2005/Atom\" xmlns:sword=\"http://purl.org/net/sword/terms/\">" . "\n";
         // V1.2 => V1.3 : <sword:level> removed.
 //      $str .="  <sword:level>" . $workspace['workspace']['level']  ."</sword:level>\n";
@@ -187,9 +280,11 @@ class Repository_Action_Main_Sword_Servicedocument extends RepositoryAction
 
     // get index tree data paformance up 2010/03/02 Y.Nakao --start--
     /**
-     * get index tree
+     * To get a list of browsing and possible post index
+     * 閲覧かつ投稿可能なインデックスの一覧を取得する
      *
-     * @return unknown
+     * @return boolean|array Index List インデックス一覧
+     *                       array[$ii]["id"|"name"|"pid"]
      */
     function getIndexTree(){
 
@@ -270,11 +365,15 @@ class Repository_Action_Main_Sword_Servicedocument extends RepositoryAction
     }
 
     /**
-     * Enter description here...
+     * To create the information of the viewing and possible post index in XML format
+     * 閲覧かつ投稿可能なインデックスの情報をXML形式で作成する
      *
-     * @param unknown_type $all_index
-     * @param unknown_type $index
-     * @param unknown_type $parent_name
+     * @param array $all_index Index list インデックス一覧
+     *                         array[$ii]["id"|"name"|"pid"]
+     * @param array $index Index information インデックス情報
+     *                     array["id"|"name"|"pid"]
+     * @param string $parent_name The name of the parent index 親インデックスの名称
+     * @param string $str The output string 出力文字列
      */
     function outIndexTree(&$all_index, $index, $parent_name, &$str){
         //$log_file = "IndexTree.txt";
