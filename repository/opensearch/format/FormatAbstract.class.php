@@ -854,7 +854,12 @@ class Repository_Opensearch_FormatAbstract
                                 array_push($itemData[self::DATA_FILE_URI],$value);
                                 array_push($itemData[self::DATA_FILE_NAME],basename($value));
                                 array_push($itemData[self::DATA_MIME_TYPE],"image/bmp");
-                            }
+                            }else if(preg_match('/json$/i',$match[3]))
+			    {
+				array_push($itemData[self::DATA_FILE_URI],$value);
+                                array_push($itemData[self::DATA_FILE_NAME],basename($value));
+                                array_push($itemData[self::DATA_MIME_TYPE],"application/json");
+}
                         }
                     }
                 }

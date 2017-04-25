@@ -9,7 +9,7 @@
 
 // --------------------------------------------------------------------
 //
-// $Id: SwordUpdate.class.php 71165 2016-08-22 09:20:28Z keiya_sugimoto $
+// $Id: SwordUpdate.class.php 73523 2016-10-27 00:34:48Z keiya_sugimoto $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics,
 // Research and Development Center for Scientific Information Resources
@@ -787,6 +787,7 @@ class SwordUpdate extends RepositoryAction
      * @param string $password Password パスワード
      * @param string $checkedIds Index id list to insert 登録先インデックスID一覧
      * @param string $newIndex New index id list 新規インデックスID一覧
+     * @param int $changeDoiFlag Mode of regist DOI(0:normal mode, 1:DOI change mode) DOI登録のモード(0:通常モード, 1:DOI変更モード)
      * @param string $insertUser Insert user id 挿入ユーザID
      */
     public function init($itemId, $itemNo, $loginId, $password, $checkedIds, $newIndex, $changeDoiFlag, $insertUser="")

@@ -9,7 +9,7 @@
 
 // --------------------------------------------------------------------
 //
-// $Id: Filecleanup.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
+// $Id: Filecleanup.class.php 75490 2017-01-20 00:40:44Z keiya_sugimoto $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -43,7 +43,7 @@ class Repository_Action_Common_Filecleanup extends RepositoryAction
      *
      * @var int
      */
-    const TIME_LAG = 86400;
+    const TIME_LAG = 3600;
     
     /**
      * Administrator login ID

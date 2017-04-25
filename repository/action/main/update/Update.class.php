@@ -9,7 +9,7 @@
 
 // --------------------------------------------------------------------
 //
-// $Id: Update.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
+// $Id: Update.class.php 73468 2016-10-26 04:53:37Z tomohiro_ichikawa $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics,
 // Research and Development Center for Scientific Information Resources
@@ -770,10 +770,10 @@ class Repository_Action_Main_Update extends RepositoryAction
                 case 1313:
                     // Add table "repository_supple" 2009/07/16 A.Suzuki --start--
                     $query = "CREATE TABLE ". DATABASE_PREFIX ."repository_supple (".
-                             " `item_id` INT, ".
-                             " `item_no` INT, ".
-                             " `attribute_id` INT, ".
-                             " `supple_no` INT, ".
+                             " `item_id` INT NOT NULL default 0, ".
+                             " `item_no` INT NOT NULL default 0, ".
+                             " `attribute_id` INT NOT NULL default 0, ".
+                             " `supple_no` INT NOT NULL default 0, ".
                              " `item_type_id` INT, ".
                              " `supple_weko_item_id` INT, ".
                              " `supple_title` TEXT, ".
@@ -874,7 +874,7 @@ class Repository_Action_Main_Update extends RepositoryAction
                     }
 
                     $query = "CREATE TABLE ".DATABASE_PREFIX."repository_users ( ".
-                            " `user_id` VARCHAR(40), ".
+                            " `user_id` VARCHAR(40) NOT NULL default '', ".
                             " `contents_mail_flg` INT NOT NULL default 0, ".
                             " `supple_mail_flg` INT NOT NULL default 0, ".
                             " `ins_user_id` VARCHAR(40) NOT NULL default 0, ".
@@ -2478,8 +2478,8 @@ class Repository_Action_Main_Update extends RepositoryAction
                              "  record_date VARCHAR(7) NOT NULL, ".
                              "  item_id INT NOT NULL, ".
                              "  item_no INT NOT NULL, ".
-                             "  attribute_id INT default NULL, ".
-                             "  file_no INT default NULL, ".
+                             "  attribute_id INT NOT NULL, ".
+                             "  file_no INT NOT NULL, ".
                              "  operation_id INT NOT NULL, ".
                              "  domain VARCHAR(255) default '', ".
                              "  cnt INT default 0 NOT NULL, ".
@@ -6187,7 +6187,7 @@ class Repository_Action_Main_Update extends RepositoryAction
     private function addElapsedTimeLog()
     {
         $query = "CREATE TABLE ".DATABASE_PREFIX. "repository_log_elapsed_time (". 
-                     "`log_no` INT, ". 
+                     "`log_no` INT NOT NULL default 0, ". 
                      "`elapsed_time` INT, ". 
                      "`ins_user_id` VARCHAR(40) NOT NULL default '0',". 
                      "`mod_user_id` VARCHAR(40) NOT NULL default '0',". 
@@ -6645,7 +6645,7 @@ class Repository_Action_Main_Update extends RepositoryAction
     {
         // create repository_operation_log table
         $query = "CREATE TABLE {repository_operation_log} ( ".
-            " `log_id` INT, ".
+            " `log_id` INT NOT NULL default 0, ".
             " `record_date` VARCHAR(23) NOT NULL, ".
             " `user_id` VARCHAR(40) NOT NULL default 0, ".
             " `request_parameter` TEXT, ".
@@ -6737,10 +6737,10 @@ class Repository_Action_Main_Update extends RepositoryAction
     private function addCoverDeleteStatusTable()
     {
         $query = "CREATE TABLE {repository_cover_delete_status} (".
-            "`item_id` INT, ".
-            "`item_no` INT, ".
-            "`attribute_id` INT, ".
-            "`file_no` INT, ".
+            "`item_id` INT NOT NULL default 0, ".
+            "`item_no` INT NOT NULL default 0, ".
+            "`attribute_id` INT NOT NULL default 0, ".
+            "`file_no` INT NOT NULL default 0, ".
             "`status` INT(1), ".
             "PRIMARY KEY(`item_id`, `item_no`, `attribute_id`, `file_no`)".
             ") ENGINE=MyISAM;";

@@ -258,11 +258,8 @@ class Repository_Components_Business_Customreport extends Repository_Components_
                 // per month
                 $query = "SELECT t1.day, t1.day2, t2.cnt ".
                         " FROM ( ".
-                        "   SELECT `day`, SUBSTRING(CAST( day AS DATE), 1, 7) AS day2 ".
-                        "   FROM ( ".
-                        "       SELECT * FROM ".DATABASE_PREFIX ."repository_date ".
-                        "       ORDER BY `day` DESC ".
-                        "   ) AS t3 ".
+                        "   SELECT MAX(CAST(`day` AS DATE)) AS day, SUBSTRING(CAST( day AS DATE), 1, 7) AS day2 ".
+                        "   FROM ".DATABASE_PREFIX ."repository_date ".
                         "   GROUP BY `day2` ".
                         " ) AS t1 ".
                         " LEFT JOIN ( ";
@@ -280,11 +277,8 @@ class Repository_Components_Business_Customreport extends Repository_Components_
                 // per year
                 $query = "SELECT t1.day, t1.day2, t2.cnt ".
                         " FROM ( ".
-                        "   SELECT `day`, SUBSTRING(CAST( day AS DATE), 1, 4) AS day2 ".
-                        "   FROM ( ".
-                        "       SELECT * FROM ".DATABASE_PREFIX ."repository_date ".
-                        "       ORDER BY `day` DESC ".
-                        "   ) AS t3 ".
+                        "   SELECT MAX(CAST(`day` AS DATE)) AS day, SUBSTRING(CAST( day AS DATE), 1, 4) AS day2 ".
+                        "   FROM ".DATABASE_PREFIX ."repository_date ".
                         "   GROUP BY `day2` ".
                         " ) AS t1 ".
                         " LEFT JOIN ( ";

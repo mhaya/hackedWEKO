@@ -234,6 +234,9 @@
         var nowYear = date.getFullYear();
         var nowMonth = date.getMonth()+1;
         if(nowMonth < 10) { nowMonth = "0"+nowMonth; }
+        <{* 空文字を追加する事でString型に変更している（無いと文字列としての連結が行えず、加算処理となる） *}>
+        nowYear = nowYear+"";
+        nowMonth = nowMonth+"";
         var nowDate = nowYear+nowMonth;
         // 開始月 > 終了月、開始月or終了月が実行月以降であると実行不可
         if(tmpFromDate > tmpToDate || tmpFromDate >= nowDate || tmpToDate >= nowDate) {

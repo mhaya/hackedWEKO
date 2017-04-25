@@ -1,6 +1,6 @@
 CREATE TABLE `repository_item` (
-    `item_id` INT,
-    `item_no` INT,
+    `item_id` INT NOT NULL default 0,
+    `item_no` INT NOT NULL default 0,
     `revision_no` INT NOT NULL,
     `item_type_id` INT NOT NULL,
     `prev_revision_no` INT NOT NULL,
@@ -32,7 +32,7 @@ CREATE TABLE `repository_item` (
 ) ENGINE=innodb ;
 
 CREATE TABLE `repository_item_type` (
-    `item_type_id` INT,
+    `item_type_id` INT NOT NULL default 0,
     `item_type_name` TEXT NOT NULL,
     `item_type_short_name` TEXT NOT NULL,
     `explanation` TEXT NOT NULL,
@@ -80,9 +80,9 @@ CREATE TABLE `repository_item_attr_type` (
     KEY `item_type_id` (`item_type_id`)
 ) ENGINE=innodb ;
 CREATE TABLE `repository_item_attr_candidate` (
-    `item_type_id` INT,
-    `attribute_id` INT,
-    `candidate_no` INT,
+    `item_type_id` INT NOT NULL default 0,
+    `attribute_id` INT NOT NULL default 0,
+    `candidate_no` INT NOT NULL default 0,
     `candidate_value` TEXT NOT NULL,
     `candidate_short_value` TEXT NOT NULL,
     `ins_user_id` VARCHAR(40) NOT NULL default "0",
@@ -96,10 +96,10 @@ CREATE TABLE `repository_item_attr_candidate` (
     KEY `item_type_id` (`item_type_id`, `attribute_id`)
 ) ENGINE=innodb ;
 CREATE TABLE `repository_item_attr` (
-    `item_id` INT,
-    `item_no` INT,
-    `attribute_id` INT,
-    `attribute_no` INT,
+    `item_id` INT NOT NULL default 0,
+    `item_no` INT NOT NULL default 0,
+    `attribute_id` INT NOT NULL default 0,
+    `attribute_no` INT NOT NULL default 0,
     `attribute_value` TEXT NOT NULL,
     `item_type_id` INT NOT NULL,
     `ins_user_id` VARCHAR(40) NOT NULL default "0",
@@ -114,9 +114,9 @@ CREATE TABLE `repository_item_attr` (
     KEY `attribute_id` (`attribute_id`, `item_type_id`)
 ) ENGINE=innodb ;
 CREATE TABLE `repository_position_index` (
-    `item_id` INT,
-    `item_no` INT,
-    `index_id` INT,
+    `item_id` INT NOT NULL default 0,
+    `item_no` INT NOT NULL default 0,
+    `index_id` INT NOT NULL default 0,
     `custom_sort_order` INT NOT NULL default 0,
     `ins_user_id` VARCHAR(40) NOT NULL default "0",
     `mod_user_id` VARCHAR(40) NOT NULL default "0",
@@ -130,7 +130,7 @@ CREATE TABLE `repository_position_index` (
     KEY `index_id` (`index_id`)
 ) ENGINE=innodb ;
 CREATE TABLE `repository_index` (
-    `index_id` INT,
+    `index_id` INT NOT NULL default 0,
     `index_name` TEXT NOT NULL,
     `index_name_english` TEXT NOT NULL,
     `parent_index_id` INT NOT NULL,
@@ -175,10 +175,10 @@ CREATE TABLE `repository_index` (
     INDEX `create_cover_flag`(`create_cover_flag`)
 ) ENGINE=innodb ;
 CREATE TABLE `repository_file` (
-    `item_id` INT,
-    `item_no` INT,
-    `attribute_id` INT,
-    `file_no` INT,
+    `item_id` INT NOT NULL default 0,
+    `item_no` INT NOT NULL default 0,
+    `attribute_id` INT NOT NULL default 0,
+    `file_no` INT NOT NULL default 0,
     `file_name` TEXT NOT NULL,
     `display_name` TEXT NOT NULL,
     `display_type` INT NOT NULL default 0,
@@ -207,11 +207,11 @@ CREATE TABLE `repository_file` (
     KEY `attribute_id` (`attribute_id`, `item_type_id`)
 ) ENGINE=innodb ;
 CREATE TABLE `repository_attached_file` (
-    `item_id` INT,
-    `item_no` INT,
-    `attribute_id` INT,
-    `file_no` INT,
-    `attached_file_no` INT,
+    `item_id` INT NOT NULL default 0,
+    `item_no` INT NOT NULL default 0,
+    `attribute_id` INT NOT NULL default 0,
+    `file_no` INT NOT NULL default 0,
+    `attached_file_no` INT NOT NULL default 0,
     `attached_file_name` TEXT NOT NULL,
     `mime_type` TEXT NOT NULL,
     `extension` TEXT NOT NULL,
@@ -228,7 +228,7 @@ CREATE TABLE `repository_attached_file` (
     KEY `attribute_id` (`attribute_id`)
 ) ENGINE=innodb ;
 CREATE TABLE `repository_license_master` (
-    `license_id` INT,
+    `license_id` INT NOT NULL default 0,
     `license_notation` TEXT NOT NULL,
     `img_url` TEXT NOT NULL,
     `text_url` TEXT NOT NULL,
@@ -242,10 +242,10 @@ CREATE TABLE `repository_license_master` (
     PRIMARY KEY(`license_id`)
 ) ENGINE=innodb ;
 CREATE TABLE `repository_thumbnail` (
-    `item_id` INT,
-    `item_no` INT,
-    `attribute_id` INT,
-    `file_no` INT,
+    `item_id` INT NOT NULL default 0,
+    `item_no` INT NOT NULL default 0,
+    `attribute_id` INT NOT NULL default 0,
+    `file_no` INT NOT NULL default 0,
     `file_name` TEXT NOT NULL,
     `show_order` INT,
     `mime_type` TEXT NOT NULL,
@@ -264,10 +264,10 @@ CREATE TABLE `repository_thumbnail` (
     KEY `attribute_id` (`attribute_id`, `item_type_id`)
 ) ENGINE=innodb ;
 CREATE TABLE `repository_personal_name` (
-    `item_id` INT,
-    `item_no` INT,
-    `attribute_id` INT,
-    `personal_name_no` INT,
+    `item_id` INT NOT NULL default 0,
+    `item_no` INT NOT NULL default 0,
+    `attribute_id` INT NOT NULL default 0,
+    `personal_name_no` INT NOT NULL default 0,
     `family` TEXT NOT NULL,
     `name` TEXT NOT NULL,
     `family_ruby` TEXT NOT NULL,
@@ -288,10 +288,10 @@ CREATE TABLE `repository_personal_name` (
     INDEX `author_id`(`item_id`, `author_id`)
 ) ENGINE=innodb ;
 CREATE TABLE `repository_reference` (
-    `org_reference_item_id` INT,
-    `org_reference_item_no` INT,
-    `dest_reference_item_id` INT,
-    `dest_reference_item_no` INT,
+    `org_reference_item_id` INT NOT NULL default 0,
+    `org_reference_item_no` INT NOT NULL default 0,
+    `dest_reference_item_id` INT NOT NULL default 0,
+    `dest_reference_item_no` INT NOT NULL default 0,
     `reference` TEXT NOT NULL,
     `ins_user_id` VARCHAR(40) NOT NULL default "0",
     `mod_user_id` VARCHAR(40) NOT NULL default "0",
@@ -318,7 +318,7 @@ CREATE TABLE `repository_parameter` (
     PRIMARY KEY(`param_name`(255))
 ) ENGINE=innodb ;
 CREATE TABLE `repository_log` (
-    `log_no` INT,
+    `log_no` INT NOT NULL default 0,
     `record_date` VARCHAR(23) NOT NULL,
     `user_id` VARCHAR(40) NOT NULL default "0",
     `operation_id` INT NOT NULL,
@@ -356,10 +356,10 @@ CREATE TABLE `repository_element_cd` (
   PRIMARY KEY (id)
 ) ENGINE=MyISAM;
 CREATE TABLE `repository_biblio_info` (
-    `item_id` INT,
-    `item_no` INT,
-    `attribute_id` INT,
-    `biblio_no` INT,
+    `item_id` INT NOT NULL default 0,
+    `item_no` INT NOT NULL default 0,
+    `attribute_id` INT NOT NULL default 0,
+    `biblio_no` INT NOT NULL default 0,
     `biblio_name` TEXT,
     `biblio_name_english` TEXT,
     `volume` TEXT,
@@ -380,10 +380,10 @@ CREATE TABLE `repository_biblio_info` (
     KEY `attribute_id` (`attribute_id`, `item_type_id`)
 ) ENGINE=innodb ;
 CREATE TABLE `repository_file_price` (
-    `item_id` INT,
-    `item_no` INT,
-    `attribute_id` INT,
-    `file_no` INT,
+    `item_id` INT NOT NULL default 0,
+    `item_no` INT NOT NULL default 0,
+    `attribute_id` INT NOT NULL default 0,
+    `file_no` INT NOT NULL default 0,
     `price` TEXT,
     `ins_user_id` VARCHAR(40) NOT NULL default "0",
     `mod_user_id` VARCHAR(40) NOT NULL default "0",
@@ -398,7 +398,7 @@ CREATE TABLE `repository_file_price` (
 ) ENGINE=innodb ;
 CREATE TABLE `repository_ranking` (
     `rank_type` TEXT(255),
-    `rank` INT,
+    `rank` INT NOT NULL default 0,
     `disp_name` TEXT,
     `disp_name_english` TEXT,
     `disp_value` TEXT,
@@ -412,10 +412,10 @@ CREATE TABLE `repository_ranking` (
     PRIMARY KEY(`rank_type`(255), `rank`)
 ) ENGINE=innodb ;
 CREATE TABLE `repository_supple` (
-    `item_id` INT,
-    `item_no` INT,
-    `attribute_id` INT,
-    `supple_no` INT,
+    `item_id` INT NOT NULL default 0,
+    `item_no` INT NOT NULL default 0,
+    `attribute_id` INT NOT NULL default 0,
+    `supple_no` INT NOT NULL default 0,
     `item_type_id` INT,
     `supple_weko_item_id` INT,
     `supple_title` TEXT,
@@ -441,7 +441,7 @@ CREATE TABLE `repository_supple` (
     KEY `attribute_id` (`attribute_id`, `item_type_id`)
 ) ENGINE=innodb ;
 CREATE TABLE `repository_users` (
-    `user_id` varchar(40),
+    `user_id` varchar(40) NOT NULL default '',
     `contents_mail_flg` INT NOT NULL default 0,
     `supple_mail_flg` INT NOT NULL default 0,
     `ins_user_id` VARCHAR(40) NOT NULL default "0",
@@ -555,8 +555,8 @@ CREATE TABLE `repository_usagestatistics` (
     `record_date` VARCHAR(7) NOT NULL,
     `item_id` INT NOT NULL,
     `item_no` INT NOT NULL,
-    `attribute_id` INT default NULL,
-    `file_no` INT default NULL,
+    `attribute_id` INT NOT NULL,
+    `file_no` INT NOT NULL,
     `operation_id` INT NOT NULL,
     `domain` VARCHAR(255) default '',
     `cnt` INT default 0 NOT NULL,
@@ -1145,7 +1145,7 @@ CREATE TABLE `repository_sitelicense_dlview` (
   `year` INT(4) NOT NULL,
   `month` INT(2) NOT NULL,
   `operation_id` INT(1) NOT NULL,
-  `online_issn` VARCHAR(9),
+  `online_issn` VARCHAR(9) NOT NULL,
   `journal_name_ja` TEXT,
   `journal_name_en` TEXT,
   `setspec` TEXT,
@@ -1196,7 +1196,7 @@ CREATE TABLE `repository_doi_flag` (
    PRIMARY KEY(`doi_flag_id`)
 ) ENGINE=innodb;
 CREATE TABLE `repository_operation_log` (
-    `log_id` INT,
+    `log_id` INT NOT NULL default 0,
     `record_date` VARCHAR(23) NOT NULL,
     `user_id` VARCHAR(40) NOT NULL default 0,
     `request_parameter` TEXT,
@@ -1204,7 +1204,7 @@ CREATE TABLE `repository_operation_log` (
     PRIMARY KEY(`log_id`)
 ) ENGINE=MyISAM;
 CREATE TABLE `repository_log_elapsed_time` (
-    `log_no` INT, 
+    `log_no` INT NOT NULL default 0, 
     `elapsed_time` INT, 
     `ins_user_id` VARCHAR(40) NOT NULL default '0',
     `mod_user_id` VARCHAR(40) NOT NULL default '0',
@@ -1272,10 +1272,10 @@ CREATE TABLE `repository_target_search_item` (
   PRIMARY KEY  (`search_item_id`)
 ) ENGINE=InnoDb;
 CREATE TABLE `repository_cover_delete_status` (
-  `item_id` INT,
-  `item_no` INT,
-  `attribute_id` INT,
-  `file_no` INT,
+  `item_id` INT NOT NULL default 0,
+  `item_no` INT NOT NULL default 0,
+  `attribute_id` INT NOT NULL default 0,
+  `file_no` INT NOT NULL default 0,
   `status` INT(1),
   PRIMARY KEY  (`item_id`, `item_no`, `attribute_id`, `file_no`)
 ) ENGINE=MyISAM;
@@ -1301,11 +1301,11 @@ CREATE TABLE `repository_index_additionaldata` (
 ) ENGINE=InnoDb;
 
 CREATE TABLE `repository_file_update_history` (
-  `item_id` INT, 
-  `item_no` INT, 
-  `attribute_id` INT, 
-  `file_no` INT, 
-  `version` INT, 
+  `item_id` INT NOT NULL default 0, 
+  `item_no` INT NOT NULL default 0, 
+  `attribute_id` INT NOT NULL default 0, 
+  `file_no` INT NOT NULL default 0, 
+  `version` INT NOT NULL default 0, 
   `file_update_date` VARCHAR(23) NOT NULL, 
   `physical_file_name` TEXT NOT NULL, 
   `file_update_user_id` VARCHAR(40) NOT NULL, 
@@ -1412,8 +1412,8 @@ CREATE TABLE `repository_additionaldata_attr_candidate_label` (
     PRIMARY KEY(`additionaldata_type_id`, `attribute_id`, `candidate_no`, `language`)
 ) ENGINE=InnoDb;
 CREATE TABLE `repository_bat_status` (
-  `batch_instance_no` INT(11),
-  `batch_name` varchar(100) NOT NULL,
+  `batch_instance_no` INT(11) NOT NULL default 0,
+  `batch_name` varchar(100) NOT NULL default '',
   `process_id` INT(11) NOT NULL,
   `status` INT(1) NOT NULL,
   `command` TEXT,
@@ -1574,7 +1574,7 @@ INSERT INTO `repository_parameter` VALUE
     ('AWSSecretAccessKey','3DhXSBYKMnma7PR3fP5i3fk/LHZzeqyKHXfg8E90','Amazon AWSSecretAccessKey','1','1','0','2008-03-18 00:00:00.000','2008-03-18 00:00:00.000','',0),
     ('ranking_disp_setting','0','ランキングの表示設定(0:リアルタイムに更新する, 1:DB保存情報を表示する)','1','1','0','2008-03-18 00:00:00.000','2008-03-18 00:00:00.000','',0),
     ('default_disp_type','0','トップページ右側の初期表示設定(0:指定インデックス検索結果, 1:ランキング)','1','1','0','2008-03-18 00:00:00.000','2008-03-18 00:00:00.000','',0),
-    ('WEKO_version','2.3.1','現在稼働中のWEKOバージョン情報','1','1','0','2008-03-18 00:00:00.000','2008-03-18 00:00:00.000','',0),
+    ('WEKO_version','2.3.4','現在稼働中のWEKOバージョン情報','1','1','0','2008-03-18 00:00:00.000','2008-03-18 00:00:00.000','',0),
     ('sort_disp','1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16|17|18','検索結果表示で表示するソート条件','1','1','0','2008-03-18 00:00:00.000','2008-03-18 00:00:00.000','',0),
     ('sort_not_disp','','検索結果表示で表示しないソート条件','1','1','0','2008-03-18 00:00:00.000','2008-03-18 00:00:00.000','',0),
     ('sort_disp_default','7|16','検索結果表示のデフォルトソート条件(index検索|keyword検索)','1','1','0','2008-03-18 00:00:00.000','2008-03-18 00:00:00.000','',0),

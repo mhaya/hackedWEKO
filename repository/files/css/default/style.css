@@ -2418,8 +2418,7 @@ img.draganddrop {
 	padding: 0px;
 }
 .imageSize{
-	//max-width: 200px;
-	width: 60%;
+	max-width: 200px;
 }
 .iframeSize{
 	max-width: 600px;

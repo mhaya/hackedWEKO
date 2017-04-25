@@ -9,7 +9,7 @@
 
 // --------------------------------------------------------------------
 //
-// $Id: Move.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
+// $Id: Move.class.php 74833 2016-12-16 01:54:43Z keiya_sugimoto $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics,
 // Research and Development Center for Scientific Information Resources
@@ -841,6 +841,7 @@ class Repository_Action_Edit_Log_Move extends RepositoryAction
             $repositoryLogreport->disp_end_date = sprintf("%d-%02d",$repositoryLogreport->ey_log, $repositoryLogreport->em_log);
             $repositoryLogreport->setupLanguageResourceForOtherAction();
             $repositoryLogreport->setupGroupList();
+            $repositoryLogreport->Logger = WekoBusinessFactory::getFactory()->logger;
             
 			// add for compress files
 			$output_files = array();

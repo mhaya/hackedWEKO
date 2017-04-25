@@ -9,7 +9,7 @@
 
 // --------------------------------------------------------------------
 //
-// $Id: Oaipmh.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
+// $Id: Oaipmh.class.php 72893 2016-10-12 10:35:25Z tomohiro_ichikawa $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics,
 // Research and Development Center for Scientific Information Resources
@@ -1699,6 +1699,7 @@ class Repository_Oaipmh extends RepositoryAction
         		$from = str_replace("T", " ", $this->from);
         		$from = str_replace("Z", "", $from);
         		$params[] = $from;
+        		$params[] = $from;
         	}
 
         	if(strlen($this->until) > 0)
@@ -1714,6 +1715,7 @@ class Repository_Oaipmh extends RepositoryAction
         		$addFilter .= " (mod_date <= ? OR ( shown_date <= ? AND shown_date < DATE_FORMAT(CURRENT_TIMESTAMP , '%Y-%m-%d %H:%i:%s' ) ) ) ";
         		$until = str_replace("T", " ", $this->until);
         		$until = str_replace("Z", "", $until);
+        		$params[] = $until;
         		$params[] = $until;
         	}
         }else{

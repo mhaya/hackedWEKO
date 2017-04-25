@@ -9,7 +9,7 @@
 
 // --------------------------------------------------------------------
 //
-// $Id: Pdfcover.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
+// $Id: Pdfcover.class.php 73468 2016-10-26 04:53:37Z tomohiro_ichikawa $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -370,7 +370,7 @@ class Repository_Components_business_Pdfcover extends BusinessBase
         if($status === RepositoryDatabaseConst::COVER_DELETE_STATUS_NOTYET && $pdfCoverNum > 0) {
             $this->debugLog("[".__FUNCTION__."]"." [Start delete cover] target:".$targetFilePath.", workdir:".$workDir, __FILE__, __CLASS__, __LINE__);
             // カバーページ分離処理
-            if(!$this->dividePdf($pdftkCmd, $workFile, $workDir.self::PDF_NAME_ORG_TARGET, sprintf(($pdfCoverNum+1)."-end"))) {
+            if(!$this->dividePdf($pdftkCmd, $workFile, $workDir.self::PDF_NAME_ORG_TARGET, sprintf(($pdfCoverNum+1)))) {
                 $this->errorLog("[".__FUNCTION__."]"." Failed divide PDF file", __FILE__, __CLASS__, __LINE__);
                 $this->errormsg = self::ERR_CANNOT_DELETE;
                 // ファイル破損の可能性あるのでfilesから取得し直してそれを返す
@@ -550,12 +550,21 @@ class Repository_Components_business_Pdfcover extends BusinessBase
             return false;
         }
         
-        if(!file_exists($cmd_path."pdftk") && !file_exists($cmd_path."pdftk.exe")){
+        // PDFTK or QPDF command path
+        // 設定されたパス下の実行ファイルを走査する
+        // QPDFはPDFTKが無い場合のみ使用される
+        if(file_exists($cmd_path."pdftk")){
+            return $cmd_path."pdftk";
+        } elseif(file_exists($cmd_path."pdftk.exe")) {
+            return $cmd_path."pdftk.exe";
+        } elseif(file_exists($cmd_path."qpdf")) {
+            return $cmd_path."qpdf";
+        } elseif(file_exists($cmd_path."qpdf.exe")) {
+            return $cmd_path."qpdf.exe";
+        } else {
             $this->debugLog("[".__FUNCTION__."]"." Not Exist PDFTK command on server", __FILE__, __CLASS__, __LINE__);
             return false;
         }
-        
-        return $cmd_path."pdftk";
     }
     
     /**
@@ -704,7 +713,7 @@ class Repository_Components_business_Pdfcover extends BusinessBase
      * @param string $pdftkCmd　PDFTK command path               PDFTKコマンドパス
      * @param string $target    File to be processed             処理対象ファイル
      * @param string $tmpTarget Temporary file to be processed   処理対象一時ファイル
-     * @param string $range     PDF cover page separation number PDFカバーページ分離枚数
+     * @param int    $range     PDF cover page separation number PDFカバーページ分離枚数開始ページ番号
      * @return bool true/false  success/failed                   成功/失敗
      */
     private function dividePdf($pdftkCmd, $target, $tmpTarget, $range)
@@ -713,13 +722,25 @@ class Repository_Components_business_Pdfcover extends BusinessBase
             $this->errorLog("[".__FUNCTION__."]"." Failed rename to tmpfile for divide", __FILE__, __CLASS__, __LINE__);
             return false;
         }
-        // # pdftk [target_path] cat [page_range] output [output_path]
-        $cmd = "\"".$pdftkCmd."\" ". "\"".$tmpTarget."\" ". "cat ".$range." output ". "\"".$target."\"";
+        
+        // 渡された実行コマンドからコマンド文を組み立てる
+        if(preg_match("/pdftk(.exe)?$/", $pdftkCmd) == 1) {
+            // # pdftk [target_path] cat [page_range] output [output_path]
+            $cmd = "\"".$pdftkCmd."\" ". "\"".$tmpTarget."\" ". "cat ".$range."-end output ". "\"".$target."\"";
+        } elseif(preg_match("/qpdf(.exe)?$/", $pdftkCmd) == 1) {
+            // # qpdf [target_path] --pages [target_path] [range] -- [output_path]
+            $cmd = "\"".$pdftkCmd."\" ". "\"".$tmpTarget."\" ". "--pages \"". $tmpTarget."\" ".$range."-z -- ". "\"".$target."\"";
+        } else {
+            $this->errorLog("[".__FUNCTION__."]"." Invalid command name.", __FILE__, __CLASS__, __LINE__);
+            return false;
+        }
+        
         // 実行(最大処理時間60秒)
         $result = Repository_Components_Util_Fileprocess::exec($cmd, 180000);
         // 成功/0 削除失敗/1 PDFTK実行時例外発生/2 例外エラー/-1 タイムアウト/false
         if($result !== 0) {
             $this->errorLog("[".__FUNCTION__."]"." Failed divide pdf cover [status : ". $result."]", __FILE__, __CLASS__, __LINE__);
+            $this->errorLog("[".__FUNCTION__."]".$cmd, __FILE__, __CLASS__, __LINE__);
             return false;
         }
         
@@ -745,17 +766,24 @@ class Repository_Components_business_Pdfcover extends BusinessBase
         }
         $this->debugLog("[".__FUNCTION__."]"." find PDFTK", __FILE__, __CLASS__, __LINE__);
         
-        // #pdftk [cover_path] [target_path] cat output [output_path]
-        $cmd = "\"".$pdftkCmd."\" ".
-               "\"".$coverFile."\" ".
-               "\"".$workFile."\" ".
-               "cat output ".
-               "\"".$combineFile."\"";
+        // 渡された実行コマンドからコマンド文を組み立てる
+        if(preg_match("/pdftk(.exe)?$/", $pdftkCmd) == 1) {
+            // # pdftk [cover_path] [target_path] cat output [output_path]
+            $cmd = "\"".$pdftkCmd."\" ". "\"".$coverFile."\" ". "\"".$workFile."\" ". "cat output ". "\"".$combineFile."\"";
+        } elseif(preg_match("/qpdf(.exe)?$/", $pdftkCmd) == 1) {
+            // # qpdf [cover_path] --pages [cover_path] [target_path] -- [output_path]
+            $cmd = "\"".$pdftkCmd."\" ". "\"".$coverFile."\" ". "--pages \"". $coverFile."\" \"".$workFile."\" -- ". "\"".$combineFile."\"";
+        } else {
+            $this->errorLog("[".__FUNCTION__."]"." Invalid command name.", __FILE__, __CLASS__, __LINE__);
+            return false;
+        }
+        
         // 実行(最大処理時間60秒)
         $result = Repository_Components_Util_Fileprocess::exec($cmd, 180000);
         // 成功/0 付与失敗/1 ソフトウェア実行時例外発生/2 例外エラー/-1 タイムアウト/false
         if($result !== 0) {
             $this->errorLog("[".__FUNCTION__."]"." Failed combine pdf cover [status : ". $result."]", __FILE__, __CLASS__, __LINE__);
+            $this->errorLog("[".__FUNCTION__."]".$cmd, __FILE__, __CLASS__, __LINE__);
             return false;
         }
         

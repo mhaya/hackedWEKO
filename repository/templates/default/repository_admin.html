@@ -1,6 +1,6 @@
 <!--// ---------------------------------------------------------------------->
 <!--//                                                                     -->
-<!--// $Id: repository_admin.html 68946 2016-06-16 09:47:19Z tatsuya_koyasu $        -->
+<!--// $Id: repository_admin.html 73468 2016-10-26 04:53:37Z tomohiro_ichikawa $        -->
 <!--//                                                                     -->
 <!--// Copyright (c) 2007 - 2008, National Institute of Informatics,        -->
 <!--// Research and Development Center for Scientific Information Resources -->
@@ -2397,35 +2397,35 @@
 			    <td class="w70 al item_edit_list">
 			     <div>
 			       <div class="clear c">
-			         <p class="w15em fl"><img class="brd03" style="margin: 10px 4px 0px 4px; background-color: <{if $smarty.session.admin_params.path_wvWare.path=='true'}> #0f0; <{else}> #f00;<{/if}>" src="<{$smarty.const.CORE_BASE_URL}>/images/repository/default/check.png" /> wvWare&nbsp;(wvWare)</p>
+			         <p class="w15em fl"><img class="brd03" style="margin: 10px 4px 0px 4px; background-color: <{if $smarty.session.admin_params.path_wvWare.path=='true'}> #0f0; <{else}> #f00;<{/if}>" src="<{$smarty.const.CORE_BASE_URL}>/images/repository/default/check.png" /> <{$lang.repository_admin_path_wvWare}></p>
 			         <input type="text" class="full al fl" name="path_wvWare" value="<{$smarty.session.admin_params.path_wvWare.param_value}>" />
 			       </div>
 			       <div class="clear c">
-			         <p class="w15em fl"><img class="brd03" style="margin: 10px 4px 0px 4px; background-color: <{if $smarty.session.admin_params.path_xlhtml.path=='true'}> #0f0; <{else}> #f00;<{/if}>" src="<{$smarty.const.CORE_BASE_URL}>/images/repository/default/check.png" /> xlhtml&nbsp;(xlhtml)</p>
+			         <p class="w15em fl"><img class="brd03" style="margin: 10px 4px 0px 4px; background-color: <{if $smarty.session.admin_params.path_xlhtml.path=='true'}> #0f0; <{else}> #f00;<{/if}>" src="<{$smarty.const.CORE_BASE_URL}>/images/repository/default/check.png" /> <{$lang.repository_admin_path_xlhtml}></p>
 			         <input type="text" class="full al fl" name="path_xlhtml" value="<{$smarty.session.admin_params.path_xlhtml.param_value}>" />
 			       </div>
 			       <div class="clear c">
-			         <p class="w15em fl"><img class="brd03" style="margin: 10px 4px 0px 4px; background-color: <{if $smarty.session.admin_params.path_poppler.path=='true'}> #0f0; <{else}> #f00;<{/if}>" src="<{$smarty.const.CORE_BASE_URL}>/images/repository/default/check.png" /> poppler&nbsp;(pdftotext)</p>
+			         <p class="w15em fl"><img class="brd03" style="margin: 10px 4px 0px 4px; background-color: <{if $smarty.session.admin_params.path_poppler.path=='true'}> #0f0; <{else}> #f00;<{/if}>" src="<{$smarty.const.CORE_BASE_URL}>/images/repository/default/check.png" /> <{$lang.repository_admin_path_poppler}></p>
 			         <input type="text" class="full al fl" name="path_poppler" value="<{$smarty.session.admin_params.path_poppler.param_value}>" />
 			       </div>
 			       <div class="clear c">
-			         <p class="w15em fl"><img class="brd03" style="margin: 10px 4px 0px 4px; background-color: <{if $smarty.session.admin_params.path_ImageMagick.path=='true'}> #0f0; <{else}> #f00;<{/if}>" src="<{$smarty.const.CORE_BASE_URL}>/images/repository/default/check.png" /> ImageMagick&nbsp;(convert)</p>
+			         <p class="w15em fl"><img class="brd03" style="margin: 10px 4px 0px 4px; background-color: <{if $smarty.session.admin_params.path_ImageMagick.path=='true'}> #0f0; <{else}> #f00;<{/if}>" src="<{$smarty.const.CORE_BASE_URL}>/images/repository/default/check.png" /> <{$lang.repository_admin_path_ImageMagick}></p>
 			         <input type="text" class="full al fl" name="path_ImageMagick" value="<{$smarty.session.admin_params.path_ImageMagick.param_value}>" />
 			       </div>
                    <div class="clear c">
-                     <p class="w15em fl"><img class="brd03" style="margin: 10px 4px 0px 4px; background-color: <{if $smarty.session.admin_params.path_pdftk.path=='true'}> #0f0; <{else}> #f00;<{/if}>" src="<{$smarty.const.CORE_BASE_URL}>/images/repository/default/check.png" /> PDFTK&nbsp;(pdftk)</p>
+                     <p class="fl"><img class="brd03" style="margin: 10px 4px 0px 4px; background-color: <{if $smarty.session.admin_params.path_pdftk.path=='true'}> #0f0; <{else}> #f00;<{/if}>" src="<{$smarty.const.CORE_BASE_URL}>/images/repository/default/check.png" /> <{$lang.repository_admin_path_pdftk}></p>
                      <input type="text" class="full al fl" name="path_pdftk" value="<{$smarty.session.admin_params.path_pdftk.param_value}>" />
                    </div>
                    <div class="clear c">
-                     <p class="w15em fl"><img class="brd03" style="margin: 10px 4px 0px 4px; background-color: <{if $smarty.session.admin_params.path_ffmpeg.path=='true'}> #0f0; <{else}> #f00;<{/if}>" src="<{$smarty.const.CORE_BASE_URL}>/images/repository/default/check.png" /> ffmpeg&nbsp;(ffmpeg)</p>
+                     <p class="w15em fl"><img class="brd03" style="margin: 10px 4px 0px 4px; background-color: <{if $smarty.session.admin_params.path_ffmpeg.path=='true'}> #0f0; <{else}> #f00;<{/if}>" src="<{$smarty.const.CORE_BASE_URL}>/images/repository/default/check.png" /> <{$lang.repository_admin_path_ffmpeg}></p>
                      <input type="text" class="full al fl" name="path_ffmpeg" value="<{$smarty.session.admin_params.path_ffmpeg.param_value}>" />
                    </div>
                    <div class="clear c">
-                     <p class="w15em fl"><img class="brd03" style="margin: 10px 4px 0px 4px; background-color: <{if $smarty.session.admin_params.path_mecab.path=='true'}> #0f0; <{else}> #f00;<{/if}>" src="<{$smarty.const.CORE_BASE_URL}>/images/repository/default/check.png" /> mecab&nbsp;(mecab)</p>
+                     <p class="w15em fl"><img class="brd03" style="margin: 10px 4px 0px 4px; background-color: <{if $smarty.session.admin_params.path_mecab.path=='true'}> #0f0; <{else}> #f00;<{/if}>" src="<{$smarty.const.CORE_BASE_URL}>/images/repository/default/check.png" /> <{$lang.repository_admin_path_mecab}></p>
                      <input type="text" class="full al fl" name="path_mecab" value="<{$smarty.session.admin_params.path_mecab.param_value}>" />
                    </div>
                    <div class="clear c">
-                     <p class="w15em fl"><img class="brd03" style="margin: 10px 4px 0px 4px; background-color: <{if $smarty.session.admin_params.path_php.path=='true'}> #0f0; <{else}> #f00;<{/if}>" src="<{$smarty.const.CORE_BASE_URL}>/images/repository/default/check.png" /> php&nbsp;(php)</p>
+                     <p class="w15em fl"><img class="brd03" style="margin: 10px 4px 0px 4px; background-color: <{if $smarty.session.admin_params.path_php.path=='true'}> #0f0; <{else}> #f00;<{/if}>" src="<{$smarty.const.CORE_BASE_URL}>/images/repository/default/check.png" /> <{$lang.repository_admin_path_php}></p>
                      <input type="text" class="full al fl" name="path_php" value="<{$smarty.session.admin_params.path_php.param_value}>" />
                    </div>
 			     </div>

@@ -1,6 +1,6 @@
 <!--// ---------------------------------------------------------------------->
 <!--//                                                                     -->
-<!--// $Id: setting.html 68946 2016-06-16 09:47:19Z tatsuya_koyasu $          -->
+<!--// $Id: setting.html 73717 2016-11-01 09:39:13Z tomohiro_ichikawa $          -->
 <!--//                                                                     -->
 <!--// Copyright (c) 2007 - 2008, National Institute of Informatics,        -->
 <!--// Research and Development Center for Scientific Information Resources -->
@@ -955,40 +955,56 @@
 					</div>
 					<h4><a name="server_path">サーバー環境</a></h4>
 					<div class="page_list">
-						WEKOモジュールで利用する下記6種類の外部コマンド実行パスを設定することができます。<br/>
+						WEKOモジュールで利用する下記8種類の外部コマンド実行パスを設定することができます。<br/>
 						<br/>
 						<table class="table_border" alt="" border="0" align="center" cellspacing="0">
 							<tr>
 								<th nowrap>名称</th>
 								<th nowrap>概要</th>
+								<th nowrap>備考</th>
 							</tr>
 							<tr>
 								<td>wvWare</td>
 								<td>Wordファイル(*.doc)をhtmlファイルに変換する</td>
+								<td></td>
 							</tr>
 							<tr>
 								<td>xlhtml</td>
 								<td>Excelファイル(*.xls)をhtmlファイルに変換する</td>
+								<td></td>
 							</tr>
 							<tr>
 								<td>poppler</td>
 								<td>PDFファイル(*.pdf)をhtmlファイルに変換する</td>
+								<td></td>
 							</tr>
 							<tr>
 								<td>ImageMagick</td>
 								<td>PDFファイル(*.pdf)のサムネイルを生成する</td>
+								<td></td>
 							</tr>
 							<tr>
 								<td>PDFTK</td>
-								<td>PDFカバーページとPDFファイル(*.pdf)を連結する</td>
+								<td rowspan="2">PDFカバーページとPDFファイル(*.pdf)を連結する</td>
+								<td rowspan="2">「自動設定」を実施した際は、PDFTKを優先的に検索・設定します。<dt>PDFTKが存在しない場合、QPDFを検索・設定します。</td>
+							</tr>
+							<tr>
+								<td>QPDF</td>
 							</tr>
 							<tr>
 								<td>ffmpeg</td>
 								<td>動画コンテンツをFLVファイルに変換する</td>
+								<td></td>
 							</tr>
 							<tr>
 								<td>mecab</td>
 								<td>形態素解析を行う</td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>php</td>
+								<td>バッチ処理を起動する</td>
+								<td></td>
 							</tr>
 						</table>
 						<br/>

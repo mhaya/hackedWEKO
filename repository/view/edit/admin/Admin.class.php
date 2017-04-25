@@ -7,7 +7,7 @@
  */
 // --------------------------------------------------------------------
 //
-// $Id: Admin.class.php 68946 2016-06-16 09:47:19Z tatsuya_koyasu $
+// $Id: Admin.class.php 73468 2016-10-26 04:53:37Z tomohiro_ichikawa $
 //
 // Copyright (c) 2007 - 2008, National Institute of Informatics, 
 // Research and Development Center for Scientific Information Resources
@@ -421,10 +421,12 @@ class Repository_View_Edit_Admin extends RepositoryAction
                 $admin_params['path_ImageMagick']['path'] = "false";
             }
             // Add pdftk 2012/06/07 A.Suzuki --start--
-            // pdftk command
+            // pdftk or qpdf command
             if($admin_params['path_pdftk']['param_value']!=""){
                 if(file_exists($admin_params['path_pdftk']['param_value']."pdftk") || 
-                    file_exists($admin_params['path_pdftk']['param_value']."pdftk.exe")){
+                    file_exists($admin_params['path_pdftk']['param_value']."pdftk.exe") ||
+                    file_exists($admin_params['path_pdftk']['param_value']."qpdf") ||
+                    file_exists($admin_params['path_pdftk']['param_value']."qpdf.exe")){
                     $admin_params['path_pdftk']['path'] = "true";
                 } else {
                     $admin_params['path_pdftk']['path'] = "false";

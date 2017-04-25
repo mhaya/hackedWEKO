@@ -1774,7 +1774,7 @@ class Repository_Components_Business_Logreport extends Repository_Components_Bus
             
             // Get file info
             $query = "SELECT ".RepositoryConst::DBCOL_REPOSITORY_FILE_FILE_NAME.", ".
-                               RepositoryConst::DBCOL_REPOSITORY_FILE_PUB_DATE.", ".
+                               RepositoryConst::DBCOL_REPOSITORY_FILE_PUB_DATE." ".
                      "FROM ".DATABASE_PREFIX.RepositoryConst::DBTABLE_REPOSITORY_FILE." ".
                      "WHERE ".RepositoryConst::DBCOL_REPOSITORY_FILE_ITEM_ID." = ? ".
                      "AND ".RepositoryConst::DBCOL_REPOSITORY_FILE_ITEM_NO." = ? ".

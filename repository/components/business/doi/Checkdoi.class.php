@@ -832,6 +832,8 @@ class Repository_Components_Business_Doi_Checkdoi extends BusinessBase
      *                     アイテム通番
      * @param int $type DOI type (0:JaLC, 1:CrossRef, 2:National Diet Library JaLC, 3:DataCite)
      *                  DOI種別(0:JaLC, 1:CrossRef, 2:国会図書館JaLC, 3:DataCite)
+     * @param int $status Status of DOI regist(0:regist/edit from screen, 1:DOI lump-sum, 2:regist/edit from import and SWORD)
+     *                    DOI登録の状態(0:画面からの登録/編集, 1:DOI一括付与, 2:インポート・SWORDからの登録/編集)
      * @param int $changeMode Mode of regist(0:normal mode, 1:DOI change mode)
      *                         登録のモード(0:通常モード, 1:DOI変更モード)
      * @param Object $resultCheckDoi Structure of result of check DOI grant
@@ -1462,6 +1464,7 @@ class Repository_Components_Business_Doi_Checkdoi extends BusinessBase
      * @param int $item_id Item id アイテムID
      * @param int $item_no Item serial number アイテム通番
      * @param int $item_type_id Item type id アイテムタイプID
+     * @param boolean $check_num Number is one flag メタデータ数が1であるかをチェックするフラグ
      * @param Object $resultCheckDoi Structure of result of check DOI grant
      *                               DOI付与チェック結果の構造体
      */

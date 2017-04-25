@@ -1,6 +1,6 @@
 CREATE TABLE %%DATABASE_PREFIX%%repository_bat_status ( 
-`batch_instance_no` INT(11),
-`batch_name` varchar(100) NOT NULL,
+`batch_instance_no` INT(11) NOT NULL default 0,
+`batch_name` varchar(100) NOT NULL default '',
 `process_id` INT(11) NOT NULL,
 `status` INT(1) NOT NULL,
 `command` TEXT,

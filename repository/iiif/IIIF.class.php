@@ -22,7 +22,7 @@ require_once WEBAPP_DIR. '/modules/repository/components/RepositoryHandleManager
  * @package     [[package名]]
  * @access      public
  */
-class Repository_IIIF extends RepositoryAction
+class Repository_Iiif extends RepositoryAction
 {
 	// リクエストパラメータを受け取るため
 	var $verb = null;
